@@ -1,0 +1,166 @@
+Project Overview: GD50 - Arcade Solar System 
+
+Engine: Godot 4.x (assuming GDScript for modular architecture)
+License: MIT (Code) / CC0 or CC-BY (Assets)
+Concept: A commercial collection of 10 classic arcade remakes with a modular "composable" architecture, housed within a 2D solar system hub. 
+1. Architecture Philosophy: "Composable Arcades" 
+
+The primary technical directive is Modularity. We are not building 10 separate games; we are building one robust framework that runs 10 distinct "Game Modes." 
+A. The Entity-Component Approach 
+
+To allow Galaga enemies to exist in a Breakout level, we must decouple Behavior from Context. 
+
+     Actors: All game objects (Paddles, Ships, Enemies, Falling Tetrominoes) inherit from a base Actor.gd that handles standard signals (death, spawn, collision).
+     Components: Scripts should be attached as nodes to provide specific capabilities.
+         Component_Movement_PlayerPong.gd (moves up/down)
+         Component_Movement_ShipAsteroids.gd (roams freely)
+         Component_Movement_Tetromino.gd (falls in grid)
+         Component_Shooter.gd (handles spawning projectiles)
+         Component_Breakable.gd (handles health/bricks)
+         
+     
+
+B. The Global Registry (Autoloads) 
+
+Use Singletons to manage shared data so high scores and assets persist across scenes. 
+
+     GameRegistry.gd: Stores high scores, unlocked planets/moons, and player settings.
+     AssetManager.gd: Holds references to common visual/audio assets (explosions, lasers, fonts) so they don't need to be reloaded.
+     EntityFactory.gd: A centralized factory script to spawn any game entity (Enemy, Bullet, Brick) by a String ID (e.g., spawn("enemy_galaga")). This allows any game mode to instantiate any object type.
+     
+
+2. The "Solar System" Hub (Main Menu) 
+Visuals 
+
+     View: Top-down 2D view of a solar system.
+     The Sun: Located at the center. Interaction: "Save & Quit."
+     Planets (10): Large celestial bodies orbiting the sun. Each represents a base game.
+     Moons: Smaller bodies orbiting planets. Each represents a "Twist" or "Hybrid" variation.
+     Player Avatar: A "Cute Goth" Witch on a broomstick.
+     
+
+Controls 
+
+     Movement: 2D free-flight physics (slight drift/friction to simulate space flight).
+     Interaction:
+         Fly near a Planet/Moon + Press ACTION_KEY: Loads the selected game.
+         Fly near the Sun + Press ACTION_KEY: Opens "Save & Quit" dialog.
+         
+     
+
+Hub Data Structure 
+
+Each Planet is a Resource file (e.g., PlanetData.tres) containing: 
+
+     game_scene: PackedScene (The main game scene).
+     display_name: String (e.g., "Breakout").
+     orbit_speed: float.
+     moons: Array[MoonData].
+     high_score: int.
+     
+
+3. The Core 10 (Planets) 
+
+These are the base remakes. They must be built using the modular components defined in Section 1. 
+
+    Planet Pong
+         Core Loop: Two paddles, one ball, scoring walls.
+         Key Component: Movement_PongBall (bounces at angles), Input_Paddle.
+          
+    Planet Breakout
+         Core Loop: Player paddle, ball, grid of breakable bricks.
+         Key Component: GridMap_Bricks (manages brick health and placement).
+          
+    Planet Defender
+         Core Loop: Side-scrolling shooter, protect humans from aliens.
+         Key Component: AI_DefenderEnemy (chase/grab mechanics), Camera_Scrolling.
+          
+    Planet Galaga
+         Core Loop: Top-down fixed shooter, enemy formations, diving attacks.
+         Key Component: Formation_Manager (handles enemy dance patterns), Spawner_Waves.
+          
+    Planet Frogger
+         Core Loop: Grid-based movement, avoid traffic/logs, reach goal.
+         Key Component: Movement_GridHop, Logics_RidingPlatform.
+          
+    Planet Donkey Kong
+         Core Loop: Climbing platforms, jumping barrels, reaching the top.
+         Key Component: Physics_2DPlatformer (gravity, ladders), Spawner_Barrels.
+          
+    Planet Missile Command
+         Core Loop: Point-and-click defense, intercept missiles.
+         Key Component: Input_MouseTargeting, Projectile_Missile.
+          
+    Planet Asteroids
+         Core Loop: 360-degree movement, shoot rocks, wrap-around screen.
+         Key Component: Physics_ScreenWrap, Shatter_Spawner (big rock -> 2 small rocks).
+          
+    Planet Tetris
+         Core Loop: Falling grid pieces, line clearing, increasing speed.
+         Key Component: Grid_Matrix (collision logic), Piece_Rotator.
+          
+    Planet Sinistar
+         Core Loop: Mining crystals, building enemy boss, fighting Sinistar.
+         Key Component: AI_Sinistar (fearsome pursuit), Mining_Mechanic.
+          
+
+4. The Moons (Variations & Hybrids) 
+
+This section demonstrates the power of the modular architecture. Moons are variations of the parent Planet's scene but inject different components or assets. 
+
+Example Moon Designs: 
+
+     Moon: Galaga-Breakout (Orbiting Breakout)
+         Concept: Play Breakout, but the bricks are Galaga enemies that shoot back at you.
+         Implementation: Load the Breakout scene. Replace static Brick nodes with Enemy_Galaga nodes. Add Component_Shooter to the bricks.
+         
+     Moon: Tetris-Kong (Orbiting Donkey Kong)
+         Concept: The platforms are made of falling Tetris blocks. The player must climb them as they stack.
+         Implementation: Load the Donkey Kong scene. Replace the static TileMap with a Tetris_Grid_Matrix. Player uses PlatformerController to jump on falling tetrominoes.
+         
+     Moon: Asteroids-Pong (Orbiting Pong)
+         Concept: Play Pong, but random Asteroids float in the middle of the arena, deflecting the ball.
+         Implementation: Load the Pong arena. Spawn Asteroid nodes with Physics_RigidBody in the center zone.
+         
+     
+
+5. Development Roadmap 
+
+Phase 1: The Framework (Current Focus) 
+
+     Set up project folder structure (/Scenes, /Scripts/Components, /Resources).
+     Create GameRegistry.gd (High Scores, Save/Load logic).
+     Create the EntityFactory.gd.
+     Define the Base_Actor.gd class.
+     
+
+Phase 2: The Assets 
+
+     Source FOSS graphics (Kenney.nl, OpenGameArt) for the Witch, Broom, Planets, and UI.
+     Source/Create sound effects (CC0) for UI blips and general game noises.
+     
+
+Phase 3: The Hub (MVP) 
+
+     Build the Solar System scene.
+     Implement Witch movement (RigidBody2D or CharacterBody2D with low friction).
+     Implement Planet/Moon selection logic.
+     
+
+Phase 4: The Games (Iterative) 
+
+     Develop the 10 Base Planets sequentially.
+     Constraint: Do not write game-specific code inside the Main.gd or Hub scripts. All logic must live within the game scenes.
+     
+
+Phase 5: The Mix 
+
+     Implement the "Moon" variations by remixing components from Phase 4.
+     
+
+6. Technical Guidelines for AI Assistant 
+
+    Type Hints: Use strict typing (var x: int) to ensure component compatibility. 
+    Signals: Use Godot Signals heavily for decoupling. (e.g., signal brick_destroyed, signal enemy_shot). 
+    Scenes as Classes: Treat every game (Planet) as a self-contained Scene that interfaces with the Hub only via the GameRegistry. 
+    Asset Sources: When recommending assets, prioritize Pixabay, Kenney.nl, or OpenGameArt.org. Do not suggest ripping assets from commercial games. 
