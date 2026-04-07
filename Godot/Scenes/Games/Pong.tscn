@@ -1,0 +1,112 @@
+[gd_scene load_steps=10 format=3 uid="uid://6x4ilf17gq08"]
+
+[ext_resource type="PackedScene" uid="uid://b4mr1t8pdtmf3" path="res://Scenes/Components/paddle.tscn" id="1_8u7rt"]
+[ext_resource type="Script" uid="uid://csosy525aufqg" path="res://Scripts/Games/Pong.gd" id="1_vlhw5"]
+[ext_resource type="PackedScene" uid="uid://cq0foubgjurmr" path="res://Scenes/Components/interceptor_ai.tscn" id="2_vlhw5"]
+[ext_resource type="PackedScene" uid="uid://mw70bjrifcpb" path="res://Scenes/Components/ball.tscn" id="3_eyct2"]
+[ext_resource type="FontFile" uid="uid://imm2iompf7sv" path="res://Assets/Fonts/Kenney Pixel.ttf" id="5_eyct2"]
+[ext_resource type="AudioStream" uid="uid://ctmcfvxwus0wo" path="res://Assets/Audio/threeTone1.ogg" id="6_f0ijk"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_f0ijk"]
+size = Vector2(640, 8)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_vlhw5"]
+size = Vector2(8, 376)
+
+[sub_resource type="LabelSettings" id="LabelSettings_f0ijk"]
+font = ExtResource("5_eyct2")
+font_size = 64
+
+[node name="Pong" type="Node2D"]
+script = ExtResource("1_vlhw5")
+
+[node name="ball" parent="." instance=ExtResource("3_eyct2")]
+position = Vector2(320, 184)
+collision_layer = 2
+collision_mask = 5
+acceleration_factor = 1.2
+radius = 4.0
+
+[node name="player" parent="." groups=["paddles"] instance=ExtResource("1_8u7rt")]
+position = Vector2(64, 184)
+collision_layer = 4
+collision_mask = 2
+paddle_height = 32
+lock_x = true
+
+[node name="opponent" parent="." groups=["paddles"] instance=ExtResource("1_8u7rt")]
+position = Vector2(576, 184)
+collision_layer = 4
+collision_mask = 2
+paddle_height = 32
+lock_x = true
+
+[node name="InterceptorAi" parent="opponent" instance=ExtResource("2_vlhw5")]
+target = NodePath("../../ball")
+lag = 0.1
+dead_zone = 8
+ramp_distance = 16
+
+[node name="StaticBody2D" type="StaticBody2D" parent="."]
+collision_mask = 2
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="StaticBody2D"]
+position = Vector2(320, -4)
+shape = SubResource("RectangleShape2D_f0ijk")
+
+[node name="StaticBody2D2" type="StaticBody2D" parent="."]
+position = Vector2(0, 368)
+collision_mask = 2
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="StaticBody2D2"]
+position = Vector2(320, -4)
+shape = SubResource("RectangleShape2D_f0ijk")
+
+[node name="ColorRect" type="ColorRect" parent="."]
+offset_left = 318.0
+offset_top = 64.0
+offset_right = 322.0
+offset_bottom = 320.0
+
+[node name="P2 Goal" type="Area2D" parent="."]
+collision_layer = 8
+collision_mask = 2
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="P2 Goal"]
+position = Vector2(-4, 180)
+shape = SubResource("RectangleShape2D_vlhw5")
+
+[node name="P1 Goal" type="Area2D" parent="."]
+position = Vector2(648, 0)
+collision_layer = 8
+collision_mask = 2
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="P1 Goal"]
+position = Vector2(-4, 180)
+shape = SubResource("RectangleShape2D_vlhw5")
+
+[node name="P1 Score" type="Label" parent="."]
+offset_left = 132.0
+offset_top = 64.0
+offset_right = 260.0
+offset_bottom = 160.0
+text = "0"
+label_settings = SubResource("LabelSettings_f0ijk")
+horizontal_alignment = 2
+
+[node name="P2 Score" type="Label" parent="."]
+offset_left = 384.0
+offset_top = 64.0
+offset_right = 512.0
+offset_bottom = 160.0
+text = "0"
+label_settings = SubResource("LabelSettings_f0ijk")
+
+[node name="AudioStreamPlayer2D" type="AudioStreamPlayer2D" parent="."]
+position = Vector2(320, 192)
+stream = ExtResource("6_f0ijk")
+max_polyphony = 3
+
+[connection signal="BallCollision" from="ball" to="." method="_on_ball_collision"]
+[connection signal="body_entered" from="P2 Goal" to="." method="_on_p_2_goal_body_entered"]
+[connection signal="body_entered" from="P1 Goal" to="." method="_on_p_1_goal_body_entered"]

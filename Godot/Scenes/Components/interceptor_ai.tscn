@@ -1,0 +1,6 @@
+[gd_scene load_steps=2 format=3 uid="uid://cq0foubgjurmr"]
+
+[ext_resource type="Script" uid="uid://ckeohjx4f2ra" path="res://Scripts/Components/interceptor_ai.gd" id="1_fp7wx"]
+
+[node name="InterceptorAi" type="Node"]
+script = ExtResource("1_fp7wx")
