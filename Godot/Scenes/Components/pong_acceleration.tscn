@@ -1,0 +1,6 @@
+[gd_scene load_steps=2 format=3 uid="uid://dvb6v6cqiiuag"]
+
+[ext_resource type="Script" uid="uid://c8k0btreehwer" path="res://Scripts/Components/pong_acceleration.gd" id="1_36gjj"]
+
+[node name="PongAcceleration" type="Node"]
+script = ExtResource("1_36gjj")

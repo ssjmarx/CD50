@@ -2,12 +2,13 @@ extends Node2D
 
 @onready var player = $paddle
 @onready var ball = $ball
-@onready var lives_display = $lives/livesnumber
-@onready var p1_win_text = $"Win Text"
-@onready var p1_lose_text = $"Lose Text"
-@onready var continue_text = $"Continue Text"
-@onready var points_number = $points/pointsnumber
-@onready var multiplier_number = $multiplier/multipliernumber
+@onready var lives_display = $UI/lives/livesnumber
+@onready var p1_win_text = $UI/"Win Text"
+@onready var p1_lose_text = $UI/"Lose Text"
+@onready var continue_text = $UI/"Continue Text"
+@onready var points_number = $UI/points/pointsnumber
+@onready var multiplier_number = $UI/multiplier/multipliernumber
+@onready var death_sound = $AudioStreamPlayer2D
 
 const BRICK_SCENE = preload("res://Scenes/Components/brick.tscn")
 
@@ -19,9 +20,6 @@ var multiplier = 1
 var points = 0
 
 func _unhandled_input(event: InputEvent) -> void:
-	if event is InputEventMouseMotion:
-		using_mouse = true
-	
 	if game_over and event is InputEventKey and event.pressed and not event.echo:
 		if event.keycode == KEY_ENTER:
 			get_tree().reload_current_scene()
@@ -32,46 +30,9 @@ func _ready() -> void:
 	spawn_bricks()
 	serve_ball()
 
-func _physics_process(_delta: float) -> void:
-	if game_over:
-		return
-	
-	var direction: Vector2 = Vector2.ZERO
-	direction.y = Input.get_axis("button_up", "button_down")
-	direction.x = Input.get_axis("button_left", "button_right")
-	
-	if direction != Vector2.ZERO:
-		using_mouse = false
-		player.set_direct_movement(direction)
-	elif using_mouse:
-		var mouse_pos = get_global_mouse_position()
-		player.set_target_coords(mouse_pos)
-	else:
-		player.set_direct_movement(Vector2.ZERO)
-
-func _on_ball_ball_collision(collider: Node) -> void:
-	if collider.is_in_group("paddle"):
-		ball.accelerate()
-		var physics_angle = collider.bounce_offset(ball.get_global_position())
-		physics_angle.y = physics_angle.y * 5
-		ball.custom_bounce(physics_angle.normalized())
-		multiplier = 1
-		multiplier_number.text = str(multiplier) + "x"
-		
-	if collider.is_in_group("bricks"):
-		var hp = collider.get_node("health")
-		hp.reduce_health(1)
-		if hp.current_health <= 0:
-			brick_count -= 1
-		if brick_count <= 0:
-			p1_win()
-		points += 1 * multiplier
-		points_number.text = str(points)
-		multiplier += 1
-		multiplier_number.text = str(multiplier) + "x"
-
 func _on_floor_body_entered(body: Node2D) -> void:
 	if body == ball:
+		death_sound.play()
 		if lives > 0:
 			lives -= 1
 			lives_display.text = str(lives)
@@ -107,11 +68,10 @@ func spawn_bricks() -> void:
 			add_child(brick)
 			brick_count += 1
 
-
 func serve_ball() -> void:
 	ball.position = Vector2(320, 304)
 	ball.velocity = Vector2.ZERO
-	ball.reset()
+	ball.accelerator.reset()
 	
 	await get_tree().create_timer(1).timeout
 	
@@ -129,3 +89,23 @@ func p1_lose() -> void:
 	game_over = true
 	p1_lose_text.visible = true
 	continue_text.visible = true
+
+func _on_ball_ball_collision(collider: Node) -> void:
+	if collider.is_in_group("paddle"):
+		ball.accelerate()
+		var physics_angle = collider.bounce_offset(ball.get_global_position())
+		ball.custom_bounce(physics_angle)
+		multiplier = 1
+		multiplier_number.text = str(multiplier) + "x"
+		
+	if collider.is_in_group("bricks"):
+		var hp = collider.get_node("health")
+		hp.reduce_health(1)
+		if hp.current_health <= 0:
+			brick_count -= 1
+		if brick_count <= 0:
+			p1_win()
+		points += 1 * multiplier
+		points_number.text = str(points)
+		multiplier += 1
+		multiplier_number.text = str(multiplier) + "x"

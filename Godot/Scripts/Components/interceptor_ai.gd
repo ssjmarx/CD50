@@ -22,3 +22,5 @@ func _physics_process(delta: float) -> void:
 	target_output =  target_node.global_position - parent_node.global_position
 	actual_output = actual_output.slerp(target_output.normalized(), turning_speed * delta)
 	parent_node.set_direct_movement(actual_output)
+	
+	# print("target_output: ", target_output, " actual_output: ", actual_output)

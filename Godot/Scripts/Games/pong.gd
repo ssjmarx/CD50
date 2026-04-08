@@ -1,13 +1,13 @@
 extends Node2D
 
 @onready var ball = $ball
-@onready var p1_scoreboard = $"P1 Score"
-@onready var p2_scoreboard = $"P2 Score"
+@onready var p1_scoreboard = $UI/"P1 Score"
+@onready var p2_scoreboard = $UI/"P2 Score"
 @onready var goal_sound = $AudioStreamPlayer2D
 @onready var opponent_ai = $opponent/InterceptorAi
-@onready var p1_win_text = $"Win Text"
-@onready var p1_lose_text = $"Lose Text"
-@onready var continue_text = $"Continue Text"
+@onready var p1_win_text = $UI/"Win Text"
+@onready var p1_lose_text = $UI/"Lose Text"
+@onready var continue_text = $UI/"Continue Text"
 
 var using_mouse: bool = false
 var p1_score: int = 0
@@ -17,38 +17,18 @@ var game_over: bool = false
 func _ready() -> void:
 	serve_ball()
 
-func _unhandled_input(event: InputEvent) -> void:
-	if event is InputEventMouseMotion:
-		using_mouse = true
-	
+func _unhandled_input(event: InputEvent) -> void:	
 	if game_over and event is InputEventKey and event.pressed and not event.echo:
 		if event.keycode == KEY_ENTER:
 			get_tree().reload_current_scene()
 		elif event.keycode == KEY_ESCAPE:
 			get_tree().quit()
 
-func _physics_process(_delta: float) -> void:
-	if game_over:
-		return
-	
-	var direction: Vector2 = Vector2.ZERO
-	direction.y = Input.get_axis("button_up", "button_down")
-	
-	if direction != Vector2.ZERO:
-		using_mouse = false
-		$player.set_direct_movement(direction)
-	elif using_mouse:
-		var mouse_pos = get_global_mouse_position()
-		$player.set_target_coords(mouse_pos)
-	else:
-		$player.set_direct_movement(Vector2.ZERO)
-
 func _on_ball_collision(collider: Node) -> void:
 	if collider.is_in_group("paddles"):
 		ball.accelerate()
 		var physics_angle = collider.bounce_offset(ball.get_global_position())
-		physics_angle.x = physics_angle.x * 5
-		ball.custom_bounce(physics_angle.normalized())
+		ball.custom_bounce(physics_angle)
 
 func serve_ball() -> void:
 	ball.position = Vector2(320, 180)

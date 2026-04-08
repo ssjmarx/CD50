@@ -1,0 +1,145 @@
+[gd_scene load_steps=10 format=3 uid="uid://bjs0gtnsur7e6"]
+
+[ext_resource type="Script" uid="uid://bghaddibpt6f1" path="res://addons/crt/crt.gd" id="1_msg41"]
+[ext_resource type="FontFile" uid="uid://imm2iompf7sv" path="res://Assets/Fonts/Kenney Pixel.ttf" id="2_f3hv5"]
+
+[sub_resource type="Environment" id="Environment_hcst1"]
+background_mode = 3
+glow_enabled = true
+glow_intensity = 3.0
+glow_bloom = 0.33
+
+[sub_resource type="LabelSettings" id="LabelSettings_hu0ji"]
+font = ExtResource("2_f3hv5")
+font_size = 32
+
+[sub_resource type="LabelSettings" id="LabelSettings_t21dg"]
+font = ExtResource("2_f3hv5")
+font_size = 32
+
+[sub_resource type="LabelSettings" id="LabelSettings_5dhpa"]
+font = ExtResource("2_f3hv5")
+font_size = 64
+shadow_size = 5
+shadow_color = Color(0, 0, 0, 1)
+
+[sub_resource type="LabelSettings" id="LabelSettings_yreoo"]
+font = ExtResource("2_f3hv5")
+
+[sub_resource type="LabelSettings" id="LabelSettings_bg017"]
+font = ExtResource("2_f3hv5")
+font_size = 32
+
+[sub_resource type="LabelSettings" id="LabelSettings_2e55n"]
+font = ExtResource("2_f3hv5")
+font_size = 32
+
+[node name="Asteroids" type="Node2D"]
+
+[node name="CRT" type="CanvasLayer" parent="."]
+script = ExtResource("1_msg41")
+resolution = Vector2(640, 360)
+scan_line_amount = 0.5
+scan_line_strength = -10.0
+warp_amount = 0.05
+noise_amount = 0.015
+interference_amount = 0.1
+grille_amount = 0.05
+vignette_amount = 0.3
+vignette_intensity = 0.2
+aberation_amount = 0.25
+roll_line_amount = 0.0
+roll_speed = 0.5
+pixel_strength = -3.0
+
+[node name="CRT - bloom" type="WorldEnvironment" parent="."]
+environment = SubResource("Environment_hcst1")
+
+[node name="UI" type="Control" parent="."]
+layout_mode = 3
+anchors_preset = 0
+offset_right = 40.0
+offset_bottom = 40.0
+
+[node name="lives" type="Label" parent="UI"]
+layout_mode = 0
+offset_left = 496.0
+offset_top = 320.0
+offset_right = 558.0
+offset_bottom = 344.0
+text = "LIVES: "
+label_settings = SubResource("LabelSettings_hu0ji")
+
+[node name="livesnumber" type="Label" parent="UI/lives"]
+layout_mode = 0
+offset_left = 64.0
+offset_right = 104.0
+offset_bottom = 24.0
+text = "3"
+label_settings = SubResource("LabelSettings_t21dg")
+
+[node name="Win Text" type="Label" parent="UI"]
+visible = false
+layout_mode = 0
+offset_left = 246.0
+offset_top = 136.0
+offset_right = 398.0
+offset_bottom = 184.0
+text = "YOU WIN"
+label_settings = SubResource("LabelSettings_5dhpa")
+
+[node name="Lose Text" type="Label" parent="UI"]
+visible = false
+layout_mode = 0
+offset_left = 246.0
+offset_top = 136.0
+offset_right = 418.0
+offset_bottom = 184.0
+text = "YOU LOSE"
+label_settings = SubResource("LabelSettings_5dhpa")
+
+[node name="Continue Text" type="Label" parent="UI"]
+visible = false
+layout_mode = 0
+offset_left = 246.0
+offset_top = 192.0
+offset_right = 398.0
+offset_bottom = 240.0
+text = "Press ENTER to play again
+Press ESCAPE to quit"
+label_settings = SubResource("LabelSettings_yreoo")
+horizontal_alignment = 1
+
+[node name="points" type="Label" parent="UI"]
+layout_mode = 0
+offset_left = 224.0
+offset_top = 320.0
+offset_right = 296.0
+offset_bottom = 344.0
+text = "POINTS:"
+label_settings = SubResource("LabelSettings_bg017")
+
+[node name="pointsnumber" type="Label" parent="UI/points"]
+layout_mode = 0
+offset_left = 76.0
+offset_right = 576.0
+offset_bottom = 24.0
+text = "0"
+label_settings = SubResource("LabelSettings_2e55n")
+
+[node name="multiplier" type="Label" parent="UI"]
+layout_mode = 0
+offset_left = 64.0
+offset_top = 320.0
+offset_right = 180.0
+offset_bottom = 344.0
+text = "MULTIPLIER:"
+label_settings = SubResource("LabelSettings_bg017")
+
+[node name="multipliernumber" type="Label" parent="UI/multiplier"]
+layout_mode = 0
+offset_left = 120.0
+offset_right = 160.0
+offset_bottom = 24.0
+text = "1x"
+label_settings = SubResource("LabelSettings_2e55n")
