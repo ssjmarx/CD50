@@ -1,0 +1,171 @@
+[gd_scene load_steps=14 format=3 uid="uid://c4ttsm1qowkgo"]
+
+[ext_resource type="PackedScene" uid="uid://b4mr1t8pdtmf3" path="res://Scenes/Components/paddle.tscn" id="1_ke7d3"]
+[ext_resource type="Script" uid="uid://cvjed6bfjokfh" path="res://Scripts/Games/breakout.gd" id="1_per38"]
+[ext_resource type="PackedScene" uid="uid://mw70bjrifcpb" path="res://Scenes/Components/ball.tscn" id="2_q0mki"]
+[ext_resource type="Script" uid="uid://bghaddibpt6f1" path="res://addons/crt/crt.gd" id="3_q0mki"]
+[ext_resource type="FontFile" uid="uid://imm2iompf7sv" path="res://Assets/Fonts/Kenney Pixel.ttf" id="5_n6jm7"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_per38"]
+size = Vector2(656, 8)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_n6jm7"]
+size = Vector2(8, 368)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_7ju07"]
+size = Vector2(640, 8)
+
+[sub_resource type="Environment" id="Environment_per38"]
+background_mode = 3
+glow_enabled = true
+glow_intensity = 3.0
+glow_bloom = 0.33
+
+[sub_resource type="LabelSettings" id="LabelSettings_7ju07"]
+font = ExtResource("5_n6jm7")
+font_size = 32
+
+[sub_resource type="LabelSettings" id="LabelSettings_62gud"]
+font = ExtResource("5_n6jm7")
+font_size = 32
+
+[sub_resource type="LabelSettings" id="LabelSettings_n6jm7"]
+font = ExtResource("5_n6jm7")
+font_size = 64
+shadow_size = 5
+shadow_color = Color(0, 0, 0, 1)
+
+[sub_resource type="LabelSettings" id="LabelSettings_i3wvo"]
+font = ExtResource("5_n6jm7")
+
+[node name="Breakout" type="Node2D"]
+script = ExtResource("1_per38")
+
+[node name="paddle" parent="." groups=["paddle"] instance=ExtResource("1_ke7d3")]
+position = Vector2(304, 320)
+paddle_width = 32
+paddle_height = 4
+lock_y = true
+
+[node name="ball" parent="." instance=ExtResource("2_q0mki")]
+position = Vector2(320, 304)
+
+[node name="walls" type="StaticBody2D" parent="."]
+position = Vector2(-8, -8)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="walls"]
+position = Vector2(328, 4)
+shape = SubResource("RectangleShape2D_per38")
+
+[node name="CollisionShape2D2" type="CollisionShape2D" parent="walls"]
+position = Vector2(4, 192)
+shape = SubResource("RectangleShape2D_n6jm7")
+
+[node name="CollisionShape2D3" type="CollisionShape2D" parent="walls"]
+position = Vector2(652, 192)
+shape = SubResource("RectangleShape2D_n6jm7")
+
+[node name="floor" type="Area2D" parent="."]
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="floor"]
+position = Vector2(320, 364)
+shape = SubResource("RectangleShape2D_7ju07")
+
+[node name="CRT" type="CanvasLayer" parent="."]
+script = ExtResource("3_q0mki")
+resolution = Vector2(640, 360)
+scan_line_amount = 0.5
+scan_line_strength = -10.0
+warp_amount = 0.05
+noise_amount = 0.015
+interference_amount = 0.1
+grille_amount = 0.05
+vignette_amount = 0.3
+vignette_intensity = 0.2
+aberation_amount = 0.25
+roll_line_amount = 0.0
+roll_speed = 0.5
+pixel_strength = -3.0
+
+[node name="CRT - bloom" type="WorldEnvironment" parent="."]
+environment = SubResource("Environment_per38")
+
+[node name="lives" type="Label" parent="."]
+offset_left = 496.0
+offset_top = 320.0
+offset_right = 558.0
+offset_bottom = 344.0
+text = "LIVES: "
+label_settings = SubResource("LabelSettings_7ju07")
+
+[node name="livesnumber" type="Label" parent="lives"]
+layout_mode = 0
+offset_left = 64.0
+offset_right = 104.0
+offset_bottom = 24.0
+text = "3"
+label_settings = SubResource("LabelSettings_62gud")
+
+[node name="Win Text" type="Label" parent="."]
+visible = false
+offset_left = 246.0
+offset_top = 136.0
+offset_right = 398.0
+offset_bottom = 184.0
+text = "YOU WIN"
+label_settings = SubResource("LabelSettings_n6jm7")
+
+[node name="Lose Text" type="Label" parent="."]
+visible = false
+offset_left = 246.0
+offset_top = 136.0
+offset_right = 418.0
+offset_bottom = 184.0
+text = "YOU LOSE"
+label_settings = SubResource("LabelSettings_n6jm7")
+
+[node name="Continue Text" type="Label" parent="."]
+visible = false
+offset_left = 246.0
+offset_top = 192.0
+offset_right = 398.0
+offset_bottom = 240.0
+text = "Press ENTER to play again
+Press ESCAPE to quit"
+label_settings = SubResource("LabelSettings_i3wvo")
+horizontal_alignment = 1
+
+[node name="points" type="Label" parent="."]
+offset_left = 224.0
+offset_top = 320.0
+offset_right = 296.0
+offset_bottom = 344.0
+text = "POINTS:"
+label_settings = SubResource("LabelSettings_7ju07")
+
+[node name="pointsnumber" type="Label" parent="points"]
+layout_mode = 0
+offset_left = 76.0
+offset_right = 576.0
+offset_bottom = 24.0
+text = "0"
+label_settings = SubResource("LabelSettings_62gud")
+
+[node name="multiplier" type="Label" parent="."]
+offset_left = 64.0
+offset_top = 320.0
+offset_right = 180.0
+offset_bottom = 344.0
+text = "MULTIPLIER:"
+label_settings = SubResource("LabelSettings_7ju07")
+
+[node name="multipliernumber" type="Label" parent="multiplier"]
+layout_mode = 0
+offset_left = 120.0
+offset_right = 160.0
+offset_bottom = 24.0
+text = "1x"
+label_settings = SubResource("LabelSettings_62gud")
+
+[connection signal="BallCollision" from="ball" to="." method="_on_ball_ball_collision"]
+[connection signal="body_entered" from="floor" to="." method="_on_floor_body_entered"]

@@ -1,0 +1,17 @@
+[gd_scene load_steps=4 format=3 uid="uid://vlxiy3uptf6y"]
+
+[ext_resource type="Script" uid="uid://byidqfe4arhb0" path="res://Scripts/Components/brick.gd" id="1_iythh"]
+[ext_resource type="PackedScene" uid="uid://bj81pr736k256" path="res://Scenes/Components/health.tscn" id="2_ckqjd"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_iythh"]
+size = Vector2(16, 8)
+
+[node name="brick" type="StaticBody2D"]
+script = ExtResource("1_iythh")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+shape = SubResource("RectangleShape2D_iythh")
+
+[node name="health" parent="." instance=ExtResource("2_ckqjd")]
+
+[connection signal="health_changed" from="health" to="." method="_on_health_health_changed"]

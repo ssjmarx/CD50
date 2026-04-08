@@ -2,7 +2,7 @@ extends CharacterBody2D
 
 @export var paddle_width: int = 4
 @export var paddle_height: int = 16
-@export var paddle_speed: int = 400
+@export var paddle_speed: int = 600
 @export var paddle_x_min: float = 0.0
 @export var paddle_x_max: float = 640.0
 @export var paddle_y_min: float = 0.0
