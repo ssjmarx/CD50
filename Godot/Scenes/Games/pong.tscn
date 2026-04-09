@@ -65,7 +65,7 @@ lock_x = true
 deflection_bias = Vector2(5, 1)
 
 [node name="InterceptorAi" parent="opponent" instance=ExtResource("4_5wgpo")]
-target = NodePath("../../ball")
+target_node = NodePath("../../ball")
 turning_speed = 10.0
 
 [node name="StaticBody2D" type="StaticBody2D" parent="."]

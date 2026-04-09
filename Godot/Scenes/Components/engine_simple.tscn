@@ -1,0 +1,6 @@
+[gd_scene load_steps=2 format=3 uid="uid://gb8yeyed5mjn"]
+
+[ext_resource type="Script" uid="uid://bp8b57q4ygsw2" path="res://Scripts/Components/engine_simple.gd" id="1_p5t4r"]
+
+[node name="EngineSimple" type="Node"]
+script = ExtResource("1_p5t4r")

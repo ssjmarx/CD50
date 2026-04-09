@@ -7,14 +7,14 @@ signal BallCollision
 @export var initial_velocity: Vector2 = Vector2(0, 0)
 @export var radius: float = 1.0
 
+var sound1 = preload("res://Assets/Audio/tone1.ogg")
+var sound2 = preload("res://Assets/Audio/twoTone1.ogg")
+var sound3 = preload("res://Assets/Audio/twoTone2.ogg")
+
 @onready var sound = $AudioStreamPlayer2D
 @onready var accelerator = $PongAcceleration
 @onready var physicsbox = $CollisionShape2D
 @onready var hitbox = $hitbox
-
-var sound1 = preload("res://Assets/Audio/tone1.ogg")
-var sound2 = preload("res://Assets/Audio/twoTone1.ogg")
-var sound3 = preload("res://Assets/Audio/twoTone2.ogg")
 
 func _ready() -> void:
 	physicsbox.shape = physicsbox.shape.duplicate()

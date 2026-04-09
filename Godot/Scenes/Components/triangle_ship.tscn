@@ -1,0 +1,11 @@
+[gd_scene load_steps=2 format=3 uid="uid://bcktpeqc0t10f"]
+
+[ext_resource type="Script" uid="uid://nx6wkwvymri1" path="res://Scripts/Components/triangle_ship.gd" id="1_wwr64"]
+
+[node name="TriangleShip" type="CharacterBody2D"]
+script = ExtResource("1_wwr64")
+
+[node name="CollisionPolygon2D" type="CollisionPolygon2D" parent="."]
+rotation = 1.5707964
+build_mode = 1
+polygon = PackedVector2Array(0, -12, -4, 4, 4, 4)

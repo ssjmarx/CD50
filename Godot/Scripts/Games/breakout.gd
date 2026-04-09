@@ -1,5 +1,14 @@
 extends Node2D
 
+const BRICK_SCENE = preload("res://Scenes/Components/brick.tscn")
+
+var using_mouse: bool = false
+var game_over = false
+var lives = 3
+var brick_count = 0
+var multiplier = 1
+var points = 0
+
 @onready var player = $paddle
 @onready var ball = $ball
 @onready var lives_display = $UI/lives/livesnumber
@@ -10,14 +19,9 @@ extends Node2D
 @onready var multiplier_number = $UI/multiplier/multipliernumber
 @onready var death_sound = $AudioStreamPlayer2D
 
-const BRICK_SCENE = preload("res://Scenes/Components/brick.tscn")
-
-var using_mouse: bool = false
-var game_over = false
-var lives = 3
-var brick_count = 0
-var multiplier = 1
-var points = 0
+func _ready() -> void:
+	spawn_bricks()
+	serve_ball()
 
 func _unhandled_input(event: InputEvent) -> void:
 	if game_over and event is InputEventKey and event.pressed and not event.echo:
@@ -25,10 +29,6 @@ func _unhandled_input(event: InputEvent) -> void:
 			get_tree().reload_current_scene()
 		elif event.keycode == KEY_ESCAPE:
 			get_tree().quit()
-
-func _ready() -> void:
-	spawn_bricks()
-	serve_ball()
 
 func _on_floor_body_entered(body: Node2D) -> void:
 	if body == ball:

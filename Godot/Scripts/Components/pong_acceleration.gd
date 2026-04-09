@@ -2,14 +2,14 @@
 
 extends Node
 
+signal speed_changed(speed_level)
+
 @export var acceleration_factor: float = 1.2
 @export var acceleration_levels: int = 8
 
-@onready var parent = get_parent()
-
-signal speed_changed(speed_level)
-
 var current_acceleration_level: int = 1
+
+@onready var parent = get_parent()
 
 func accelerate() -> void:
 	if current_acceleration_level < acceleration_levels:

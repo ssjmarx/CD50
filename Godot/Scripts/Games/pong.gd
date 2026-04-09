@@ -1,5 +1,10 @@
 extends Node2D
 
+var using_mouse: bool = false
+var p1_score: int = 0
+var p2_score: int = 0
+var game_over: bool = false
+
 @onready var ball = $ball
 @onready var p1_scoreboard = $UI/"P1 Score"
 @onready var p2_scoreboard = $UI/"P2 Score"
@@ -8,11 +13,6 @@ extends Node2D
 @onready var p1_win_text = $UI/"Win Text"
 @onready var p1_lose_text = $UI/"Lose Text"
 @onready var continue_text = $UI/"Continue Text"
-
-var using_mouse: bool = false
-var p1_score: int = 0
-var p2_score: int = 0
-var game_over: bool = false
 
 func _ready() -> void:
 	serve_ball()
