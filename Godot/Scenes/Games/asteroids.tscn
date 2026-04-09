@@ -3,11 +3,11 @@
 [ext_resource type="Script" uid="uid://bghaddibpt6f1" path="res://addons/crt/crt.gd" id="1_msg41"]
 [ext_resource type="Script" uid="uid://c3sum0283iyff" path="res://Scripts/Games/asteroids.gd" id="1_t21dg"]
 [ext_resource type="FontFile" uid="uid://imm2iompf7sv" path="res://Assets/Fonts/Kenney Pixel.ttf" id="2_f3hv5"]
-[ext_resource type="PackedScene" uid="uid://bcktpeqc0t10f" path="res://Scenes/Components/triangle_ship.tscn" id="4_hcst1"]
-[ext_resource type="PackedScene" uid="uid://6tweepbhleep" path="res://Scenes/Components/player_control.tscn" id="4_t21dg"]
+[ext_resource type="PackedScene" uid="uid://bcktpeqc0t10f" path="res://Scenes/Bodies/triangle_ship.tscn" id="4_hcst1"]
+[ext_resource type="PackedScene" uid="uid://6tweepbhleep" path="res://Scenes/Brains/player_control.tscn" id="4_t21dg"]
 [ext_resource type="PackedScene" uid="uid://cqh5t1y5b71wr" path="res://Scenes/Components/screenwrap.tscn" id="5_5dhpa"]
 [ext_resource type="PackedScene" uid="uid://dccglleshdrs7" path="res://Scenes/Components/simple_rotation.tscn" id="7_yreoo"]
-[ext_resource type="PackedScene" uid="uid://gb8yeyed5mjn" path="res://Scenes/Components/engine_simple.tscn" id="8_yreoo"]
+[ext_resource type="PackedScene" uid="uid://gb8yeyed5mjn" path="res://Scenes/Legs/engine_simple.tscn" id="8_yreoo"]
 
 [sub_resource type="Environment" id="Environment_hcst1"]
 background_mode = 3
@@ -157,7 +157,6 @@ position = Vector2(320, 192)
 [node name="Screenwrap" parent="TriangleShip" instance=ExtResource("5_5dhpa")]
 
 [node name="SimpleRotation" parent="TriangleShip" instance=ExtResource("7_yreoo")]
-turning_speed = 5.0
 
 [node name="PlayerControl" parent="TriangleShip" instance=ExtResource("4_t21dg")]
 

@@ -1,9 +1,9 @@
 [gd_scene load_steps=16 format=3 uid="uid://c4ttsm1qowkgo"]
 
 [ext_resource type="Script" uid="uid://cvjed6bfjokfh" path="res://Scripts/Games/breakout.gd" id="1_chg5i"]
-[ext_resource type="PackedScene" uid="uid://b4mr1t8pdtmf3" path="res://Scenes/Components/paddle.tscn" id="2_7epd8"]
-[ext_resource type="PackedScene" uid="uid://6tweepbhleep" path="res://Scenes/Components/player_control.tscn" id="3_7epd8"]
-[ext_resource type="PackedScene" uid="uid://mw70bjrifcpb" path="res://Scenes/Components/ball.tscn" id="3_uvgxs"]
+[ext_resource type="PackedScene" uid="uid://b4mr1t8pdtmf3" path="res://Scenes/Bodies/paddle.tscn" id="2_7epd8"]
+[ext_resource type="PackedScene" uid="uid://6tweepbhleep" path="res://Scenes/Brains/player_control.tscn" id="3_7epd8"]
+[ext_resource type="PackedScene" uid="uid://mw70bjrifcpb" path="res://Scenes/Bodies/ball.tscn" id="3_uvgxs"]
 [ext_resource type="Script" uid="uid://bghaddibpt6f1" path="res://addons/crt/crt.gd" id="4_fkkyb"]
 [ext_resource type="FontFile" uid="uid://imm2iompf7sv" path="res://Assets/Fonts/Kenney Pixel.ttf" id="5_2njjq"]
 [ext_resource type="AudioStream" uid="uid://b3en0cgneptgr" path="res://Assets/Audio/lowDown.ogg" id="6_uvgxs"]

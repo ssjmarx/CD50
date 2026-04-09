@@ -1,6 +1,6 @@
 [gd_scene load_steps=5 format=3 uid="uid://mw70bjrifcpb"]
 
-[ext_resource type="Script" uid="uid://bufxw3hl0oqy0" path="res://Scripts/Components/ball.gd" id="1_2wnlm"]
+[ext_resource type="Script" uid="uid://bufxw3hl0oqy0" path="res://Scripts/Bodies/ball.gd" id="1_2wnlm"]
 [ext_resource type="AudioStream" uid="uid://dveho4hncd47a" path="res://Assets/Audio/tone1.ogg" id="2_184hw"]
 [ext_resource type="PackedScene" uid="uid://dvb6v6cqiiuag" path="res://Scenes/Components/pong_acceleration.tscn" id="3_o3brn"]
 

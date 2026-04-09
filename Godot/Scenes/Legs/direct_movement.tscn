@@ -1,6 +1,6 @@
 [gd_scene load_steps=2 format=3 uid="uid://eketockdsssi"]
 
-[ext_resource type="Script" uid="uid://c1i3jhdqbgfbg" path="res://Scripts/Components/direct_movement.gd" id="1_optgw"]
+[ext_resource type="Script" uid="uid://c1i3jhdqbgfbg" path="res://Scripts/Legs/direct_movement.gd" id="1_optgw"]
 
 [node name="DirectMovement" type="Node"]
 script = ExtResource("1_optgw")
