@@ -1,6 +1,6 @@
 extends Node2D
 
-const BRICK_SCENE = preload("res://Scenes/Components/brick.tscn")
+const BRICK_SCENE = preload("res://Scenes/Bodies/brick.tscn")
 
 var using_mouse: bool = false
 var game_over = false

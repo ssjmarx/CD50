@@ -1,37 +1,42 @@
-# movement component that uses acceleration and friction.  Speeds are in pixels per second (per second (per second)).  If friction is below max acceleration, you will be able to accelerate infinitely.  If there is zero friction, you will have Newtonian motion and top speed won't matter.  If friction is above max acceleration, you won't ever reach top speed.
+# movement component that uses acceleration and friction.  Speeds are in pixels per second (per second (per second)).  When friction and max_acceleration are equal, top speed is your actual top speed.  Higher friction gives a lower actual top speed, higher acceleration gives a higher actual top speed.  Zero friction gives Newtonian movement.
 
 extends Node
 
-@export var top_speed: int = 400
-@export var friction: int = 400
-@export var max_acceleration: int = 400
-@export var jerk: int = 400
+@export var max_acceleration: int = 600
+@export var jerk: int = 600
+@export var button_only: bool = false
 
-var input: float
-var velocity: Vector2 = Vector2.ZERO
 var current_acceleration: float = 0.0
+var thrusting: bool = false
+var joystick_input: bool = false
 
 @onready var parent = get_parent()
 
 func _ready() -> void:
 	parent.move.connect(_on_move)
+	parent.thrust.connect(_on_thrust)
+	parent.end_thrust.connect(_on_end_thrust)
 
-func _physics_process(delta: float) -> void:
-	if input != 0.0:
-		current_acceleration = min((current_acceleration + (jerk * input * delta)), max_acceleration)
+func _physics_process(delta):
+	if thrusting or joystick_input:
+		current_acceleration = min(current_acceleration + jerk * delta, max_acceleration)
 	else:
 		current_acceleration = maxf(current_acceleration - jerk * delta, 0.0)
 	
 	var forward = Vector2.from_angle(parent.rotation)
-	velocity += forward * current_acceleration * delta
-	
-	if top_speed > 0:
-		var resistance = friction * (velocity / top_speed)
-		velocity -= resistance * delta
-	
-	parent.position += velocity * delta
-	
-	# print("velocity ", velocity)
+	if thrusting or joystick_input:
+		parent.velocity += forward * current_acceleration * delta
 
 func _on_move(joystick: Vector2) -> void:
-	input = joystick.length()
+	if button_only == true:
+		return
+	if joystick == Vector2.ZERO:
+		joystick_input = false
+	else:
+		joystick_input = true
+
+func _on_thrust() -> void:
+	thrusting = true
+
+func _on_end_thrust() -> void:
+	thrusting = false

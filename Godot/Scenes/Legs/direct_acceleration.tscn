@@ -1,0 +1,6 @@
+[gd_scene load_steps=2 format=3 uid="uid://ckfjlmiw1srg2"]
+
+[ext_resource type="Script" uid="uid://y1mc6gm6ahn" path="res://Scripts/Legs/direct_acceleration.gd" id="1_gbrco"]
+
+[node name="DirectAcceleration" type="Node"]
+script = ExtResource("1_gbrco")

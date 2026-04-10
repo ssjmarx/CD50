@@ -15,7 +15,6 @@ func _unhandled_input(event: InputEvent) -> void:
 		if event.is_released():
 			parent.button_released.emit(event)
 
-
 func _physics_process(_delta: float) -> void:
 	var direction: Vector2 = Vector2.ZERO
 	direction.y = Input.get_axis("button_up", "button_down")

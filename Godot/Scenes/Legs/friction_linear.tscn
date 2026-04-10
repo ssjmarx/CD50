@@ -1,0 +1,6 @@
+[gd_scene load_steps=2 format=3 uid="uid://cf0llx3jwkfcf"]
+
+[ext_resource type="Script" uid="uid://cds2ijq1j8eal" path="res://Scripts/Legs/friction_linear.gd" id="1_fmyck"]
+
+[node name="FrictionLinear" type="Node"]
+script = ExtResource("1_fmyck")

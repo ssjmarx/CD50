@@ -2,39 +2,37 @@
 
 extends Node
 
-@export var acceleration: int = 400
-@export var top_speed: int = 400
-@export var friction: int = 40
+@export var acceleration: int = 225
+@export var top_speed: int = 300
+@export var button_only: bool = true
 
-var velocity: Vector2 = Vector2.ZERO
 var thrusting: bool = false
+var joystick_input: bool = false
 
 @onready var parent = get_parent()
 
-var input: Vector2 = Vector2.ZERO
-
 func _ready() -> void:
 	parent.move.connect(_on_move)
+	parent.thrust.connect(_on_thrust)
+	parent.end_thrust.connect(_on_end_thrust)
 
-func _on_move(direction: Vector2) -> void:
-	input = direction
+func _on_move(joystick: Vector2) -> void:
+	if button_only == true:
+		return
+	if joystick == Vector2.ZERO:
+		joystick_input = false
+	else:
+		joystick_input = true
 
-func _physics_process(delta: float) -> void:
-	if input.length() > 0.0:
-		var forward = Vector2.from_angle(parent.rotation)
-		velocity += forward * acceleration * delta
-		if top_speed > 0:
-			velocity = velocity.limit_length(top_speed)
-	
-	velocity = velocity.move_toward(Vector2.ZERO, friction * delta)
-	parent.position += velocity * delta
-	
-	# print("velocity: ", velocity)
+func _physics_process(delta):
+	var forward = Vector2.from_angle(parent.rotation)
+	if thrusting or joystick_input:
+		parent.velocity += forward * acceleration * delta
+	if top_speed > 0:
+		parent.velocity = parent.velocity.limit_length(top_speed)
 
-func _thruster_on() -> void:
+func _on_thrust() -> void:
 	thrusting = true
-	# print("thruster on")
 
-func _thruster_off() -> void:
+func _on_end_thrust() -> void:
 	thrusting = false
-	# print("thruster off")

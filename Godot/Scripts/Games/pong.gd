@@ -32,6 +32,7 @@ func _on_ball_collision(collider: Node) -> void:
 
 func serve_ball() -> void:
 	ball.position = Vector2(320, 180)
+	ball.reset_physics_interpolation()
 	ball.velocity = Vector2.ZERO
 	ball.reset()
 	

@@ -6,8 +6,8 @@
 [ext_resource type="PackedScene" uid="uid://bcktpeqc0t10f" path="res://Scenes/Bodies/triangle_ship.tscn" id="4_hcst1"]
 [ext_resource type="PackedScene" uid="uid://6tweepbhleep" path="res://Scenes/Brains/player_control.tscn" id="4_t21dg"]
 [ext_resource type="PackedScene" uid="uid://cqh5t1y5b71wr" path="res://Scenes/Components/screenwrap.tscn" id="5_5dhpa"]
-[ext_resource type="PackedScene" uid="uid://dccglleshdrs7" path="res://Scenes/Components/simple_rotation.tscn" id="7_yreoo"]
-[ext_resource type="PackedScene" uid="uid://gb8yeyed5mjn" path="res://Scenes/Legs/engine_simple.tscn" id="8_yreoo"]
+[ext_resource type="PackedScene" uid="uid://bapmn3uxv7pqb" path="res://Scenes/Arms/gun_simple.tscn" id="6_5dhpa"]
+[ext_resource type="PackedScene" uid="uid://chmnjqkckrar5" path="res://Scenes/Bodies/bullet_wrapping.tscn" id="7_yreoo"]
 
 [sub_resource type="Environment" id="Environment_hcst1"]
 background_mode = 3
@@ -61,6 +61,22 @@ pixel_strength = -3.0
 
 [node name="CRT - bloom" type="WorldEnvironment" parent="."]
 environment = SubResource("Environment_hcst1")
+
+[node name="Player" parent="." instance=ExtResource("4_hcst1")]
+position = Vector2(320, 192)
+rotation = -1.5707964
+width = 16
+x_min = -20.0
+x_max = 660.0
+y_min = -20.0
+y_max = 380.0
+
+[node name="PlayerControl" parent="Player" instance=ExtResource("4_t21dg")]
+
+[node name="Screenwrap" parent="Player" instance=ExtResource("5_5dhpa")]
+
+[node name="GunSimple" parent="Player" instance=ExtResource("6_5dhpa")]
+ammo = ExtResource("7_yreoo")
 
 [node name="UI" type="Control" parent="."]
 layout_mode = 3
@@ -151,13 +167,22 @@ offset_bottom = 24.0
 text = "1x"
 label_settings = SubResource("LabelSettings_2e55n")
 
-[node name="TriangleShip" parent="." instance=ExtResource("4_hcst1")]
-position = Vector2(320, 192)
+[node name="Startup Text" type="Label" parent="UI"]
+layout_mode = 0
+offset_left = 149.0
+offset_top = 80.0
+offset_right = 489.0
+offset_bottom = 128.0
+text = "CHOOSE CONTROLS"
+label_settings = SubResource("LabelSettings_5dhpa")
 
-[node name="Screenwrap" parent="TriangleShip" instance=ExtResource("5_5dhpa")]
-
-[node name="SimpleRotation" parent="TriangleShip" instance=ExtResource("7_yreoo")]
-
-[node name="PlayerControl" parent="TriangleShip" instance=ExtResource("4_t21dg")]
-
-[node name="EngineSimple" parent="TriangleShip" instance=ExtResource("8_yreoo")]
+[node name="Continue Text" type="Label" parent="UI/Startup Text"]
+layout_mode = 0
+offset_left = 96.0
+offset_top = 48.0
+offset_right = 248.0
+offset_bottom = 96.0
+text = "Press 1 for classic controls.
+Press 2 for modern controls."
+label_settings = SubResource("LabelSettings_yreoo")
+horizontal_alignment = 1

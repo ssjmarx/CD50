@@ -1,0 +1,6 @@
+[gd_scene load_steps=2 format=3 uid="uid://d3aw87m4s5yui"]
+
+[ext_resource type="Script" uid="uid://ptkix16sxm61" path="res://Scripts/Legs/friction_static.gd" id="1_6krg7"]
+
+[node name="FrictionStatic" type="Node"]
+script = ExtResource("1_6krg7")

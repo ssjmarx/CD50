@@ -57,6 +57,9 @@ deflection_bias = Vector2(1, 5)
 [node name="ball" parent="." instance=ExtResource("3_uvgxs")]
 position = Vector2(320, 304)
 
+[node name="PongAcceleration" parent="ball" index="2"]
+acceleration_factor = 1.1
+
 [node name="walls" type="StaticBody2D" parent="."]
 position = Vector2(-8, -8)
 
@@ -192,3 +195,4 @@ label_settings = SubResource("LabelSettings_62gud")
 [connection signal="body_entered" from="floor" to="." method="_on_floor_body_entered"]
 
 [editable path="paddle"]
+[editable path="ball"]

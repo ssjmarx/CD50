@@ -5,7 +5,7 @@ extends CharacterBody2D
 signal BallCollision
 
 @export var initial_velocity: Vector2 = Vector2(0, 0)
-@export var radius: float = 1.0
+@export var radius: float = 4.0
 
 var sound1 = preload("res://Assets/Audio/tone1.ogg")
 var sound2 = preload("res://Assets/Audio/twoTone1.ogg")
@@ -17,10 +17,11 @@ var sound3 = preload("res://Assets/Audio/twoTone2.ogg")
 @onready var hitbox = $hitbox
 
 func _ready() -> void:
-	physicsbox.shape = physicsbox.shape.duplicate()
-	physicsbox.shape.size = Vector2(radius, radius)
-	hitbox.get_node("CollisionShape2D").shape = physicsbox.shape
-	velocity = initial_velocity
+	var shape := RectangleShape2D.new()
+	shape.size = Vector2(radius, radius)
+	
+	$CollisionShape2D.shape = shape
+	$hitbox/CollisionShape2D.shape = shape
 
 func _draw() -> void:
 	draw_rect(Rect2(-radius / 2.0, -radius / 2.0, radius, radius), Color.WHITE)

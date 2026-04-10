@@ -1,6 +1,7 @@
-[gd_scene load_steps=2 format=3 uid="uid://bcktpeqc0t10f"]
+[gd_scene load_steps=3 format=3 uid="uid://bcktpeqc0t10f"]
 
 [ext_resource type="Script" uid="uid://nx6wkwvymri1" path="res://Scripts/Bodies/triangle_ship.gd" id="1_wwr64"]
+[ext_resource type="PackedScene" uid="uid://bj81pr736k256" path="res://Scenes/Components/health.tscn" id="2_eim4k"]
 
 [node name="TriangleShip" type="CharacterBody2D"]
 script = ExtResource("1_wwr64")
@@ -9,3 +10,5 @@ script = ExtResource("1_wwr64")
 rotation = 1.5707964
 build_mode = 1
 polygon = PackedVector2Array(0, -12, -4, 4, 4, 4)
+
+[node name="health" parent="." instance=ExtResource("2_eim4k")]

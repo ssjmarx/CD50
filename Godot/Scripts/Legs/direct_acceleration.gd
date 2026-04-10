@@ -2,9 +2,8 @@
 
 extends Node
 
-@export var speed: int = 600
-@export var mouse_enabled: bool = true
-@export var use_physics: bool = false
+@export var mouse_enabled: bool = false
+@export var acceleration: int = 200
 
 var input: Vector2
 var target: Vector2
@@ -12,17 +11,12 @@ var using_mouse: bool = false
 
 @onready var parent = get_parent()
 
-func _physics_process(delta: float) -> void:
+func _physics_process(delta):
 	if not using_mouse:
-		if use_physics:
-			parent.move_parent_physics(input * speed * delta)
-		else:
-			parent.move_parent(input * speed * delta)
+		parent.velocity += input * acceleration * delta
 	else:
-		if use_physics:
-			parent.move_parent_physics_toward(target, speed * delta)
-		else:
-			parent.move_parent_toward(target, speed * delta)
+		var direction: Vector2 = (target - parent.position).normalized()
+		parent.velocity += direction * acceleration * delta
 
 func _ready() -> void:
 	parent.move.connect(_on_move)

@@ -9,7 +9,6 @@ var points = [
 	Vector2(10, 0),
 ]
 
-
 func _draw() -> void:
 	draw_polyline(points, Color.WHITE, 2.0)
 
