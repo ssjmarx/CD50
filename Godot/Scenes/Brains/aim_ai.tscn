@@ -1,0 +1,6 @@
+[gd_scene load_steps=2 format=3 uid="uid://b2utyb8vjdhru"]
+
+[ext_resource type="Script" uid="uid://dj4re84iwk7ya" path="res://Scripts/Brains/aim_ai.gd" id="1_yu2qr"]
+
+[node name="AimAi" type="Node"]
+script = ExtResource("1_yu2qr")

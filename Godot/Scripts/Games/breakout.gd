@@ -9,14 +9,14 @@ var brick_count = 0
 var multiplier = 1
 var points = 0
 
-@onready var player = $paddle
-@onready var ball = $ball
-@onready var lives_display = $UI/lives/livesnumber
+@onready var player = $Paddle
+@onready var ball = $Ball
+@onready var lives_display = $UI/Lives/LivesNumber
 @onready var p1_win_text = $UI/"Win Text"
 @onready var p1_lose_text = $UI/"Lose Text"
 @onready var continue_text = $UI/"Continue Text"
-@onready var points_number = $UI/points/pointsnumber
-@onready var multiplier_number = $UI/multiplier/multipliernumber
+@onready var points_number = $UI/Points/PointsNumber
+@onready var multiplier_number = $UI/Multiplier/MultiplierNumber
 @onready var death_sound = $AudioStreamPlayer2D
 
 func _ready() -> void:
@@ -63,7 +63,7 @@ func spawn_bricks() -> void:
 			
 			brick.add_to_group("bricks")
 			
-			brick.get_node("health").max_health = max(5 - row, 1)
+			brick.get_node("Health").max_health = max(5 - row, 1)
 			
 			add_child(brick)
 			brick_count += 1
@@ -99,7 +99,7 @@ func _on_ball_ball_collision(collider: Node) -> void:
 		multiplier_number.text = str(multiplier) + "x"
 		
 	if collider.is_in_group("bricks"):
-		var hp = collider.get_node("health")
+		var hp = collider.get_node("Health")
 		hp.reduce_health(1)
 		if hp.current_health <= 0:
 			brick_count -= 1

@@ -5,7 +5,7 @@
 [ext_resource type="FontFile" uid="uid://imm2iompf7sv" path="res://Assets/Fonts/Kenney Pixel.ttf" id="2_f3hv5"]
 [ext_resource type="PackedScene" uid="uid://bcktpeqc0t10f" path="res://Scenes/Bodies/triangle_ship.tscn" id="4_hcst1"]
 [ext_resource type="PackedScene" uid="uid://6tweepbhleep" path="res://Scenes/Brains/player_control.tscn" id="4_t21dg"]
-[ext_resource type="PackedScene" uid="uid://cqh5t1y5b71wr" path="res://Scenes/Components/screenwrap.tscn" id="5_5dhpa"]
+[ext_resource type="PackedScene" uid="uid://cqh5t1y5b71wr" path="res://Scenes/Components/screen_wrap.tscn" id="5_5dhpa"]
 [ext_resource type="PackedScene" uid="uid://bapmn3uxv7pqb" path="res://Scenes/Arms/gun_simple.tscn" id="6_5dhpa"]
 [ext_resource type="PackedScene" uid="uid://chmnjqkckrar5" path="res://Scenes/Bodies/bullet_wrapping.tscn" id="7_yreoo"]
 
@@ -73,7 +73,7 @@ y_max = 380.0
 
 [node name="PlayerControl" parent="Player" instance=ExtResource("4_t21dg")]
 
-[node name="Screenwrap" parent="Player" instance=ExtResource("5_5dhpa")]
+[node name="ScreenWrap" parent="Player" instance=ExtResource("5_5dhpa")]
 
 [node name="GunSimple" parent="Player" instance=ExtResource("6_5dhpa")]
 ammo = ExtResource("7_yreoo")
@@ -84,7 +84,7 @@ anchors_preset = 0
 offset_right = 40.0
 offset_bottom = 40.0
 
-[node name="lives" type="Label" parent="UI"]
+[node name="Lives" type="Label" parent="UI"]
 layout_mode = 0
 offset_left = 496.0
 offset_top = 320.0
@@ -93,7 +93,7 @@ offset_bottom = 344.0
 text = "LIVES: "
 label_settings = SubResource("LabelSettings_hu0ji")
 
-[node name="livesnumber" type="Label" parent="UI/lives"]
+[node name="LivesNumber" type="Label" parent="UI/Lives"]
 layout_mode = 0
 offset_left = 64.0
 offset_right = 104.0
@@ -133,7 +133,7 @@ Press ESCAPE to quit"
 label_settings = SubResource("LabelSettings_yreoo")
 horizontal_alignment = 1
 
-[node name="points" type="Label" parent="UI"]
+[node name="Points" type="Label" parent="UI"]
 layout_mode = 0
 offset_left = 224.0
 offset_top = 320.0
@@ -142,7 +142,7 @@ offset_bottom = 344.0
 text = "POINTS:"
 label_settings = SubResource("LabelSettings_bg017")
 
-[node name="pointsnumber" type="Label" parent="UI/points"]
+[node name="PointsNumber" type="Label" parent="UI/Points"]
 layout_mode = 0
 offset_left = 76.0
 offset_right = 576.0
@@ -150,7 +150,7 @@ offset_bottom = 24.0
 text = "0"
 label_settings = SubResource("LabelSettings_2e55n")
 
-[node name="multiplier" type="Label" parent="UI"]
+[node name="Multiplier" type="Label" parent="UI"]
 layout_mode = 0
 offset_left = 64.0
 offset_top = 320.0
@@ -159,7 +159,7 @@ offset_bottom = 344.0
 text = "MULTIPLIER:"
 label_settings = SubResource("LabelSettings_bg017")
 
-[node name="multipliernumber" type="Label" parent="UI/multiplier"]
+[node name="MultiplierNumber" type="Label" parent="UI/Multiplier"]
 layout_mode = 0
 offset_left = 120.0
 offset_right = 160.0

@@ -4,7 +4,7 @@
 [ext_resource type="AudioStream" uid="uid://dveho4hncd47a" path="res://Assets/Audio/tone1.ogg" id="2_184hw"]
 [ext_resource type="PackedScene" uid="uid://dvb6v6cqiiuag" path="res://Scenes/Components/pong_acceleration.tscn" id="3_o3brn"]
 
-[node name="ball" type="CharacterBody2D"]
+[node name="Ball" type="CharacterBody2D"]
 script = ExtResource("1_2wnlm")
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="."]
@@ -15,8 +15,8 @@ max_polyphony = 3
 
 [node name="PongAcceleration" parent="." instance=ExtResource("3_o3brn")]
 
-[node name="hitbox" type="Area2D" parent="."]
+[node name="HitBox" type="Area2D" parent="."]
 
-[node name="CollisionShape2D" type="CollisionShape2D" parent="hitbox"]
+[node name="CollisionShape2D" type="CollisionShape2D" parent="HitBox"]
 
 [connection signal="speed_changed" from="PongAcceleration" to="." method="_on_pong_acceleration_speed_changed"]

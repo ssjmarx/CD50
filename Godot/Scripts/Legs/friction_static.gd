@@ -1,6 +1,6 @@
 extends Node2D
 
-@export var friction: int = 600
+@export var friction: int = 300
 
 @onready var parent = get_parent()
 

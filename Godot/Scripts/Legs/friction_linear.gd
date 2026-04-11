@@ -1,7 +1,7 @@
 extends Node
 
-@export var top_speed: int = 600
-@export var max_friction: int = 600
+@export var top_speed: int = 300
+@export var max_friction: int = 300
 
 @onready var parent = get_parent()
 

@@ -6,7 +6,7 @@ extends StaticBody2D
 var health_color = Color.WHITE
 
 func _draw() -> void:
-	var hp = $health.current_health
+	var hp = $Health.current_health
 	match hp:
 		1: health_color = Color.GREEN
 		2: health_color = Color.YELLOW

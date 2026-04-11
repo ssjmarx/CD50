@@ -2,7 +2,7 @@
 
 extends Node
 
-@export var turning_speed: int = 240
+@export var turning_speed: int = 100
 
 var turning_left: bool = false
 var turning_right: bool = false

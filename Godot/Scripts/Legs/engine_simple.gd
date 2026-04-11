@@ -2,7 +2,7 @@
 
 extends Node
 
-@export var acceleration: int = 225
+@export var acceleration: int = 170
 @export var top_speed: int = 300
 @export var button_only: bool = true
 

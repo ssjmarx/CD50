@@ -5,11 +5,11 @@ var p1_score: int = 0
 var p2_score: int = 0
 var game_over: bool = false
 
-@onready var ball = $ball
+@onready var ball = $Ball
 @onready var p1_scoreboard = $UI/"P1 Score"
 @onready var p2_scoreboard = $UI/"P2 Score"
 @onready var goal_sound = $AudioStreamPlayer2D
-@onready var opponent_ai = $opponent/InterceptorAi
+@onready var opponent_ai = $Opponent/InterceptorAi
 @onready var p1_win_text = $UI/"Win Text"
 @onready var p1_lose_text = $UI/"Lose Text"
 @onready var continue_text = $UI/"Continue Text"
@@ -47,7 +47,7 @@ func serve_ball() -> void:
 
 func _on_p_1_goal_body_entered(_body: Node2D) -> void:
 	goal_sound.play()
-	opponent_ai.turning_speed = minf(opponent_ai.turning_speed + 10.0, 100.0)
+	opponent_ai.turning_speed = opponent_ai.turning_speed + 30.0
 	p1_score += 1
 	p1_scoreboard.text = str(p1_score)
 	if p1_score >= 11:

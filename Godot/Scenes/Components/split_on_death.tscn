@@ -1,0 +1,6 @@
+[gd_scene load_steps=2 format=3 uid="uid://dcm8q38gaufrw"]
+
+[ext_resource type="Script" uid="uid://dmer160818vgl" path="res://Scripts/Components/split_on_death.gd" id="1_yokry"]
+
+[node name="SplitOnDeath" type="Node"]
+script = ExtResource("1_yokry")

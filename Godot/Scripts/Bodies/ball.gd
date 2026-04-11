@@ -1,6 +1,6 @@
 # Pong-style ball.  Takes the form of a square.
 
-extends CharacterBody2D
+extends "res://Scripts/Core/UniversalBody.gd"
 
 signal BallCollision
 
@@ -14,20 +14,20 @@ var sound3 = preload("res://Assets/Audio/twoTone2.ogg")
 @onready var sound = $AudioStreamPlayer2D
 @onready var accelerator = $PongAcceleration
 @onready var physicsbox = $CollisionShape2D
-@onready var hitbox = $hitbox
+@onready var hitbox = $HitBox
 
 func _ready() -> void:
 	var shape := RectangleShape2D.new()
 	shape.size = Vector2(radius, radius)
 	
 	$CollisionShape2D.shape = shape
-	$hitbox/CollisionShape2D.shape = shape
+	$HitBox/CollisionShape2D.shape = shape
 
 func _draw() -> void:
 	draw_rect(Rect2(-radius / 2.0, -radius / 2.0, radius, radius), Color.WHITE)
 
 func _physics_process(delta: float) -> void:
-	var collision = move_and_collide(velocity * delta)
+	var collision = move_parent_physics(velocity * delta)
 	
 	if collision:
 		velocity = velocity.bounce(collision.get_normal())

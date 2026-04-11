@@ -1,23 +1,20 @@
-[gd_scene load_steps=5 format=3 uid="uid://b4mr1t8pdtmf3"]
+[gd_scene load_steps=4 format=3 uid="uid://b4mr1t8pdtmf3"]
 
 [ext_resource type="Script" uid="uid://boygftnccyhi2" path="res://Scripts/Bodies/paddle.gd" id="1_m843l"]
 [ext_resource type="PackedScene" uid="uid://csg0e2wxlx4qd" path="res://Scenes/Components/angled_deflector.tscn" id="2_da2tq"]
-[ext_resource type="PackedScene" uid="uid://eketockdsssi" path="res://Scenes/Legs/direct_movement.tscn" id="3_yhfl1"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_da2tq"]
 size = Vector2(8, 8)
 
-[node name="paddle" type="CharacterBody2D"]
+[node name="Paddle" type="CharacterBody2D"]
 script = ExtResource("1_m843l")
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="."]
 shape = SubResource("RectangleShape2D_da2tq")
 
-[node name="hurtbox" type="Area2D" parent="."]
+[node name="HurtBox" type="Area2D" parent="."]
 
-[node name="CollisionShape2D" type="CollisionShape2D" parent="hurtbox"]
+[node name="CollisionShape2D" type="CollisionShape2D" parent="HurtBox"]
 shape = SubResource("RectangleShape2D_da2tq")
 
 [node name="AngledDeflector" parent="." instance=ExtResource("2_da2tq")]
-
-[node name="DirectMovement" parent="." instance=ExtResource("3_yhfl1")]

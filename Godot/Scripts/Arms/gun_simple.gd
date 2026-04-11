@@ -8,13 +8,31 @@ signal target_hit(target: Node2D)
 @export var max_bullets: int = 4
 @export var muzzle_offset: int = 20
 @export var initial_velocity: int = 800
+@export var joy_input: bool = false
+@export var mouse_input: bool = false
 
 var active_bullets: Array[CharacterBody2D]
+var aim_angle: float = 0.0
+var has_aim_input: bool = false
 
 @onready var parent = get_parent()
+@onready var sound = $AudioStreamPlayer2D
 
 func _ready() -> void:
 	parent.shoot.connect(_on_shoot)
+	parent.aim.connect(_on_aim)
+	parent.aim_at.connect(_on_aim_at)
+
+func _on_aim(direction: Vector2) -> void:
+	if joy_input:
+		if direction != Vector2.ZERO:
+			aim_angle = direction.angle()
+			has_aim_input = true
+
+func _on_aim_at(target_pos: Vector2) -> void:
+	if mouse_input:
+		aim_angle = (target_pos - parent.global_position).angle()
+		has_aim_input = true
 
 func _on_shoot() -> void:
 	active_bullets = active_bullets.filter(is_instance_valid)
@@ -22,14 +40,17 @@ func _on_shoot() -> void:
 	if active_bullets.size() >= max_bullets:
 		return
 	
+	var firing_angle = aim_angle if has_aim_input else parent.rotation	
 	var bullet: CharacterBody2D = ammo.instantiate()
+	
+	bullet.velocity = Vector2.from_angle(firing_angle) * initial_velocity
+	bullet.global_position = parent.global_position + Vector2.from_angle(firing_angle) * muzzle_offset
 	
 	parent.get_parent().add_child(bullet)
 	bullet.BulletCollision.connect(_on_bullet_hit)
 	active_bullets.push_back(bullet)
 	
-	bullet.velocity = Vector2.from_angle(parent.rotation) * initial_velocity
-	bullet.global_position = parent.global_position + Vector2.from_angle(parent.rotation) * muzzle_offset
+	sound.play()
 
 func _on_bullet_hit(target: Node2D) -> void:
 	target_hit.emit(target)

@@ -1,11 +1,12 @@
-[gd_scene load_steps=16 format=3 uid="uid://c4ttsm1qowkgo"]
+[gd_scene load_steps=17 format=3 uid="uid://c4ttsm1qowkgo"]
 
 [ext_resource type="Script" uid="uid://cvjed6bfjokfh" path="res://Scripts/Games/breakout.gd" id="1_chg5i"]
 [ext_resource type="PackedScene" uid="uid://b4mr1t8pdtmf3" path="res://Scenes/Bodies/paddle.tscn" id="2_7epd8"]
-[ext_resource type="PackedScene" uid="uid://6tweepbhleep" path="res://Scenes/Brains/player_control.tscn" id="3_7epd8"]
 [ext_resource type="PackedScene" uid="uid://mw70bjrifcpb" path="res://Scenes/Bodies/ball.tscn" id="3_uvgxs"]
+[ext_resource type="PackedScene" uid="uid://eketockdsssi" path="res://Scenes/Legs/direct_movement.tscn" id="4_2njjq"]
 [ext_resource type="Script" uid="uid://bghaddibpt6f1" path="res://addons/crt/crt.gd" id="4_fkkyb"]
 [ext_resource type="FontFile" uid="uid://imm2iompf7sv" path="res://Assets/Fonts/Kenney Pixel.ttf" id="5_2njjq"]
+[ext_resource type="PackedScene" uid="uid://cq0foubgjurmr" path="res://Scenes/Brains/interceptor_ai.tscn" id="5_t5v74"]
 [ext_resource type="AudioStream" uid="uid://b3en0cgneptgr" path="res://Assets/Audio/lowDown.ogg" id="6_uvgxs"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_per38"]
@@ -43,41 +44,46 @@ font = ExtResource("5_2njjq")
 [node name="Breakout" type="Node2D"]
 script = ExtResource("1_chg5i")
 
-[node name="paddle" parent="." groups=["paddle"] instance=ExtResource("2_7epd8")]
+[node name="Paddle" parent="." groups=["paddle"] instance=ExtResource("2_7epd8")]
 position = Vector2(304, 320)
 width = 32
 height = 4
 lock_y = true
 
-[node name="AngledDeflector" parent="paddle" index="2"]
+[node name="AngledDeflector" parent="Paddle" index="2"]
 deflection_bias = Vector2(1, 5)
 
-[node name="PlayerControl" parent="paddle" instance=ExtResource("3_7epd8")]
+[node name="DirectMovement" parent="Paddle" instance=ExtResource("4_2njjq")]
 
-[node name="ball" parent="." instance=ExtResource("3_uvgxs")]
+[node name="InterceptorAi" parent="Paddle" instance=ExtResource("5_t5v74")]
+target_node = NodePath("../../Ball")
+turning_speed = 360
+aim_inaccuracy = 60
+
+[node name="Ball" parent="." instance=ExtResource("3_uvgxs")]
 position = Vector2(320, 304)
 
-[node name="PongAcceleration" parent="ball" index="2"]
+[node name="PongAcceleration" parent="Ball" index="2"]
 acceleration_factor = 1.1
 
-[node name="walls" type="StaticBody2D" parent="."]
+[node name="Walls" type="StaticBody2D" parent="."]
 position = Vector2(-8, -8)
 
-[node name="CollisionShape2D" type="CollisionShape2D" parent="walls"]
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Walls"]
 position = Vector2(328, 4)
 shape = SubResource("RectangleShape2D_per38")
 
-[node name="CollisionShape2D2" type="CollisionShape2D" parent="walls"]
+[node name="CollisionShape2D2" type="CollisionShape2D" parent="Walls"]
 position = Vector2(4, 192)
 shape = SubResource("RectangleShape2D_n6jm7")
 
-[node name="CollisionShape2D3" type="CollisionShape2D" parent="walls"]
+[node name="CollisionShape2D3" type="CollisionShape2D" parent="Walls"]
 position = Vector2(652, 192)
 shape = SubResource("RectangleShape2D_n6jm7")
 
-[node name="floor" type="Area2D" parent="."]
+[node name="Floor" type="Area2D" parent="."]
 
-[node name="CollisionShape2D" type="CollisionShape2D" parent="floor"]
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Floor"]
 position = Vector2(320, 364)
 shape = SubResource("RectangleShape2D_7ju07")
 
@@ -113,7 +119,7 @@ offset_top = 136.0
 offset_right = 286.0
 offset_bottom = 176.0
 
-[node name="lives" type="Label" parent="UI"]
+[node name="Lives" type="Label" parent="UI"]
 layout_mode = 0
 offset_left = 250.0
 offset_top = 184.0
@@ -122,7 +128,7 @@ offset_bottom = 208.0
 text = "LIVES: "
 label_settings = SubResource("LabelSettings_7ju07")
 
-[node name="livesnumber" type="Label" parent="UI/lives"]
+[node name="LivesNumber" type="Label" parent="UI/Lives"]
 layout_mode = 0
 offset_left = 64.0
 offset_right = 104.0
@@ -157,7 +163,7 @@ Press ESCAPE to quit"
 label_settings = SubResource("LabelSettings_i3wvo")
 horizontal_alignment = 1
 
-[node name="points" type="Label" parent="UI"]
+[node name="Points" type="Label" parent="UI"]
 layout_mode = 0
 offset_left = -22.0
 offset_top = 184.0
@@ -166,7 +172,7 @@ offset_bottom = 208.0
 text = "POINTS:"
 label_settings = SubResource("LabelSettings_7ju07")
 
-[node name="pointsnumber" type="Label" parent="UI/points"]
+[node name="PointsNumber" type="Label" parent="UI/Points"]
 layout_mode = 0
 offset_left = 76.0
 offset_right = 576.0
@@ -174,7 +180,7 @@ offset_bottom = 24.0
 text = "0"
 label_settings = SubResource("LabelSettings_62gud")
 
-[node name="multiplier" type="Label" parent="UI"]
+[node name="Multiplier" type="Label" parent="UI"]
 layout_mode = 0
 offset_left = -182.0
 offset_top = 184.0
@@ -183,7 +189,7 @@ offset_bottom = 208.0
 text = "MULTIPLIER:"
 label_settings = SubResource("LabelSettings_7ju07")
 
-[node name="multipliernumber" type="Label" parent="UI/multiplier"]
+[node name="MultiplierNumber" type="Label" parent="UI/Multiplier"]
 layout_mode = 0
 offset_left = 120.0
 offset_right = 160.0
@@ -191,8 +197,8 @@ offset_bottom = 24.0
 text = "1x"
 label_settings = SubResource("LabelSettings_62gud")
 
-[connection signal="BallCollision" from="ball" to="." method="_on_ball_ball_collision"]
-[connection signal="body_entered" from="floor" to="." method="_on_floor_body_entered"]
+[connection signal="BallCollision" from="Ball" to="." method="_on_ball_ball_collision"]
+[connection signal="body_entered" from="Floor" to="." method="_on_floor_body_entered"]
 
-[editable path="paddle"]
-[editable path="ball"]
+[editable path="Paddle"]
+[editable path="Ball"]

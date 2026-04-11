@@ -20,3 +20,8 @@ func _physics_process(_delta: float) -> void:
 	direction.y = Input.get_axis("button_up", "button_down")
 	direction.x = Input.get_axis("button_left", "button_right")
 	parent.left_joystick.emit(direction)
+	
+	var aim_dir: Vector2 = Vector2.ZERO
+	aim_dir.y = Input.get_axis("aim_up", "aim_down")
+	aim_dir.x = Input.get_axis("aim_left", "aim_right")
+	parent.right_joystick.emit(aim_dir)

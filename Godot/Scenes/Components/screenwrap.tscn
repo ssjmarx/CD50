@@ -1,6 +1,0 @@
-[gd_scene load_steps=2 format=3 uid="uid://cqh5t1y5b71wr"]
-
-[ext_resource type="Script" uid="uid://u7q8oywgumwl" path="res://Scripts/Components/screenwrap.gd" id="1_umorc"]
-
-[node name="Screenwrap" type="Node"]
-script = ExtResource("1_umorc")

@@ -1,8 +1,8 @@
 extends Node
 
 @export var target_node: NodePath
-@export var turning_speed: int = 45
-@export var aim_inaccuracy: int = 0
+@export var turning_speed: int = 90
+@export var aim_inaccuracy: int = 45
 
 var current_aim_angle: float = 0.0
 
@@ -23,4 +23,4 @@ func _physics_process(delta: float) -> void:
 	
 	current_aim_angle = rotate_toward(current_aim_angle, target_angle + noise, deg_to_rad(turning_speed) * delta)
 
-	parent.left_joystick.emit(Vector2.from_angle(current_aim_angle))
+	parent.right_joystick.emit(Vector2.from_angle(current_aim_angle))

@@ -3,6 +3,7 @@
 extends CharacterBody2D
 
 signal left_joystick(direction: Vector2)
+signal right_joystick(direction: Vector2)
 signal mouse_position(position: Vector2)
 signal button_pressed(button: InputEvent)
 signal button_released(button: InputEvent)
@@ -14,6 +15,8 @@ signal shoot(button: InputEvent)
 signal end_shoot(button: InputEvent)
 signal thrust(button: InputEvent)
 signal end_thrust(button: InputEvent)
+signal aim(direction: Vector2)
+signal aim_at(position: Vector2)
 
 @export var width: int = 4
 @export var height: int = 16
@@ -29,6 +32,7 @@ func _ready():
 	process_physics_priority = 100
 	
 	left_joystick.connect(_on_left_joystick)
+	right_joystick.connect(_on_right_joystick)
 	mouse_position.connect(_on_mouse_position)
 	button_pressed.connect(_on_button_pressed)
 	button_released.connect(_on_button_released)
@@ -41,10 +45,14 @@ func _on_left_joystick(direction: Vector2) -> void:
 	if lock_y: direction.y = 0
 	move.emit(direction)
 
+func _on_right_joystick(direction: Vector2) -> void:
+	aim.emit(direction)
+
 func _on_mouse_position(mouse_pos: Vector2) -> void:
 	if lock_x: mouse_pos.x = self.position.x
 	if lock_y: mouse_pos.y = self.position.y
 	move_to.emit(mouse_pos)
+	aim_at.emit(mouse_pos)
 
 func _on_button_pressed(button: InputEvent) -> void:
 	action.emit()

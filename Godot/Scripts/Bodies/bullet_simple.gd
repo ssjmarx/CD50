@@ -1,6 +1,6 @@
 # most basic type of bullet.  flies straight, cleans itself up, plays a sound when it hits something, needs to be told how fast to fly.
 
-extends CharacterBody2D
+extends "res://Scripts/Core/UniversalBody.gd"
 
 signal BulletCollision
 
@@ -9,7 +9,7 @@ signal BulletCollision
 var is_alive: bool = true
 
 @onready var physicsbox = $CollisionShape2D
-@onready var hitbox = $hitbox/CollisionShape2D
+@onready var hitbox = $HitBox/CollisionShape2D
 @onready var sound = $AudioStreamPlayer2D
 
 func _ready() -> void:
@@ -17,9 +17,9 @@ func _ready() -> void:
 	shape.size = Vector2(radius, radius)
 	
 	$CollisionShape2D.shape = shape
-	$hitbox/CollisionShape2D.shape = shape
+	$HitBox/CollisionShape2D.shape = shape
 	
-	$hitbox.body_entered.connect(_on_hitbox_entered)
+	$HitBox.body_entered.connect(_on_hitbox_entered)
 	$VisibleOnScreenNotifier2D.screen_exited.connect(_on_screen_exited)
 
 func _draw() -> void:
@@ -47,7 +47,7 @@ func bullet_hit(target) -> void:
 	
 	hide()
 	$CollisionShape2D.set_deferred("disabled", true)
-	$hitbox/CollisionShape2D.set_deferred("disabled", true)
+	$HitBox/CollisionShape2D.set_deferred("disabled", true)
 	
 	sound.play()
 	await sound.finished

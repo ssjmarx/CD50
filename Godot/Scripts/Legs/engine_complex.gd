@@ -2,9 +2,9 @@
 
 extends Node
 
-@export var max_acceleration: int = 600
-@export var jerk: int = 600
-@export var button_only: bool = false
+@export var max_acceleration: int = 200
+@export var jerk: int = 300
+@export var button_only: bool = true
 
 var current_acceleration: float = 0.0
 var thrusting: bool = false
