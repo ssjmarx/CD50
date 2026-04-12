@@ -1,0 +1,216 @@
+[gd_scene load_steps=16 format=3 uid="uid://bx72rpqpg34hc"]
+
+[ext_resource type="Script" uid="uid://cjsdwp3a52rgl" path="res://Scripts/Games/pongsteroids.gd" id="1_script"]
+[ext_resource type="PackedScene" uid="uid://mw70bjrifcpb" path="res://Scenes/Bodies/ball.tscn" id="2_ball"]
+[ext_resource type="PackedScene" uid="uid://b4mr1t8pdtmf3" path="res://Scenes/Bodies/paddle.tscn" id="3_paddle"]
+[ext_resource type="PackedScene" uid="uid://cq0foubgjurmr" path="res://Scenes/Brains/interceptor_ai.tscn" id="4_ai"]
+[ext_resource type="FontFile" uid="uid://imm2iompf7sv" path="res://Assets/Fonts/Kenney Pixel.ttf" id="5_font"]
+[ext_resource type="PackedScene" uid="uid://eketockdsssi" path="res://Scenes/Legs/direct_movement.tscn" id="6_move"]
+[ext_resource type="AudioStream" uid="uid://ctmcfvxwus0wo" path="res://Assets/Audio/threeTone1.ogg" id="7_audio"]
+[ext_resource type="Script" uid="uid://bghaddibpt6f1" path="res://addons/crt/crt.gd" id="8_crt"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_wall"]
+size = Vector2(640, 8)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_goal"]
+size = Vector2(8, 376)
+
+[sub_resource type="Environment" id="Environment_bloom"]
+background_mode = 3
+glow_enabled = true
+glow_intensity = 3.0
+glow_bloom = 0.33
+
+[sub_resource type="LabelSettings" id="LabelSettings_big"]
+font = ExtResource("5_font")
+font_size = 64
+shadow_size = 5
+shadow_color = Color(0, 0, 0, 1)
+
+[sub_resource type="LabelSettings" id="LabelSettings_small"]
+font = ExtResource("5_font")
+
+[sub_resource type="LabelSettings" id="LabelSettings_score"]
+font = ExtResource("5_font")
+font_size = 64
+
+[sub_resource type="LabelSettings" id="LabelSettings_attract"]
+font = ExtResource("5_font")
+font_size = 32
+
+[node name="Pongsteroids" type="Node2D"]
+script = ExtResource("1_script")
+
+[node name="Ball" parent="." instance=ExtResource("2_ball")]
+position = Vector2(320, 184)
+collision_layer = 2
+collision_mask = 21
+
+[node name="Player" parent="." groups=["paddles"] instance=ExtResource("3_paddle")]
+position = Vector2(64, 184)
+collision_layer = 4
+collision_mask = 2
+height = 32
+lock_x = true
+
+[node name="AngledDeflector" parent="Player" index="2"]
+deflection_bias = Vector2(5, 1)
+
+[node name="InterceptorAi" parent="Player" instance=ExtResource("4_ai")]
+target_node = NodePath("../../Ball")
+
+[node name="DirectMovement" parent="Player" instance=ExtResource("6_move")]
+
+[node name="Opponent" parent="." groups=["paddles"] instance=ExtResource("3_paddle")]
+position = Vector2(576, 184)
+collision_layer = 4
+collision_mask = 2
+height = 32
+lock_x = true
+
+[node name="AngledDeflector" parent="Opponent" index="2"]
+deflection_bias = Vector2(5, 1)
+
+[node name="InterceptorAi" parent="Opponent" instance=ExtResource("4_ai")]
+target_node = NodePath("../../Ball")
+
+[node name="DirectMovement" parent="Opponent" instance=ExtResource("6_move")]
+
+[node name="StaticBody2D" type="StaticBody2D" parent="."]
+collision_mask = 2
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="StaticBody2D"]
+position = Vector2(320, -4)
+shape = SubResource("RectangleShape2D_wall")
+
+[node name="StaticBody2D2" type="StaticBody2D" parent="."]
+position = Vector2(0, 368)
+collision_mask = 2
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="StaticBody2D2"]
+position = Vector2(320, -4)
+shape = SubResource("RectangleShape2D_wall")
+
+[node name="P2 Goal" type="Area2D" parent="."]
+collision_layer = 8
+collision_mask = 2
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="P2 Goal"]
+position = Vector2(-4, 180)
+shape = SubResource("RectangleShape2D_goal")
+
+[node name="P1 Goal" type="Area2D" parent="."]
+position = Vector2(648, 0)
+collision_layer = 8
+collision_mask = 2
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="P1 Goal"]
+position = Vector2(-4, 180)
+shape = SubResource("RectangleShape2D_goal")
+
+[node name="AudioStreamPlayer2D" type="AudioStreamPlayer2D" parent="."]
+position = Vector2(320, 192)
+stream = ExtResource("7_audio")
+max_polyphony = 3
+
+[node name="CanvasLayer" type="CanvasLayer" parent="."]
+script = ExtResource("8_crt")
+resolution = Vector2(640, 360)
+scan_line_amount = 0.5
+scan_line_strength = -10.0
+warp_amount = 0.05
+noise_amount = 0.015
+interference_amount = 0.1
+grille_amount = 0.05
+vignette_amount = 0.3
+vignette_intensity = 0.2
+aberation_amount = 0.25
+roll_line_amount = 0.0
+roll_speed = 0.5
+pixel_strength = -3.0
+
+[node name="WorldEnvironment" type="WorldEnvironment" parent="."]
+environment = SubResource("Environment_bloom")
+
+[node name="UI" type="Control" parent="."]
+layout_mode = 3
+anchors_preset = 0
+offset_right = 40.0
+offset_bottom = 40.0
+
+[node name="Win Text" type="Label" parent="UI"]
+visible = false
+layout_mode = 0
+offset_left = 246.0
+offset_top = 136.0
+offset_right = 398.0
+offset_bottom = 184.0
+text = "YOU WIN"
+label_settings = SubResource("LabelSettings_big")
+
+[node name="Lose Text" type="Label" parent="UI"]
+visible = false
+layout_mode = 0
+offset_left = 246.0
+offset_top = 136.0
+offset_right = 418.0
+offset_bottom = 184.0
+text = "YOU LOSE"
+label_settings = SubResource("LabelSettings_big")
+
+[node name="Continue Text" type="Label" parent="UI"]
+visible = false
+layout_mode = 0
+offset_left = 246.0
+offset_top = 192.0
+offset_right = 398.0
+offset_bottom = 240.0
+text = "Press ENTER to play again
+Press ESCAPE to quit"
+label_settings = SubResource("LabelSettings_small")
+horizontal_alignment = 1
+
+[node name="P1 Score" type="Label" parent="UI"]
+visible = false
+layout_mode = 0
+offset_left = 132.0
+offset_top = 64.0
+offset_right = 260.0
+offset_bottom = 160.0
+text = "0"
+label_settings = SubResource("LabelSettings_score")
+horizontal_alignment = 2
+
+[node name="P2 Score" type="Label" parent="UI"]
+visible = false
+layout_mode = 0
+offset_left = 384.0
+offset_top = 64.0
+offset_right = 512.0
+offset_bottom = 160.0
+text = "0"
+label_settings = SubResource("LabelSettings_score")
+
+[node name="ColorRect" type="ColorRect" parent="UI"]
+layout_mode = 0
+offset_left = 318.0
+offset_top = 64.0
+offset_right = 322.0
+offset_bottom = 320.0
+
+[node name="Attract Text" type="Label" parent="UI"]
+layout_mode = 0
+offset_left = 152.0
+offset_top = 16.0
+offset_right = 494.0
+offset_bottom = 48.0
+text = "Press Enter to start playing."
+label_settings = SubResource("LabelSettings_attract")
+horizontal_alignment = 1
+
+[connection signal="BallCollision" from="Ball" to="." method="_on_ball_collision"]
+[connection signal="body_entered" from="P2 Goal" to="." method="_on_p_2_goal_body_entered"]
+[connection signal="body_entered" from="P1 Goal" to="." method="_on_p_1_goal_body_entered"]
+
+[editable path="Player"]
+[editable path="Opponent"]
