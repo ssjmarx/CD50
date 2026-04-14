@@ -1,9 +1,8 @@
-extends Node2D
+extends "res://Scripts/Core/universal_game_script.gd"
 
 const BRICK_SCENE = preload("res://Scenes/Bodies/brick.tscn")
 
 var using_mouse: bool = false
-var game_over = false
 var lives = 3
 var brick_count = 0
 var multiplier = 1
@@ -11,15 +10,19 @@ var points = 0
 
 @onready var player = $Paddle
 @onready var ball = $Ball
-@onready var lives_display = $UI/Lives/LivesNumber
-@onready var p1_win_text = $UI/"Win Text"
-@onready var p1_lose_text = $UI/"Lose Text"
-@onready var continue_text = $UI/"Continue Text"
-@onready var points_number = $UI/Points/PointsNumber
-@onready var multiplier_number = $UI/Multiplier/MultiplierNumber
 @onready var death_sound = $AudioStreamPlayer2D
 
 func _ready() -> void:
+	super._ready()
+	
+	setup_collision_groups({
+	"walls": ["balls"],
+	"balls": ["walls", "paddles", "bricks"],
+	"paddles": ["balls"],
+	"bricks": ["balls"],
+	"floors": ["balls"]
+	})
+	
 	spawn_bricks()
 	serve_ball()
 
@@ -35,9 +38,9 @@ func _on_floor_body_entered(body: Node2D) -> void:
 		death_sound.play()
 		if lives > 0:
 			lives -= 1
-			lives_display.text = str(lives)
+			#lives_display.text = str(lives)
 			multiplier = 1
-			multiplier_number.text = str(multiplier) + "x"
+			#multiplier_number.text = str(multiplier) + "x"
 			serve_ball()
 		else:
 			p1_lose()
@@ -80,15 +83,15 @@ func serve_ball() -> void:
 	ball.velocity = ball.velocity * 150
 
 func p1_win() -> void:
-	game_over = true
-	p1_win_text.visible = true
-	continue_text.visible = true
+	current_state = states.GAME_OVER
+	#p1_win_text.visible = true
+	#continue_text.visible = true
 	ball.velocity = Vector2.ZERO
 
 func p1_lose() -> void:
-	game_over = true
-	p1_lose_text.visible = true
-	continue_text.visible = true
+	current_state = states.GAME_OVER
+	#p1_lose_text.visible = true
+	#continue_text.visible = true
 
 func _on_ball_ball_collision(collider: Node) -> void:
 	if collider.is_in_group("paddle"):
@@ -96,7 +99,7 @@ func _on_ball_ball_collision(collider: Node) -> void:
 		var physics_angle = collider.bounce_offset(ball.get_global_position())
 		ball.custom_bounce(physics_angle)
 		multiplier = 1
-		multiplier_number.text = str(multiplier) + "x"
+		#multiplier_number.text = str(multiplier) + "x"
 		
 	if collider.is_in_group("bricks"):
 		var hp = collider.get_node("Health")
@@ -106,6 +109,6 @@ func _on_ball_ball_collision(collider: Node) -> void:
 		if brick_count <= 0:
 			p1_win()
 		points += 1 * multiplier
-		points_number.text = str(points)
+		#points_number.text = str(points)
 		multiplier += 1
-		multiplier_number.text = str(multiplier) + "x"
+		#multiplier_number.text = str(multiplier) + "x"

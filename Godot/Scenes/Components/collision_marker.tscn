@@ -1,0 +1,6 @@
+[gd_scene load_steps=2 format=3 uid="uid://b418fukpc5m41"]
+
+[ext_resource type="Script" uid="uid://uhjby1tbgbdk" path="res://Scripts/Components/collision_marker.gd" id="1_frpvc"]
+
+[node name="CollisionMarker" type="Node"]
+script = ExtResource("1_frpvc")

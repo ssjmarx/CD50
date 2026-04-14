@@ -1,6 +1,6 @@
 # Pong-style paddle.  recieves controller inputs and outputs movement requests to legs
 
-extends "res://Scripts/Core/UniversalBody.gd"
+extends "res://Scripts/Core/universal_body.gd"
 
 @onready var collision_shape: CollisionShape2D = $CollisionShape2D
 @onready var deflector = $AngledDeflector

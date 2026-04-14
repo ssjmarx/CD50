@@ -1,15 +1,9 @@
-extends Node2D
+extends "res://Scripts/Core/universal_game_script.gd"
 
 const ASTEROID_SCENE = preload("res://Scenes/Bodies/asteroid.tscn")
 const PLAYER_CONTROL_SCENE = preload("res://Scenes/Brains/player_control.tscn")
 const ANGLED_DEFLECTOR_SCENE = preload("res://Scenes/Components/angled_deflector.tscn")
 
-const ASTEROID_LAYER: int = 16
-const ASTEROID_MASK: int = 22
-
-enum State { ATTRACT, PLAYING, GAME_OVER }
-
-var state: State = State.ATTRACT
 var p1_score: int = 0
 var p2_score: int = 0
 var spawn_timer: float = 0.0
@@ -19,16 +13,21 @@ var player_ai_ref: Node = null
 
 @onready var ball = $Ball
 @onready var opponent_ai = $Opponent/InterceptorAi
-@onready var p1_scoreboard = $UI/"P1 Score"
-@onready var p2_scoreboard = $UI/"P2 Score"
 @onready var goal_sound = $AudioStreamPlayer2D
-@onready var attract_text = $UI/"Attract Text"
-@onready var p1_win_text = $UI/"Win Text"
-@onready var p1_lose_text = $UI/"Lose Text"
-@onready var continue_text = $UI/"Continue Text"
 
 func _ready() -> void:
+	super._ready()
+	
+	setup_collision_groups({
+	"walls": ["balls"],
+	"balls": ["walls", "paddles", "asteroids", "goals"],
+	"paddles": ["balls"],
+	"asteroids": ["balls", "paddles", "asteroids"],
+	"goals": ["balls"]
+	})
+	
 	player_ai_ref = $Player/InterceptorAi
+	
 	_randomize_ai(player_ai_ref)
 	_randomize_ai(opponent_ai)
 	serve_ball()
@@ -36,18 +35,18 @@ func _ready() -> void:
 
 func _physics_process(delta: float) -> void:
 	_monitor_asteroids()
-	if state != State.GAME_OVER:
+	if current_state != states.GAME_OVER:
 		spawn_timer += delta
 		if spawn_timer >= spawn_interval:
 			spawn_timer = 0.0
 			_try_spawn_asteroid()
 
 func _unhandled_input(event: InputEvent) -> void:
-	if state == State.ATTRACT:
+	if current_state == states.ATTRACT:
 		if event is InputEventKey and event.pressed and not event.echo:
 			if event.keycode == KEY_ENTER:
 				_start_game()
-	elif state == State.GAME_OVER:
+	elif current_state == states.GAME_OVER:
 		if event is InputEventKey and event.pressed and not event.echo:
 			if event.keycode == KEY_ENTER:
 				get_tree().reload_current_scene()
@@ -55,7 +54,7 @@ func _unhandled_input(event: InputEvent) -> void:
 				get_tree().quit()
 
 func _on_ball_collision(collider: Node) -> void:
-	if state == State.GAME_OVER:
+	if current_state == states.GAME_OVER:
 		return
 	if collider.is_in_group("paddles"):
 		ball.accelerate()
@@ -73,9 +72,6 @@ func _on_asteroid_died(asteroid: Node) -> void:
 
 func _monitor_asteroids() -> void:
 	for asteroid in get_tree().get_nodes_in_group("asteroids"):
-		if asteroid.collision_layer != ASTEROID_LAYER:
-			asteroid.collision_layer = ASTEROID_LAYER
-			asteroid.collision_mask = ASTEROID_MASK
 		var health = asteroid.get_node("Health")
 		if not health.zero_health.is_connected(_on_asteroid_died):
 			health.zero_health.connect(_on_asteroid_died)
@@ -96,8 +92,6 @@ func _try_spawn_asteroid() -> void:
 
 func _spawn_single_asteroid() -> void:
 	var asteroid = ASTEROID_SCENE.instantiate()
-	asteroid.collision_layer = ASTEROID_LAYER
-	asteroid.collision_mask = ASTEROID_MASK
 
 	var spawn_angle = randf() * TAU
 	asteroid.global_position = Vector2.from_angle(spawn_angle) * 400 + Vector2(320, 180)
@@ -118,7 +112,7 @@ func _randomize_ai(ai: Node) -> void:
 		ai.aim_inaccuracy = randi_range(10, 30)
 
 func _start_game() -> void:
-	state = State.PLAYING
+	current_state = states.PLAYING
 	if is_instance_valid(player_ai_ref):
 		player_ai_ref.queue_free()
 		player_ai_ref = null
@@ -128,14 +122,14 @@ func _start_game() -> void:
 	opponent_ai.turning_speed = 45
 	opponent_ai.aim_inaccuracy = 0
 	
-	p1_scoreboard.visible = true
-	p2_scoreboard.visible = true
-	attract_text.visible = false
+	#p1_scoreboard.visible = true
+	#p2_scoreboard.visible = true
+	#attract_text.visible = false
 	
 	p1_score = 0
 	p2_score = 0
-	p1_scoreboard.text = "0"
-	p2_scoreboard.text = "0"
+	#p1_scoreboard.text = "0"
+	#p2_scoreboard.text = "0"
 	serve_ball()
 
 func serve_ball() -> void:
@@ -158,14 +152,14 @@ func serve_ball() -> void:
 
 func _on_p_1_goal_body_entered(_body: Node2D) -> void:
 	goal_sound.play()
-	if state == State.ATTRACT:
+	if current_state == states.ATTRACT:
 		_randomize_ai(player_ai_ref)
 		_randomize_ai(opponent_ai)
 		serve_ball()
-	elif state == State.PLAYING:
+	elif current_state == states.PLAYING:
 		opponent_ai.turning_speed = opponent_ai.turning_speed + 30.0
 		p1_score += 1
-		p1_scoreboard.text = str(p1_score)
+		#p1_scoreboard.text = str(p1_score)
 		if p1_score >= 11:
 			p1_win()
 		else:
@@ -173,26 +167,26 @@ func _on_p_1_goal_body_entered(_body: Node2D) -> void:
 
 func _on_p_2_goal_body_entered(_body: Node2D) -> void:
 	goal_sound.play()
-	if state == State.ATTRACT:
+	if current_state == states.ATTRACT:
 		_randomize_ai(player_ai_ref)
 		_randomize_ai(opponent_ai)
 		serve_ball()
-	elif state == State.PLAYING:
+	elif current_state == states.PLAYING:
 		p2_score += 1
-		p2_scoreboard.text = str(p2_score)
+		#p2_scoreboard.text = str(p2_score)
 		if p2_score >= 11:
 			p1_lose()
 		else:
 			serve_ball()
 
 func p1_win() -> void:
-	state = State.GAME_OVER
+	current_state = states.GAME_OVER
 	ball.velocity = Vector2.ZERO
-	p1_win_text.visible = true
-	continue_text.visible = true
+	#p1_win_text.visible = true
+	#continue_text.visible = true
 
 func p1_lose() -> void:
-	state = State.GAME_OVER
+	current_state = states.GAME_OVER
 	ball.velocity = Vector2.ZERO
-	p1_lose_text.visible = true
-	continue_text.visible = true
+	#p1_lose_text.visible = true
+	#continue_text.visible = true

@@ -1,0 +1,165 @@
+[gd_scene load_steps=11 format=3 uid="uid://bq6cdrx340jp7"]
+
+[ext_resource type="FontFile" uid="uid://imm2iompf7sv" path="res://Assets/Fonts/Kenney Pixel.ttf" id="1_ep56u"]
+[ext_resource type="Script" uid="uid://bsjofydvrvq5" path="res://Scripts/Components/interface.gd" id="1_y5n4l"]
+
+[sub_resource type="LabelSettings" id="LabelSettings_big"]
+font = ExtResource("1_ep56u")
+font_size = 64
+shadow_size = 5
+shadow_color = Color(0, 0, 0, 1)
+
+[sub_resource type="LabelSettings" id="LabelSettings_small"]
+font = ExtResource("1_ep56u")
+
+[sub_resource type="LabelSettings" id="LabelSettings_score"]
+font = ExtResource("1_ep56u")
+font_size = 64
+
+[sub_resource type="LabelSettings" id="LabelSettings_attract"]
+font = ExtResource("1_ep56u")
+font_size = 32
+
+[sub_resource type="LabelSettings" id="LabelSettings_ep56u"]
+font = ExtResource("1_ep56u")
+font_size = 32
+
+[sub_resource type="LabelSettings" id="LabelSettings_y5n4l"]
+font = ExtResource("1_ep56u")
+font_size = 32
+
+[sub_resource type="LabelSettings" id="LabelSettings_a6eh0"]
+font = ExtResource("1_ep56u")
+font_size = 32
+
+[sub_resource type="LabelSettings" id="LabelSettings_b04kj"]
+font = ExtResource("1_ep56u")
+font_size = 32
+
+[node name="Interface" type="Control"]
+layout_mode = 3
+anchors_preset = 0
+offset_right = 640.0
+offset_bottom = 360.0
+mouse_filter = 2
+script = ExtResource("1_y5n4l")
+
+[node name="Win Text" type="Label" parent="."]
+visible = false
+layout_mode = 0
+offset_left = 246.0
+offset_top = 136.0
+offset_right = 398.0
+offset_bottom = 184.0
+text = "YOU WIN"
+label_settings = SubResource("LabelSettings_big")
+
+[node name="Lose Text" type="Label" parent="."]
+visible = false
+layout_mode = 0
+offset_left = 246.0
+offset_top = 136.0
+offset_right = 418.0
+offset_bottom = 184.0
+text = "YOU LOSE"
+label_settings = SubResource("LabelSettings_big")
+
+[node name="Continue Text" type="Label" parent="."]
+visible = false
+layout_mode = 0
+offset_left = 246.0
+offset_top = 192.0
+offset_right = 398.0
+offset_bottom = 240.0
+text = "Press ENTER to play again
+Press ESCAPE to quit"
+label_settings = SubResource("LabelSettings_small")
+horizontal_alignment = 1
+
+[node name="P1 Score" type="Label" parent="."]
+visible = false
+layout_mode = 0
+offset_left = 132.0
+offset_top = 64.0
+offset_right = 260.0
+offset_bottom = 160.0
+text = "0"
+label_settings = SubResource("LabelSettings_score")
+horizontal_alignment = 2
+
+[node name="P2 Score" type="Label" parent="."]
+visible = false
+layout_mode = 0
+offset_left = 384.0
+offset_top = 64.0
+offset_right = 512.0
+offset_bottom = 160.0
+text = "0"
+label_settings = SubResource("LabelSettings_score")
+
+[node name="Attract Text" type="Label" parent="."]
+layout_mode = 0
+offset_left = 152.0
+offset_top = 16.0
+offset_right = 494.0
+offset_bottom = 48.0
+text = "Press Enter to start playing."
+label_settings = SubResource("LabelSettings_attract")
+horizontal_alignment = 1
+
+[node name="Lives" type="Label" parent="."]
+visible = false
+layout_mode = 0
+offset_left = 504.0
+offset_top = 320.0
+offset_right = 566.0
+offset_bottom = 344.0
+text = "LIVES: "
+label_settings = SubResource("LabelSettings_ep56u")
+
+[node name="LivesNumber" type="Label" parent="Lives"]
+visible = false
+layout_mode = 0
+offset_left = 64.0
+offset_right = 104.0
+offset_bottom = 24.0
+text = "3"
+label_settings = SubResource("LabelSettings_y5n4l")
+
+[node name="Points" type="Label" parent="."]
+visible = false
+layout_mode = 0
+offset_left = 224.0
+offset_top = 320.0
+offset_right = 296.0
+offset_bottom = 344.0
+text = "POINTS:"
+label_settings = SubResource("LabelSettings_a6eh0")
+
+[node name="PointsNumber" type="Label" parent="Points"]
+visible = false
+layout_mode = 0
+offset_left = 76.0
+offset_right = 576.0
+offset_bottom = 24.0
+text = "0"
+label_settings = SubResource("LabelSettings_b04kj")
+
+[node name="Multiplier" type="Label" parent="."]
+visible = false
+layout_mode = 0
+offset_left = 64.0
+offset_top = 320.0
+offset_right = 180.0
+offset_bottom = 344.0
+text = "MULTIPLIER:"
+label_settings = SubResource("LabelSettings_a6eh0")
+
+[node name="MultiplierNumber" type="Label" parent="Multiplier"]
+visible = false
+layout_mode = 0
+offset_left = 120.0
+offset_right = 160.0
+offset_bottom = 24.0
+text = "1x"
+label_settings = SubResource("LabelSettings_b04kj")

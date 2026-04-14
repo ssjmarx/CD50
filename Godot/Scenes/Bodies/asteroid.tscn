@@ -8,6 +8,8 @@
 
 [node name="Asteroid" type="CharacterBody2D"]
 script = ExtResource("1_52jog")
+collision_groups = Array[String](["asteroids"])
+logical_groups = Array[String](["asteroids"])
 
 [node name="CollisionPolygon2D" type="CollisionPolygon2D" parent="."]
 

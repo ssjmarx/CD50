@@ -1,4 +1,4 @@
-extends "res://Scripts/Core/UniversalBody.gd"
+extends "res://Scripts/Core/universal_body.gd"
 
 signal TriangleShipCollision
 

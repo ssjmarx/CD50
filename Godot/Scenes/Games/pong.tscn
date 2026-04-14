@@ -1,20 +1,18 @@
-[gd_scene load_steps=16 format=3 uid="uid://6x4ilf17gq08"]
+[gd_scene load_steps=11 format=3 uid="uid://6x4ilf17gq08"]
 
 [ext_resource type="Script" uid="uid://csosy525aufqg" path="res://Scripts/Games/pong.gd" id="1_r47xt"]
 [ext_resource type="PackedScene" uid="uid://mw70bjrifcpb" path="res://Scenes/Bodies/ball.tscn" id="2_d3mj0"]
 [ext_resource type="PackedScene" uid="uid://b4mr1t8pdtmf3" path="res://Scenes/Bodies/paddle.tscn" id="3_qu73x"]
 [ext_resource type="PackedScene" uid="uid://cq0foubgjurmr" path="res://Scenes/Brains/interceptor_ai.tscn" id="4_5wgpo"]
-[ext_resource type="PackedScene" uid="uid://6tweepbhleep" path="res://Scenes/Brains/player_control.tscn" id="4_d3mj0"]
-[ext_resource type="FontFile" uid="uid://imm2iompf7sv" path="res://Assets/Fonts/Kenney Pixel.ttf" id="5_hvtep"]
 [ext_resource type="PackedScene" uid="uid://eketockdsssi" path="res://Scenes/Legs/direct_movement.tscn" id="5_qu73x"]
 [ext_resource type="AudioStream" uid="uid://ctmcfvxwus0wo" path="res://Assets/Audio/threeTone1.ogg" id="6_glgdb"]
 [ext_resource type="Script" uid="uid://bghaddibpt6f1" path="res://addons/crt/crt.gd" id="7_lngll"]
 
-[sub_resource type="RectangleShape2D" id="RectangleShape2D_f0ijk"]
-size = Vector2(640, 8)
-
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_vlhw5"]
 size = Vector2(8, 376)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_f0ijk"]
+size = Vector2(640, 8)
 
 [sub_resource type="Environment" id="Environment_pa2p7"]
 background_mode = 3
@@ -22,21 +20,16 @@ glow_enabled = true
 glow_intensity = 3.0
 glow_bloom = 0.33
 
-[sub_resource type="LabelSettings" id="LabelSettings_pa2p7"]
-font = ExtResource("5_hvtep")
-font_size = 64
-shadow_size = 5
-shadow_color = Color(0, 0, 0, 1)
-
-[sub_resource type="LabelSettings" id="LabelSettings_c8jbk"]
-font = ExtResource("5_hvtep")
-
-[sub_resource type="LabelSettings" id="LabelSettings_f0ijk"]
-font = ExtResource("5_hvtep")
-font_size = 64
-
 [node name="Pong" type="Node2D"]
 script = ExtResource("1_r47xt")
+
+[node name="P2 Goal" type="Area2D" parent="."]
+collision_layer = 8
+collision_mask = 2
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="P2 Goal"]
+position = Vector2(-4, 180)
+shape = SubResource("RectangleShape2D_vlhw5")
 
 [node name="Ball" parent="." instance=ExtResource("2_d3mj0")]
 position = Vector2(320, 184)
@@ -53,9 +46,10 @@ lock_x = true
 [node name="AngledDeflector" parent="Player" index="2"]
 deflection_bias = Vector2(5, 1)
 
-[node name="PlayerControl" parent="Player" instance=ExtResource("4_d3mj0")]
-
 [node name="DirectMovement" parent="Player" instance=ExtResource("5_qu73x")]
+
+[node name="InterceptorAi" parent="Player" instance=ExtResource("4_5wgpo")]
+target_node = NodePath("../../Ball")
 
 [node name="Opponent" parent="." groups=["paddles"] instance=ExtResource("3_qu73x")]
 position = Vector2(576, 184)
@@ -86,14 +80,6 @@ collision_mask = 2
 [node name="CollisionShape2D" type="CollisionShape2D" parent="StaticBody2D2"]
 position = Vector2(320, -4)
 shape = SubResource("RectangleShape2D_f0ijk")
-
-[node name="P2 Goal" type="Area2D" parent="."]
-collision_layer = 8
-collision_mask = 2
-
-[node name="CollisionShape2D" type="CollisionShape2D" parent="P2 Goal"]
-position = Vector2(-4, 180)
-shape = SubResource("RectangleShape2D_vlhw5")
 
 [node name="P1 Goal" type="Area2D" parent="."]
 position = Vector2(648, 0)
@@ -128,72 +114,14 @@ pixel_strength = -3.0
 [node name="WorldEnvironment" type="WorldEnvironment" parent="."]
 environment = SubResource("Environment_pa2p7")
 
-[node name="UI" type="Control" parent="."]
-layout_mode = 3
-anchors_preset = 0
-offset_right = 40.0
-offset_bottom = 40.0
-
-[node name="Win Text" type="Label" parent="UI"]
-visible = false
-layout_mode = 0
-offset_left = 246.0
-offset_top = 136.0
-offset_right = 398.0
-offset_bottom = 184.0
-text = "YOU WIN"
-label_settings = SubResource("LabelSettings_pa2p7")
-
-[node name="Lose Text" type="Label" parent="UI"]
-visible = false
-layout_mode = 0
-offset_left = 246.0
-offset_top = 136.0
-offset_right = 418.0
-offset_bottom = 184.0
-text = "YOU LOSE"
-label_settings = SubResource("LabelSettings_pa2p7")
-
-[node name="Continue Text" type="Label" parent="UI"]
-visible = false
-layout_mode = 0
-offset_left = 246.0
-offset_top = 192.0
-offset_right = 398.0
-offset_bottom = 240.0
-text = "Press ENTER to play again
-Press ESCAPE to quit"
-label_settings = SubResource("LabelSettings_c8jbk")
-horizontal_alignment = 1
-
-[node name="P1 Score" type="Label" parent="UI"]
-layout_mode = 0
-offset_left = 132.0
-offset_top = 64.0
-offset_right = 260.0
-offset_bottom = 160.0
-text = "0"
-label_settings = SubResource("LabelSettings_f0ijk")
-horizontal_alignment = 2
-
-[node name="P2 Score" type="Label" parent="UI"]
-layout_mode = 0
-offset_left = 384.0
-offset_top = 64.0
-offset_right = 512.0
-offset_bottom = 160.0
-text = "0"
-label_settings = SubResource("LabelSettings_f0ijk")
-
-[node name="ColorRect" type="ColorRect" parent="UI"]
-layout_mode = 0
+[node name="ColorRect" type="ColorRect" parent="."]
 offset_left = 318.0
 offset_top = 64.0
 offset_right = 322.0
 offset_bottom = 320.0
 
-[connection signal="BallCollision" from="Ball" to="." method="_on_ball_collision"]
 [connection signal="body_entered" from="P2 Goal" to="." method="_on_p_2_goal_body_entered"]
+[connection signal="BallCollision" from="Ball" to="." method="_on_ball_collision"]
 [connection signal="body_entered" from="P1 Goal" to="." method="_on_p_1_goal_body_entered"]
 
 [editable path="Player"]

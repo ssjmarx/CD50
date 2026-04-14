@@ -1,6 +1,6 @@
 # most basic type of bullet.  flies straight, cleans itself up, plays a sound when it hits something, needs to be told how fast to fly.  wraps around the screen.
 
-extends "res://Scripts/Core/UniversalBody.gd"
+extends "res://Scripts/Core/universal_body.gd"
 
 signal BulletCollision
 

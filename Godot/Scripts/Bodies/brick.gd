@@ -1,7 +1,4 @@
-extends StaticBody2D
-
-@export var height: int = 8
-@export var width: int = 16
+extends "res://Scripts/Core/universal_body.gd"
 
 var health_color = Color.WHITE
 

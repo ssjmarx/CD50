@@ -1,6 +1,6 @@
 # universal script for "blackboard" architecture.  contains signals for routing between components, and some universal features like axis lock and positional constraints.
 
-extends CharacterBody2D
+class_name UniversalBody extends CharacterBody2D
 
 signal left_joystick(direction: Vector2)
 signal right_joystick(direction: Vector2)
@@ -26,8 +26,13 @@ signal aim_at(position: Vector2)
 @export var y_max: float = 360.0
 @export var lock_x: bool = false
 @export var lock_y: bool = false
+@export var collision_groups: Array[String] = []
+@export var logical_groups: Array[String] = []
 
 func _ready():
+	for group in logical_groups:
+		add_to_group(group)
+	
 	process_priority = 100
 	process_physics_priority = 100
 	

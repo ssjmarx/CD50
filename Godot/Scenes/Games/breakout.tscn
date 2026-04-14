@@ -1,12 +1,12 @@
-[gd_scene load_steps=17 format=3 uid="uid://c4ttsm1qowkgo"]
+[gd_scene load_steps=13 format=3 uid="uid://c4ttsm1qowkgo"]
 
 [ext_resource type="Script" uid="uid://cvjed6bfjokfh" path="res://Scripts/Games/breakout.gd" id="1_chg5i"]
 [ext_resource type="PackedScene" uid="uid://b4mr1t8pdtmf3" path="res://Scenes/Bodies/paddle.tscn" id="2_7epd8"]
 [ext_resource type="PackedScene" uid="uid://mw70bjrifcpb" path="res://Scenes/Bodies/ball.tscn" id="3_uvgxs"]
 [ext_resource type="PackedScene" uid="uid://eketockdsssi" path="res://Scenes/Legs/direct_movement.tscn" id="4_2njjq"]
 [ext_resource type="Script" uid="uid://bghaddibpt6f1" path="res://addons/crt/crt.gd" id="4_fkkyb"]
-[ext_resource type="FontFile" uid="uid://imm2iompf7sv" path="res://Assets/Fonts/Kenney Pixel.ttf" id="5_2njjq"]
 [ext_resource type="PackedScene" uid="uid://cq0foubgjurmr" path="res://Scenes/Brains/interceptor_ai.tscn" id="5_t5v74"]
+[ext_resource type="PackedScene" uid="uid://b418fukpc5m41" path="res://Scenes/Components/collision_marker.tscn" id="6_fkkyb"]
 [ext_resource type="AudioStream" uid="uid://b3en0cgneptgr" path="res://Assets/Audio/lowDown.ogg" id="6_uvgxs"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_per38"]
@@ -23,23 +23,6 @@ background_mode = 3
 glow_enabled = true
 glow_intensity = 3.0
 glow_bloom = 0.33
-
-[sub_resource type="LabelSettings" id="LabelSettings_7ju07"]
-font = ExtResource("5_2njjq")
-font_size = 32
-
-[sub_resource type="LabelSettings" id="LabelSettings_62gud"]
-font = ExtResource("5_2njjq")
-font_size = 32
-
-[sub_resource type="LabelSettings" id="LabelSettings_n6jm7"]
-font = ExtResource("5_2njjq")
-font_size = 64
-shadow_size = 5
-shadow_color = Color(0, 0, 0, 1)
-
-[sub_resource type="LabelSettings" id="LabelSettings_i3wvo"]
-font = ExtResource("5_2njjq")
 
 [node name="Breakout" type="Node2D"]
 script = ExtResource("1_chg5i")
@@ -87,6 +70,9 @@ shape = SubResource("RectangleShape2D_n6jm7")
 position = Vector2(320, 364)
 shape = SubResource("RectangleShape2D_7ju07")
 
+[node name="CollisionMarker" parent="Floor" instance=ExtResource("6_fkkyb")]
+collision_groups = Array[String](["floors"])
+
 [node name="CRT" type="CanvasLayer" parent="."]
 script = ExtResource("4_fkkyb")
 resolution = Vector2(640, 360)
@@ -110,92 +96,6 @@ environment = SubResource("Environment_per38")
 position = Vector2(320, 192)
 stream = ExtResource("6_uvgxs")
 max_polyphony = 3
-
-[node name="UI" type="Control" parent="."]
-layout_mode = 3
-anchors_preset = 0
-offset_left = 246.0
-offset_top = 136.0
-offset_right = 286.0
-offset_bottom = 176.0
-
-[node name="Lives" type="Label" parent="UI"]
-layout_mode = 0
-offset_left = 250.0
-offset_top = 184.0
-offset_right = 312.0
-offset_bottom = 208.0
-text = "LIVES: "
-label_settings = SubResource("LabelSettings_7ju07")
-
-[node name="LivesNumber" type="Label" parent="UI/Lives"]
-layout_mode = 0
-offset_left = 64.0
-offset_right = 104.0
-offset_bottom = 24.0
-text = "3"
-label_settings = SubResource("LabelSettings_62gud")
-
-[node name="Win Text" type="Label" parent="UI"]
-visible = false
-layout_mode = 0
-offset_right = 152.0
-offset_bottom = 48.0
-text = "YOU WIN"
-label_settings = SubResource("LabelSettings_n6jm7")
-
-[node name="Lose Text" type="Label" parent="UI"]
-visible = false
-layout_mode = 0
-offset_right = 172.0
-offset_bottom = 48.0
-text = "YOU LOSE"
-label_settings = SubResource("LabelSettings_n6jm7")
-
-[node name="Continue Text" type="Label" parent="UI"]
-visible = false
-layout_mode = 0
-offset_top = 56.0
-offset_right = 152.0
-offset_bottom = 104.0
-text = "Press ENTER to play again
-Press ESCAPE to quit"
-label_settings = SubResource("LabelSettings_i3wvo")
-horizontal_alignment = 1
-
-[node name="Points" type="Label" parent="UI"]
-layout_mode = 0
-offset_left = -22.0
-offset_top = 184.0
-offset_right = 50.0
-offset_bottom = 208.0
-text = "POINTS:"
-label_settings = SubResource("LabelSettings_7ju07")
-
-[node name="PointsNumber" type="Label" parent="UI/Points"]
-layout_mode = 0
-offset_left = 76.0
-offset_right = 576.0
-offset_bottom = 24.0
-text = "0"
-label_settings = SubResource("LabelSettings_62gud")
-
-[node name="Multiplier" type="Label" parent="UI"]
-layout_mode = 0
-offset_left = -182.0
-offset_top = 184.0
-offset_right = -66.0
-offset_bottom = 208.0
-text = "MULTIPLIER:"
-label_settings = SubResource("LabelSettings_7ju07")
-
-[node name="MultiplierNumber" type="Label" parent="UI/Multiplier"]
-layout_mode = 0
-offset_left = 120.0
-offset_right = 160.0
-offset_bottom = 24.0
-text = "1x"
-label_settings = SubResource("LabelSettings_62gud")
 
 [connection signal="BallCollision" from="Ball" to="." method="_on_ball_ball_collision"]
 [connection signal="body_entered" from="Floor" to="." method="_on_floor_body_entered"]

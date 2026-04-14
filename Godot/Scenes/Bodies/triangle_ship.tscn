@@ -6,6 +6,7 @@
 
 [node name="TriangleShip" type="CharacterBody2D"]
 script = ExtResource("1_wwr64")
+collision_groups = Array[String](["ships"])
 
 [node name="CollisionPolygon2D" type="CollisionPolygon2D" parent="."]
 rotation = 1.5707964

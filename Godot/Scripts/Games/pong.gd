@@ -1,21 +1,35 @@
-extends Node2D
+extends "res://Scripts/Core/universal_game_script.gd"
 
 var using_mouse: bool = false
 var p1_score: int = 0
 var p2_score: int = 0
-var game_over: bool = false
+var player_ai_ref: Node = null
 
 @onready var ball = $Ball
-@onready var p1_scoreboard = $UI/"P1 Score"
-@onready var p2_scoreboard = $UI/"P2 Score"
 @onready var goal_sound = $AudioStreamPlayer2D
 @onready var opponent_ai = $Opponent/InterceptorAi
-@onready var p1_win_text = $UI/"Win Text"
-@onready var p1_lose_text = $UI/"Lose Text"
-@onready var continue_text = $UI/"Continue Text"
 
 func _ready() -> void:
+	super._ready()
+	
+	setup_collision_groups({
+	"walls": ["balls"],
+	"balls": ["walls", "paddles", "goals"],
+	"paddles": ["balls"],
+	"goals": ["balls"]
+	})
+	
+	player_ai_ref = $Player/InterceptorAi
+	
+	_randomize_ai(player_ai_ref)
+	_randomize_ai(opponent_ai)
+	
 	serve_ball()
+
+func _randomize_ai(ai: Node) -> void:
+	if is_instance_valid(ai):
+		ai.turning_speed = randi_range(50, 100)
+		ai.aim_inaccuracy = randi_range(10, 30)
 
 func _unhandled_input(event: InputEvent) -> void:	
 	if game_over and event is InputEventKey and event.pressed and not event.echo:
@@ -49,7 +63,7 @@ func _on_p_1_goal_body_entered(_body: Node2D) -> void:
 	goal_sound.play()
 	opponent_ai.turning_speed = opponent_ai.turning_speed + 30.0
 	p1_score += 1
-	p1_scoreboard.text = str(p1_score)
+	#p1_scoreboard.text = str(p1_score)
 	if p1_score >= 11:
 		p1_win()
 	else:
@@ -58,18 +72,18 @@ func _on_p_1_goal_body_entered(_body: Node2D) -> void:
 func _on_p_2_goal_body_entered(_body: Node2D) -> void:
 	goal_sound.play()
 	p2_score += 1
-	p2_scoreboard.text = str(p2_score)
+	#p2_scoreboard.text = str(p2_score)
 	if p2_score >= 11:
 		p1_lose()
 	else:
 		serve_ball()
 
 func p1_win() -> void:
-	game_over = true
-	p1_win_text.visible = true
-	continue_text.visible = true
+	current_state = states.GAME_OVER
+	#p1_win_text.visible = true
+	#continue_text.visible = true
 
 func p1_lose() -> void:
-	game_over = true
-	p1_lose_text.visible = true
-	continue_text.visible = true
+	current_state = states.GAME_OVER
+	#p1_lose_text.visible = true
+	#continue_text.visible = true

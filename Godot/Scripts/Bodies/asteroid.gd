@@ -1,6 +1,6 @@
 # asteroid.  moves with godot's in-built physics.  three selectable sizes.
 
-extends "res://Scripts/Core/UniversalBody.gd"
+extends "res://Scripts/Core/universal_body.gd"
 
 signal AsteroidCollision
 
