@@ -6,7 +6,7 @@
 [ext_resource type="PackedScene" uid="uid://cqh5t1y5b71wr" path="res://Scenes/Components/screen_wrap.tscn" id="3_yh62g"]
 [ext_resource type="AudioStream" uid="uid://byxd6jvbt5o3f" path="res://Assets/Audio/phaserUp6.ogg" id="5_18ulf"]
 
-[node name="Asteroid" type="CharacterBody2D"]
+[node name="Asteroid" type="CharacterBody2D" groups=["asteroids"]]
 script = ExtResource("1_52jog")
 collision_groups = Array[String](["asteroids"])
 logical_groups = Array[String](["asteroids"])

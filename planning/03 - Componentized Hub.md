@@ -42,30 +42,14 @@ The `Universal_Game_Script` should not just be a data container—it should be a
 
 These components use **Godot Groups** to monitor game state. Bodies add themselves to groups (e.g., `"player"`, `"enemy"`, `"target"`), and Rule components scan for these groups.
 
-### Player_Monitor
-- **Logic:** Scans for nodes in group `"player"`
-- **Signals:** `player_spawned`, `player_died`, `defeat` (when lives == 0 AND no players exist)
-- **Dependency:** `Lives_Counter`
-- **Use Case:** All games with player death state
-
-### Objective_Monitor (formerly Enemy_Life_Monitor)
-- **Logic:** Scans for nodes in group `"enemy"` OR `"target"` OR `"brick"`
-- **Signals:** `objective_cleared` (when count reaches 0), `victory`
-- **Use Case:** Wave-based shooters, breakout-style games
+### Objective_Monitor (formerly Player_Monitor and Enemy_Life_Monitor)
+TRACKS CONFIGURABLE LOGICAL GROUP, SCANS TREE FOR GROUP MEMBERS DURING PHYSICS PROCESS, REPORTS WHEN GROUP IS EMPTY
 
 ### Lives_Counter
-- **Logic:** Abstract class for "3 lives" logic
-- **Visuals:** Optional icon hearts/ships next to score, or numeric display
-- **Signals:** `lives_changed`, `lives_depleted`, `defeat`
-- **Exports:** `starting_lives: int = 3`
-- **Use Case:** Classic arcade games with limited continues
+COUNTS LIVES, CONFIGURES MAX LIVES, RESETS LIVES WHEN SIGNALED, CHANGES LIVES WHEN SIGNALED, SIGNALS WHEN LIVES ARE ZERO
 
 ### Timer_Rule
-- **Logic:** Counts up (Time Attack) or down (Survival)
-- **Signals:** `timer_tick`, `timer_expired`
-- **Exports:** `mode: enum {COUNT_UP, COUNT_DOWN}`, `duration: float`, `display_format: String`
-- **Use Case:** Tempest, Rally-X, Scramble, survival modes
-
+CREATES A TIMER, STARTS TIMING WHEN SIGNALED, CALLS A SIGNAL FROM THE PARENT WHEN THE TIME IS UP
 ---
 
 ## Managers: Meta-Game Infrastructure

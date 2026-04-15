@@ -1,0 +1,6 @@
+[gd_scene load_steps=2 format=3 uid="uid://dhulxxtcsipl6"]
+
+[ext_resource type="Script" uid="uid://dud4d4eogmh7a" path="res://Scripts/Rules/group_monitor.gd" id="1_51ko5"]
+
+[node name="GroupMonitor" type="Node"]
+script = ExtResource("1_51ko5")

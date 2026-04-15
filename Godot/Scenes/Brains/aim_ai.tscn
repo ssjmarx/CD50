@@ -4,3 +4,4 @@
 
 [node name="AimAi" type="Node"]
 script = ExtResource("1_yu2qr")
+target_node = NodePath(".")

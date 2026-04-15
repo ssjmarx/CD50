@@ -1,7 +1,7 @@
 [gd_scene load_steps=11 format=3 uid="uid://bq6cdrx340jp7"]
 
 [ext_resource type="FontFile" uid="uid://imm2iompf7sv" path="res://Assets/Fonts/Kenney Pixel.ttf" id="1_ep56u"]
-[ext_resource type="Script" uid="uid://bsjofydvrvq5" path="res://Scripts/Components/interface.gd" id="1_y5n4l"]
+[ext_resource type="Script" uid="uid://bsjofydvrvq5" path="res://Scripts/Rules/interface.gd" id="1_y5n4l"]
 
 [sub_resource type="LabelSettings" id="LabelSettings_big"]
 font = ExtResource("1_ep56u")
@@ -105,6 +105,18 @@ offset_right = 494.0
 offset_bottom = 48.0
 text = "Press Enter to start playing."
 label_settings = SubResource("LabelSettings_attract")
+horizontal_alignment = 1
+
+[node name="ControlText" type="Label" parent="Attract Text"]
+visible = false
+layout_mode = 0
+offset_left = 88.0
+offset_top = 32.0
+offset_right = 240.0
+offset_bottom = 80.0
+text = "Press 1 for classic controls
+Press 2 for modern controls"
+label_settings = SubResource("LabelSettings_small")
 horizontal_alignment = 1
 
 [node name="Lives" type="Label" parent="."]

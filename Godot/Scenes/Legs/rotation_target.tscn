@@ -4,3 +4,4 @@
 
 [node name="RotationTarget" type="Node"]
 script = ExtResource("1_j6cas")
+independant_aim = true

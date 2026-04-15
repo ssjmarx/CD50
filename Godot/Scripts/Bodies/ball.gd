@@ -1,21 +1,24 @@
-# Pong-style ball.  Takes the form of a square.
+# Pong-style ball. Bounces off colliders and plays sounds on impact.
 
 extends "res://Scripts/Core/universal_body.gd"
 
+# Emitted when ball collides with physics body
 signal BallCollision
 
-@export var initial_velocity: Vector2 = Vector2(0, 0)
-@export var radius: float = 4.0
+@export var initial_velocity: Vector2 = Vector2(0, 0) # Starting velocity
+@export var radius: float = 4.0 # Ball size (square)
 
+# Audio samples for different speed levels
 var sound1 = preload("res://Assets/Audio/tone1.ogg")
 var sound2 = preload("res://Assets/Audio/twoTone1.ogg")
 var sound3 = preload("res://Assets/Audio/twoTone2.ogg")
 
-@onready var sound = $AudioStreamPlayer2D
-@onready var accelerator = $PongAcceleration
-@onready var physicsbox = $CollisionShape2D
-@onready var hitbox = $HitBox
+@onready var sound = $AudioStreamPlayer2D # Collision sound
+@onready var accelerator = $PongAcceleration # Speed boost component
+@onready var physicsbox = $CollisionShape2D # Physics collider
+@onready var hitbox = $HitBox # Gameplay detection area
 
+# Set up collision shapes
 func _ready() -> void:
 	var shape := RectangleShape2D.new()
 	shape.size = Vector2(radius, radius)
@@ -23,9 +26,11 @@ func _ready() -> void:
 	$CollisionShape2D.shape = shape
 	$HitBox/CollisionShape2D.shape = shape
 
+# Draw white square
 func _draw() -> void:
 	draw_rect(Rect2(-radius / 2.0, -radius / 2.0, radius, radius), Color.WHITE)
 
+# Move and bounce on collision
 func _physics_process(delta: float) -> void:
 	var collision = move_parent_physics(velocity * delta)
 	
@@ -34,10 +39,12 @@ func _physics_process(delta: float) -> void:
 		emit_signal("BallCollision", collision.get_collider())
 		sound.play()
 
+# Bounce in custom direction, preserving speed
 func custom_bounce(angle: Vector2) -> void:
 	var speed = velocity.length()
 	velocity = angle * speed
 
+# Change sound based on speed level
 func _on_pong_acceleration_speed_changed(speed_level: Variant) -> void:
 	match speed_level:
 		1, 2, 3:
@@ -47,8 +54,10 @@ func _on_pong_acceleration_speed_changed(speed_level: Variant) -> void:
 		7, 8:
 			sound.stream = sound3
 
+# Increase ball speed
 func accelerate() -> void:
 	accelerator.accelerate()
 
+# Reset speed to level 1
 func reset() -> void:
 	accelerator.reset()

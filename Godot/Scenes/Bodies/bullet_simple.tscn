@@ -20,7 +20,6 @@ collision_groups = Array[String](["bullets"])
 
 [node name="AudioStreamPlayer2D" type="AudioStreamPlayer2D" parent="."]
 stream = ExtResource("2_7842g")
-pitch_scale = 0.5
 max_polyphony = 10
 
 [node name="VisibleOnScreenNotifier2D" type="VisibleOnScreenNotifier2D" parent="."]

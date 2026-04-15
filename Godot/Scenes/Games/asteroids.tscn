@@ -1,12 +1,16 @@
-[gd_scene load_steps=9 format=3 uid="uid://bjs0gtnsur7e6"]
+[gd_scene load_steps=13 format=3 uid="uid://bjs0gtnsur7e6"]
 
 [ext_resource type="Script" uid="uid://bghaddibpt6f1" path="res://addons/crt/crt.gd" id="1_msg41"]
 [ext_resource type="Script" uid="uid://c3sum0283iyff" path="res://Scripts/Games/asteroids.gd" id="1_t21dg"]
 [ext_resource type="PackedScene" uid="uid://bcktpeqc0t10f" path="res://Scenes/Bodies/triangle_ship.tscn" id="4_hcst1"]
-[ext_resource type="PackedScene" uid="uid://6tweepbhleep" path="res://Scenes/Brains/player_control.tscn" id="4_t21dg"]
 [ext_resource type="PackedScene" uid="uid://cqh5t1y5b71wr" path="res://Scenes/Components/screen_wrap.tscn" id="5_5dhpa"]
 [ext_resource type="PackedScene" uid="uid://bapmn3uxv7pqb" path="res://Scenes/Arms/gun_simple.tscn" id="6_5dhpa"]
-[ext_resource type="PackedScene" uid="uid://chmnjqkckrar5" path="res://Scenes/Bodies/bullet_wrapping.tscn" id="7_yreoo"]
+[ext_resource type="PackedScene" uid="uid://b3lugns3ik8vj" path="res://Scenes/Bodies/bullet_simple.tscn" id="7_2e55n"]
+[ext_resource type="PackedScene" uid="uid://bgbc7os8sqieh" path="res://Scenes/Legs/rotation_target.tscn" id="7_18skw"]
+[ext_resource type="PackedScene" uid="uid://b2utyb8vjdhru" path="res://Scenes/Brains/aim_ai.tscn" id="7_n2x7g"]
+[ext_resource type="PackedScene" uid="uid://dhulxxtcsipl6" path="res://Scenes/Rules/group_monitor.tscn" id="8_yreoo"]
+[ext_resource type="PackedScene" uid="uid://tre5p2x1bb2k" path="res://Scenes/Rules/lives_counter.tscn" id="9_2e55n"]
+[ext_resource type="PackedScene" uid="uid://bq6cdrx340jp7" path="res://Scenes/Rules/interface.tscn" id="10_18skw"]
 
 [sub_resource type="Environment" id="Environment_hcst1"]
 background_mode = 3
@@ -45,9 +49,25 @@ x_max = 660.0
 y_min = -20.0
 y_max = 380.0
 
-[node name="PlayerControl" parent="Player" instance=ExtResource("4_t21dg")]
-
 [node name="ScreenWrap" parent="Player" instance=ExtResource("5_5dhpa")]
 
 [node name="GunSimple" parent="Player" instance=ExtResource("6_5dhpa")]
-ammo = ExtResource("7_yreoo")
+ammo = ExtResource("7_2e55n")
+
+[node name="AimAi" parent="Player" instance=ExtResource("7_n2x7g")]
+turning_speed = 360
+aim_inaccuracy = 0
+
+[node name="RotationTarget" parent="Player" instance=ExtResource("7_18skw")]
+
+[node name="AsteroidMonitor" parent="." instance=ExtResource("8_yreoo")]
+target_group = "asteroids"
+victory_on_clear = true
+
+[node name="PlayerMonitor" parent="." instance=ExtResource("8_yreoo")]
+target_group = "players"
+defeat_on_clear = true
+
+[node name="LivesCounter" parent="." instance=ExtResource("9_2e55n")]
+
+[node name="Interface" parent="." instance=ExtResource("10_18skw")]

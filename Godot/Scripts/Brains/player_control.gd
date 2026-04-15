@@ -1,11 +1,12 @@
-# universal player control node.  emits controller inputs to its parent
+# Player control brain. Reads keyboard/mouse/gamepad and emits input signals to parent.
 
 extends Node
 
-var using_mouse: bool = false
+var using_mouse: bool = false # Track if mouse is being used
 
-@onready var parent = get_parent()
+@onready var parent = get_parent() # Reference to attached body
 
+# Handle mouse and button inputs
 func _unhandled_input(event: InputEvent) -> void:
 	if event is InputEventMouseMotion:
 		parent.mouse_position.emit(event.position)
@@ -15,6 +16,7 @@ func _unhandled_input(event: InputEvent) -> void:
 		if event.is_released():
 			parent.button_released.emit(event)
 
+# Emit joystick direction signals every frame
 func _physics_process(_delta: float) -> void:
 	var direction: Vector2 = Vector2.ZERO
 	direction.y = Input.get_axis("button_up", "button_down")

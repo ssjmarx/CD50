@@ -1,4 +1,4 @@
-[gd_scene load_steps=13 format=3 uid="uid://c4ttsm1qowkgo"]
+[gd_scene load_steps=16 format=3 uid="uid://c4ttsm1qowkgo"]
 
 [ext_resource type="Script" uid="uid://cvjed6bfjokfh" path="res://Scripts/Games/breakout.gd" id="1_chg5i"]
 [ext_resource type="PackedScene" uid="uid://b4mr1t8pdtmf3" path="res://Scenes/Bodies/paddle.tscn" id="2_7epd8"]
@@ -8,6 +8,9 @@
 [ext_resource type="PackedScene" uid="uid://cq0foubgjurmr" path="res://Scenes/Brains/interceptor_ai.tscn" id="5_t5v74"]
 [ext_resource type="PackedScene" uid="uid://b418fukpc5m41" path="res://Scenes/Components/collision_marker.tscn" id="6_fkkyb"]
 [ext_resource type="AudioStream" uid="uid://b3en0cgneptgr" path="res://Assets/Audio/lowDown.ogg" id="6_uvgxs"]
+[ext_resource type="PackedScene" uid="uid://tre5p2x1bb2k" path="res://Scenes/Rules/lives_counter.tscn" id="9_lmwk8"]
+[ext_resource type="PackedScene" uid="uid://dhulxxtcsipl6" path="res://Scenes/Rules/group_monitor.tscn" id="10_vu4sl"]
+[ext_resource type="PackedScene" uid="uid://bq6cdrx340jp7" path="res://Scenes/Rules/interface.tscn" id="11_r1nhx"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_per38"]
 size = Vector2(656, 8)
@@ -40,8 +43,8 @@ deflection_bias = Vector2(1, 5)
 
 [node name="InterceptorAi" parent="Paddle" instance=ExtResource("5_t5v74")]
 target_node = NodePath("../../Ball")
-turning_speed = 360
-aim_inaccuracy = 60
+turning_speed = 180
+aim_inaccuracy = 30
 
 [node name="Ball" parent="." instance=ExtResource("3_uvgxs")]
 position = Vector2(320, 304)
@@ -97,8 +100,22 @@ position = Vector2(320, 192)
 stream = ExtResource("6_uvgxs")
 max_polyphony = 3
 
+[node name="LivesCounter" parent="." instance=ExtResource("9_lmwk8")]
+
+[node name="GroupMonitor" parent="." instance=ExtResource("10_vu4sl")]
+target_group = "bricks"
+
+[node name="Interface" parent="." instance=ExtResource("11_r1nhx")]
+
+[node name="Attract Text" parent="Interface" index="5"]
+offset_left = 146.0
+offset_top = 320.0
+offset_right = 488.0
+offset_bottom = 352.0
+
 [connection signal="BallCollision" from="Ball" to="." method="_on_ball_ball_collision"]
 [connection signal="body_entered" from="Floor" to="." method="_on_floor_body_entered"]
 
 [editable path="Paddle"]
 [editable path="Ball"]
+[editable path="Interface"]

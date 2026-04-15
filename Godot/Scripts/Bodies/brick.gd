@@ -1,7 +1,10 @@
+# Breakout brick with health-based coloring. Color changes as HP decreases.
+
 extends "res://Scripts/Core/universal_body.gd"
 
-var health_color = Color.WHITE
+var health_color = Color.WHITE # Current display color based on health
 
+# Draw colored rectangle based on current health
 func _draw() -> void:
 	var hp = $Health.current_health
 	match hp:
@@ -13,5 +16,6 @@ func _draw() -> void:
 			
 	draw_rect(Rect2(-width / 2.0, -height / 2.0, width, height), health_color)
 
+# Redraw when health changes
 func _on_health_health_changed(_current_health: Variant) -> void:
 	queue_redraw()

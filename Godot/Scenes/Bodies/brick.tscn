@@ -6,7 +6,7 @@
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_iythh"]
 size = Vector2(16, 8)
 
-[node name="Brick" type="CharacterBody2D"]
+[node name="Brick" type="CharacterBody2D" groups=["bricks"]]
 script = ExtResource("1_iythh")
 width = 16
 height = 8

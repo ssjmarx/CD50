@@ -1,17 +1,19 @@
-# most basic type of bullet.  flies straight, cleans itself up, plays a sound when it hits something, needs to be told how fast to fly.  wraps around the screen.
+# Simple bullet with screen wrapping. Uses timer for lifetime instead of screen exit detection.
 
 extends "res://Scripts/Core/universal_body.gd"
 
+# Emitted when bullet hits something
 signal BulletCollision
 
-@export var radius: float = 4.0
+@export var radius: float = 4.0 # Bullet size (square)
 
-var is_alive: bool = true
+var is_alive: bool = true # Prevents multiple hit triggers
 
-@onready var physicsbox = $CollisionShape2D
-@onready var hitbox = $HitBox/CollisionShape2D
-@onready var sound = $AudioStreamPlayer2D
+@onready var physicsbox = $CollisionShape2D # Physics collider
+@onready var hitbox = $HitBox/CollisionShape2D # Gameplay detection
+@onready var sound = $AudioStreamPlayer2D # Hit sound
 
+# Set up collision shapes and signals
 func _ready() -> void:
 	super._ready()
 	
@@ -24,9 +26,11 @@ func _ready() -> void:
 	$HitBox.body_entered.connect(_on_hitbox_entered)
 	$Timer.timeout.connect(_on_timeout)
 
+# Draw white square
 func _draw() -> void:
 	draw_rect(Rect2(-radius / 2.0, -radius / 2.0, radius, radius), Color.WHITE)
 
+# Move and check for collision
 func _physics_process(delta: float) -> void:
 	if not is_alive:
 		return
@@ -34,15 +38,18 @@ func _physics_process(delta: float) -> void:
 	if collision:
 		bullet_hit(collision.get_collider())
 
+# Hitbox collision detected
 func _on_hitbox_entered(target: Node2D) -> void:
 	if not is_alive:
 		return
 	bullet_hit(target)
 
+# Timer expired, clean up bullet
 func _on_timeout() -> void:
 	if is_alive:
 		queue_free()
 
+# Handle bullet hit (disable colliders, play sound, despawn)
 func bullet_hit(target) -> void:
 	is_alive = false
 	BulletCollision.emit(target)

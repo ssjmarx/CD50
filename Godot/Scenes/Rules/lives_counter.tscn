@@ -1,0 +1,6 @@
+[gd_scene load_steps=2 format=3 uid="uid://tre5p2x1bb2k"]
+
+[ext_resource type="Script" uid="uid://c0kqbh7357hj5" path="res://Scripts/Rules/lives_counter.gd" id="1_oexrx"]
+
+[node name="LivesCounter" type="Node"]
+script = ExtResource("1_oexrx")

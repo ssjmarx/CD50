@@ -4,3 +4,4 @@
 
 [node name="InterceptorAi" type="Node"]
 script = ExtResource("1_fp7wx")
+target_node = NodePath(".")

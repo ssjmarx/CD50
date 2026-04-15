@@ -1,4 +1,4 @@
-[gd_scene load_steps=12 format=3 uid="uid://bx72rpqpg34hc"]
+[gd_scene load_steps=13 format=3 uid="uid://bx72rpqpg34hc"]
 
 [ext_resource type="Script" uid="uid://cjsdwp3a52rgl" path="res://Scripts/Games/pongsteroids.gd" id="1_script"]
 [ext_resource type="PackedScene" uid="uid://mw70bjrifcpb" path="res://Scenes/Bodies/ball.tscn" id="2_ball"]
@@ -8,6 +8,7 @@
 [ext_resource type="PackedScene" uid="uid://eketockdsssi" path="res://Scenes/Legs/direct_movement.tscn" id="6_move"]
 [ext_resource type="AudioStream" uid="uid://ctmcfvxwus0wo" path="res://Assets/Audio/threeTone1.ogg" id="7_audio"]
 [ext_resource type="Script" uid="uid://bghaddibpt6f1" path="res://addons/crt/crt.gd" id="8_crt"]
+[ext_resource type="PackedScene" uid="uid://bq6cdrx340jp7" path="res://Scenes/Rules/interface.tscn" id="9_46oju"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_wall"]
 size = Vector2(640, 8)
@@ -26,13 +27,11 @@ script = ExtResource("1_script")
 
 [node name="Ball" parent="." instance=ExtResource("2_ball")]
 position = Vector2(320, 184)
-logical_groups = Array[String](["balls"])
 
-[node name="Player" parent="." instance=ExtResource("3_paddle")]
+[node name="Player" parent="." groups=["paddles"] instance=ExtResource("3_paddle")]
 position = Vector2(64, 184)
 height = 32
 lock_x = true
-logical_groups = Array[String](["paddles"])
 
 [node name="AngledDeflector" parent="Player" index="2"]
 deflection_bias = Vector2(5, 1)
@@ -42,11 +41,10 @@ target_node = NodePath("../../Ball")
 
 [node name="DirectMovement" parent="Player" instance=ExtResource("6_move")]
 
-[node name="Opponent" parent="." instance=ExtResource("3_paddle")]
+[node name="Opponent" parent="." groups=["paddles"] instance=ExtResource("3_paddle")]
 position = Vector2(576, 184)
 height = 32
 lock_x = true
-logical_groups = Array[String](["paddles"])
 
 [node name="AngledDeflector" parent="Opponent" index="2"]
 deflection_bias = Vector2(5, 1)
@@ -123,6 +121,8 @@ offset_left = 318.0
 offset_top = 64.0
 offset_right = 322.0
 offset_bottom = 320.0
+
+[node name="Interface" parent="." instance=ExtResource("9_46oju")]
 
 [connection signal="BallCollision" from="Ball" to="." method="_on_ball_collision"]
 [connection signal="body_entered" from="P2 Goal" to="." method="_on_p_2_goal_body_entered"]

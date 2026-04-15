@@ -1,30 +1,44 @@
-# reusable user interface.  parent shows/hides pieces as needed, calls update methods on score events
+# Reusable user interface. Parent shows/hides elements and calls update methods on score/lives events.
 
 extends Control
 
-var elements = CommonEnums.Element
+var elements = CommonEnums.Element # Reference to element enums
 
-@onready var parent = get_parent()
+@onready var parent = get_parent() # Reference to game script
 
+# Connect to game state signals
 func _ready() -> void:
-	get_parent().on_points_changed.connect(set_points)
-	get_parent().on_multiplier_changed.connect(set_multiplier)
+	parent.on_points_changed.connect(set_points)
+	parent.on_multiplier_changed.connect(set_multiplier)
+	parent.lives_changed.connect(set_lives)
+	parent.timer_tick.connect(set_timer)
 
+# Update points display
 func set_points(new_score) -> void:
-	$Points/PointsNumber.text = new_score
+	$Points/PointsNumber.text = str(new_score)
 
+# Update multiplier display
 func set_multiplier(new_multiplier) -> void:
-	$Multiplier/MultiplierNumber.text = new_multiplier
+	$Multiplier/MultiplierNumber.text = str(new_multiplier)
 
+# Update lives display
 func set_lives(new_lives) -> void:
-	$Lives/LivesNumber.text = new_lives
+	$Lives/LivesNumber.text = str(new_lives)
 
+# Update player 1 score
 func set_p1_score(new_score) -> void:
-	$"P1 Score".text = new_score
+	$"P1 Score".text = str(new_score)
 	
+# Update player 2 score
 func set_p2_score(new_score) -> void:
-	$"P2 Score".text = new_score
+	$"P2 Score".text = str(new_score)
 
+# Update timer display (TODO: implement)
+func set_timer(_new_time) -> void:
+	#i'll add this later
+	pass
+
+# Show UI element by type
 func show_element(element: CommonEnums.Element) -> void:
 	match element:
 		elements.WIN_TEXT: $"Win Text".visible = true
@@ -42,7 +56,9 @@ func show_element(element: CommonEnums.Element) -> void:
 		elements.MULTIPLIER: 
 			$Multiplier.visible = true
 			$Multiplier/MultiplierNumber.visible = true
+		elements.CONTROL_TEXT: $"Attract Text/ControlText".visible = true
 
+# Hide UI element by type
 func hide_element(target_element: CommonEnums.Element) -> void:
 	match target_element:
 		elements.WIN_TEXT: $"Win Text".visible = false
@@ -60,3 +76,4 @@ func hide_element(target_element: CommonEnums.Element) -> void:
 		elements.MULTIPLIER: 
 			$Multiplier.visible = false
 			$Multiplier/MultiplierNumber.visible = false
+		elements.CONTROL_TEXT: $"Attract Text/ControlText".visible = false

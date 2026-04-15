@@ -1,34 +1,39 @@
-# spawn multiple nodes when the parent dies.  checks for a size enum and makes the new splits smaller if one exists on both the parent and the fragments.
+# Spawns smaller fragments when parent dies. Reduces size enum if present (e.g., LARGE -> MEDIUM).
 
 extends Node
 
-@export var fragment_path: String = ""
-@export var spawn_count: int = 2
-@export var fragment_speed: float = 100.0
-@export var offset_amount: int = 20
+@export var fragment_path: String = "" # Scene path to fragment PackedScene
+@export var spawn_count: int = 2 # Number of fragments to spawn
+@export var fragment_speed: float = 100.0 # Velocity of spawned fragments
+@export var offset_amount: int = 20 # Distance from parent spawn point
 
-var base_angle := randf() * TAU
+var base_angle := randf() * TAU # Random base direction for fragment spread
 
-@onready var parent = get_parent()
+@onready var parent = get_parent() # Reference to attached body
 
+# Connect to parent's death signal
 func _ready() -> void:
 	parent.get_node("Health").zero_health.connect(_on_parent_died)
 
+# Spawn fragments when parent dies
 func _on_parent_died(_parent: Node) -> void:
 	if fragment_path == "":
 		return
 	var fragment_scene: PackedScene = load(fragment_path)
 	if fragment_scene == null:
 		return
+	# Don't spawn if parent is at minimum size
 	if "initial_size" in parent:
 		if parent.initial_size <= 0:
 			return
 	
+	# Spawn fragments in spread pattern
 	for i in spawn_count:
 		var angle := base_angle + (i * TAU / spawn_count) + randf_range(-0.3, 0.3)
 		var direction := Vector2.from_angle(angle)
 		var fragment = fragment_scene.instantiate()
 		
+		# Reduce fragment size if both parent and fragment have size enum
 		if "initial_size" in fragment and "initial_size" in parent:
 			if parent.initial_size > 0:
 				fragment.initial_size = parent.initial_size - 1
