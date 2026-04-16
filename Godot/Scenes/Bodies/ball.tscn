@@ -4,7 +4,7 @@
 [ext_resource type="AudioStream" uid="uid://dveho4hncd47a" path="res://Assets/Audio/tone1.ogg" id="2_184hw"]
 [ext_resource type="PackedScene" uid="uid://dvb6v6cqiiuag" path="res://Scenes/Components/pong_acceleration.tscn" id="3_o3brn"]
 
-[node name="Ball" type="CharacterBody2D"]
+[node name="Ball" type="CharacterBody2D" groups=["balls"]]
 script = ExtResource("1_2wnlm")
 collision_groups = Array[String](["balls"])
 
