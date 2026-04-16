@@ -2,9 +2,6 @@
 
 extends "res://Scripts/Core/universal_body.gd"
 
-# Emitted when ball collides with physics body
-signal ball_collision
-
 @export var initial_velocity: Vector2 = Vector2(0, 0) # Starting velocity
 @export var radius: float = 4.0 # Ball size (square)
 
@@ -30,13 +27,11 @@ func _ready() -> void:
 func _draw() -> void:
 	draw_rect(Rect2(-radius / 2.0, -radius / 2.0, radius, radius), Color.WHITE)
 
-# Move and bounce on collision
+# Move and play sound on collision
 func _physics_process(delta: float) -> void:
 	var collision = move_parent_physics(velocity * delta)
 	
 	if collision:
-		velocity = velocity.bounce(collision.get_normal())
-		ball_collision.emit(collision.get_collider())
 		sound.play()
 
 # Bounce in custom direction, preserving speed

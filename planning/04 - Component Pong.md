@@ -24,18 +24,16 @@ Pong (UniversalGameScript)
 ├── Ball (UniversalBody, Godot group: "balls")
 │   ├── CollisionShape2D
 │   ├── HitBox (Area2D)
-│   ├── PongAcceleration (enhanced — auto-connects to parent collisions, config: group "paddles")
-│   ├── AngledDeflector (enhanced — auto-connects to parent collisions, config: group "paddles")
+│   ├── PongAcceleration (enhanced — auto-connects to parent.body_collided, config: target_group "paddles")
+│   ├── AngledDeflector (enhanced — auto-connects to parent.body_collided, config: target_groups ["paddles"], deflection_bias: 5, 1)
 │   ├── ScreenCleanup (new — frees ball when it leaves screen)
 │   └── AudioStreamPlayer2D
 ├── Player (Paddle/UniversalBody, Godot group: "paddles")
 │   ├── CollisionShape2D
-│   ├── AngledDeflector (deflection_bias: 5, 1)
 │   ├── PlayerControl
 │   └── DirectMovement
 ├── Opponent (Paddle/UniversalBody, Godot group: "paddles")
 │   ├── CollisionShape2D
-│   ├── AngledDeflector (deflection_bias: 5, 1)
 │   ├── InterceptorAi (target: Ball, turning_speed: 45, aim_inaccuracy: 0)
 │   │   └── VariableTuner (listen: P1Goal body_entered, adjust: parent.turning_speed, +30)
 │   └── DirectMovement
@@ -45,12 +43,12 @@ Pong (UniversalGameScript)
 ├── P1Goal (Area2D)
 │   ├── CollisionShape2D
 │   ├── CollisionMarker (collision_groups: ["goals"])
-│   ├── Goal (new — emits p1_score via UGS)
+│   ├── Goal (new — emits p2_score via UGS)
 │   └── SoundOnCollision (new — plays goal sound on body_entered)
 ├── P2Goal (Area2D)
 │   ├── CollisionShape2D
 │   ├── CollisionMarker (collision_groups: ["goals"])
-│   ├── Goal (new — emits p2_score via UGS)
+│   ├── Goal (new — emits p1_score via UGS)
 │   └── SoundOnCollision
 ├── P1PointsMonitor (new — watches p1_score, target: 11, emits: victory)
 ├── P2PointsMonitor (new — watches p2_score, target: 11, emits: defeat)
@@ -69,19 +67,93 @@ Pong (UniversalGameScript)
 
 ## Required Changes
 
-### 1. UniversalGameScript — Enhancements
+### 0. CommonEnums — Centralize Shared Enums
+
+**Location:** `Scripts/Core/common_enums.gd`
+
+**Purpose:** Move locally-defined enums from individual scripts into the shared enum class. This avoids duplication and ensures type consistency across components.
+
+**New enums to add:**
+
+```
+# Score types for Goal and PointsMonitor components
+enum ScoreType {
+	P1_SCORE,
+	P2_SCORE,
+	GENERIC_SCORE
+}
+
+# WaveDirector trigger types (moved from wave_director.gd)
+enum Trigger {
+	GROUP_CLEARED,
+	TIMER_EXPIRED,
+	LIVES_DEPLETED
+}
+
+# WaveSpawner spawn patterns (moved from wave_spawner.gd)
+enum SpawnPattern {
+	SCREEN_EDGES,
+	SCREEN_CENTER,
+	GRID
+}
+
+# VariableTuner adjustment modes
+enum AdjustmentMode {
+	ADD,
+	MULTIPLY,
+	SET
+}
+
+# PointsMonitor comparison conditions
+enum Condition {
+	GREATER_OR_EQUAL,
+	LESS_OR_EQUAL
+}
+
+# PointsMonitor result types
+enum Result {
+	VICTORY,
+	DEFEAT
+}
+```
+
+**Follow-up:** After adding these to `common_enums.gd`, update `wave_director.gd` and `wave_spawner.gd` to reference `CommonEnums.Trigger` and `CommonEnums.SpawnPattern` instead of their local enums. Remove the local enum definitions from those files.
+
+### 1. UniversalBody — Add Generic Collision Signal
+
+**Location:** `Scripts/Core/universal_body.gd`
+
+**Changes:**
+- Add a new signal: `body_collided(collider: Node, normal: Vector2)`
+- This signal is emitted by any UniversalBody that detects a physics collision via `move_parent_physics()`
+- Bodies that use non-physical movement (`move_parent()`) simply won't emit this signal — no harm done
+
+**Why:** Both enhanced PongAcceleration and enhanced AngledDeflector need to detect collisions on their parent. Currently `ball.gd` emits a game-specific `ball_collision` signal. By making collision detection a first-class UniversalBody signal, any component can listen to `parent.body_collided` and filter by group — no custom bridge code needed.
+
+**Note:** Individual body scripts (like `ball.gd`) still handle their own `_physics_process()` collision detection. They just emit the generic signal alongside their existing logic. This is not a change to the movement system — it's adding a standardized output.
+
+### 2. UniversalGameScript — Enhancements
 
 **Location:** `Scripts/Core/universal_game_script.gd`
 
 **Changes:**
-- Add `collision_groups` export (Dictionary) so the collision matrix can be configured per-scene in the editor. In `_ready()`, if the dictionary is non-empty, call `setup_collision_groups()` automatically.
+
+#### 2a. Collision groups export
+- Add `collision_groups` export (Dictionary) so the collision matrix can be configured per-scene in the editor
+- In `_ready()`, if the dictionary is non-empty, call `setup_collision_groups()` automatically
+
+#### 2b. P1/P2 score tracking
+- Add internal score tracking: `p1_score: int`, `p2_score: int`
 - Add three new signals:
   - `on_p1_score(amount: int)` — relayed when a Goal component registers a P1 score
   - `on_p2_score(amount: int)` — relayed when a Goal component registers a P2 score
   - `on_score(score_type, amount)` — generic score relay (optional, for future flexibility)
-- Add internal score tracking: `p1_score: int`, `p2_score: int`
 - Add relay methods: `add_p1_score(amount)`, `add_p2_score(amount)` — increment internal counters and emit the appropriate signals
 - `on_points_changed` continues to work for generic score (single-player games)
+
+#### 2c. Self-connect victory/defeat
+- In `_ready()`, connect `victory` signal to `p1_win()` and `defeat` signal to `p1_lose()`
+- This allows any component to emit `parent.victory` or `parent.defeat` and have UGS react automatically
 
 **Signal flow for goals:**
 ```
@@ -93,7 +165,7 @@ Goal component detects body_entered
       → PointsMonitor checks against target
 ```
 
-### 2. WaveSpawner — Enhancements
+### 3. WaveSpawner — Enhancements
 
 **Location:** `Scripts/Flow/wave_spawner.gd`
 
@@ -115,7 +187,7 @@ Goal component detects body_entered
 
 **Pong configuration:** `spawn_at_game_start: true`, `initial_velocity: 150`, `use_random_angle: true`, `random_angle_min: 3π/4`, `random_angle_max: 5π/4`, `random_flip_h: true`
 
-### 3. PongAcceleration — Enhancement
+### 4. PongAcceleration — Enhancement
 
 **Location:** `Scripts/Components/pong_acceleration.gd`
 
@@ -123,25 +195,31 @@ Goal component detects body_entered
 - `target_group: String = "paddles"` — group name to check against colliders
 
 **Behavior changes:**
-- In `_ready()`, automatically find parent's collision detection (for UniversalBody: connect to physics collision; for bodies with `move_parent_physics` returning collisions, listen for that)
+- In `_ready()`, connect to `parent.body_collided` signal (the new UniversalBody signal)
 - On collision, check if the collider is in `target_group`
 - If match: call existing `accelerate()` logic
-- If parent has no detectable collision system: print error message
+- If parent has no `body_collided` signal: print error message
 - Remove dependency on being called externally — this component is now self-sufficient
 
 **Note:** The `BallCollision` signal on Ball is now redundant and will be removed.
 
-### 4. AngledDeflector — Enhancement
+### 5. AngledDeflector — Enhancement (Moved to Ball)
 
 **Location:** `Scripts/Components/angled_deflector.gd`
+
+**Design Decision — AngledDeflector lives on the Ball, NOT on the Paddle:**
+
+The Ball is the entity that detects physics collisions (via `move_parent_physics()` in `_physics_process()`). The Paddle is passive — it doesn't know it was hit. Therefore, AngledDeflector must live on the Ball so it can auto-connect to `parent.body_collided` and react to collisions with paddles.
+
+Conceptually, this makes sense: deflection bias is a property of "how the ball bounces off paddle-shaped surfaces" — it's a ball behavior.
 
 **New exports:**
 - `target_groups: Array[String] = []` — list of Godot groups to respond to (e.g., ["paddles"])
 
 **Behavior changes:**
-- In `_ready()`, automatically connect to parent's collision detection (same pattern as PongAcceleration)
+- In `_ready()`, connect to `parent.body_collided` signal
 - On collision, check if the collider is in any of `target_groups`
-- If match: calculate deflection angle using existing `bounce_offset()` logic with `deflection_bias`
+- If match: calculate deflection angle using existing `bounce_offset()` logic, passing the collider's global position
 - Apply to parent's velocity: preserve speed, change direction to the deflection angle
 - This component is now self-sufficient — no external script needs to call `bounce_offset()` or `custom_bounce()`
 
@@ -149,7 +227,9 @@ Goal component detects body_entered
 
 **Note:** The existing `bounce_offset()` method can remain for manual use, but the auto-connect behavior makes it unnecessary for the componentized Pong.
 
-### 5. NEW RULES COMPONENT: Goal
+**Impact on Paddles:** Paddles no longer need an AngledDeflector child. The `bounce_offset()` delegation in `paddle.gd` becomes unnecessary.
+
+### 6. NEW RULES COMPONENT: Goal
 
 **Location:** `Scripts/Rules/goal.gd` / `Scenes/Rules/goal.tscn`
 **Extends:** Node
@@ -157,13 +237,8 @@ Goal component detects body_entered
 **Purpose:** Detects bodies entering a goal zone and emits score signals through the UniversalGameScript.
 
 **Exports:**
-- `score_type: ScoreType` — enum: P1_SCORE, P2_SCORE, GENERIC_SCORE
+- `score_type: CommonEnums.ScoreType` — uses the shared enum: P1_SCORE, P2_SCORE, GENERIC_SCORE
 - `score_amount: int = 1` — points to award (supports negative for penalties)
-
-**Enum:**
-```
-ScoreType { P1_SCORE, P2_SCORE, GENERIC_SCORE }
-```
 
 **Behavior:**
 - In `_ready()`, connect to parent's `body_entered` signal (parent must be Area2D)
@@ -176,7 +251,7 @@ ScoreType { P1_SCORE, P2_SCORE, GENERIC_SCORE }
 - P1Goal: `score_type: P2_SCORE` (ball enters P1's goal → P2 scores)
 - P2Goal: `score_type: P1_SCORE` (ball enters P2's goal → P1 scores)
 
-### 6. Interface — Enhancement
+### 7. Interface — Enhancement
 
 **Location:** `Scripts/Rules/interface.gd`
 
@@ -185,7 +260,7 @@ ScoreType { P1_SCORE, P2_SCORE, GENERIC_SCORE }
 - Connect to `parent.on_p2_score` → calls `set_p2_score()`
 - These connections are added in `_ready()` alongside existing connections
 
-### 7. NEW FLOW COMPONENT: SoundOnCollision
+### 8. NEW FLOW COMPONENT: SoundOnCollision
 
 **Location:** `Scripts/Flow/sound_on_collision.gd` / `Scenes/Flow/sound_on_collision.tscn`
 **Extends:** Node (or AudioStreamPlayer2D)
@@ -202,7 +277,7 @@ ScoreType { P1_SCORE, P2_SCORE, GENERIC_SCORE }
 
 **Pong configuration:** Attached to P1Goal and P2Goal, plays the goal scored sound (`threeTone1.ogg`)
 
-### 8. NEW RULES COMPONENT: VariableTuner
+### 9. NEW RULES COMPONENT: VariableTuner
 
 **Location:** `Scripts/Rules/variable_tuner.gd` / `Scenes/Rules/variable_tuner.tscn`
 **Extends:** Node
@@ -214,12 +289,7 @@ ScoreType { P1_SCORE, P2_SCORE, GENERIC_SCORE }
 - `source_signal: String` — signal name to connect to
 - `target_property: String` — property name on parent to modify (e.g., "turning_speed")
 - `adjustment_amount: float` — value to ADD to the property (negative to subtract, works as multiplier if needed)
-- `adjustment_mode: AdjustmentMode` — enum: ADD, MULTIPLY, SET
-
-**Enum:**
-```
-AdjustmentMode { ADD, MULTIPLY, SET }
-```
+- `adjustment_mode: CommonEnums.AdjustmentMode` — uses shared enum: ADD, MULTIPLY, SET
 
 **Behavior:**
 - In `_ready()`, connect `source_node.source_signal` to internal handler
@@ -235,7 +305,7 @@ AdjustmentMode { ADD, MULTIPLY, SET }
 - `adjustment_amount`: 30.0
 - `adjustment_mode`: ADD
 
-### 9. NEW RULES COMPONENT: PointsMonitor
+### 10. NEW RULES COMPONENT: PointsMonitor
 
 **Location:** `Scripts/Rules/points_monitor.gd` / `Scenes/Rules/points_monitor.tscn`
 **Extends:** Node
@@ -243,17 +313,10 @@ AdjustmentMode { ADD, MULTIPLY, SET }
 **Purpose:** Monitors a points value (p1_score, p2_score, or generic score) on the game script and emits victory/defeat when it reaches a target.
 
 **Exports:**
-- `score_type: ScoreType` — which score to watch (P1_SCORE, P2_SCORE, GENERIC_SCORE)
+- `score_type: CommonEnums.ScoreType` — which score to watch (P1_SCORE, P2_SCORE, GENERIC_SCORE)
 - `target_score: int = 11` — threshold to trigger
-- `condition: Condition` — enum: GREATER_OR_EQUAL, LESS_OR_EQUAL
-- `result: Result` — enum: VICTORY, DEFEAT
-
-**Enums:**
-```
-ScoreType { P1_SCORE, P2_SCORE, GENERIC_SCORE }
-Condition { GREATER_OR_EQUAL, LESS_OR_EQUAL }
-Result { VICTORY, DEFEAT }
-```
+- `condition: CommonEnums.Condition` — uses shared enum: GREATER_OR_EQUAL, LESS_OR_EQUAL
+- `result: CommonEnums.Result` — uses shared enum: VICTORY, DEFEAT
 
 **Behavior:**
 - In `_ready()`, connect to the appropriate signal on parent (UGS):
@@ -267,7 +330,7 @@ Result { VICTORY, DEFEAT }
 - P1PointsMonitor: `score_type: P1_SCORE`, `target_score: 11`, `condition: GREATER_OR_EQUAL`, `result: VICTORY`
 - P2PointsMonitor: `score_type: P2_SCORE`, `target_score: 11`, `condition: GREATER_OR_EQUAL`, `result: DEFEAT`
 
-### 10. NEW COMPONENT: ScreenCleanup
+### 11. NEW COMPONENT: ScreenCleanup
 
 **Location:** `Scripts/Components/screen_cleanup.gd` / `Scenes/Components/screen_cleanup.tscn`
 **Extends:** Node
@@ -291,13 +354,15 @@ Result { VICTORY, DEFEAT }
 **Location:** `Scripts/Bodies/ball.gd`
 
 **Removals:**
-- `BallCollision` signal — no longer needed (PongAcceleration and AngledDeflector auto-connect)
+- `BallCollision` signal — no longer needed (PongAcceleration and AngledDeflector auto-connect via `body_collided`)
 - `custom_bounce()` method — no longer needed (AngledDeflector handles angle changes directly)
 - `accelerate()` method — no longer needed (PongAcceleration is self-sufficient)
 - `reset()` method — no longer needed (ball is destroyed and respawned, not reused)
-- `_on_pong_acceleration_speed_changed()` handler — keep if Ball still needs sound changes, but connection pattern may change
 
-**The Ball body becomes much simpler:** it moves, bounces off physics colliders, plays collision sounds, and that's it. All game-specific behavior (acceleration, deflection, cleanup) is handled by attached components.
+**Additions:**
+- Emit `body_collided(collider, normal)` in `_physics_process()` when collision detected (new UniversalBody signal)
+
+**The Ball body becomes much simpler:** it moves, bounces off physics colliders, emits the generic `body_collided` signal, plays collision sounds, and that's it. All game-specific behavior (acceleration, deflection, cleanup) is handled by attached components.
 
 ---
 
@@ -306,9 +371,10 @@ Result { VICTORY, DEFEAT }
 **Location:** `Scripts/Bodies/paddle.gd`
 
 **Removals:**
-- `bounce_offset()` method — no longer called externally (AngledDeflector handles its own deflection)
+- `bounce_offset()` method — no longer called externally (AngledDeflector lives on Ball now)
+- `deflector` onready reference — no longer needed since AngledDeflector moved to Ball
 
-**The Paddle body remains simple:** collision shape, visual, and AngledDeflector as a child for other entities to query.
+**The Paddle body remains simple:** collision shape, visual. No AngledDeflector child needed.
 
 ---
 
@@ -329,8 +395,9 @@ START:
 
 GAMEPLAY:
   Ball moves → hits paddle (physics collision)
-    → PongAcceleration detects "paddles" group → accelerates ball
-    → AngledDeflector detects "paddles" group → deflects ball angle
+    → Ball emits body_collided(paddle, normal)
+      → PongAcceleration hears body_collided, checks "paddles" group → accelerates ball
+      → AngledDeflector hears body_collided, checks "paddles" group → deflects ball angle
   Ball moves → hits wall → physics bounce (automatic)
 
 SCORING:
@@ -351,9 +418,9 @@ SCORING:
 
 WIN/LOSE:
   P1 reaches 11 → P1PointsMonitor emits UGS.victory()
-    → UGS transitions to GAME_OVER, shows WIN_TEXT
+    → UGS self-connected victory → p1_win() → GAME_OVER, WIN_TEXT
   P2 reaches 11 → P2PointsMonitor emits UGS.defeat()
-    → UGS transitions to GAME_OVER, shows LOSE_TEXT
+    → UGS self-connected defeat → p1_lose() → GAME_OVER, LOSE_TEXT
 ```
 
 ---
@@ -362,31 +429,37 @@ WIN/LOSE:
 
 Suggested order to build and test incrementally:
 
-### Phase A: UGS + Core Infrastructure
-1. Add collision_groups export + auto-setup to UniversalGameScript
-2. Add p1_score/p2_score tracking and signals to UniversalGameScript
-3. Build Goal component
-4. Build PointsMonitor component
-5. Test: verify score tracking works with debug prints
+### Phase A: Foundations (Shared Infrastructure)
+1. Add new enums to `common_enums.gd` (ScoreType, Trigger, SpawnPattern, AdjustmentMode, Condition, Result)
+2. Update `wave_director.gd` to reference `CommonEnums.Trigger` instead of local enum
+3. Update `wave_spawner.gd` to reference `CommonEnums.SpawnPattern` instead of local enum
+4. Add `body_collided` signal to `universal_body.gd`
+5. Add collision_groups export + p1/p2 score tracking + self-connect victory/defeat to `universal_game_script.gd`
+6. Test: verify enums are accessible, signals compile, UGS initializes without errors
 
-### Phase B: Enhanced Components
-6. Enhance PongAcceleration (auto-connect + group filtering)
-7. Enhance AngledDeflector (auto-connect + group filtering + velocity update)
-8. Build VariableTuner component
-9. Test: verify ball acceleration, deflection, and AI ramping
+### Phase B: Scoring Components
+7. Build **Goal** component
+8. Build **PointsMonitor** component
+9. Enhance **Interface** (connect to on_p1_score/on_p2_score)
+10. Test: verify score tracking works with debug prints
 
-### Phase C: Flow Components
-10. Enhance WaveSpawner (spawn_at_game_start + initial_velocity + angle config)
-11. Build ScreenCleanup component
-12. Build SoundOnCollision component
-13. Enhance Interface (connect to on_p1_score/on_p2_score)
+### Phase C: Enhanced Ball Components
+11. Enhance **PongAcceleration** (auto-connect to body_collided + group filtering)
+12. Enhance **AngledDeflector** (auto-connect to body_collided + group filtering + velocity update, moved to Ball)
+13. Build **VariableTuner** component
+14. Test: verify ball acceleration, deflection, and AI ramping
 
-### Phase D: Assembly
-14. Clean up Ball script (remove redundant signal/methods)
-15. Clean up Paddle script (remove bounce_offset)
-16. Delete pong.gd
-17. Build new pong.tscn with UniversalGameScript root + all components
-18. Playtest full game loop
+### Phase D: Flow Components
+15. Enhance **WaveSpawner** (spawn_at_game_start + initial_velocity + angle config)
+16. Build **ScreenCleanup** component
+17. Build **SoundOnCollision** component
+
+### Phase E: Assembly
+18. Update **Ball** script (emit body_collided, remove BallCollision/custom_bounce/accelerate/reset)
+19. Update **Paddle** script (remove bounce_offset and deflector reference)
+20. **Delete `pong.gd`**
+21. Build new `pong.tscn` with `UniversalGameScript` root + all components
+22. Playtest full game loop
 
 ---
 
@@ -403,14 +476,10 @@ These will be addressed in a future update. For now, the componentized Pong star
 
 ## Risks & Considerations
 
-1. **Auto-connect collision detection pattern:** Both PongAcceleration and AngledDeflector need to detect collisions on their parent. Ball uses `move_parent_physics()` which returns a KinematicCollision2D. The auto-connect pattern needs a consistent way to hook into this. Consider having Ball (or UniversalBody) emit a generic `body_collided(collider, normal)` signal that any component can listen to.
+1. **VariableTuner with string-based property access:** Using `parent[target_property]` requires the property to exist and be the right type. Print clear error messages if property not found.
 
-2. **VariableTuner with string-based property access:** Using `parent[target_property]` requires the property to exist and be the right type. Print clear error messages if property not found.
+2. **Scene tree complexity:** 14+ component nodes is a lot of configuration. The inspector will be busy. This is expected for the "composition over inheritance" trade-off.
 
-3. **PointsMonitor ScoreType enum:** This enum (P1_SCORE, P2_SCORE, GENERIC_SCORE) is shared with Goal. Consider defining it in CommonEnums or a shared location to avoid duplication.
+3. **Ball death timing:** ScreenCleanup must free the ball AFTER Goal has processed the body_entered signal. Since both react to the same body_entered, ensure Goal processes first (scene order / process priority).
 
-4. **Scene tree complexity:** 14+ component nodes is a lot of configuration. The inspector will be busy. This is expected for the "composition over inheritance" trade-off.
-
-5. **Ball death timing:** ScreenCleanup must free the ball AFTER Goal has processed the body_entered signal. Since both react to the same body_entered, ensure Goal processes first (scene order / process priority).
-</task_progress>
-</write_to_file>
+4. **Ball lifecycle change:** Current `pong.gd` reuses the same Ball instance (reposition + reset). Componentized Pong spawns fresh Balls via WaveSpawner and destroys them via ScreenCleanup. PongAcceleration resets automatically on instantiation. This is a behavioral change but is more generic and correct for the component pattern.

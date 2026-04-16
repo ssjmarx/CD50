@@ -1,11 +1,16 @@
 # Master class for game coordinators. State machine, signal routing, score tracking, collision matrix setup.
 class_name UniversalGameScript extends Node2D
 
-var states = CommonEnums.State # Reference to state enum
-var current_score = 0 # Player score
-var current_multiplier = 0 # Score multiplier
-var collision_matrix: CollisionMatrix # Auto-configures collision layers/masks
-var _current_state: CommonEnums.State = states.ATTRACT # Internal state storage
+@export var game_title: String
+@export var collision_groups: Dictionary
+
+var states = CommonEnums.State
+var current_score = 0
+var current_multiplier = 0
+var collision_matrix: CollisionMatrix
+var _current_state: CommonEnums.State = states.PLAYING
+var p1_score: int = 0
+var p2_score: int = 0
 
 # Public state property with automatic signal emission on change
 var current_state: CommonEnums.State:
@@ -16,16 +21,11 @@ var current_state: CommonEnums.State:
 			_current_state = value
 			state_changed.emit(_current_state)
 
-# Game display name
-@export var game_title: String
-
-# Signals from Rules components (connect to these)
+# Signals FROM other components, they call parent.{signal}.emit()
+signal victory
+signal defeat
 @warning_ignore("unused_signal")
 signal group_cleared(group_name: String)
-@warning_ignore("unused_signal")
-signal victory
-@warning_ignore("unused_signal")
-signal defeat
 @warning_ignore("unused_signal")
 signal lives_changed(new_lives: int)
 @warning_ignore("unused_signal")
@@ -39,18 +39,24 @@ signal spawning_wave(director, wave_number: int)
 @warning_ignore("unused_signal")
 signal spawning_wave_complete(director, wave_number: int)
 
-# Signals emitted to Rules/components (connect from these)
-signal on_game_start # Game started, components should activate
-signal on_game_end # Game ended, cleanup
-signal on_game_over(final_score: int) # Game over state reached
-signal on_points_changed(new_score: int) # Score updated
-signal on_multiplier_changed(new_multiplier: int) # Multiplier updated
-signal state_changed(new_state: CommonEnums.State) # State transition
+# Signals TO other components, they listen and react
+signal on_game_start
+signal on_game_end
+signal on_game_over(final_score: int)
+signal on_points_changed(new_score: int)
+signal on_multiplier_changed(new_multiplier: int)
+signal state_changed(new_state: CommonEnums.State)
+signal on_p1_score(amount: int)
+signal on_p2_score(amount: int)
 
 # Initialize collision matrix and auto-configure all bodies
 func _ready() -> void:
-	collision_matrix = CollisionMatrix.new()
-	collision_matrix.initialize(self)
+	if collision_groups:
+		collision_matrix = CollisionMatrix.new()
+		collision_matrix.initialize(self)
+	
+	victory.connect(p1_win)
+	defeat.connect(p1_lose)
 
 # Handle state transitions via keyboard input
 func _unhandled_input(event: InputEvent) -> void:
@@ -111,8 +117,8 @@ func set_multiplier(new_value: int) -> void:
 	on_multiplier_changed.emit(current_multiplier)
 
 # Configure collision matrix with group relationships
-func setup_collision_groups(collision_groups: Dictionary) -> void:
-	collision_matrix.setup(collision_groups)
+func setup_collision_groups(groups: Dictionary) -> void:
+	collision_matrix.setup(groups)
 
 # Set current state
 func set_state(new_state: CommonEnums.State) -> void:
@@ -121,3 +127,19 @@ func set_state(new_state: CommonEnums.State) -> void:
 # Get current state
 func get_state() -> CommonEnums.State:
 	return current_state
+
+func add_p1_score(amount) -> void:
+	p1_score += amount
+	on_p1_score.emit(amount)
+
+func add_p2_score(amount) -> void:
+	p2_score += amount
+	on_p2_score.emit(amount)
+
+static func find_ancestor(node: Node) -> UniversalGameScript:
+	var parent = node.get_parent()
+	while parent:
+		if parent is UniversalGameScript:
+			return parent
+		parent = parent.get_parent()
+	return null

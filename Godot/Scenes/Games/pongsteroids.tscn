@@ -124,7 +124,6 @@ offset_bottom = 320.0
 
 [node name="Interface" parent="." instance=ExtResource("9_46oju")]
 
-[connection signal="BallCollision" from="Ball" to="." method="_on_ball_collision"]
 [connection signal="body_entered" from="P2 Goal" to="." method="_on_p_2_goal_body_entered"]
 [connection signal="body_entered" from="P1 Goal" to="." method="_on_p_1_goal_body_entered"]
 

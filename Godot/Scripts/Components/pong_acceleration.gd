@@ -2,25 +2,21 @@
 
 extends Node
 
-# Emitted when speed level changes
-signal speed_changed(speed_level)
+@export var acceleration_factor: float = 1.2
+@export var acceleration_levels: int = 8
+@export var target_group: String = "paddles"
 
-@export var acceleration_factor: float = 1.2 # Velocity multiplier per level
-@export var acceleration_levels: int = 8 # Maximum speed level
+var current_acceleration_level: int = 1
 
-var current_acceleration_level: int = 1 # Current speed level (1-8)
+@onready var parent = get_parent()
 
-@onready var parent = get_parent() # Reference to attached body
+# signal connections
+func _ready() -> void:
+	parent.body_collided.connect(accelerate)
 
 # Increase speed to next level and emit signal
-func accelerate() -> void:
-	if current_acceleration_level < acceleration_levels:
-		parent.velocity = parent.velocity * acceleration_factor
-		current_acceleration_level += 1
-		
-		speed_changed.emit(current_acceleration_level)
-
-# Reset to level 1 and emit signal
-func reset() -> void:
-	current_acceleration_level = 1
-	speed_changed.emit(current_acceleration_level)
+func accelerate(collider: Node, _normal: Vector2) -> void:
+	if collider.is_in_group(target_group):
+		if current_acceleration_level < acceleration_levels:
+			parent.velocity = parent.velocity * acceleration_factor
+			current_acceleration_level += 1

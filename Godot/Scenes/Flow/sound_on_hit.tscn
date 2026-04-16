@@ -1,0 +1,6 @@
+[gd_scene load_steps=2 format=3 uid="uid://cc1murtue63r4"]
+
+[ext_resource type="Script" uid="uid://clx5ym7505grw" path="res://Scripts/Flow/sound_on_hit.gd" id="1_qwm45"]
+
+[node name="SoundOnHit" type="Node"]
+script = ExtResource("1_qwm45")

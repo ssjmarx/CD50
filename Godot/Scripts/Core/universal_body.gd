@@ -2,23 +2,24 @@
 class_name UniversalBody extends CharacterBody2D
 
 # Signals from components (Brains listen, emit to body)
-signal left_joystick(direction: Vector2) # Movement direction from joystick/keyboard
-signal right_joystick(direction: Vector2) # Aim direction from right stick
-signal mouse_position(position: Vector2) # Mouse target position
-signal button_pressed(button: InputEvent) # Any action button pressed
-signal button_released(button: InputEvent) # Any action button released
+signal left_joystick(direction: Vector2)
+signal right_joystick(direction: Vector2)
+signal mouse_position(position: Vector2)
+signal button_pressed(button: InputEvent)
+signal button_released(button: InputEvent)
 
 # Signals from router (Components listen after processing)
-signal move(direction: Vector2) # Processed movement direction (axis locks applied)
-signal move_to(position: Vector2) # Processed target position (axis locks applied)
-signal action(button: InputEvent) # Generic action event
-signal end_action(button: InputEvent) # Action release event
-signal shoot(button: InputEvent) # Shoot button (button_r)
-signal end_shoot(button: InputEvent) # Shoot release
-signal thrust(button: InputEvent) # Thrust button (button_l)
-signal end_thrust(button: InputEvent) # Thrust release
-signal aim(direction: Vector2) # Aim direction (for rotation)
-signal aim_at(position: Vector2) # Aim target position (for rotation)
+signal move(direction: Vector2)
+signal move_to(position: Vector2)
+signal action(button: InputEvent)
+signal end_action(button: InputEvent)
+signal shoot(button: InputEvent)
+signal end_shoot(button: InputEvent)
+signal thrust(button: InputEvent)
+signal end_thrust(button: InputEvent)
+signal aim(direction: Vector2)
+signal aim_at(position: Vector2)
+signal body_collided(collider: Node, normal: Vector2)
 
 # Entity dimensions for collision and clamping
 @export var width: int = 4
@@ -103,9 +104,13 @@ func move_parent_toward(target: Vector2, max_distance: float) -> void:
 	var clamped_target = target.clamp(Vector2(x_min + width / 2.0, y_min + height / 2.0), Vector2(x_max - width / 2.0, y_max - height / 2.0))
 	position = position.move_toward(clamped_target, max_distance)
 
-# Move entity by displacement with physics collision detection
+# Move entity by displacement with physics collision detection and signalling
 func move_parent_physics(movement: Vector2) -> KinematicCollision2D:
-	return move_and_collide(movement)
+	var collision = move_and_collide(movement)
+	if collision:
+		velocity = velocity.bounce(collision.get_normal())
+		body_collided.emit(collision.get_collider(), collision.get_normal())
+	return collision
 
 # Move entity toward target with physics collision detection
 func move_parent_physics_toward(target: Vector2, max_distance: float) -> KinematicCollision2D:

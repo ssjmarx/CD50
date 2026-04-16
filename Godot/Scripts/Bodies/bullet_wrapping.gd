@@ -2,9 +2,6 @@
 
 extends "res://Scripts/Core/universal_body.gd"
 
-# Emitted when bullet hits something
-signal bullet_collision
-
 @export var radius: float = 4.0 # Bullet size (square)
 
 var is_alive: bool = true # Prevents multiple hit triggers
@@ -39,10 +36,10 @@ func _physics_process(delta: float) -> void:
 		bullet_hit(collision.get_collider())
 
 # Hitbox collision detected
-func _on_hitbox_entered(target: Node2D) -> void:
+func _on_hitbox_entered(target) -> void:
 	if not is_alive:
 		return
-	bullet_hit(target)
+	bullet_hit(target.get_collider())
 
 # Timer expired, clean up bullet
 func _on_timeout() -> void:
@@ -50,9 +47,11 @@ func _on_timeout() -> void:
 		queue_free()
 
 # Handle bullet hit (disable colliders, play sound, despawn)
-func bullet_hit(target) -> void:
+func bullet_hit(collider) -> void:
+	if collider.has_node("Health"):
+		collider.get_node("Health").reduce_health(1)
+
 	is_alive = false
-	bullet_collision.emit(target)
 	
 	hide()
 	$CollisionShape2D.set_deferred("disabled", true)

@@ -2,9 +2,6 @@
 
 extends "res://Scripts/Core/universal_body.gd"
 
-# Emitted when asteroid collides with physics body
-signal asteroid_collision
-
 @export var initial_velocity: Vector2 = Vector2.ZERO # Starting drift velocity
 @export var initial_size: Size = Size.LARGE # Asteroid size enum
 @export var num_vertices: int = 10 # Number of polygon vertices
@@ -53,9 +50,6 @@ func _physics_process(delta: float) -> void:
 	var collision = move_parent_physics(velocity * delta)
 	
 	if collision:
-		velocity = velocity.bounce(collision.get_normal())
-		asteroid_collision.emit()
-		
 		# Damage colliders with Health component
 		var collider = collision.get_collider()
 		if collider.has_node("Health"):

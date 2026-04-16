@@ -12,6 +12,8 @@ func _ready() -> void:
 	parent.on_multiplier_changed.connect(set_multiplier)
 	parent.lives_changed.connect(set_lives)
 	parent.timer_tick.connect(set_timer)
+	parent.on_p1_score.connect(set_p1_score)
+	parent.on_p2_score.connect(set_p2_score)
 
 # Update points display
 func set_points(new_score) -> void:

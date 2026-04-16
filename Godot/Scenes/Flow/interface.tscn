@@ -1,7 +1,7 @@
 [gd_scene load_steps=11 format=3 uid="uid://bq6cdrx340jp7"]
 
 [ext_resource type="FontFile" uid="uid://imm2iompf7sv" path="res://Assets/Fonts/Kenney Pixel.ttf" id="1_ep56u"]
-[ext_resource type="Script" uid="uid://bsjofydvrvq5" path="res://Scripts/Rules/interface.gd" id="1_y5n4l"]
+[ext_resource type="Script" uid="uid://bsjofydvrvq5" path="res://Scripts/Flow/interface.gd" id="1_y5n4l"]
 
 [sub_resource type="LabelSettings" id="LabelSettings_big"]
 font = ExtResource("1_ep56u")

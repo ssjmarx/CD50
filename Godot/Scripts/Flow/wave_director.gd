@@ -3,7 +3,7 @@
 extends Node
 
 # Conditional exports based on trigger_type
-@export var trigger_type: Trigger = Trigger.GROUP_CLEARED
+@export var trigger_type: CommonEnums.Trigger = CommonEnums.Trigger.GROUP_CLEARED
 @export var trigger_value: Variant = null
 @export var wave_delay: float = 2.0
 @export var max_waves: int = 0
@@ -12,21 +12,14 @@ var current_wave: int = 1
 
 @onready var parent = get_parent()
 
-# Trigger types
-enum Trigger {
-	GROUP_CLEARED,
-	TIMER_EXPIRED,
-	LIVES_DEPLETED
-}
-
 # connect to configured trigger
 func _ready() -> void:
 	match trigger_type:
-		Trigger.GROUP_CLEARED:
+		CommonEnums.Trigger.GROUP_CLEARED:
 			parent.group_cleared.connect(_on_wave_triggered)
-		Trigger.TIMER_EXPIRED:
+		CommonEnums.Trigger.TIMER_EXPIRED:
 			parent.timer_expired.connect(_on_wave_triggered)
-		Trigger.LIVES_DEPLETED:
+		CommonEnums.Trigger.LIVES_DEPLETED:
 			parent.lives_depleted.connect(_on_wave_triggered)
 
 # spawn configured wave when trigger fires

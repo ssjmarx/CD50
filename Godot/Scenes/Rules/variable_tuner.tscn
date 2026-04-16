@@ -1,0 +1,6 @@
+[gd_scene load_steps=2 format=3 uid="uid://clhg61503vle8"]
+
+[ext_resource type="Script" uid="uid://bxttdshmtb4tf" path="res://Scripts/Rules/variable_tuner.gd" id="1_k6i7q"]
+
+[node name="VariableTuner" type="Node"]
+script = ExtResource("1_k6i7q")

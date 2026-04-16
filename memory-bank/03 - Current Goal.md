@@ -1,7 +1,7 @@
 # Current Goal: Component Pong
 
 **Planning Document:** `planning/04 - Component Pong.md`  
-**Status:** 🔲 Not Started  
+**Status:** 🔄 Plan Revised — Ready to Implement  
 **Objective:** Rebuild Pong entirely from components — eliminate the monolithic `pong.gd` game script in favor of a `UniversalGameScript` with attached Flow/Rule/Component nodes.
 
 ---
@@ -121,20 +121,21 @@ WIN/LOSE:
 
 ---
 
-## Key Design Decisions to Make
+## Key Design Decisions (Resolved)
 
-1. **Auto-connect collision pattern:** How do PongAcceleration and AngledDeflector detect collisions on their parent? Options:
-   - Ball emits a generic `body_collided(collider, normal)` signal
-   - Components read `get_last_slide_collision()` from parent
-   - Components connect to parent's existing signals
+1. **Auto-connect collision pattern:** ✅ Add `body_collided(collider, normal)` signal to `UniversalBody`. Components connect to `parent.body_collided` and filter by group. Body scripts emit this signal in their `_physics_process()` alongside existing collision logic.
 
-2. **VariableTuner string-based property access:** Using `parent[target_property]` is fragile. Need clear error messages.
+2. **VariableTuner string-based property access:** Using `parent[target_property]` — will include clear error messages if property not found.
 
-3. **ScoreType enum:** PointsMonitor and Goal share a `ScoreType` enum (P1_SCORE, P2_SCORE, GENERIC_SCORE). Should this live in a shared location?
+3. **ScoreType enum:** ✅ Added to `common_enums.gd` alongside Trigger (from wave_director), SpawnPattern (from wave_spawner), AdjustmentMode, Condition, and Result enums.
 
-4. **Scene tree complexity:** 14+ component nodes is a lot of Inspector configuration. This is the expected trade-off for composition over inheritance.
+4. **AngledDeflector placement:** ✅ Moved to Ball (not Paddle). The Ball detects collisions, so AngledDeflector must live on the Ball to auto-connect. Deflection bias is a ball behavior ("how does the ball bounce off paddles").
 
-5. **Ball death timing:** ScreenCleanup must free the ball AFTER Goal has processed the `body_entered` signal. Scene order / process priority matters.
+5. **UGS victory/defeat self-connect:** ✅ UGS connects `victory` → `p1_win()` and `defeat` → `p1_lose()` in `_ready()` so components can emit these signals without direct method calls.
+
+### Remaining Considerations
+- **Scene tree complexity:** 14+ component nodes is a lot of Inspector configuration. Expected trade-off for composition over inheritance.
+- **Ball death timing:** ScreenCleanup must free the ball AFTER Goal has processed the `body_entered` signal. Scene order / process priority matters.
 
 ---
 
@@ -152,5 +153,3 @@ WIN/LOSE:
 - [ ] Pong runs identically to the current version using only UGS + components
 - [ ] All game logic (states, scoring, spawning, win/lose) is handled by components
 - [ ] The same UGS can theoretically run Breakout, Asteroids, etc. with different component configurations
-</task_progress>
-</write_to>
