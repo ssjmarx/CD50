@@ -2,17 +2,16 @@
 
 extends Node
 
-@export var max_lives: int = 3 # Maximum lives player can have
-@export var current_lives: int = 3 # Current number of lives
+@export var max_lives: int = 3
 
-@onready var parent = get_parent() # Reference to game script
+@onready var current_lives: int = max_lives
+@onready var parent = get_parent()
 
 # Decrement lives by 1 and emit signals
 func lose_life() -> void:
 	current_lives -= 1
 	parent.lives_changed.emit(current_lives)
 	
-	# Emit defeat signal when lives reach 0
 	if current_lives <= 0:
 		parent.lives_depleted.emit()
 

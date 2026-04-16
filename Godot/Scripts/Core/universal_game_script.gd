@@ -21,19 +21,23 @@ var current_state: CommonEnums.State:
 
 # Signals from Rules components (connect to these)
 @warning_ignore("unused_signal")
-signal group_cleared(group_name: String) # Emitted when monitored group empties
+signal group_cleared(group_name: String)
 @warning_ignore("unused_signal")
-signal victory # Emitted on win condition
+signal victory
 @warning_ignore("unused_signal")
-signal defeat # Emitted on lose condition
+signal defeat
 @warning_ignore("unused_signal")
-signal lives_changed(new_lives: int) # Lives count changed
+signal lives_changed(new_lives: int)
 @warning_ignore("unused_signal")
-signal lives_depleted # Lives reached zero
+signal lives_depleted
 @warning_ignore("unused_signal")
-signal timer_tick(current_time: float) # Timer tick event
+signal timer_tick(current_time: float)
 @warning_ignore("unused_signal")
-signal timer_expired # Timer reached limit
+signal timer_expired
+@warning_ignore("unused_signal")
+signal spawning_wave(director, wave_number: int)
+@warning_ignore("unused_signal")
+signal spawning_wave_complete(director, wave_number: int)
 
 # Signals emitted to Rules/components (connect from these)
 signal on_game_start # Game started, components should activate

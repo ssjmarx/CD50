@@ -8,7 +8,7 @@
 [ext_resource type="AudioStream" uid="uid://ctmcfvxwus0wo" path="res://Assets/Audio/threeTone1.ogg" id="6_glgdb"]
 [ext_resource type="PackedScene" uid="uid://b418fukpc5m41" path="res://Scenes/Components/collision_marker.tscn" id="6_qu73x"]
 [ext_resource type="Script" uid="uid://bghaddibpt6f1" path="res://addons/crt/crt.gd" id="7_lngll"]
-[ext_resource type="PackedScene" uid="uid://bq6cdrx340jp7" path="res://Scenes/Rules/interface.tscn" id="8_d3mj0"]
+[ext_resource type="PackedScene" uid="uid://bq6cdrx340jp7" path="res://Scenes/Flow/interface.tscn" id="8_d3mj0"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_f0ijk"]
 size = Vector2(640, 8)

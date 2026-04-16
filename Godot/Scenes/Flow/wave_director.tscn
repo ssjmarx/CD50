@@ -1,0 +1,6 @@
+[gd_scene load_steps=2 format=3 uid="uid://dwyyfxniivl1r"]
+
+[ext_resource type="Script" uid="uid://bgrmr3k1dijk0" path="res://Scripts/Flow/wave_director.gd" id="1_l87pt"]
+
+[node name="WaveDirector" type="Node2D"]
+script = ExtResource("1_l87pt")

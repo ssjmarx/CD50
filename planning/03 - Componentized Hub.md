@@ -104,6 +104,13 @@ These components connect Rule components to Game Script state changes.
 
 **Removes need to write:** "Level progression" code for every shooter game.
 
+### Wave_Spawner
+- **Logic:** Spawns a wave on the wave spawning signal
+- **Behavior:**
+  - When `spawning_wave` is emitted, spawns a configurable number of a configurable body in a selectable pattern
+  - SpawnPattern.SCREEN_EDGES - asteroid spawn pattern from Asteroids
+  - SpawnPattern.SCREEN_CENTER - ball spawn pattern from Pong
+
 ### Intermission_Screen
 - **Logic:** Listens for Game Script state changes via signals
 - **Behavior:**

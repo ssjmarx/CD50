@@ -10,7 +10,7 @@
 [ext_resource type="AudioStream" uid="uid://b3en0cgneptgr" path="res://Assets/Audio/lowDown.ogg" id="6_uvgxs"]
 [ext_resource type="PackedScene" uid="uid://tre5p2x1bb2k" path="res://Scenes/Rules/lives_counter.tscn" id="9_lmwk8"]
 [ext_resource type="PackedScene" uid="uid://dhulxxtcsipl6" path="res://Scenes/Rules/group_monitor.tscn" id="10_vu4sl"]
-[ext_resource type="PackedScene" uid="uid://bq6cdrx340jp7" path="res://Scenes/Rules/interface.tscn" id="11_r1nhx"]
+[ext_resource type="PackedScene" uid="uid://bq6cdrx340jp7" path="res://Scenes/Flow/interface.tscn" id="11_r1nhx"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_per38"]
 size = Vector2(656, 8)

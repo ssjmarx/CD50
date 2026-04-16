@@ -2,13 +2,13 @@
 
 extends Node
 
-@export var target_group: String = "" # Group name to monitor
-@export var victory_on_clear: bool = false # Emit victory signal when cleared
-@export var defeat_on_clear: bool = false # Emit defeat signal when cleared
+@export var target_group: String = ""
+@export var victory_on_clear: bool = false
+@export var defeat_on_clear: bool = false
 
-var _previous_count: int = 0 # Track previous node count
+var _previous_count: int = 0 
 
-@onready var parent = get_parent() # Reference to game script
+@onready var parent = get_parent()
 
 # Check if group count dropped to zero and emit appropriate signals
 func _physics_process(_delta: float) -> void:

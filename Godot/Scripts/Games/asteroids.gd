@@ -319,7 +319,7 @@ func _create_and_setup_ship(timer):
 	gun.target_hit.connect(_on_bullet_hit)
 	
 	# Wait for timer and safe zone
-	await get_tree().create_timer(timer).timeout	
+	await get_tree().create_timer(timer).timeout
 	await _wait_for_safe_zone()
 	
 	# Add ship to scene

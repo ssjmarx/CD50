@@ -8,7 +8,7 @@
 [ext_resource type="PackedScene" uid="uid://eketockdsssi" path="res://Scenes/Legs/direct_movement.tscn" id="6_move"]
 [ext_resource type="AudioStream" uid="uid://ctmcfvxwus0wo" path="res://Assets/Audio/threeTone1.ogg" id="7_audio"]
 [ext_resource type="Script" uid="uid://bghaddibpt6f1" path="res://addons/crt/crt.gd" id="8_crt"]
-[ext_resource type="PackedScene" uid="uid://bq6cdrx340jp7" path="res://Scenes/Rules/interface.tscn" id="9_46oju"]
+[ext_resource type="PackedScene" uid="uid://bq6cdrx340jp7" path="res://Scenes/Flow/interface.tscn" id="9_46oju"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_wall"]
 size = Vector2(640, 8)

@@ -10,7 +10,7 @@
 [ext_resource type="PackedScene" uid="uid://b2utyb8vjdhru" path="res://Scenes/Brains/aim_ai.tscn" id="7_n2x7g"]
 [ext_resource type="PackedScene" uid="uid://dhulxxtcsipl6" path="res://Scenes/Rules/group_monitor.tscn" id="8_yreoo"]
 [ext_resource type="PackedScene" uid="uid://tre5p2x1bb2k" path="res://Scenes/Rules/lives_counter.tscn" id="9_2e55n"]
-[ext_resource type="PackedScene" uid="uid://bq6cdrx340jp7" path="res://Scenes/Rules/interface.tscn" id="10_18skw"]
+[ext_resource type="PackedScene" uid="uid://bq6cdrx340jp7" path="res://Scenes/Flow/interface.tscn" id="10_18skw"]
 
 [sub_resource type="Environment" id="Environment_hcst1"]
 background_mode = 3

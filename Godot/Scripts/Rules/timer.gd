@@ -2,15 +2,15 @@
 
 extends Node
 
-@export var duration: float = 60.0 # Timer duration in seconds
-@export var count_up: bool = false # If true, counts up from 0 to duration. If false, counts down from duration to 0
-@export var tick_interval: float = 1.0 # Time between timer_tick emissions
+@export var duration: float = 60.0
+@export var count_up: bool = false
+@export var tick_interval: float = 1.0
 
-var _timer: Timer # Internal timer node
-var _current_time: float # Current timer value
-var _is_running: bool = false # Timer running state
+var _timer: Timer
+var _current_time: float
+var _is_running: bool = false
 
-@onready var parent = get_parent() # Reference to game script
+@onready var parent = get_parent()
 
 # Create and configure internal timer
 func _ready() -> void:
@@ -48,7 +48,6 @@ func _on_tick() -> void:
 	if not _is_running:
 		return
 	
-	# Update time based on count_up mode
 	if count_up:
 		_current_time += tick_interval
 		if _current_time >= duration:
@@ -62,5 +61,4 @@ func _on_tick() -> void:
 			stop_timer()
 			parent.timer_expired.emit()
 	
-	# Emit tick event with current time
 	parent.timer_tick.emit(_current_time)
