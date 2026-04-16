@@ -3,7 +3,7 @@
 extends "res://Scripts/Core/universal_body.gd"
 
 # Emitted when asteroid collides with physics body
-signal AsteroidCollision
+signal asteroid_collision
 
 @export var initial_velocity: Vector2 = Vector2.ZERO # Starting drift velocity
 @export var initial_size: Size = Size.LARGE # Asteroid size enum
@@ -54,7 +54,7 @@ func _physics_process(delta: float) -> void:
 	
 	if collision:
 		velocity = velocity.bounce(collision.get_normal())
-		AsteroidCollision.emit()
+		asteroid_collision.emit()
 		
 		# Damage colliders with Health component
 		var collider = collision.get_collider()

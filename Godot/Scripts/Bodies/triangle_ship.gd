@@ -3,7 +3,7 @@
 extends "res://Scripts/Core/universal_body.gd"
 
 # Emitted when ship collides with physics body
-signal TriangleShipCollision
+signal triangle_ship_collision
 
 # Ship polygon vertices (pointed nose, notched tail)
 var points = [
@@ -29,7 +29,7 @@ func _physics_process(delta: float) -> void:
 	
 	if collision:
 		velocity = velocity.bounce(collision.get_normal())
-		TriangleShipCollision.emit()
+		triangle_ship_collision.emit()
 		# Damage colliders with Health component
 		var collider = collision.get_collider()
 		if collider.has_node("Health"):

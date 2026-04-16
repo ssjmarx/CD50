@@ -3,7 +3,7 @@
 extends "res://Scripts/Core/universal_body.gd"
 
 # Emitted when bullet hits something
-signal BulletCollision
+signal bullet_collision
 
 @export var radius: float = 4.0 # Bullet size (square)
 
@@ -52,7 +52,7 @@ func _on_timeout() -> void:
 # Handle bullet hit (disable colliders, play sound, despawn)
 func bullet_hit(target) -> void:
 	is_alive = false
-	BulletCollision.emit(target)
+	bullet_collision.emit(target)
 	
 	hide()
 	$CollisionShape2D.set_deferred("disabled", true)

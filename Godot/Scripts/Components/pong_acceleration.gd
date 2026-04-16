@@ -18,9 +18,9 @@ func accelerate() -> void:
 		parent.velocity = parent.velocity * acceleration_factor
 		current_acceleration_level += 1
 		
-		emit_signal("speed_changed", current_acceleration_level)
+		speed_changed.emit(current_acceleration_level)
 
 # Reset to level 1 and emit signal
 func reset() -> void:
 	current_acceleration_level = 1
-	emit_signal("speed_changed", current_acceleration_level)
+	speed_changed.emit(current_acceleration_level)

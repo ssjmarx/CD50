@@ -25,11 +25,11 @@ enum SpawnPattern {
 	GRID
 }
 
-func _ready():
+func _ready() -> void:
 	expression = Expression.new()
 	parent.spawning_wave.connect(_on_spawning_wave)
 
-func _on_spawning_wave(signaller, wave_number: int):
+func _on_spawning_wave(signaller, wave_number: int) -> void:
 	if signaller != director:
 		return
 	
@@ -42,7 +42,7 @@ func _on_spawning_wave(signaller, wave_number: int):
 			func(): _spawn_one(wave_number, i, spawn_count)
 		)
 
-func _spawn_one(wave_num: int, index: int, total: int):
+func _spawn_one(wave_num: int, index: int, total: int) -> void:
 	var enemy = spawn_scene.instantiate()
 	
 	match spawn_pattern:

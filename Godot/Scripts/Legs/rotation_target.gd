@@ -3,7 +3,7 @@
 extends Node
 
 @export var turning_speed: int = 100 # Degrees per second
-@export var independant_aim: bool = false # Use aim signals instead of move signals
+@export var independent_aim: bool = false # Use aim signals instead of move signals
 
 var target_rotation: float = 0.0 # Target angle to rotate toward
 var target_position: Vector2 # Target position for mouse aim
@@ -15,7 +15,7 @@ var joystick_target: Vector2 # Stored joystick direction
 
 # Connect to appropriate input signals based on mode
 func _ready() -> void:
-	if independant_aim:
+	if independent_aim:
 		parent.aim.connect(_on_aim)
 		parent.aim_at.connect(_on_aim_at)
 	else:
@@ -23,7 +23,7 @@ func _ready() -> void:
 
 # Rotate toward target based on input mode
 func _physics_process(delta: float) -> void:
-	if independant_aim:
+	if independent_aim:
 		if using_mouse:
 			target_position = mouse_target
 			target_rotation = (target_position - parent.position).angle()

@@ -20,7 +20,7 @@ enum Trigger {
 }
 
 # connect to configured trigger
-func _ready():
+func _ready() -> void:
 	match trigger_type:
 		Trigger.GROUP_CLEARED:
 			parent.group_cleared.connect(_on_wave_triggered)
@@ -30,7 +30,7 @@ func _ready():
 			parent.lives_depleted.connect(_on_wave_triggered)
 
 # spawn configured wave when trigger fires
-func _on_wave_triggered(arg1 = null):
+func _on_wave_triggered(arg1 = null) -> void:
 	if trigger_value != null and arg1 != trigger_value:
 		return
 	
