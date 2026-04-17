@@ -1,6 +1,6 @@
 # Asteroid with procedural jagged polygon and physics bouncing. Three selectable sizes.
 
-extends "res://Scripts/Core/universal_body.gd"
+extends UniversalBody
 
 @export var initial_velocity: Vector2 = Vector2.ZERO # Starting drift velocity
 @export var initial_size: Size = Size.LARGE # Asteroid size enum

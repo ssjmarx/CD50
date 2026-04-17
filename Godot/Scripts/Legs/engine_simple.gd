@@ -1,6 +1,6 @@
 # Simple engine for Asteroids-style thrust. Accelerates forward, caps at top speed.
 
-extends Node
+extends UniversalComponent
 
 @export var acceleration: int = 170 # Pixels per second squared
 @export var top_speed: int = 300 # Max velocity (0 = infinite)
@@ -9,7 +9,6 @@ extends Node
 var thrusting: bool = false # Thrust button state
 var joystick_input: bool = false # Joystick input state
 
-@onready var parent = get_parent() # Reference to attached body
 
 # Connect to input signals
 func _ready() -> void:

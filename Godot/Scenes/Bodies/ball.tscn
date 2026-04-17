@@ -1,8 +1,11 @@
-[gd_scene load_steps=4 format=3 uid="uid://mw70bjrifcpb"]
+[gd_scene load_steps=7 format=3 uid="uid://mw70bjrifcpb"]
 
 [ext_resource type="Script" uid="uid://bufxw3hl0oqy0" path="res://Scripts/Bodies/ball.gd" id="1_2wnlm"]
 [ext_resource type="AudioStream" uid="uid://dveho4hncd47a" path="res://Assets/Audio/tone1.ogg" id="2_184hw"]
+[ext_resource type="PackedScene" uid="uid://csg0e2wxlx4qd" path="res://Scenes/Components/angled_deflector.tscn" id="3_1bs62"]
 [ext_resource type="PackedScene" uid="uid://dvb6v6cqiiuag" path="res://Scenes/Components/pong_acceleration.tscn" id="3_o3brn"]
+[ext_resource type="PackedScene" uid="uid://b3hvkyy38ihr1" path="res://Scenes/Components/screen_cleanup.tscn" id="4_8tmdj"]
+[ext_resource type="PackedScene" uid="uid://cc1murtue63r4" path="res://Scenes/Flow/sound_on_hit.tscn" id="5_xdvdt"]
 
 [node name="Ball" type="CharacterBody2D" groups=["balls"]]
 script = ExtResource("1_2wnlm")
@@ -10,14 +13,18 @@ collision_groups = Array[String](["balls"])
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="."]
 
-[node name="AudioStreamPlayer2D" type="AudioStreamPlayer2D" parent="."]
-stream = ExtResource("2_184hw")
-max_polyphony = 3
-
 [node name="PongAcceleration" parent="." instance=ExtResource("3_o3brn")]
 
 [node name="HitBox" type="Area2D" parent="."]
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="HitBox"]
 
-[connection signal="speed_changed" from="PongAcceleration" to="." method="_on_pong_acceleration_speed_changed"]
+[node name="AngledDeflector" parent="." instance=ExtResource("3_1bs62")]
+
+[node name="ScreenCleanup" parent="." instance=ExtResource("4_8tmdj")]
+
+[node name="SoundOnHit" parent="." node_paths=PackedStringArray("sound") instance=ExtResource("5_xdvdt")]
+sound = NodePath("../AudioStreamPlayer2D")
+
+[node name="AudioStreamPlayer2D" type="AudioStreamPlayer2D" parent="."]
+stream = ExtResource("2_184hw")

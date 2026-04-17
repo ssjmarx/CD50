@@ -1,16 +1,14 @@
 # connects to signals in universal_game_script, and emits a wave-spawning signal when the connected signal fires
 
-extends Node
+extends UniversalComponent
 
 # Conditional exports based on trigger_type
 @export var trigger_type: CommonEnums.Trigger = CommonEnums.Trigger.GROUP_CLEARED
-@export var trigger_value: Variant = null
+@export var trigger_value: String = ""
 @export var wave_delay: float = 2.0
 @export var max_waves: int = 0
 
 var current_wave: int = 1
-
-@onready var parent = get_parent()
 
 # connect to configured trigger
 func _ready() -> void:
@@ -24,10 +22,13 @@ func _ready() -> void:
 
 # spawn configured wave when trigger fires
 func _on_wave_triggered(arg1 = null) -> void:
-	if trigger_value != null and arg1 != trigger_value:
+	if trigger_value != "" and arg1 != trigger_value:
 		return
 	
 	if max_waves > 0 and current_wave > max_waves:
+		return
+	
+	if game.current_state == CommonEnums.State.GAME_OVER:
 		return
 	
 	await get_tree().create_timer(wave_delay).timeout

@@ -1,13 +1,12 @@
 # Tank-style rotation based on horizontal input direction. Speed in degrees per second.
 
-extends Node
+extends UniversalComponent
 
 @export var turning_speed: int = 100 # Degrees per second
 
 var turning_left: bool = false # Left rotation state
 var turning_right: bool = false # Right rotation state
 
-@onready var parent = get_parent() # Reference to attached body
 
 # Connect to movement input signal
 func _ready() -> void:

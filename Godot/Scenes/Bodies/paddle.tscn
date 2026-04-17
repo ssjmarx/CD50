@@ -1,7 +1,6 @@
-[gd_scene load_steps=4 format=3 uid="uid://b4mr1t8pdtmf3"]
+[gd_scene load_steps=3 format=3 uid="uid://b4mr1t8pdtmf3"]
 
 [ext_resource type="Script" uid="uid://boygftnccyhi2" path="res://Scripts/Bodies/paddle.gd" id="1_m843l"]
-[ext_resource type="PackedScene" uid="uid://csg0e2wxlx4qd" path="res://Scenes/Components/angled_deflector.tscn" id="2_da2tq"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_da2tq"]
 size = Vector2(8, 8)
@@ -17,5 +16,3 @@ shape = SubResource("RectangleShape2D_da2tq")
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="HurtBox"]
 shape = SubResource("RectangleShape2D_da2tq")
-
-[node name="AngledDeflector" parent="." instance=ExtResource("2_da2tq")]

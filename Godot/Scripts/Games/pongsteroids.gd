@@ -8,8 +8,6 @@ const PLAYER_CONTROL_SCENE = preload("res://Scenes/Brains/player_control.tscn")
 const ANGLED_DEFLECTOR_SCENE = preload("res://Scenes/Components/angled_deflector.tscn")
 
 # Game state variables
-var p1_score: int = 0 # Player 1 score (left paddle)
-var p2_score: int = 0 # Player 2 score (right paddle)
 var spawn_timer: float = 0.0 # Timer for asteroid spawning
 var spawn_interval: float = 6.0 # Time between spawn attempts
 var max_asteroids: int = 6 # Maximum asteroids on screen

@@ -1,6 +1,6 @@
 # Rotates toward mouse or joystick input. Speed in degrees per second.
 
-extends Node
+extends UniversalComponent
 
 @export var turning_speed: int = 100 # Degrees per second
 @export var independent_aim: bool = false # Use aim signals instead of move signals
@@ -11,7 +11,6 @@ var using_mouse: bool = false # Track input mode
 var mouse_target: Vector2 # Stored mouse position
 var joystick_target: Vector2 # Stored joystick direction
 
-@onready var parent = get_parent() # Reference to attached body
 
 # Connect to appropriate input signals based on mode
 func _ready() -> void:

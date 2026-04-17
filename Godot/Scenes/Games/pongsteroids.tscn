@@ -33,11 +33,7 @@ position = Vector2(64, 184)
 height = 32
 lock_x = true
 
-[node name="AngledDeflector" parent="Player" index="2"]
-deflection_bias = Vector2(5, 1)
-
 [node name="InterceptorAi" parent="Player" instance=ExtResource("4_ai")]
-target_node = NodePath("../../Ball")
 
 [node name="DirectMovement" parent="Player" instance=ExtResource("6_move")]
 
@@ -46,11 +42,7 @@ position = Vector2(576, 184)
 height = 32
 lock_x = true
 
-[node name="AngledDeflector" parent="Opponent" index="2"]
-deflection_bias = Vector2(5, 1)
-
 [node name="InterceptorAi" parent="Opponent" instance=ExtResource("4_ai")]
-target_node = NodePath("../../Ball")
 
 [node name="DirectMovement" parent="Opponent" instance=ExtResource("6_move")]
 

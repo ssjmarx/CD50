@@ -1,3 +1,6 @@
-[gd_scene format=3 uid="uid://dshe01a1pw43p"]
+[gd_scene load_steps=2 format=3 uid="uid://dshe01a1pw43p"]
+
+[ext_resource type="Script" uid="uid://cj55uce1i2nnv" path="res://Scripts/Rules/goal.gd" id="1_m13xa"]
 
 [node name="Goal" type="Node"]
+script = ExtResource("1_m13xa")

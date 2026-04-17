@@ -63,3 +63,9 @@ enum Result {
 	VICTORY,
 	DEFEAT
 }
+
+# swap between UIs
+enum DisplayMode {
+	P1_P2_SCORE,
+	POINTS_MULTIPLIER
+}

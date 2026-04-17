@@ -1,4 +1,4 @@
-extends Node2D
+extends UniversalComponent
 
 @export var spawn_scene: PackedScene
 @export var spawn_pattern: CommonEnums.SpawnPattern = CommonEnums.SpawnPattern.SCREEN_EDGES
@@ -8,6 +8,7 @@ extends Node2D
 @export var stagger_delay: float = 0.1
 @export var director: Node
 @export var spawn_at_game_start: bool = false
+@export var property_overrides: Array[PropertyOverride] = []
 
 # grid configuration, only relevant if using grid spawning
 @export var grid_width = 16
@@ -26,17 +27,15 @@ extends Node2D
 
 var expression: Expression
 
-@onready var parent = get_parent()
-
 func _ready() -> void:
 	expression = Expression.new()
-	parent.spawning_wave.connect(_on_spawning_wave)
+	game.spawning_wave.connect(_on_spawning_wave)
 
 	if spawn_at_game_start:
-		parent.on_game_start.connect(_on_spawning_wave)
+		game.on_game_start.connect(_on_spawning_wave)
 
-func _on_spawning_wave(signaller, wave_number: int) -> void:
-	if signaller != director:
+func _on_spawning_wave(signaller = game, wave_number: int = 0) -> void:
+	if director != null and signaller != director and signaller != game:
 		return
 	
 	expression.parse(spawn_count_equation)
@@ -44,9 +43,7 @@ func _on_spawning_wave(signaller, wave_number: int) -> void:
 	
 	for i in spawn_count:
 		var delay = i * stagger_delay
-		get_tree().create_timer(delay).timeout.connect(
-			func(): _spawn_one(wave_number, i, spawn_count)
-		)
+		get_tree().create_timer(delay).timeout.connect(func(): _spawn_one(wave_number, i, spawn_count))
 
 func _spawn_one(wave_num: int, index: int, total: int) -> void:
 	var enemy = spawn_scene.instantiate()
@@ -73,8 +70,12 @@ func _spawn_one(wave_num: int, index: int, total: int) -> void:
 	
 	if random_flip_v:
 		enemy.velocity.y *= [-1, 1].pick_random()
-
-	add_child(enemy)
+	
+	for override in property_overrides:
+		var target = enemy.get_node(override.node_path)
+		target[override.property_name] = override.value
+	
+	game.add_child(enemy)
 	
 	if index == total - 1:
-		parent.spawning_wave_complete.emit(wave_num)
+		game.spawning_wave_complete.emit(wave_num)

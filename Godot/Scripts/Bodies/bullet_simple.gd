@@ -1,6 +1,6 @@
 # Simple bullet. Flies straight, despawns on hit/screen exit, plays hit sound.
 
-extends "res://Scripts/Core/universal_body.gd"
+extends UniversalBody
 
 @export var radius: float = 4.0 # Bullet size (square)
 

@@ -1,6 +1,6 @@
 # Direct movement leg. Converts move signals to velocity, or follows mouse position.
 
-extends Node
+extends UniversalComponent
 
 @export var speed: int = 600 # Pixels per second
 @export var mouse_enabled: bool = true # Allow mouse following
@@ -10,7 +10,6 @@ var input: Vector2 # Movement direction from keyboard/joystick
 var target: Vector2 # Mouse target position
 var using_mouse: bool = false # Track input mode
 
-@onready var parent = get_parent() # Reference to attached body
 
 # Move based on current input mode
 func _physics_process(delta: float) -> void:

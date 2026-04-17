@@ -2,6 +2,8 @@
 
 extends Control
 
+@export var display_mode: CommonEnums.DisplayMode = CommonEnums.DisplayMode.P1_P2_SCORE
+
 var elements = CommonEnums.Element # Reference to element enums
 
 @onready var parent = get_parent() # Reference to game script
@@ -14,6 +16,35 @@ func _ready() -> void:
 	parent.timer_tick.connect(set_timer)
 	parent.on_p1_score.connect(set_p1_score)
 	parent.on_p2_score.connect(set_p2_score)
+	parent.state_changed.connect(_on_state_changed)
+
+func _on_state_changed(new_state: CommonEnums.State) -> void:
+	match new_state:
+		CommonEnums.State.ATTRACT:
+			_hide_play_ui()
+			show_element(elements.ATTRACT_TEXT)
+		CommonEnums.State.PLAYING:
+			hide_element(elements.ATTRACT_TEXT)
+			_show_play_ui()
+		CommonEnums.State.GAME_OVER:
+			hide_element(elements.ATTRACT_TEXT)
+			_hide_play_ui()
+
+func _show_play_ui() -> void:
+	match display_mode:
+		CommonEnums.DisplayMode.P1_P2_SCORE:
+			show_element(elements.P1_SCORE)
+			show_element(elements.P2_SCORE)
+		CommonEnums.DisplayMode.POINTS_MULTIPLIER:
+			show_element(elements.POINTS)
+			show_element(elements.MULTIPLIER)
+
+func _hide_play_ui() -> void:
+	hide_element(elements.P1_SCORE)
+	hide_element(elements.P2_SCORE)
+	hide_element(elements.POINTS)
+	hide_element(elements.MULTIPLIER)
+
 
 # Update points display
 func set_points(new_score) -> void:

@@ -1,6 +1,6 @@
 # Pong-style acceleration. Ramps velocity through 8 levels on paddle/ball collision.
 
-extends Node
+extends UniversalComponent
 
 @export var acceleration_factor: float = 1.2
 @export var acceleration_levels: int = 8
@@ -8,7 +8,6 @@ extends Node
 
 var current_acceleration_level: int = 1
 
-@onready var parent = get_parent()
 
 # signal connections
 func _ready() -> void:

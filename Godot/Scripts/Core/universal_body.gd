@@ -52,7 +52,7 @@ func _ready() -> void:
 
 func _physics_process(delta: float) -> void:
 	# Apply shared velocity to position (priority 100, runs after Legs)
-	move_parent(velocity * delta)
+	move_parent_physics(velocity * delta)
 
 func _on_left_joystick(direction: Vector2) -> void:
 	# Apply axis locks before emitting

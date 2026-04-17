@@ -1,6 +1,6 @@
 # Breakout brick with health-based coloring. Color changes as HP decreases.
 
-extends "res://Scripts/Core/universal_body.gd"
+extends UniversalBody
 
 var health_color = Color.WHITE # Current display color based on health
 

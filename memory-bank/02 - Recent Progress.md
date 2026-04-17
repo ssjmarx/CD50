@@ -1,6 +1,6 @@
 # Recent Progress: GD50 — Development History
 
-**Last Updated:** 2025-04-15
+**Last Updated:** 2026-04-16
 
 ---
 
@@ -167,18 +167,75 @@ Pongsteroids proved that the component model works for cross-game mixing. No new
 
 ---
 
+## Update 5: Component Pong — Game-Level Componentization
+
+**Planning Document:** `planning/04 - Component Pong.md`
+
+### What Was Planned
+- Rebuild Pong entirely from components — eliminate the monolithic `pong.gd` game script
+- Prove that `UniversalGameScript` can serve as a generic game container with zero game-specific logic
+- All game behavior (states, scoring, ball spawning, win/lose) handled by attached Rule/Flow/Component nodes
+- New components: Goal, PointsMonitor, ScreenCleanup, SoundOnHit, VariableTuner
+- Enhanced components: AngledDeflector (auto-connect), PongAcceleration (auto-connect), WaveSpawner (spawn at game start + initial velocity), Interface (dual display modes)
+
+### What Was Actually Built
+
+**`pong.gd` was DELETED.** Pong is now a pure scene assembly (`pong.tscn`) with a `UniversalGameScript` root node and 14+ attached component nodes. Zero game-specific code.
+
+**New Components Built:**
+
+| Component | Category | Purpose |
+|-----------|----------|---------|
+| `goal` | Rule | Area2D scoring zone — increments P1/P2/generic score on `body_entered` |
+| `points_monitor` | Rule | Compares score against threshold → emits `victory`/`defeat` on UGS |
+| `screen_cleanup` | Component | Frees parent when outside viewport bounds + margin |
+| `sound_on_hit` | Flow | Plays sound on collision — works on both Area2D and UniversalBody parents |
+| `variable_tuner` | Rule | Adjusts a parent property when a signal fires (used for AI difficulty ramp) |
+| `property_override` | Core | Custom Resource for WaveSpawner to configure spawned entity properties |
+
+**Enhanced Components:**
+
+| Component | Enhancement |
+|-----------|-------------|
+| `angled_deflector` | Auto-connects to `parent.body_collided`, filters by `target_group`, modifies velocity directly |
+| `pong_acceleration` | Auto-connects to `parent.body_collided`, filters by `target_group`, ramps speed |
+| `wave_spawner` | Added `spawn_at_game_start`, `initial_velocity`, random angle/flip, `property_overrides` array |
+| `interface` | Added `display_mode` (P1_P2_SCORE vs POINTS_MULTIPLIER), `state_changed` handler for UI transitions |
+| `interceptor_ai` | Group-based targeting, `Vector2.ZERO` on no-target, aim angle initialization on first acquisition |
+| `universal_body` | Default `_physics_process()` now uses `move_parent_physics()` for collision-aware bouncing |
+| `common_enums` | Added `ScoreType`, `Condition`, `Result`, `AdjustmentMode`, `DisplayMode` enums |
+
+**Bugs Fixed During Implementation:**
+- `wave_spawner.gd`: `or` → `and` in signal source filtering (was returning early 100% of the time)
+- `wave_spawner.gd`: Stale signal connections in `pong.tscn` from deleted `pong.gd` methods
+- `universal_game_script.gd`: Score signals now emit running total (not increment)
+- `sound_on_hit.gd`: `has_method()` → `has_signal()` for auto-detecting collision signals
+- `interceptor_ai.gd`: Added `_initialized` flag to snap aim on first target acquisition (prevented sweeping)
+
+### Architecture Validation
+Component Pong proved that **game-level componentization works**. The same pattern used for entities (Bodies + Brains + Legs) now applies to games (UGS + Rules + Flow). No game-specific code was needed — Pong is an editor assembly of generic components on a generic game container.
+
+### State After This Update
+- `pong.gd` deleted — Pong runs as a pure scene assembly
+- Game-level component architecture is proven and operational
+- 3 remaining games (Breakout, Asteroids, Pongsteroids) still use monolithic game scripts — ready to be componentized
+- The path is clear: new games are editor assemblies, not code
+
+---
+
 ## Summary: What Exists vs What Was Planned
 
 | Feature | Planned | Status |
 |---------|---------|--------|
 | Solar System Hub | Overview doc | ❌ Not built |
 | Entity Component System | Overview doc | ✅ Fully operational |
-| Pong | Plan 01 | ✅ Complete |
-| Breakout | Plan 01 | ✅ Complete |
-| Asteroids | Plan 02 | ✅ Complete |
-| Pongsteroids | Plan 02 | ✅ Complete |
+| Game-Level Component System | Plan 03/04 | ✅ Proven with Component Pong |
+| Pong | Plan 01/04 | ✅ Componentized — no game script |
+| Breakout | Plan 01 | ✅ Complete (monolithic script) |
+| Asteroids | Plan 02 | ✅ Complete (monolithic script) |
+| Pongsteroids | Plan 02 | ✅ Complete (monolithic script) |
 | UFO Enemy | Plan 02 | ⚠️ Scene exists, not in any game |
-| Componentized Game Scripts | Plan 03 | ❌ Not started |
 | Hub/Menu System | Plan 03 | ❌ Not started |
+| Componentize Remaining Games | Plan 04 | 🔲 Breakout, Asteroids, Pongsteroids |
 | 6 Additional Games | Overview | ❌ Not started |
 | Meta/Narrative Layer | Brainstorming | ❌ Not started |

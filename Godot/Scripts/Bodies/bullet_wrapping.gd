@@ -1,6 +1,6 @@
 # Simple bullet with screen wrapping. Uses timer for lifetime instead of screen exit detection.
 
-extends "res://Scripts/Core/universal_body.gd"
+extends UniversalBody
 
 @export var radius: float = 4.0 # Bullet size (square)
 

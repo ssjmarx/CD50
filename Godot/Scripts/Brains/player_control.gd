@@ -1,10 +1,9 @@
 # Player control brain. Reads keyboard/mouse/gamepad and emits input signals to parent.
 
-extends Node
+extends UniversalComponent
 
 var using_mouse: bool = false # Track if mouse is being used
 
-@onready var parent = get_parent() # Reference to attached body
 
 # Handle mouse and button inputs
 func _unhandled_input(event: InputEvent) -> void:

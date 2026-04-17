@@ -1,6 +1,6 @@
 # Spawns smaller fragments when parent dies. Reduces size enum if present (e.g., LARGE -> MEDIUM).
 
-extends Node
+extends UniversalComponent
 
 @export var fragment_path: String = "" # Scene path to fragment PackedScene
 @export var spawn_count: int = 2 # Number of fragments to spawn
@@ -9,7 +9,6 @@ extends Node
 
 var base_angle := randf() * TAU # Random base direction for fragment spread
 
-@onready var parent = get_parent() # Reference to attached body
 
 # Connect to parent's death signal
 func _ready() -> void:

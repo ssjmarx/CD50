@@ -1,155 +1,76 @@
-# Current Goal: Component Pong
+# Current Goal: Componentize Remaining Games
 
-**Planning Document:** `planning/04 - Component Pong.md`  
-**Status:** 🔄 Plan Revised — Ready to Implement  
-**Objective:** Rebuild Pong entirely from components — eliminate the monolithic `pong.gd` game script in favor of a `UniversalGameScript` with attached Flow/Rule/Component nodes.
-
----
-
-## Why This Matters
-
-The entity-level component architecture (Bodies + Brains + Legs + Arms) is proven and working. Pongsteroids validated that components can be freely mixed across game types. However, the **game-level logic** (state machines, scoring, win/lose conditions, ball respawning) is still hardcoded in individual game scripts (`pong.gd`, `breakout.gd`, etc.).
-
-This update is the critical next step: proving that the same component pattern works at the **game level**, not just the entity level. If successful, every future game becomes an assembly of game-level components rather than a custom script.
+**Planning Document:** `planning/05 - Componentized Breakout, Asteroids, and Pongsteroids.md`  
+**Status:** 🔄 Planning Complete — Ready to Implement  
+**Previous Goal:** Component Pong ✅ (completed 2026-04-16)
 
 ---
 
-## The Vision: `UniversalGameScript` (UGS)
+## Objective
 
-Replace `pong.gd` with a generic `UniversalGameScript` — a minimal container that provides:
-
-1. **Game State Machine:** States (ATTRACT, PLAYING, GAME_OVER, PAUSED) with `state_changed` signal
-2. **Collision Group Auto-Setup:** Export a list of groups; UGS automatically sets up group tracking on ready
-3. **Score Tracking:** Built-in P1/P2 score counters with signals (`on_p1_score`, `on_p2_score`)
-4. **Victory/Defeat Conditions:** Emits `victory()` and `defeat()` signals based on score thresholds
-
-The UGS should contain **zero game-specific logic**. All Pong-specific behavior (ball spawning, acceleration, goal detection) moves into components.
+Eliminate the last three monolithic game scripts (`breakout.gd`, `asteroids.gd`, `pongsteroids.gd`). All games become pure `UniversalGameScript` scene assemblies with zero game-specific code.
 
 ---
 
-## New Components to Build
+## Scope
 
-### Flow Components
-| Component | Purpose |
-|-----------|---------|
-| **Goal** | Area2D-based component. Detects when a body enters the goal zone. Increments the appropriate score on the UGS. |
-| **PointsMonitor** | Rule component. Listens to UGS score signals. When a score reaches a configurable threshold (e.g., 11), emits `victory()` or `defeat()` on the UGS. |
-| **ScreenCleanup** | Removes (frees) bodies that leave the visible screen area. Replaces the "ball goes off screen and gets freed" logic. |
+- **Breakout:** 3 new components (LifeLossZone, ScoreMultiplier, BallServer) + GRID spawn pattern + DamageOnHit + ScoreOnDeath
+- **Asteroids:** 2 new components (GroupCountMultiplier, Respawner) + GroupMonitor extension + DamageOnHit + ScoreOnDeath
+- **Pongsteroids:** Copy pong.tscn + add asteroid spawners + collision groups. The remix test.
 
-### Enhanced Existing Components
-| Component | Enhancement |
-|-----------|-------------|
-| **PongAcceleration** | Add auto-connect pattern: detect parent collisions automatically, filter by target group. Remove reliance on Ball's `BallCollision` signal. |
-| **AngledDeflector** | Same auto-connect + group filtering pattern. Update parent velocity directly instead of relying on callback. |
-| **WaveSpawner** | Add `spawn_at_game_start: bool` and `initial_velocity/angle` config so it can serve as the ball spawner. |
-| **Interface** | Connect to UGS `on_p1_score`/`on_p2_score` signals instead of reading from the game script directly. |
-
-### New Rule/Component Types
-| Component | Purpose |
-|-----------|---------|
-| **VariableTuner** | Listens for a signal (e.g., goal scored) and adjusts a property on a target node. Used for AI difficulty ramping (increase InterceptorAi `turning_speed` after each goal). |
-| **SoundOnCollision** | Plays a sound effect when a collision occurs with a specific group. Soft requirement that parent is a universalbody or has a collisionmarker. |
+**Out of Scope:** Attract modes, AI swap mechanics, control scheme selection.
 
 ---
 
-## Signal Flow: Complete Component Pong
+## New Components (7 total)
 
-```
-START:
-  Player presses Enter → UGS.start_game() → on_game_start emitted
-    → WaveSpawner hears on_game_start (spawn_at_game_start)
-      → Spawns Ball at screen center with random angle + velocity
+| Component | Category | Used By | Complexity |
+|-----------|----------|---------|------------|
+| `DamageOnHit` | Component | All three | Low |
+| `ScoreOnDeath` | Rule | Breakout, Asteroids | Medium |
+| `LifeLossZone` | Rule | Breakout | Low |
+| `ScoreMultiplier` | Rule | Breakout | Medium |
+| `BallServer` | Flow | Breakout | Low |
+| `GroupCountMultiplier` | Rule | Asteroids | Low |
+| `Respawner` | Flow | Asteroids | High |
 
-GAMEPLAY:
-  Ball moves → hits paddle (physics collision)
-    → PongAcceleration detects "paddles" group → accelerates ball
-    → AngledDeflector detects "paddles" group → deflects ball angle
-  Ball moves → hits wall → physics bounce (automatic)
+## Extensions (2 existing)
 
-SCORING:
-  Ball enters P1Goal Area2D
-    → Goal component calls UGS.add_p2_score(1)
-      → UGS emits on_p2_score(1)
-        → Interface updates P2 score display
-        → P2PointsMonitor checks 1 >= 11? No
-    → SoundOnCollision plays goal sound
-    → Ball continues past goal → exits screen
-      → ScreenCleanup frees Ball
-        → GroupMonitor detects "balls" group empty → emits group_cleared("balls")
-          → WaveDirector hears group_cleared("balls") → waits 1s → emits spawning_wave
-            → WaveSpawner spawns new Ball at center
+| Component | Change |
+|-----------|--------|
+| `GroupMonitor` | Add `lose_life_on_clear: bool` |
+| `WaveSpawner` | Implement GRID pattern, add `max_alive: int` |
 
-  VariableTuner hears P1Goal.body_entered
-    → Adjusts InterceptorAi.turning_speed += 30 (AI difficulty ramp)
+## Deletions (3 scripts)
 
-WIN/LOSE:
-  P1 reaches 11 → P1PointsMonitor emits UGS.victory()
-    → UGS transitions to GAME_OVER, shows WIN_TEXT
-  P2 reaches 11 → P2PointsMonitor emits UGS.defeat()
-    → UGS transitions to GAME_OVER, shows LOSE_TEXT
-```
+- `Scripts/Games/breakout.gd`
+- `Scripts/Games/asteroids.gd`
+- `Scripts/Games/pongsteroids.gd`
 
 ---
 
 ## Implementation Order
 
-### Phase A: UGS + Core Infrastructure
-1. Add `collision_groups` export + auto-setup to `UniversalGameScript`
-2. Add `p1_score`/`p2_score` tracking and signals to `UniversalGameScript`
-3. Build **Goal** component
-4. Build **PointsMonitor** component
-5. Test: verify score tracking works with debug prints
-
-### Phase B: Enhanced Components
-6. Enhance **PongAcceleration** (auto-connect + group filtering)
-7. Enhance **AngledDeflector** (auto-connect + group filtering + velocity update)
-8. Build **VariableTuner** component
-9. Test: verify ball acceleration, deflection, and AI ramping
-
-### Phase C: Flow Components
-10. Enhance **WaveSpawner** (`spawn_at_game_start` + `initial_velocity` + angle config)
-11. Build **ScreenCleanup** component
-12. Build **SoundOnCollision** component
-13. Enhance **Interface** (connect to `on_p1_score`/`on_p2_score`)
-
-### Phase D: Assembly
-14. Clean up Ball script (remove redundant signal/methods)
-15. Clean up Paddle script (remove `bounce_offset`)
-16. **Delete `pong.gd`**
-17. Build new `pong.tscn` with `UniversalGameScript` root + all components
-18. Playtest full game loop
-
----
-
-## Key Design Decisions (Resolved)
-
-1. **Auto-connect collision pattern:** ✅ Add `body_collided(collider, normal)` signal to `UniversalBody`. Components connect to `parent.body_collided` and filter by group. Body scripts emit this signal in their `_physics_process()` alongside existing collision logic.
-
-2. **VariableTuner string-based property access:** Using `parent[target_property]` — will include clear error messages if property not found.
-
-3. **ScoreType enum:** ✅ Added to `common_enums.gd` alongside Trigger (from wave_director), SpawnPattern (from wave_spawner), AdjustmentMode, Condition, and Result enums.
-
-4. **AngledDeflector placement:** ✅ Moved to Ball (not Paddle). The Ball detects collisions, so AngledDeflector must live on the Ball to auto-connect. Deflection bias is a ball behavior ("how does the ball bounce off paddles").
-
-5. **UGS victory/defeat self-connect:** ✅ UGS connects `victory` → `p1_win()` and `defeat` → `p1_lose()` in `_ready()` so components can emit these signals without direct method calls.
-
-### Remaining Considerations
-- **Scene tree complexity:** 14+ component nodes is a lot of Inspector configuration. Expected trade-off for composition over inheritance.
-- **Ball death timing:** ScreenCleanup must free the ball AFTER Goal has processed the `body_entered` signal. Scene order / process priority matters.
-
----
-
-## Deferred Items (Future Updates)
-
-- **Attract Mode:** AI swap mechanism (replace PlayerControl with InterceptorAi in attract state, swap back on game start)
-- **AI Randomizer:** VariableTuner could serve this role with MULTIPLY mode + random source
-- **State-dependent UI:** ATTRACT_TEXT show/hide tied to state changes
+1. **Phase A:** Cross-cutting components (DamageOnHit, ScoreOnDeath, GroupMonitor extension, GRID pattern)
+2. **Phase B:** Component Breakout (LifeLossZone, ScoreMultiplier, BallServer, assemble, test, delete)
+3. **Phase C:** Component Asteroids (GroupCountMultiplier, Respawner, assemble, test, delete)
+4. **Phase D:** Component Pongsteroids (WaveSpawner max_alive, asteroid variant, copy pong + remix, test, delete)
 
 ---
 
 ## Success Criteria
 
-- [ ] `pong.gd` is **deleted** — no game-specific script exists
-- [ ] Pong runs identically to the current version using only UGS + components
-- [ ] All game logic (states, scoring, spawning, win/lose) is handled by components
-- [ ] The same UGS can theoretically run Breakout, Asteroids, etc. with different component configurations
+- [ ] `breakout.gd` is deleted — Breakout runs as pure scene assembly
+- [ ] `asteroids.gd` is deleted — Asteroids runs as pure scene assembly
+- [ ] `pongsteroids.gd` is deleted — Pongsteroids runs as pure scene assembly
+- [ ] All four games use UGS root with zero game-specific scripts
+- [ ] Pongsteroids demonstrates remix ease (pong.tscn copy + asteroid additions)
+
+---
+
+## Deferred Items
+
+- **Attract Mode AI swap:** Mechanism to swap PlayerControl ↔ InterceptorAI based on game state
+- **Control scheme selection:** Original vs Modern Asteroids controls (pick one for now)
+- **Asteroids win condition:** Game is traditionally endless — decide on score threshold or wave limit
+- **Hub/Menu System:** Game selection interface

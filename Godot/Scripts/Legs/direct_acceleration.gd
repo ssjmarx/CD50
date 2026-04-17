@@ -1,6 +1,6 @@
 # Adds acceleration to velocity based on input. Like DirectMovement but accelerates instead of sets velocity.
 
-extends Node
+extends UniversalComponent
 
 @export var mouse_enabled: bool = false # Allow mouse following
 @export var acceleration: int = 50 # Pixels per second squared
@@ -9,10 +9,9 @@ var input: Vector2 # Movement direction from keyboard/joystick
 var target: Vector2 # Mouse target position
 var using_mouse: bool = false # Track input mode
 
-@onready var parent = get_parent() # Reference to attached body
-
 # Add acceleration in direction of input or toward mouse
 func _physics_process(delta):
+
 	if not using_mouse:
 		parent.velocity += input * acceleration * delta
 	else:

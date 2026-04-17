@@ -1,10 +1,9 @@
 # Asteroids-style screen wrapping. Warps parent to opposite side when off-screen.
 
-extends Node
+extends UniversalComponent
 
 @export var margin: int = 8 # Extra space off-screen before wrapping
 
-@onready var parent = get_parent() # Reference to attached body
 @onready var viewport_size: Vector2 = get_viewport().get_visible_rect().size # Screen dimensions
 
 func _physics_process(_delta: float) -> void:

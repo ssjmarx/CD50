@@ -1,6 +1,6 @@
 # Monitors a group and emits victory/defeat when all nodes in that group are destroyed.
 
-extends Node
+extends UniversalComponent
 
 @export var target_group: String = ""
 @export var victory_on_clear: bool = false
@@ -8,7 +8,6 @@ extends Node
 
 var _previous_count: int = 0 
 
-@onready var parent = get_parent()
 
 # Check if group count dropped to zero and emit appropriate signals
 func _physics_process(_delta: float) -> void:

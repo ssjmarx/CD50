@@ -1,6 +1,6 @@
 # Health component. Tracks HP, emits signals on change, handles death (disable colliders, play sound, despawn).
 
-extends Node
+extends UniversalComponent
 
 # Emitted when health changes (passes current value and parent reference)
 signal health_changed(current_health: int, parent: Node)
@@ -10,7 +10,6 @@ signal zero_health(parent: Node)
 @export var max_health = 1 # Starting health value
 @export var death_sound: AudioStream # Sound to play on death
 
-@onready var parent = get_parent() # Reference to attached body
 @onready var current_health = max_health # Current HP
 
 # Reduce health and check for death

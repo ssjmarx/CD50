@@ -1,6 +1,6 @@
 # Complex engine with acceleration ramp-up/down (jerk). Smooth thrust response.
 
-extends Node
+extends UniversalComponent
 
 @export var max_acceleration: int = 400 # Max pixels per second squared
 @export var jerk: int = 400 # Rate of acceleration change
@@ -10,7 +10,6 @@ var current_acceleration: float = 0.0 # Current acceleration level
 var thrusting: bool = false # Thrust button state
 var joystick_input: bool = false # Joystick input state
 
-@onready var parent = get_parent() # Reference to attached body
 
 # Connect to input signals
 func _ready() -> void:

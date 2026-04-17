@@ -2,15 +2,17 @@
 class_name UniversalGameScript extends Node2D
 
 @export var game_title: String
-@export var collision_groups: Dictionary
+@export var collision_groups: Array[CollisionGroup]
 
 var states = CommonEnums.State
 var current_score = 0
 var current_multiplier = 0
 var collision_matrix: CollisionMatrix
-var _current_state: CommonEnums.State = states.PLAYING
+var _current_state: CommonEnums.State = states.ATTRACT
 var p1_score: int = 0
 var p2_score: int = 0
+
+var _collision_dict: Dictionary
 
 # Public state property with automatic signal emission on change
 var current_state: CommonEnums.State:
@@ -46,14 +48,20 @@ signal on_game_over(final_score: int)
 signal on_points_changed(new_score: int)
 signal on_multiplier_changed(new_multiplier: int)
 signal state_changed(new_state: CommonEnums.State)
-signal on_p1_score(amount: int)
-signal on_p2_score(amount: int)
+signal on_p1_score(p1_score: int)
+signal on_p2_score(p2_score: int)
 
 # Initialize collision matrix and auto-configure all bodies
 func _ready() -> void:
-	if collision_groups:
+	if not collision_groups.is_empty():
+		_collision_dict.clear()
+		for cg in collision_groups:
+			_collision_dict[cg.group_name] = cg.targets
+		
 		collision_matrix = CollisionMatrix.new()
 		collision_matrix.initialize(self)
+		collision_matrix.setup(_collision_dict)
+
 	
 	victory.connect(p1_win)
 	defeat.connect(p1_lose)
@@ -72,13 +80,9 @@ func _unhandled_input(event: InputEvent) -> void:
 
 # Transition to PLAYING state and initialize game
 func start_game() -> void:
+	print("starting game!")
 	current_state = states.PLAYING
 	on_game_start.emit()
-	_initialize_gameplay()
-
-# Override in subclasses to spawn entities and setup game rules
-func _initialize_gameplay() -> void:
-	pass
 
 # Emit game end signal for cleanup
 func end_game() -> void:
@@ -130,11 +134,11 @@ func get_state() -> CommonEnums.State:
 
 func add_p1_score(amount) -> void:
 	p1_score += amount
-	on_p1_score.emit(amount)
+	on_p1_score.emit(p1_score)
 
 func add_p2_score(amount) -> void:
 	p2_score += amount
-	on_p2_score.emit(amount)
+	on_p2_score.emit(p2_score)
 
 static func find_ancestor(node: Node) -> UniversalGameScript:
 	var parent = node.get_parent()

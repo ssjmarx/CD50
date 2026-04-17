@@ -1,6 +1,6 @@
 # Classic arcade-style gun. Limits active bullets to prevent spamming. Supports joystick and mouse aim.
 
-extends Node
+extends UniversalComponent
 
 # Emitted when a bullet hits a target
 signal target_hit(target: Node2D)
@@ -16,7 +16,6 @@ var active_bullets: Array[CharacterBody2D] # Track spawned bullets
 var aim_angle: float = 0.0 # Current aim direction
 var has_aim_input: bool = false # Track if aim input received
 
-@onready var parent = get_parent() # Reference to attached body
 @onready var sound = $AudioStreamPlayer2D # Gun sound effect
 
 # Connect to input signals

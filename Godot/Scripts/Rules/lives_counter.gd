@@ -1,11 +1,10 @@
 # Manages player lives for games with lives systems (Asteroids, Breakout).
 
-extends Node
+extends UniversalComponent
 
 @export var max_lives: int = 3
 
 @onready var current_lives: int = max_lives
-@onready var parent = get_parent()
 
 # Decrement lives by 1 and emit signals
 func lose_life() -> void:

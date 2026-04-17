@@ -1,6 +1,6 @@
 # AI brain that aims at target. Used for rotation, not movement (emits to right_joystick).
 
-extends Node
+extends UniversalComponent
 
 @export var target_node: NodePath # Path to target entity
 @export var turning_speed: int = 90 # Degrees per second to rotate
@@ -9,7 +9,6 @@ extends Node
 var current_aim_angle: float = 0.0 # Current facing direction
 
 @onready var target = get_node(target_node) # Target entity reference
-@onready var parent = get_parent() # Reference to attached body
 
 # Rotate toward target with turning speed limit and random noise
 func _physics_process(delta: float) -> void:

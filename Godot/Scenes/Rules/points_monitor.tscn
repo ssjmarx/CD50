@@ -1,0 +1,6 @@
+[gd_scene load_steps=2 format=3 uid="uid://d1r6vipc03isf"]
+
+[ext_resource type="Script" uid="uid://c22yntuafvth" path="res://Scripts/Rules/points_monitor.gd" id="1_cov3y"]
+
+[node name="PointsMonitor" type="Node"]
+script = ExtResource("1_cov3y")

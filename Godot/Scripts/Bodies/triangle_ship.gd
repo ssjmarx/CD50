@@ -1,6 +1,6 @@
 # Asteroids player ship with triangular shape and physics bouncing.
 
-extends "res://Scripts/Core/universal_body.gd"
+extends UniversalBody
 
 # Ship polygon vertices (pointed nose, notched tail)
 var points = [

@@ -1,6 +1,6 @@
 # Game timer with count-up or count-down modes. Emits tick events at configurable intervals.
 
-extends Node
+extends UniversalComponent
 
 @export var duration: float = 60.0
 @export var count_up: bool = false
@@ -10,7 +10,6 @@ var _timer: Timer
 var _current_time: float
 var _is_running: bool = false
 
-@onready var parent = get_parent()
 
 # Create and configure internal timer
 func _ready() -> void:
