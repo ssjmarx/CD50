@@ -1,6 +1,6 @@
 # End State: GD50 — The Polybius Cabinet
 
-**Last Updated:** 2026-04-17  
+**Last Updated:** 2026-04-18  
 **Source Material:** `planning/brainstorming/` folder
 
 ---
@@ -198,20 +198,20 @@ To support this vision, the component system must eventually accommodate:
 | `PuzzleState` | Track which puzzles are solved, what's unlocked |
 | `PolybiusSuspicion` | Track suspicion level (0-100), trigger reactions |
 
-### The "Recipe" System
-Eventually, Bodies should be pure `.tscn` scene files with **no custom scripts** — just `UniversalBody` + component assemblies:
+### The Body Scene System
+Body scripts (`Scripts/Bodies/*.gd`) contain **drawing code only** — visual shapes, colors, `_draw()` calls. Body **scenes** are organized into three tiers under `Scenes/Bodies/`:
 
 ```
-Ball.tscn = UniversalBody + CircleCollision + PongAcceleration + VectorFace
-Ship.tscn = UniversalBody + TriangleCollision + EngineSimple + GunSimple + VectorFace
-Invader.tscn = UniversalBody + RectCollision + PatrolAI + GunSimple + SpriteFace
+Scenes/Bodies/
+├── generic/        — Archetype templates (no brain, no faction, no color override)
+│   └── triangle_ship_modern.tscn = triangle_ship.gd + Health + ScreenWrap + GunSimple + EngineComplex + ...
+├── player/         — Pre-rigged for player control
+│   └── player_triangle_ship_modern.tscn = generic + PlayerControl + cyan color + "players" group
+└── nonplayer/      — Pre-rigged as threats/obstacles
+    └── nonplayer_triangle_ship_modern.tscn = generic + AimAi + InterceptorAi + ShootAi + orange color + "enemies" group
 ```
 
-New games become **editor assemblies**, not code. The only code is components.
-
----
-
-## Progression Toward End State
+**Why:** For the final vision of rapid-fire game succession, players must instantly recognize what an entity does by what it looks like. Visual identity = behavioral identity. Pre-rigged player/nonplayer scenes mean games just drop in the
 
 ```
 WHERE WE ARE (Current)

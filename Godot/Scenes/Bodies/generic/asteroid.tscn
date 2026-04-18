@@ -26,7 +26,7 @@ collision_groups = Array[String](["asteroids"])
 death_sound = ExtResource("5_18ulf")
 
 [node name="SplitOnDeath" parent="." instance=ExtResource("3_6fqt7")]
-fragment_path = "res://Scenes/Bodies/asteroid.tscn"
+fragment_path = "res://Scenes/Bodies/generic/asteroid.tscn"
 
 [node name="ScreenWrap" parent="." instance=ExtResource("3_yh62g")]
 

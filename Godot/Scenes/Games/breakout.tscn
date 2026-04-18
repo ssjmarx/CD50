@@ -1,9 +1,9 @@
 [gd_scene load_steps=34 format=3 uid="uid://c4ttsm1qowkgo"]
 
 [ext_resource type="Script" uid="uid://bjdgpevhahi6d" path="res://Scripts/Core/universal_game_script.gd" id="1_lmwk8"]
-[ext_resource type="PackedScene" uid="uid://b4mr1t8pdtmf3" path="res://Scenes/Bodies/paddle.tscn" id="2_7epd8"]
+[ext_resource type="PackedScene" uid="uid://b4mr1t8pdtmf3" path="res://Scenes/Bodies/generic/paddle.tscn" id="2_7epd8"]
 [ext_resource type="Script" uid="uid://bfkr4fdx316o5" path="res://Scripts/Core/collision_group.gd" id="2_vu4sl"]
-[ext_resource type="PackedScene" uid="uid://mw70bjrifcpb" path="res://Scenes/Bodies/ball.tscn" id="3_uvgxs"]
+[ext_resource type="PackedScene" uid="uid://mw70bjrifcpb" path="res://Scenes/Bodies/generic/ball.tscn" id="3_uvgxs"]
 [ext_resource type="PackedScene" uid="uid://eketockdsssi" path="res://Scenes/Legs/direct_movement.tscn" id="4_2njjq"]
 [ext_resource type="Script" uid="uid://bghaddibpt6f1" path="res://addons/crt/crt.gd" id="4_fkkyb"]
 [ext_resource type="PackedScene" uid="uid://6tweepbhleep" path="res://Scenes/Brains/player_control.tscn" id="5_oqfas"]
@@ -17,7 +17,7 @@
 [ext_resource type="PackedScene" uid="uid://dwyyfxniivl1r" path="res://Scenes/Flow/wave_director.tscn" id="12_6wwyy"]
 [ext_resource type="PackedScene" uid="uid://vlbel76nqh5w" path="res://Scenes/Flow/wave_spawner.tscn" id="13_ckqoe"]
 [ext_resource type="PackedScene" uid="uid://cg5rnfuldr2n0" path="res://Scenes/Arms/damage_on_hit.tscn" id="16_oqfas"]
-[ext_resource type="PackedScene" uid="uid://vlxiy3uptf6y" path="res://Scenes/Bodies/brick.tscn" id="17_61uu3"]
+[ext_resource type="PackedScene" uid="uid://vlxiy3uptf6y" path="res://Scenes/Bodies/generic/brick.tscn" id="17_61uu3"]
 [ext_resource type="Script" uid="uid://cp0ni1lgml7c6" path="res://Scripts/Core/property_override.gd" id="17_th3ku"]
 [ext_resource type="PackedScene" uid="uid://clhg61503vle8" path="res://Scenes/Rules/variable_tuner.tscn" id="19_oqfas"]
 

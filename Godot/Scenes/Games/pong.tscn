@@ -2,8 +2,8 @@
 
 [ext_resource type="Script" uid="uid://bjdgpevhahi6d" path="res://Scripts/Core/universal_game_script.gd" id="1_qu73x"]
 [ext_resource type="Script" uid="uid://bfkr4fdx316o5" path="res://Scripts/Core/collision_group.gd" id="2_5wgpo"]
-[ext_resource type="PackedScene" uid="uid://mw70bjrifcpb" path="res://Scenes/Bodies/ball.tscn" id="2_d3mj0"]
-[ext_resource type="PackedScene" uid="uid://b4mr1t8pdtmf3" path="res://Scenes/Bodies/paddle.tscn" id="3_qu73x"]
+[ext_resource type="PackedScene" uid="uid://mw70bjrifcpb" path="res://Scenes/Bodies/generic/ball.tscn" id="2_d3mj0"]
+[ext_resource type="PackedScene" uid="uid://b4mr1t8pdtmf3" path="res://Scenes/Bodies/generic/paddle.tscn" id="3_qu73x"]
 [ext_resource type="PackedScene" uid="uid://cq0foubgjurmr" path="res://Scenes/Brains/interceptor_ai.tscn" id="4_5wgpo"]
 [ext_resource type="PackedScene" uid="uid://6tweepbhleep" path="res://Scenes/Brains/player_control.tscn" id="5_5wgpo"]
 [ext_resource type="PackedScene" uid="uid://eketockdsssi" path="res://Scenes/Legs/direct_movement.tscn" id="5_qu73x"]

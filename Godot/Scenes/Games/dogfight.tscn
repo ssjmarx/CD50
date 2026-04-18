@@ -1,24 +1,20 @@
-[gd_scene load_steps=38 format=3 uid="uid://ckxvsijl3fwv1"]
+[gd_scene load_steps=23 format=3 uid="uid://ckxvsijl3fwv1"]
 
 [ext_resource type="Script" uid="uid://bjdgpevhahi6d" path="res://Scripts/Core/universal_game_script.gd" id="1_04s2g"]
 [ext_resource type="Script" uid="uid://bghaddibpt6f1" path="res://addons/crt/crt.gd" id="2_1hu7k"]
 [ext_resource type="Script" uid="uid://bfkr4fdx316o5" path="res://Scripts/Core/collision_group.gd" id="2_25ekh"]
 [ext_resource type="PackedScene" uid="uid://bq6cdrx340jp7" path="res://Scenes/Flow/interface.tscn" id="3_h75pn"]
-[ext_resource type="PackedScene" uid="uid://cjbfd6wgf5p6b" path="res://Scenes/Bodies/triangle_ship_modern.tscn" id="4_25ekh"]
-[ext_resource type="PackedScene" uid="uid://6tweepbhleep" path="res://Scenes/Brains/player_control.tscn" id="5_h75pn"]
-[ext_resource type="PackedScene" uid="uid://cq0foubgjurmr" path="res://Scenes/Brains/interceptor_ai.tscn" id="6_25ekh"]
-[ext_resource type="PackedScene" uid="uid://b2utyb8vjdhru" path="res://Scenes/Brains/aim_ai.tscn" id="7_25ekh"]
-[ext_resource type="PackedScene" uid="uid://ic3mj0x3ub4c" path="res://Scenes/Components/score_on_death.tscn" id="7_s3uvk"]
-[ext_resource type="PackedScene" uid="uid://c8034ktag0uga" path="res://Scenes/Brains/shoot_ai.tscn" id="9_yp1qk"]
 [ext_resource type="PackedScene" uid="uid://dhulxxtcsipl6" path="res://Scenes/Rules/group_monitor.tscn" id="11_v3mlj"]
 [ext_resource type="PackedScene" uid="uid://dwyyfxniivl1r" path="res://Scenes/Flow/wave_director.tscn" id="12_fk46a"]
 [ext_resource type="PackedScene" uid="uid://vlbel76nqh5w" path="res://Scenes/Flow/wave_spawner.tscn" id="13_nvkvc"]
-[ext_resource type="PackedScene" uid="uid://d2cvj1qyemnu4" path="res://Scenes/Bodies/asteroid.tscn" id="15_kkt1o"]
+[ext_resource type="PackedScene" uid="uid://d2cvj1qyemnu4" path="res://Scenes/Bodies/generic/asteroid.tscn" id="15_kkt1o"]
 [ext_resource type="Script" uid="uid://cp0ni1lgml7c6" path="res://Scripts/Core/property_override.gd" id="15_te72y"]
 [ext_resource type="PackedScene" uid="uid://csg0e2wxlx4qd" path="res://Scenes/Components/angled_deflector.tscn" id="16_te72y"]
 [ext_resource type="PackedScene" uid="uid://craitf0mklbon" path="res://Scenes/Rules/timer.tscn" id="17_vm45j"]
 [ext_resource type="PackedScene" uid="uid://clhg61503vle8" path="res://Scenes/Rules/variable_tuner.tscn" id="18_te72y"]
 [ext_resource type="PackedScene" uid="uid://tre5p2x1bb2k" path="res://Scenes/Rules/lives_counter.tscn" id="19_vm45j"]
+[ext_resource type="PackedScene" uid="uid://c1cjxj1iklep7" path="res://Scenes/Bodies/player/player_triangle_ship_modern.tscn" id="20_54n4y"]
+[ext_resource type="PackedScene" uid="uid://b1v4hc08l20lk" path="res://Scenes/Bodies/nonplayer/nonplayer_triangle_ship_modern.tscn" id="21_t4mwo"]
 
 [sub_resource type="Resource" id="Resource_1b6ap"]
 script = ExtResource("2_25ekh")
@@ -56,83 +52,6 @@ glow_enabled = true
 glow_intensity = 3.0
 glow_bloom = 0.33
 
-[sub_resource type="Resource" id="Resource_vm45j"]
-script = ExtResource("15_te72y")
-node_path = NodePath("ScoreOnDeath")
-property_name = "score_type"
-value = 1
-metadata/_custom_type_script = "uid://cp0ni1lgml7c6"
-
-[sub_resource type="Resource" id="Resource_fk46a"]
-script = ExtResource("15_te72y")
-node_path = NodePath("GunSimple")
-property_name = "bullet_group"
-value = "enemies_bullets"
-metadata/_custom_type_script = "uid://cp0ni1lgml7c6"
-
-[sub_resource type="Resource" id="Resource_nvkvc"]
-script = ExtResource("15_te72y")
-node_path = NodePath("EngineComplex")
-property_name = "button_only"
-value = false
-metadata/_custom_type_script = "uid://cp0ni1lgml7c6"
-
-[sub_resource type="Resource" id="Resource_kkt1o"]
-script = ExtResource("15_te72y")
-node_path = NodePath("InterceptorAi")
-property_name = "target_group"
-value = "players"
-metadata/_custom_type_script = "uid://cp0ni1lgml7c6"
-
-[sub_resource type="Resource" id="Resource_te72y"]
-script = ExtResource("15_te72y")
-node_path = NodePath("InterceptorAi")
-property_name = "turning_speed"
-value = 360
-metadata/_custom_type_script = "uid://cp0ni1lgml7c6"
-
-[sub_resource type="Resource" id="Resource_87l5j"]
-script = ExtResource("15_te72y")
-node_path = NodePath("InterceptorAi")
-property_name = "aim_inaccuracy"
-value = 5
-metadata/_custom_type_script = "uid://cp0ni1lgml7c6"
-
-[sub_resource type="Resource" id="Resource_54n4y"]
-script = ExtResource("15_te72y")
-node_path = NodePath("AimAi")
-property_name = "target_group"
-value = "players"
-metadata/_custom_type_script = "uid://cp0ni1lgml7c6"
-
-[sub_resource type="Resource" id="Resource_t4mwo"]
-script = ExtResource("15_te72y")
-node_path = NodePath("AimAi")
-property_name = "turning_speed"
-value = 360
-metadata/_custom_type_script = "uid://cp0ni1lgml7c6"
-
-[sub_resource type="Resource" id="Resource_m8jn7"]
-script = ExtResource("15_te72y")
-node_path = NodePath("AimAi")
-property_name = "aim_inaccuracy"
-value = 5
-metadata/_custom_type_script = "uid://cp0ni1lgml7c6"
-
-[sub_resource type="Resource" id="Resource_p6o8w"]
-script = ExtResource("15_te72y")
-node_path = NodePath("ScoreOnDeath")
-property_name = "score_type"
-value = 2
-metadata/_custom_type_script = "uid://cp0ni1lgml7c6"
-
-[sub_resource type="Resource" id="Resource_7agj0"]
-script = ExtResource("15_te72y")
-node_path = NodePath("ScoreOnDeath")
-property_name = "base_score"
-value = 50
-metadata/_custom_type_script = "uid://cp0ni1lgml7c6"
-
 [sub_resource type="Resource" id="Resource_pxxt0"]
 script = ExtResource("15_te72y")
 node_path = NodePath("AngledDeflector")
@@ -168,42 +87,6 @@ environment = SubResource("Environment_1b6ap")
 display_mode = 1
 display_lives = true
 
-[node name="TriangleShip" parent="." groups=["players"] instance=ExtResource("4_25ekh")]
-position = Vector2(64, 320)
-rotation = -0.7853982
-collision_groups = Array[String](["players"])
-
-[node name="PlayerControl" parent="TriangleShip" instance=ExtResource("5_h75pn")]
-
-[node name="ScoreOnDeath" parent="TriangleShip" instance=ExtResource("7_s3uvk")]
-score_type = 1
-
-[node name="TriangleShip2" parent="." groups=["enemies"] instance=ExtResource("4_25ekh")]
-position = Vector2(568, 48)
-rotation = -3.926991
-collision_groups = Array[String](["enemies"])
-
-[node name="GunSimple" parent="TriangleShip2" index="3"]
-bullet_group = "enemies_bullets"
-
-[node name="EngineComplex" parent="TriangleShip2" index="4"]
-button_only = false
-
-[node name="InterceptorAi" parent="TriangleShip2" instance=ExtResource("6_25ekh")]
-target_group = "players"
-turning_speed = 360
-aim_inaccuracy = 5
-
-[node name="AimAi" parent="TriangleShip2" instance=ExtResource("7_25ekh")]
-target_group = "players"
-turning_speed = 360
-aim_inaccuracy = 5
-
-[node name="ShootAi" parent="TriangleShip2" instance=ExtResource("9_yp1qk")]
-
-[node name="ScoreOnDeath" parent="TriangleShip2" instance=ExtResource("7_s3uvk")]
-base_score = 50
-
 [node name="GroupMonitor" parent="." instance=ExtResource("11_v3mlj")]
 target_group = "players"
 lose_life_on_clear = true
@@ -218,24 +101,19 @@ trigger_value = "players"
 trigger_value = "enemies"
 
 [node name="WaveSpawner" parent="." node_paths=PackedStringArray("director") instance=ExtResource("13_nvkvc")]
-spawn_scene = ExtResource("4_25ekh")
+spawn_scene = ExtResource("20_54n4y")
+spawn_pattern = 1
 spawn_count_equation = "1"
 director = NodePath("../WaveDirector")
-spawn_components = Array[PackedScene]([ExtResource("5_h75pn"), ExtResource("7_s3uvk")])
-property_overrides = Array[ExtResource("15_te72y")]([SubResource("Resource_vm45j")])
-spawn_groups = Array[String](["players"])
-spawn_collision_groups = Array[String](["players"])
+use_safe_zone = true
+safety_radius = 50.0
 use_random_angle = true
 
 [node name="WaveSpawner2" parent="." node_paths=PackedStringArray("director") instance=ExtResource("13_nvkvc")]
-spawn_scene = ExtResource("4_25ekh")
-spawn_count_equation = "wave_number"
+spawn_scene = ExtResource("21_t4mwo")
+spawn_count_equation = "wave_number / 2 + 1"
 stagger_delay = 1.0
 director = NodePath("../WaveDirector2")
-spawn_components = Array[PackedScene]([ExtResource("7_s3uvk"), ExtResource("7_25ekh"), ExtResource("9_yp1qk"), ExtResource("6_25ekh")])
-property_overrides = Array[ExtResource("15_te72y")]([SubResource("Resource_fk46a"), SubResource("Resource_nvkvc"), SubResource("Resource_kkt1o"), SubResource("Resource_te72y"), SubResource("Resource_87l5j"), SubResource("Resource_54n4y"), SubResource("Resource_t4mwo"), SubResource("Resource_m8jn7"), SubResource("Resource_p6o8w"), SubResource("Resource_7agj0")])
-spawn_groups = Array[String](["enemies"])
-spawn_collision_groups = Array[String](["enemies"])
 
 [node name="WaveDirector(asteroids)" parent="." instance=ExtResource("12_fk46a")]
 trigger_type = 1
@@ -261,7 +139,12 @@ target_property = "current_multiplier"
 adjustment_amount = 1.0
 
 [node name="LivesCounter" parent="." instance=ExtResource("19_vm45j")]
-max_lives = 10
+max_lives = 5
 
-[editable path="TriangleShip"]
-[editable path="TriangleShip2"]
+[node name="TriangleShip" parent="." instance=ExtResource("20_54n4y")]
+position = Vector2(64, 320)
+rotation = -0.7853982
+
+[node name="TriangleShip2" parent="." instance=ExtResource("21_t4mwo")]
+position = Vector2(584, 40)
+rotation = -0.7853982

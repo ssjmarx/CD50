@@ -118,7 +118,11 @@ func _spawn_one(wave_num: int, index: int, total: int) -> void:
 		enemy.add_child(component)
 	
 	for override in property_overrides:
-		var target = enemy.get_node(override.node_path)
+		var target: Node
+		if override.node_path:
+			target = enemy.get_node(override.node_path)
+		else:
+			target = enemy
 		var value = override.value
 		if value is Array and target[override.property_name] is Array:
 			target[override.property_name].assign(value)

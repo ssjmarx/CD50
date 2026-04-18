@@ -16,4 +16,4 @@ var points = [
 
 # Draw white triangle ship
 func _draw() -> void:
-	draw_polyline(points, Color.WHITE, 2.0)
+	draw_polyline(points, color, 2.0)

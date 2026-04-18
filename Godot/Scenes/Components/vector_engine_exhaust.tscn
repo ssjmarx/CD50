@@ -1,0 +1,7 @@
+[gd_scene load_steps=2 format=3 uid="uid://b5qnknhyvemd5"]
+
+[ext_resource type="Script" uid="uid://dlkmpwyiwvk38" path="res://Scripts/Components/vector_engine_exhaust.gd" id="1_0cg0p"]
+
+[node name="VectorEngineExhaust" type="Node2D"]
+rotation = 1.5707964
+script = ExtResource("1_0cg0p")

@@ -1,23 +1,27 @@
-[gd_scene load_steps=10 format=3 uid="uid://bcktpeqc0t10f"]
+[gd_scene load_steps=14 format=3 uid="uid://bcktpeqc0t10f"]
 
 [ext_resource type="Script" uid="uid://nx6wkwvymri1" path="res://Scripts/Bodies/triangle_ship.gd" id="1_wwr64"]
 [ext_resource type="PackedScene" uid="uid://bj81pr736k256" path="res://Scenes/Components/health.tscn" id="2_eim4k"]
 [ext_resource type="AudioStream" uid="uid://cd52kylnvmrya" path="res://Assets/Audio/zapThreeToneDown.ogg" id="3_amubg"]
 [ext_resource type="PackedScene" uid="uid://cqh5t1y5b71wr" path="res://Scenes/Components/screen_wrap.tscn" id="4_rb3ke"]
 [ext_resource type="PackedScene" uid="uid://bapmn3uxv7pqb" path="res://Scenes/Arms/gun_simple.tscn" id="5_v32yc"]
-[ext_resource type="PackedScene" uid="uid://chmnjqkckrar5" path="res://Scenes/Bodies/bullet_wrapping.tscn" id="6_0p4c7"]
+[ext_resource type="PackedScene" uid="uid://chmnjqkckrar5" path="res://Scenes/Bodies/generic/bullet_wrapping.tscn" id="6_0p4c7"]
 [ext_resource type="PackedScene" uid="uid://gb8yeyed5mjn" path="res://Scenes/Legs/engine_simple.tscn" id="8_3y4d0"]
 [ext_resource type="PackedScene" uid="uid://dccglleshdrs7" path="res://Scenes/Legs/rotation_direct.tscn" id="9_721bk"]
-[ext_resource type="PackedScene" uid="uid://cva1nb23qxfk2" path="res://Scenes/Arms/damage_on_joust.tscn" id="9_rb3ke"]
+[ext_resource type="PackedScene" uid="uid://145njn1uody4" path="res://Scenes/Components/death_effect.tscn" id="10_v32yc"]
+[ext_resource type="PackedScene" uid="uid://c5h0r2rnmwe4k" path="res://Scenes/Effects/death_particles.tscn" id="11_533y8"]
+[ext_resource type="PackedScene" uid="uid://dewo285lx7p70" path="res://Scenes/Effects/death_broken_triangle_ship.tscn" id="12_3y4d0"]
+[ext_resource type="PackedScene" uid="uid://b5qnknhyvemd5" path="res://Scenes/Components/vector_engine_exhaust.tscn" id="12_533y8"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_533y8"]
+size = Vector2(8, 8)
 
 [node name="TriangleShip" type="CharacterBody2D"]
 rotation = -1.5707964
 script = ExtResource("1_wwr64")
 
-[node name="CollisionPolygon2D" type="CollisionPolygon2D" parent="."]
-rotation = 1.5707964
-build_mode = 1
-polygon = PackedVector2Array(0, -12, -4, 4, 4, 4)
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+shape = SubResource("RectangleShape2D_533y8")
 
 [node name="Health" parent="." instance=ExtResource("2_eim4k")]
 death_sound = ExtResource("3_amubg")
@@ -32,4 +36,7 @@ bullet_group = "players_bullets"
 
 [node name="RotationDirect" parent="." instance=ExtResource("9_721bk")]
 
-[node name="DamageOnJoust" parent="." instance=ExtResource("9_rb3ke")]
+[node name="DeathEffect" parent="." instance=ExtResource("10_v32yc")]
+effect_scenes = Array[PackedScene]([ExtResource("11_533y8"), ExtResource("12_3y4d0")])
+
+[node name="VectorEngineExhaust" parent="." instance=ExtResource("12_533y8")]

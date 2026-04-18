@@ -1,6 +1,6 @@
 # Recent Progress: GD50 — Development History
 
-**Last Updated:** 2026-04-17
+**Last Updated:** 2026-04-18
 
 ---
 
@@ -316,10 +316,34 @@ All four games prove the component architecture works at every level:
 **Bodies Purification:**
 All body scripts have had functional code excised. Bodies now contain **drawing code only** (shapes, colors, `_draw()` calls). All gameplay behavior (damage, health, bouncing, movement) is handled by attached components. The body is the blackboard and the visual — components are the behavior.
 
-### New Body Scene
+### New Body Scenes
 | Scene | Purpose |
 |-------|---------|
 | `triangle_ship_modern` | Asteroids ship with modern twin-stick controls (engine_complex + rotation_target + direct_acceleration + friction_linear + screen_wrap) |
+
+### Bodies Scene Reorganization
+
+The `Scenes/Bodies/` folder was reorganized from a flat list into a three-tier directory structure:
+
+```
+Scenes/Bodies/
+├── generic/        — Archetype templates (no brain, no faction, no color override)
+├── player/         — Pre-rigged for player control (player brain, friendly color, player groups)
+└── nonplayer/      — Pre-rigged as threats/obstacles (AI brains, hostile color, enemy groups)
+```
+
+**Rationale:** Previously, bodies were imagined as generic components configured per-game. This caused two problems:
+1. **Annoying configuration** — especially for complex entities, setting up brains/groups/colors per game was tedious
+2. **Player confusion** — visually identical entities with differing behaviors across games would be disorienting in rapid-fire game sequences
+
+**New rule:** `extends UniversalBody` scripts contain drawing code only and serve as the visual identity for a specific entity type. Scenes in the three tiers tie that visual to a specific behavioral role (player, enemy, or neutral archetype). This means **visual identity = behavioral identity** — the player always knows what something does by what it looks like.
+
+**All existing body scenes were reorganized:**
+- `generic/` — asteroid, ball, brick, bullet_simple, bullet_wrapping, paddle, triangle_ship, triangle_ship_modern, ufo
+- `player/` — player_bullet_simple, player_bullet_wrapping, player_paddle, player_triangle_ship, player_triangle_ship_modern
+- `nonplayer/` — nonplayer_bullet_simple, nonplayer_bullet_wrapping, nonplayer_paddle, nonplayer_triangle_ship, nonplayer_triangle_ship_modern
+
+**Scripts remain flat** in `Scripts/Bodies/` — the organizational split is at the scene level only.
 
 ### Component Catalog (Updated)
 

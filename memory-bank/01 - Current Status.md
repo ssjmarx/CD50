@@ -1,6 +1,6 @@
 # Current Status: GD50 — Arcade Cabinet
 
-**Last Updated:** 2026-04-17  
+**Last Updated:** 2026-04-18  
 **Engine:** Godot 4.x (GDScript)  
 **Architecture:** Entity-Component (composition over inheritance)  
 **Playable Games:** Pong, Breakout, Asteroids, Pongsteroids, Dogfight — ALL componentized, zero game scripts
@@ -52,31 +52,82 @@ GD50 is a modular arcade game collection built around a composable component arc
 
 ---
 
-## Body Scripts
+## Body Scripts & Scene Organization
 
-### `Scripts/Bodies/ball.gd` — extends UniversalBody
-- Pong-style ball. Minimal script — sets up collision shapes and draws a white square. All bouncing, deflection, acceleration, sound, and cleanup handled by attached components.
+### Design Philosophy
 
-### `Scripts/Bodies/paddle.gd` — extends UniversalBody
-- Pong-style paddle. Sets collision shape from exports. All movement, AI, and deflection handled by attached components.
+Body scripts (`Scripts/Bodies/*.gd`) contain **drawing code only** — they define the visual shape, colors, and `_draw()` calls. All gameplay behavior is handled by attached components.
+
+Body **scenes** (`Scenes/Bodies/`) are organized into three tiers that tie specific visuals to specific behaviors:
+
+```
+Scenes/Bodies/
+├── generic/        — Archetype templates (no brain, no faction, no color override)
+├── player/         — Pre-rigged for player control (player brain, friendly color, player groups)
+└── nonplayer/      — Pre-rigged as threats/obstacles (AI brains, hostile color, enemy groups)
+```
+
+**Why three tiers?**
+1. **Generic** bodies are close recreations of arcade archetypes — the "canonical" version of an entity with its mechanical components attached but no faction or control scheme assigned. These serve as base templates and are used directly when an entity has no allegiance (e.g., asteroids, bricks).
+2. **Player** bodies add a specific friendly color, player control brain, and player collision groups. Games drop these in as the player entity without further configuration.
+3. **Nonplayer** bodies add hostile visuals (immediately readable as "threat"), AI brains pre-configured for opposition, and enemy collision groups. Games use these as opponents.
+
+This ensures that **visual identity = behavioral identity** — the player always knows what something does by what it looks like, even as they cycle through dozens of games in rapid succession.
 
 ### `Scripts/Bodies/asteroid.gd` — extends UniversalBody
 - Asteroid with procedural jagged polygon, three sizes (SMALL/MEDIUM/LARGE). **Drawing code only** — all behavior handled by attached components (Health, SplitOnDeath, ScoreOnDeath, ScreenWrap, DamageOnHit).
+- Scene: `generic/asteroid.tscn` only (asteroids are factionless — no player/nonplayer variant)
+
+### `Scripts/Bodies/ball.gd` — extends UniversalBody
+- Pong-style ball. Minimal script — sets up collision shapes and draws a white square. All bouncing, deflection, acceleration, sound, and cleanup handled by attached components.
+- Scene: `generic/ball.tscn` (balls are neutral — no player/nonplayer variant)
 
 ### `Scripts/Bodies/brick.gd` — extends UniversalBody
 - Breakout brick with health-based coloring (green=1hp, yellow=2hp, orange=3hp, red=4hp). Redraws on health change. **Drawing code only** — all gameplay behavior handled by attached components.
+- Scene: `generic/brick.tscn` only (bricks are targets — no player/nonplayer variant)
 
 ### `Scripts/Bodies/bullet_simple.gd` — extends UniversalBody
 - Simple bullet. Flies straight, despawns on physics hit or screen exit. All behavior via components (DamageOnHit, DieOnHit).
+- Scenes: `generic/bullet_simple.tscn`, `player/player_bullet_simple.tscn`, `nonplayer/nonplayer_bullet_simple.tscn`
 
 ### `Scripts/Bodies/bullet_wrapping.gd` — extends UniversalBody
 - Bullet with timer-based lifetime instead of screen exit detection. Otherwise identical to bullet_simple.
+- Scenes: `generic/bullet_wrapping.tscn`, `player/player_bullet_wrapping.tscn`, `nonplayer/nonplayer_bullet_wrapping.tscn`
+
+### `Scripts/Bodies/paddle.gd` — extends UniversalBody
+- Pong-style paddle. Sets collision shape from exports. All movement, AI, and deflection handled by attached components.
+- Scenes: `generic/paddle.tscn`, `player/player_paddle.tscn`, `nonplayer/nonplayer_paddle.tscn`
 
 ### `Scripts/Bodies/triangle_ship.gd` — extends UniversalBody
-- Asteroids player ship with triangular polyline shape. **Drawing code only** — all behavior handled by attached components (Health, ScreenWrap, GunSimple, EngineSimple/Complex, etc.). Note: some older functional code may still exist here but is being migrated to components.
+- Triangular polyline ship shape with configurable color export. **Drawing code only** — all behavior handled by attached components.
+- Scenes (two variants, each with all three tiers):
+  - **Classic:** `generic/triangle_ship.tscn`, `player/player_triangle_ship.tscn`, `nonplayer/nonplayer_triangle_ship.tscn`
+  - **Modern:** `generic/triangle_ship_modern.tscn`, `player/player_triangle_ship_modern.tscn`, `nonplayer/nonplayer_triangle_ship_modern.tscn`
+  - Classic = EngineSimple + RotationDirect (original Asteroids controls)
+  - Modern = EngineComplex + RotationTarget + DirectAcceleration + FrictionLinear (twin-stick controls)
 
 ### `Scripts/Bodies/ufo.gd` — extends UniversalBody
-- UFO entity with configurable hitbox sized from exports. All behavior defined by attached components.
+- UFO entity with configurable hitbox sized from exports. **Drawing code only** — all behavior defined by attached components.
+- Scene: `ufo.tscn` (top-level, not yet assigned to a tier — not yet used in any game)
+
+### Scene Tier Details (by example)
+
+**`generic/triangle_ship_modern.tscn`** — The archetype:
+- `triangle_ship.gd` script, no color override, no group assignment
+- Mechanical components: Health, ScreenWrap, GunSimple (generic bullets), EngineComplex, RotationTarget, FrictionLinear, DirectAcceleration, DamageOnJoust, DeathEffect, VectorEngineExhaust
+- **No brain attached** — no control scheme, waiting to be specialized
+
+**`player/player_triangle_ship_modern.tscn`** — Player-rigged:
+- Same script + same mechanical components as generic
+- **Color: Cyan** (0, 1, 1, 1) — immediately readable as "me"
+- **Group: `players`**, **bullet_group: `players_bullets`**
+- **Brain: PlayerControl** — keyboard/mouse/gamepad input
+
+**`nonplayer/nonplayer_triangle_ship_modern.tscn`** — Threat-rigged:
+- Same script + same mechanical components as generic
+- **Color: Orange** (1, 0.65, 0, 1) — immediately readable as "enemy"
+- **Group: `enemies`**, **bullet_group: `enemies_bullets`** (note: currently set to `players_bullets` in scene — may be a config bug)
+- **Brains: AimAi + InterceptorAi + ShootAi** — triple AI stack targeting `players` group
 
 ---
 

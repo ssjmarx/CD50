@@ -111,6 +111,7 @@ func p1_win() -> void:
 	on_game_over.emit()
 	$Interface.show_element(CommonEnums.Element.WIN_TEXT)
 	$Interface.show_element(CommonEnums.Element.CONTINUE_TEXT)
+	print("Game: ", game_title, " Score: ", current_score)
 
 # Show lose UI and transition to GAME_OVER
 func p1_lose() -> void:
@@ -118,6 +119,7 @@ func p1_lose() -> void:
 	on_game_over.emit()
 	$Interface.show_element(CommonEnums.Element.LOSE_TEXT)
 	$Interface.show_element(CommonEnums.Element.CONTINUE_TEXT)
+	print("Game: ", game_title, " Score: ", current_score)
 
 # Pause the game
 func pause_game() -> void:

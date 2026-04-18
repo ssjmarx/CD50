@@ -2,13 +2,13 @@
 
 extends UniversalComponent
 
-@export var max_acceleration: int = 400 # Max pixels per second squared
-@export var jerk: int = 400 # Rate of acceleration change
-@export var button_only: bool = true # Only thrust on button press
+@export var max_acceleration: int = 400
+@export var jerk: int = 400
+@export var button_only: bool = true
 
-var current_acceleration: float = 0.0 # Current acceleration level
-var thrusting: bool = false # Thrust button state
-var joystick_input: bool = false # Joystick input state
+var current_acceleration: float = 0.0
+var thrusting: bool = false
+var joystick_input: bool = false
 
 
 # Connect to input signals
@@ -34,8 +34,10 @@ func _on_move(joystick: Vector2) -> void:
 		return
 	if joystick == Vector2.ZERO:
 		joystick_input = false
+		parent.end_thrust.emit()
 	else:
 		joystick_input = true
+		parent.thrust.emit()
 
 # Start thrusting
 func _on_thrust() -> void:

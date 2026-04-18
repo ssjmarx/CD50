@@ -3,7 +3,7 @@
 extends UniversalComponent
 
 @export var target_group: String
-@export var vision_cone_angle: float = 30
+@export var vision_cone_angle: float = 15
 @export var vision_range: float = 500
 @export var fire_rate: float = 2.0
 

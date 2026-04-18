@@ -1,0 +1,18 @@
+[gd_scene load_steps=3 format=3 uid="uid://cf2tdppe312um"]
+
+[ext_resource type="Script" uid="uid://boygftnccyhi2" path="res://Scripts/Bodies/paddle.gd" id="1_qpbr5"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_da2tq"]
+size = Vector2(8, 8)
+
+[node name="Paddle" type="CharacterBody2D"]
+script = ExtResource("1_qpbr5")
+collision_groups = Array[String](["paddles"])
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+shape = SubResource("RectangleShape2D_da2tq")
+
+[node name="HurtBox" type="Area2D" parent="."]
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="HurtBox"]
+shape = SubResource("RectangleShape2D_da2tq")
