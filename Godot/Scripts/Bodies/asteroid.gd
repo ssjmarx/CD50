@@ -2,23 +2,22 @@
 
 extends UniversalBody
 
-@export var initial_velocity: Vector2 = Vector2.ZERO # Starting drift velocity
-@export var initial_size: Size = Size.LARGE # Asteroid size enum
-@export var num_vertices: int = 10 # Number of polygon vertices
-@export var jaggedness: float = 0.3 # Random radius variation (0.0 = circle, 1.0 = chaotic)
+@export var size: Size = Size.LARGE
+@export var num_vertices: int = 10
+@export var jaggedness: float = 0.3
 
-var points: PackedVector2Array # Generated polygon vertices
+var points: PackedVector2Array
 
 enum Size {
-	SMALL,   # Radius 5
-	MEDIUM,  # Radius 10
-	LARGE     # Radius 20
+	SMALL,
+	MEDIUM,
+	LARGE
 	}
 
 # Get radius based on size enum
 var radius: float:
 	get:
-		match initial_size:
+		match size:
 			Size.LARGE: return 20.0
 			Size.MEDIUM: return 10.0
 			Size.SMALL: return 5.0
@@ -32,28 +31,12 @@ func _ready() -> void:
 	
 	# Defer polygon setup to avoid physics query flushing errors
 	_setup_collision_polygons.call_deferred(points)
-	
-	if velocity == Vector2.ZERO:
-		velocity = initial_velocity
 
 # Set collision polygon on all colliders
 func _setup_collision_polygons(poly_points: PackedVector2Array) -> void:
 	$CollisionPolygon2D.polygon = poly_points
 	$HitBox/CollisionPolygon2D.polygon = poly_points
 	$HurtBox/CollisionPolygon2D.polygon = poly_points
-
-# Move and bounce on collision
-func _physics_process(delta: float) -> void:
-	if not visible:
-		return
-	
-	var collision = move_parent_physics(velocity * delta)
-	
-	if collision:
-		# Damage colliders with Health component
-		var collider = collision.get_collider()
-		if collider.has_node("Health"):
-			collider.get_node("Health").reduce_health(1)
 
 # Draw white outline polygon
 func _draw() -> void:

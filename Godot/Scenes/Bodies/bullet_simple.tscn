@@ -1,7 +1,10 @@
-[gd_scene load_steps=3 format=3 uid="uid://b3lugns3ik8vj"]
+[gd_scene load_steps=6 format=3 uid="uid://b3lugns3ik8vj"]
 
 [ext_resource type="Script" uid="uid://dk4n6dgf8uiht" path="res://Scripts/Bodies/bullet_simple.gd" id="1_tprhx"]
 [ext_resource type="AudioStream" uid="uid://dillc1thd7r2x" path="res://Assets/Audio/phaserUp5.ogg" id="2_7842g"]
+[ext_resource type="PackedScene" uid="uid://b3hvkyy38ihr1" path="res://Scenes/Components/screen_cleanup.tscn" id="3_42tnj"]
+[ext_resource type="PackedScene" uid="uid://cg5rnfuldr2n0" path="res://Scenes/Arms/damage_on_hit.tscn" id="4_re2pw"]
+[ext_resource type="PackedScene" uid="uid://86gfkqtgv2yc" path="res://Scenes/Components/die_on_hit.tscn" id="5_re2pw"]
 
 [node name="BulletSimple" type="CharacterBody2D"]
 script = ExtResource("1_tprhx")
@@ -10,7 +13,6 @@ x_min = -20.0
 x_max = 660.0
 y_min = -20.0
 y_max = 380.0
-collision_groups = Array[String](["bullets"])
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="."]
 
@@ -22,5 +24,9 @@ collision_groups = Array[String](["bullets"])
 stream = ExtResource("2_7842g")
 max_polyphony = 10
 
-[node name="VisibleOnScreenNotifier2D" type="VisibleOnScreenNotifier2D" parent="."]
-rect = Rect2(-0.5, -0.5, 1, 1)
+[node name="ScreenCleanup" parent="." instance=ExtResource("3_42tnj")]
+
+[node name="DamageOnHit" parent="." instance=ExtResource("4_re2pw")]
+target_groups = Array[String](["asteroids", "enemies", "players"])
+
+[node name="DieOnHit" parent="." instance=ExtResource("5_re2pw")]

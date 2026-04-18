@@ -25,6 +25,10 @@ window/size/extend_to_title=true
 window/stretch/mode="canvas_items"
 window/stretch/scale_mode="integer"
 
+[editor]
+
+movie_writer/movie_file="/home/ssjmarx/Videos/Screencasts/test.avi"
+
 [editor_plugins]
 
 enabled=PackedStringArray("res://addons/crt/plugin.cfg")

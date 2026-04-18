@@ -5,14 +5,14 @@ class_name UniversalGameScript extends Node2D
 @export var collision_groups: Array[CollisionGroup]
 
 var states = CommonEnums.State
-var current_score = 0
-var current_multiplier = 0
 var collision_matrix: CollisionMatrix
-var _current_state: CommonEnums.State = states.ATTRACT
 var p1_score: int = 0
 var p2_score: int = 0
 
 var _collision_dict: Dictionary
+var _current_state: CommonEnums.State = states.ATTRACT
+var _current_score: int = 0
+var _current_multiplier: int = 1
 
 # Public state property with automatic signal emission on change
 var current_state: CommonEnums.State:
@@ -22,6 +22,23 @@ var current_state: CommonEnums.State:
 		if _current_state != value:
 			_current_state = value
 			state_changed.emit(_current_state)
+
+# Properties with auto-emit setters
+var current_score: int:
+	get:
+		return _current_score
+	set(value):
+		if _current_score != value:
+			_current_score = value
+			on_points_changed.emit(_current_score)
+
+var current_multiplier: int:
+	get:
+		return _current_multiplier
+	set(value):
+		if _current_multiplier != value:
+			_current_multiplier = value
+			on_multiplier_changed.emit(_current_multiplier)
 
 # Signals FROM other components, they call parent.{signal}.emit()
 signal victory
@@ -80,7 +97,7 @@ func _unhandled_input(event: InputEvent) -> void:
 
 # Transition to PLAYING state and initialize game
 func start_game() -> void:
-	print("starting game!")
+	#print("starting game!")
 	current_state = states.PLAYING
 	on_game_start.emit()
 
@@ -112,13 +129,11 @@ func unpause_game() -> void:
 
 # Add points to score and emit update
 func add_score(amount: int) -> void:
-	current_score += amount
-	on_points_changed.emit(current_score)
+	current_score += amount * current_multiplier
 	
-# Set multiplier and emit update
-func set_multiplier(new_value: int) -> void:
-	current_multiplier = new_value
-	on_multiplier_changed.emit(current_multiplier)
+# Add multiplier and emit update
+func add_multiplier(amount: int) -> void:
+	current_multiplier += amount
 
 # Configure collision matrix with group relationships
 func setup_collision_groups(groups: Dictionary) -> void:
@@ -133,11 +148,11 @@ func get_state() -> CommonEnums.State:
 	return current_state
 
 func add_p1_score(amount) -> void:
-	p1_score += amount
+	p1_score += amount * current_multiplier
 	on_p1_score.emit(p1_score)
 
 func add_p2_score(amount) -> void:
-	p2_score += amount
+	p2_score += amount * current_multiplier
 	on_p2_score.emit(p2_score)
 
 static func find_ancestor(node: Node) -> UniversalGameScript:

@@ -1,7 +1,8 @@
-[gd_scene load_steps=4 format=3 uid="uid://vlxiy3uptf6y"]
+[gd_scene load_steps=5 format=3 uid="uid://vlxiy3uptf6y"]
 
 [ext_resource type="Script" uid="uid://byidqfe4arhb0" path="res://Scripts/Bodies/brick.gd" id="1_iythh"]
 [ext_resource type="PackedScene" uid="uid://bj81pr736k256" path="res://Scenes/Components/health.tscn" id="2_ckqjd"]
+[ext_resource type="PackedScene" uid="uid://ic3mj0x3ub4c" path="res://Scenes/Components/score_on_death.tscn" id="3_105t2"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_iythh"]
 size = Vector2(16, 8)
@@ -16,5 +17,7 @@ collision_groups = Array[String](["bricks"])
 shape = SubResource("RectangleShape2D_iythh")
 
 [node name="Health" parent="." instance=ExtResource("2_ckqjd")]
+
+[node name="ScoreOnDeath" parent="." instance=ExtResource("3_105t2")]
 
 [connection signal="health_changed" from="Health" to="." method="_on_health_health_changed"]

@@ -1,0 +1,6 @@
+[gd_scene load_steps=2 format=3 uid="uid://w8vpcyw1nkb2"]
+
+[ext_resource type="Script" uid="uid://dseuv7med4dpj" path="res://Scripts/Rules/group_count_multiplier.gd" id="1_2ktlw"]
+
+[node name="GroupCountMultiplier" type="Node"]
+script = ExtResource("1_2ktlw")

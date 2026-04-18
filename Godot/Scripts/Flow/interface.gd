@@ -3,10 +3,11 @@
 extends Control
 
 @export var display_mode: CommonEnums.DisplayMode = CommonEnums.DisplayMode.P1_P2_SCORE
+@export var display_lives: bool = false
 
-var elements = CommonEnums.Element # Reference to element enums
+var elements = CommonEnums.Element
 
-@onready var parent = get_parent() # Reference to game script
+@onready var parent = get_parent()
 
 # Connect to game state signals
 func _ready() -> void:
@@ -38,33 +39,36 @@ func _show_play_ui() -> void:
 		CommonEnums.DisplayMode.POINTS_MULTIPLIER:
 			show_element(elements.POINTS)
 			show_element(elements.MULTIPLIER)
+	
+	if display_lives:
+		show_element(elements.LIVES)
 
 func _hide_play_ui() -> void:
 	hide_element(elements.P1_SCORE)
 	hide_element(elements.P2_SCORE)
 	hide_element(elements.POINTS)
 	hide_element(elements.MULTIPLIER)
-
+	hide_element(elements.LIVES)
 
 # Update points display
 func set_points(new_score) -> void:
-	$Points/PointsNumber.text = str(new_score)
+	$Points/PointsNumber.text = str(int(new_score))
 
 # Update multiplier display
 func set_multiplier(new_multiplier) -> void:
-	$Multiplier/MultiplierNumber.text = str(new_multiplier)
+	$Multiplier/MultiplierNumber.text = str(int(new_multiplier)) + "x"
 
 # Update lives display
 func set_lives(new_lives) -> void:
-	$Lives/LivesNumber.text = str(new_lives)
+	$Lives/LivesNumber.text = str(int(new_lives))
 
 # Update player 1 score
 func set_p1_score(new_score) -> void:
-	$"P1 Score".text = str(new_score)
+	$"P1 Score".text = str(int(new_score))
 	
 # Update player 2 score
 func set_p2_score(new_score) -> void:
-	$"P2 Score".text = str(new_score)
+	$"P2 Score".text = str(int(new_score))
 
 # Update timer display (TODO: implement)
 func set_timer(_new_time) -> void:

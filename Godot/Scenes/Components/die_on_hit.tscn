@@ -1,0 +1,6 @@
+[gd_scene load_steps=2 format=3 uid="uid://86gfkqtgv2yc"]
+
+[ext_resource type="Script" uid="uid://d0niqedaogo1" path="res://Scripts/Components/die_on_hit.gd" id="1_pg3ko"]
+
+[node name="DieOnHit" type="Node"]
+script = ExtResource("1_pg3ko")

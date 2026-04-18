@@ -1,0 +1,6 @@
+[gd_scene load_steps=2 format=3 uid="uid://ic3mj0x3ub4c"]
+
+[ext_resource type="Script" uid="uid://kykp2y0xgxf2" path="res://Scripts/Components/score_on_death.gd" id="1_bjx1r"]
+
+[node name="ScoreOnDeath" type="Node"]
+script = ExtResource("1_bjx1r")

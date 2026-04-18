@@ -28,21 +28,24 @@ enum State {
 enum ScoreType {
 	P1_SCORE,
 	P2_SCORE,
-	GENERIC_SCORE
+	POINTS,
+	MULTIPLIER
 }
 
 # WaveDirector trigger types
 enum Trigger {
 	GROUP_CLEARED,
 	TIMER_EXPIRED,
-	LIVES_DEPLETED
+	LIVES_DEPLETED,
+	GAME_START
 }
 
 # WaveSpawner spawn patterns
 enum SpawnPattern {
 	SCREEN_EDGES,
 	SCREEN_CENTER,
-	GRID
+	GRID,
+	POSITION
 }
 
 # VariableTuner adjustment modes

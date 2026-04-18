@@ -1,76 +1,93 @@
-# Current Goal: Componentize Remaining Games
+# Current Goal: Asteroids Polish and More Remix Games
 
-**Planning Document:** `planning/05 - Componentized Breakout, Asteroids, and Pongsteroids.md`  
-**Status:** 🔄 Planning Complete — Ready to Implement  
-**Previous Goal:** Component Pong ✅ (completed 2026-04-16)
+**Planning Document:** `planning/06 - Asteroids Polish and More Remix Games.md`  
+**Status:** 🔄 In Progress — Dogfight complete, Asteroids polish + remixes remaining  
+**Previous Goal:** Componentize Breakout, Asteroids, and Pongsteroids ✅ (completed 2026-04-17)
 
 ---
 
 ## Objective
 
-Eliminate the last three monolithic game scripts (`breakout.gd`, `asteroids.gd`, `pongsteroids.gd`). All games become pure `UniversalGameScript` scene assemblies with zero game-specific code.
+Full Asteroids recreation (death effects, UFO, warp, reactive music), input system refactor for remappable buttons, and three new remix games.
 
 ---
 
-## Scope
+## Completed So Far
 
-- **Breakout:** 3 new components (LifeLossZone, ScoreMultiplier, BallServer) + GRID spawn pattern + DamageOnHit + ScoreOnDeath
-- **Asteroids:** 2 new components (GroupCountMultiplier, Respawner) + GroupMonitor extension + DamageOnHit + ScoreOnDeath
-- **Pongsteroids:** Copy pong.tscn + add asteroid spawners + collision groups. The remix test.
-
-**Out of Scope:** Attract modes, AI swap mechanics, control scheme selection.
+- [x] **Dogfight** — Player vs AI triangle ships with escalating waves + asteroids (pure scene assembly)
+- [x] **ShootAi** — Vision cone AI brain for auto-firing at targets
+- [x] **DamageOnJoust** — Velocity-comparison collision damage (faster body wins)
+- [x] **Bodies Purification** — All body scripts now contain drawing code only, zero functional logic
+- [x] **triangle_ship_modern** — Pre-composed body with modern twin-stick controls
 
 ---
 
-## New Components (7 total)
+## Remaining Scope
 
-| Component | Category | Used By | Complexity |
-|-----------|----------|---------|------------|
-| `DamageOnHit` | Component | All three | Low |
-| `ScoreOnDeath` | Rule | Breakout, Asteroids | Medium |
-| `LifeLossZone` | Rule | Breakout | Low |
-| `ScoreMultiplier` | Rule | Breakout | Medium |
-| `BallServer` | Flow | Breakout | Low |
-| `GroupCountMultiplier` | Rule | Asteroids | Low |
-| `Respawner` | Flow | Asteroids | High |
+### Input Refactor
+- `action`/`end_action` signals pass `InputEvent` argument so components can filter by action name
+- Enables remappable buttons through Godot's Input Map
 
-## Extensions (2 existing)
+### Asteroids Polish (4 new components)
+- **Death effects:** `death_effect` component + 2 effect scenes (particles, ship debris)
+- **UFO enemy:** `patrol_ai` brain follows Curve2D paths, UFO assembled from components
+- **Warp:** `asteroids_warp` leg — teleport with intangibility on button_3
+- **Reactive music:** `music_ramping` rule — loop sound with pitch scaling as group count → 0
+
+### Remix Games (3)
+- **Pongout:** Pong where goals are shielded by breakout bricks, one goal ends the game
+- **Asterout:** Modern controls, UFO dogfighting with stationary brick shields
+- **Breaksteroids:** Paddle + ball vs asteroid grid, asteroids have health and split
+
+---
+
+## New Components Needed (4-5)
+
+| Component | Category | Purpose |
+|-----------|----------|---------|
+| `death_effect` | Component | Spawn visual effect scenes on parent death |
+| `patrol_ai` | Brain | Curve2D path following + random path generation |
+| `asteroids_warp` | Leg | Emergency teleport with intangibility |
+| `music_ramping` | Rule | Loop sound with pitch scaling based on group count |
+| `health_color` (optional) | Component | Color parent based on Health HP |
+
+## Modified Components
 
 | Component | Change |
 |-----------|--------|
-| `GroupMonitor` | Add `lose_life_on_clear: bool` |
-| `WaveSpawner` | Implement GRID pattern, add `max_alive: int` |
+| `universal_body` | `action`/`end_action` signals pass InputEvent |
+| Components listening to `action`/`end_action` | Accept InputEvent parameter |
 
-## Deletions (3 scripts)
+## New Scenes & Folder
 
-- `Scripts/Games/breakout.gd`
-- `Scripts/Games/asteroids.gd`
-- `Scripts/Games/pongsteroids.gd`
+- `Scenes/Effects/` — new folder for visual effects (self-destructing + persistent)
+- `death_effect_particles.tscn`, `death_effect_ship_debris.tscn`, `engine_flame.tscn`
+- `pongout.tscn`, `asterout.tscn`, `breaksteroids.tscn`
+
+## No Game Scripts
+
+All games are pure UGS scene assemblies.
 
 ---
 
-## Implementation Order
+## Implementation Phases
 
-1. **Phase A:** Cross-cutting components (DamageOnHit, ScoreOnDeath, GroupMonitor extension, GRID pattern)
-2. **Phase B:** Component Breakout (LifeLossZone, ScoreMultiplier, BallServer, assemble, test, delete)
-3. **Phase C:** Component Asteroids (GroupCountMultiplier, Respawner, assemble, test, delete)
-4. **Phase D:** Component Pongsteroids (WaveSpawner max_alive, asteroid variant, copy pong + remix, test, delete)
+1. ~~**A: Input Refactor** — Update universal_body signals, verify existing games~~
+2. **B: Death Effects** — death_effect component + particle/debris effect scenes
+3. **C: UFO + Polish** — patrol_ai, asteroids_warp, music_ramping, UFO assembly, update asteroids.tscn
+4. **D: Pongout** — assemble and test
+5. **E: Asterout** — assemble and test
+6. **F: Breaksteroids** — assemble and test
 
 ---
 
 ## Success Criteria
 
-- [ ] `breakout.gd` is deleted — Breakout runs as pure scene assembly
-- [ ] `asteroids.gd` is deleted — Asteroids runs as pure scene assembly
-- [ ] `pongsteroids.gd` is deleted — Pongsteroids runs as pure scene assembly
-- [ ] All four games use UGS root with zero game-specific scripts
-- [ ] Pongsteroids demonstrates remix ease (pong.tscn copy + asteroid additions)
-
----
-
-## Deferred Items
-
-- **Attract Mode AI swap:** Mechanism to swap PlayerControl ↔ InterceptorAI based on game state
-- **Control scheme selection:** Original vs Modern Asteroids controls (pick one for now)
-- **Asteroids win condition:** Game is traditionally endless — decide on score threshold or wave limit
-- **Hub/Menu System:** Game selection interface
+- [ ] `action`/`end_action` pass InputEvent — components can filter by action name
+- [ ] Asteroids explode with particle burst, ship with particles + debris lines
+- [ ] UFO enemy patrols and shoots in Asteroids
+- [ ] Ship can warp (button_3) with intangibility
+- [ ] Reactive music speeds up as asteroid count decreases
+- [ ] Pongout, Asterout, Breaksteroids all playable
+- [x] Dogfight playable (pure scene assembly)
+- [x] All games are pure UGS scene assemblies, zero game scripts

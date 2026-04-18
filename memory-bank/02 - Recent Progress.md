@@ -1,6 +1,6 @@
 # Recent Progress: GD50 — Development History
 
-**Last Updated:** 2026-04-16
+**Last Updated:** 2026-04-17
 
 ---
 
@@ -223,19 +223,132 @@ Component Pong proved that **game-level componentization works**. The same patte
 
 ---
 
+## Update 6: Full Componentization — All Games Complete
+
+**Planning Document:** `planning/05 - Componentized Breakout, Asteroids, and Pongsteroids.md`
+
+### What Was Planned
+- Componentize Breakout, Asteroids, and Pongsteroids — eliminate the last three monolithic game scripts
+- Build cross-cutting components: DamageOnHit, ScoreOnDeath, ScoreOnHit, DieOnHit
+- Extend WaveSpawner with GRID pattern, safe zone, spawn groups, game_over guards
+- Extend WaveDirector with GAME_START trigger
+- Build GroupCountMultiplier rule for Asteroids scoring
+- Add auto_start to Timer
+- Fix PropertyOverride for typed arrays
+
+### What Was Actually Built
+
+**ALL THREE GAME SCRIPTS DELETED.** `breakout.gd`, `asteroids.gd`, `pongsteroids.gd` are gone. All four games now run as pure scene assemblies with zero game-specific code. This was completed in a single day, building on weeks of preliminary component work.
+
+**New Components Built:**
+
+| Component | Category | Purpose |
+|-----------|----------|---------|
+| `damage_on_hit` | Arm | Deals damage to colliders in target_groups with Health component |
+| `die_on_hit` | Component | Kills parent on collision (separate from damage for composition) |
+| `die_on_timer` | Component | Kills parent after timer expires |
+| `score_on_death` | Component | Awards points when parent dies (listens to sibling Health) |
+| `score_on_hit` | Component | Awards points on collision (must be on scoring entity) |
+| `group_count_multiplier` | Rule | Sets multiplier = count of entities in target group |
+
+**Major Enhancements:**
+
+| Component | Enhancement |
+|-----------|-------------|
+| `wave_spawner` | Safe zone (await-based, waits for unsafe groups to vacate radius), spawn_groups (add_to_group), spawn_components (attach scenes), game_over guards in both `_on_spawning_wave` and `_spawn_one`, POSITION spawn pattern, typed array fix in PropertyOverride |
+| `wave_director` | GAME_START trigger type, max_waves limit, game_over guard, await-based wave_delay |
+| `timer` | `auto_start` export — connects to `game.on_game_start` to begin automatically |
+| `goal` | `lose_life` and `extra_life` modes beyond scoring |
+| `universal_game_script` | Auto-emit property setters for `current_score` and `current_multiplier` |
+| `common_enums` | Added GAME_START trigger, POSITION spawn pattern |
+
+**Bugs Fixed:**
+- `wave_spawner.gd`: PropertyOverride typed array assignment — uses `Array.assign()` for `Array[String]` properties
+- `wave_spawner.gd`: Missing game_over guard — staggered spawns continued after game over
+- `wave_director.gd`: Timer never started — added `auto_start` export to Timer component
+- `wave_spawner.gd`: Expression parse bug — added input variable names to `expression.parse()`
+
+### Architecture Validation — Complete
+
+All four games prove the component architecture works at every level:
+- **Entity-level** (Bodies + Brains + Legs + Arms): Validated since Pongsteroids (Update 3)
+- **Game-level** (UGS + Rules + Flow): Validated with Component Pong (Update 5)
+- **Cross-game remix**: Pongsteroids assembled from Pong + Asteroids components — zero new code
+- **Full componentization**: All four games are editor assemblies, no game scripts
+
+### Component Catalog (Final Count)
+
+| Category | Count | Components |
+|----------|-------|------------|
+| Core | 7 | universal_body, universal_game_script, universal_component, universal_component_2d, collision_matrix, collision_group, property_override, common_enums |
+| Bodies | 8 | ball, paddle, asteroid, brick, bullet_simple, bullet_wrapping, triangle_ship, ufo |
+| Brains | 3 | player_control, interceptor_ai, aim_ai |
+| Legs | 8 | direct_movement, direct_acceleration, engine_simple, engine_complex, friction_linear, friction_static, rotation_direct, rotation_target |
+| Arms | 2 | gun_simple, damage_on_hit |
+| Components | 11 | angled_deflector, collision_marker, die_on_hit, die_on_timer, health, pong_acceleration, score_on_death, score_on_hit, screen_cleanup, screen_wrap, split_on_death |
+| Rules | 7 | goal, points_monitor, variable_tuner, group_monitor, group_count_multiplier, lives_counter, timer |
+| Flow | 4 | interface, sound_on_hit, wave_director, wave_spawner |
+
+---
+
+## Update 7: Dogfight + New Components + Bodies Purification
+
+**Planning Document:** `planning/06 - Asteroids Polish and More Remix Games.md` (in progress)
+
+### What Was Built
+
+**Dogfight** (`Games/dogfight.tscn`) — Pure scene assembly, zero game-specific script:
+- Player triangle ship vs escalating waves of AI triangle ships, with asteroids as neutral obstacles
+- 5-way factional collision groups: players, enemies, players_bullets, enemies_bullets, asteroids
+- Enemy AI is a triple-brain stack: InterceptorAi (chase) + AimAi (aim) + ShootAi (auto-fire in vision cone)
+- Escalating difficulty: enemy count = wave_number (wave 1 = 1 enemy, wave 2 = 2, etc.)
+- Asteroids spawn every 6 seconds with AngledDeflector for chaotic bouncing
+- LivesCounter (10 lives) for Asteroids-style game over
+- Built entirely from existing components — only ShootAi was new
+
+**New Components:**
+
+| Component | Category | Purpose |
+|-----------|----------|---------|
+| `shoot_ai` | Brain | Scans for targets in a vision cone, auto-fires when target detected (configurable fire rate, vision angle, range) |
+| `damage_on_joust` | Arm | Compares parent vs collider velocity on collision — faster body wins, slower takes damage. Configurable tie_breaker |
+
+**Bodies Purification:**
+All body scripts have had functional code excised. Bodies now contain **drawing code only** (shapes, colors, `_draw()` calls). All gameplay behavior (damage, health, bouncing, movement) is handled by attached components. The body is the blackboard and the visual — components are the behavior.
+
+### New Body Scene
+| Scene | Purpose |
+|-------|---------|
+| `triangle_ship_modern` | Asteroids ship with modern twin-stick controls (engine_complex + rotation_target + direct_acceleration + friction_linear + screen_wrap) |
+
+### Component Catalog (Updated)
+
+| Category | Count | Components |
+|----------|-------|------------|
+| Core | 7 | universal_body, universal_game_script, universal_component, universal_component_2d, collision_matrix, collision_group, property_override, common_enums |
+| Bodies | 9 | ball, paddle, asteroid, brick, bullet_simple, bullet_wrapping, triangle_ship, triangle_ship_modern, ufo |
+| Brains | 4 | player_control, interceptor_ai, aim_ai, shoot_ai |
+| Legs | 8 | direct_movement, direct_acceleration, engine_simple, engine_complex, friction_linear, friction_static, rotation_direct, rotation_target |
+| Arms | 3 | gun_simple, damage_on_hit, damage_on_joust |
+| Components | 11 | angled_deflector, collision_marker, die_on_hit, die_on_timer, health, pong_acceleration, score_on_death, score_on_hit, screen_cleanup, screen_wrap, split_on_death |
+| Rules | 7 | goal, points_monitor, variable_tuner, group_monitor, group_count_multiplier, lives_counter, timer |
+| Flow | 4 | interface, sound_on_hit, wave_director, wave_spawner |
+
+---
+
 ## Summary: What Exists vs What Was Planned
 
 | Feature | Planned | Status |
 |---------|---------|--------|
 | Solar System Hub | Overview doc | ❌ Not built |
 | Entity Component System | Overview doc | ✅ Fully operational |
-| Game-Level Component System | Plan 03/04 | ✅ Proven with Component Pong |
+| Game-Level Component System | Plan 03/04 | ✅ All 5 games componentized |
 | Pong | Plan 01/04 | ✅ Componentized — no game script |
-| Breakout | Plan 01 | ✅ Complete (monolithic script) |
-| Asteroids | Plan 02 | ✅ Complete (monolithic script) |
-| Pongsteroids | Plan 02 | ✅ Complete (monolithic script) |
+| Breakout | Plan 01/05 | ✅ Componentized — no game script |
+| Asteroids | Plan 02/05 | ✅ Componentized — no game script |
+| Pongsteroids | Plan 02/05 | ✅ Componentized — no game script |
+| Dogfight | Plan 06 | ✅ Componentized — no game script |
 | UFO Enemy | Plan 02 | ⚠️ Scene exists, not in any game |
 | Hub/Menu System | Plan 03 | ❌ Not started |
-| Componentize Remaining Games | Plan 04 | 🔲 Breakout, Asteroids, Pongsteroids |
 | 6 Additional Games | Overview | ❌ Not started |
 | Meta/Narrative Layer | Brainstorming | ❌ Not started |

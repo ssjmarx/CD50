@@ -9,6 +9,7 @@
 
 [node name="Ball" type="CharacterBody2D" groups=["balls"]]
 script = ExtResource("1_2wnlm")
+height = 4
 collision_groups = Array[String](["balls"])
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="."]

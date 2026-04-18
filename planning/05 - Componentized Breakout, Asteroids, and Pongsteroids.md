@@ -55,26 +55,75 @@ Behavior:
 
 **Design note:** For Asteroids, the gun emits `target_hit(target: Node2D)` not `body_collided(collider, normal)`. The signal arg format differs. Solution: export the signal name and use a generic callback that checks the first arg for `has_node("Health")`. The `target_group` filter handles the rest.
 
-### 2. `ScoreOnDeath` — Rule (used by Breakout + Asteroids)
+### 2. `ScoreOnDeath` — Rule (used by Breakout + Asteroids) + `SplitOnDeath` enhancement
 
-**Problem:** When an entity with Health dies, award score × multiplier. Currently handled per-game.
-**Solution:** Component that listens to `get_tree().node_added`, auto-connects to `Health.zero_health` for matching groups, awards score on death.
+
+## ScoreOnDeath — New Component (entity-attached)
 
 ```
-Exports:
-- target_group: String — which group to watch for deaths
-- base_score: int = 1 — base points per kill
-- use_size_scoring: bool = false — read asteroid.initial_size for score (Asteroids-specific)
-
-Behavior:
-- _ready(): connect get_tree().node_added
-- On node_added matching group: connect Health.zero_health to _on_death
-- On death: game.add_score(base_score * game.current_multiplier)
-  If use_size_scoring: base_score = asteroid.initial_size + 1 (SMALL=1, MEDIUM=2, LARGE=3)
+Scripts/Components/score_on_death.gd — extends UniversalComponent
 ```
 
-**Breakout use:** Watches "bricks", base_score = 1, awards score × multiplier
-**Asteroids use:** Watches "asteroids", use_size_scoring = true, awards score × multiplier
+- [ ] **Create script** extending UniversalComponent
+- [ ] **Exports:**
+  - `base_score: int = 1`
+  - `score_type: CommonEnums.ScoreType = GENERIC_SCORE`
+- [ ] **`_ready()`:** Find ancestor UGS via `UniversalGameScript.find_ancestor(self)`, connect to sibling `Health.zero_health`
+- [ ] **`_on_zero_health(_parent)`:** Compute `points = base_score * game.current_multiplier`, call `game.add_score(points)` (or the appropriate score method based on `score_type`)
+- [ ] **Add to asteroid.tscn** as sibling to Health — `base_score = 1` (LARGE asteroids start at 1)
+- [ ] **Add to brick.tscn** as sibling to Health — `base_score = 1`
+
+**Timing is confirmed safe.** Looking at `health.gd` lines 19-21:
+
+```gdscript
+zero_health.emit(parent)  # ← ScoreOnDeath runs to completion here
+die()                      # ← disables components, then queue_free
+```
+
+`die()` doesn't run until all `zero_health` listeners finish. You're good.
+
+---
+
+## SplitOnDeath — Modify Existing (score propagation)
+
+Currently at `Scripts/Components/split_on_death.gd` — already spawns fragments and decrements `initial_size`.
+
+- [ ] **Add exports:**
+  - `score_adjustment: int = 1` — how much to change child's ScoreOnDeath.base_score
+  - `score_adjustment_mode: CommonEnums.AdjustmentMode = ADD` — SET or ADD
+- [ ] **In `_on_parent_died()`, after spawning each fragment** (before `add_child`):
+  - Check if fragment has a `ScoreOnDeath` child node
+  - If yes, read its `base_score` and apply adjustment:
+    - ADD: `fragment_score.base_score = parent_score.base_score + score_adjustment`
+    - SET: `fragment_score.base_score = score_adjustment`
+    - MULTIPLY: `fragment_score.base_score = parent_score.base_score * score_adjustment`
+  - This works because properties are set **before** `add_child()`, so before the child's `_ready()` fires
+- [ ] **Configure on asteroid's SplitOnDeath:** `score_adjustment = 1`, mode = ADD
+  - LARGE (score=1) → spawns MEDIUM (score=2) → spawns SMALL (score=3)
+
+---
+
+## How it flows for Asteroids
+
+```
+LARGE asteroid dies (ScoreOnDeath.base_score = 1)
+  → Health.zero_health fires
+    → ScoreOnDeath: awards 1 × multiplier ✓
+    → SplitOnDeath: spawns 2 fragments
+      → reads parent ScoreOnDeath.base_score (1)
+      → ADD +1 to each fragment's ScoreOnDeath.base_score → 2
+      → add_child (MEDIUM asteroids, score = 2)
+
+MEDIUM asteroid dies (ScoreOnDeath.base_score = 2)
+  → awards 2 × multiplier ✓
+  → splits → child ScoreOnDeath.base_score = 3
+
+SMALL asteroid dies (ScoreOnDeath.base_score = 3)
+  → awards 3 × multiplier ✓
+  → no split (initial_size = 0, already handled)
+```
+
+
 
 ### 3. `LifeLossZone` — Rule (used by Breakout)
 
@@ -91,82 +140,17 @@ Behavior:
 
 **Breakout use:** On Floor Area2D
 
-### 4. `ScoreMultiplier` — Rule (used by Breakout)
+### 4. `ScoreOnHit` - Component
 
-**Problem:** Multiplier increments on paddle hit, resets on life loss. Currently in breakout.gd.
-**Solution:** Component that listens to a signal and increments game multiplier, with optional reset signal.
-
-```
-Exports:
-- increment_source: Node — node whose signal triggers increment
-- increment_signal: String — signal name for increment
-- target_group: String = "" — only increment if signal arg is in this group
-- increment_amount: int = 1
-- reset_source: Node — node whose signal triggers reset
-- reset_signal: String — signal name for reset
-- reset_value: int = 1
-
-Behavior:
-- _ready(): connect both signals
-- On increment signal: if target_group empty or arg in group: game.set_multiplier(game.current_multiplier + increment_amount)
-- On reset signal: game.set_multiplier(reset_value)
-```
-
-**Breakout use:** increment on ball.body_collided (target_group = "paddles"), reset on game.lives_changed
+combination of score on death and my existing _on_hit components
 
 ### 5. `BallServer` — Flow (used by Breakout)
 
-**Problem:** Reset ball position, wait, launch at angle. Currently `serve_ball()` in breakout.gd.
-**Solution:** Component that resets and relaunches the parent ball when triggered by a signal.
-
-```
-Exports:
-- serve_position: Vector2 = Vector2(320, 304)
-- serve_angle_min: float = 5*PI/4
-- serve_angle_max: float = 7*PI/4
-- serve_speed: float = 150
-- serve_delay: float = 1.0
-- serve_on_game_start: bool = true
-- serve_on_signal_node: NodePath — node whose signal triggers re-serve
-- serve_on_signal: String — signal name
-
-Behavior:
-- _ready(): if serve_on_game_start: game.on_game_start.connect(_serve)
-  Connect serve_on_signal from serve_on_signal_node
-- _serve(): parent.position = serve_position, parent.velocity = ZERO, await delay, launch
-```
-
-**Breakout use:** serve_on_signal = game.lives_changed, position = (320, 304), upward angles
+NOPE this is handled with spawners
 
 ### 6. `Respawner` — Flow (used by Asteroids)
 
-**Problem:** Ship dies → after delay + safe zone check → spawn new ship with components. Currently ~100 lines in asteroids.gd.
-**Solution:** Component that watches a group, spawns from scene when group empties, with delay and safe zone check.
-
-```
-Exports:
-- target_group: String — group to monitor
-- spawn_scene: PackedScene — scene to instantiate
-- respawn_delay: float = 3.0
-- spawn_position: Vector2 = Vector2(320, 180)
-- check_safe_zone: bool = false
-- safe_zone_radius: float = 100.0
-- child_components: Array[PackedScene] = [] — components to add to spawned entity
-- max_respawns: int = 0 — 0 = unlimited
-
-Behavior:
-- _ready(): game.lives_changed.connect(_on_lives_changed) OR monitor group
-- On group empty / lives_changed: if lives > 0 and not game_over:
-    await respawn_delay
-    if check_safe_zone: await _wait_for_safe_zone()
-    instance = spawn_scene.instantiate()
-    for comp in child_components: instance.add_child(comp.instantiate())
-    game.add_child(instance)
-```
-
-**Asteroids use:** target_group = "players", spawn_scene = triangle_ship, child_components = [gun, screen_wrap, player_control, control_scheme], respawn_delay = 3.0, check_safe_zone = true
-
-**Design question:** The control scheme selection (Original vs Modern) adds different Leg components. For a no-attract-mode scope, we could just pick one scheme and hardcode it. OR have a simple state-dependent setup. This is a design decision to make during implementation.
+NOPE this is handled with spawners
 
 ### 7. `GroupCountMultiplier` — Rule (used by Asteroids)
 
@@ -185,20 +169,7 @@ Behavior:
 
 ### 8. `GroupLifeLoss` — Rule (used by Asteroids)
 
-**Problem:** When player ship dies (removed from "players" group), lose a life. Currently connected via `tree_exited`.
-**Solution:** Component that watches a group and calls lose_life when it transitions from >0 to 0.
-
-```
-Exports:
-- target_group: String
-
-Behavior:
-- _physics_process(): count nodes in group, if was >0 and now == 0: game.get_node("LivesCounter").lose_life()
-```
-
-**Asteroids use:** target_group = "players"
-
-This is essentially a specialized GroupMonitor. Alternative: add `lose_life_on_clear: bool` to existing GroupMonitor. Less code, more cohesive. **Recommend extending GroupMonitor** rather than a new component.
+add `lose_life_on_clear: bool` (and logic) to existing GroupMonitor. Less code, more cohesive. **Recommend extending GroupMonitor
 
 ---
 

@@ -1,8 +1,11 @@
-[gd_scene load_steps=4 format=3 uid="uid://chmnjqkckrar5"]
+[gd_scene load_steps=7 format=3 uid="uid://chmnjqkckrar5"]
 
 [ext_resource type="Script" uid="uid://bssnat1o0bajr" path="res://Scripts/Bodies/bullet_wrapping.gd" id="1_1lbvm"]
 [ext_resource type="AudioStream" uid="uid://dillc1thd7r2x" path="res://Assets/Audio/phaserUp5.ogg" id="2_1lbvm"]
 [ext_resource type="PackedScene" uid="uid://cqh5t1y5b71wr" path="res://Scenes/Components/screen_wrap.tscn" id="3_1lbvm"]
+[ext_resource type="PackedScene" uid="uid://bj8ah4sgagfc5" path="res://Scenes/Components/die_on_timer.tscn" id="4_kp2sk"]
+[ext_resource type="PackedScene" uid="uid://cg5rnfuldr2n0" path="res://Scenes/Arms/damage_on_hit.tscn" id="5_68r4x"]
+[ext_resource type="PackedScene" uid="uid://86gfkqtgv2yc" path="res://Scenes/Components/die_on_hit.tscn" id="6_68r4x"]
 
 [node name="BulletWrapping" type="CharacterBody2D"]
 script = ExtResource("1_1lbvm")
@@ -11,7 +14,6 @@ x_min = -20.0
 x_max = 660.0
 y_min = -20.0
 y_max = 380.0
-collision_groups = Array[String](["bullets"])
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="."]
 
@@ -22,8 +24,11 @@ collision_groups = Array[String](["bullets"])
 [node name="AudioStreamPlayer2D" type="AudioStreamPlayer2D" parent="."]
 stream = ExtResource("2_1lbvm")
 
-[node name="Timer" type="Timer" parent="."]
-wait_time = 0.4
-autostart = true
-
 [node name="ScreenWrap" parent="." instance=ExtResource("3_1lbvm")]
+
+[node name="DamageOnHit" parent="." instance=ExtResource("5_68r4x")]
+target_groups = Array[String](["asteroids", "players", "enemies"])
+
+[node name="DieOnHit" parent="." instance=ExtResource("6_68r4x")]
+
+[node name="DieOnTimer" parent="." instance=ExtResource("4_kp2sk")]

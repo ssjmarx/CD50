@@ -1,0 +1,42 @@
+[gd_scene load_steps=12 format=3 uid="uid://cjbfd6wgf5p6b"]
+
+[ext_resource type="Script" uid="uid://nx6wkwvymri1" path="res://Scripts/Bodies/triangle_ship.gd" id="1_55ucc"]
+[ext_resource type="PackedScene" uid="uid://bj81pr736k256" path="res://Scenes/Components/health.tscn" id="2_cp7mk"]
+[ext_resource type="AudioStream" uid="uid://cd52kylnvmrya" path="res://Assets/Audio/zapThreeToneDown.ogg" id="3_lgsga"]
+[ext_resource type="PackedScene" uid="uid://cqh5t1y5b71wr" path="res://Scenes/Components/screen_wrap.tscn" id="4_eeql7"]
+[ext_resource type="PackedScene" uid="uid://bapmn3uxv7pqb" path="res://Scenes/Arms/gun_simple.tscn" id="5_y3rna"]
+[ext_resource type="PackedScene" uid="uid://chmnjqkckrar5" path="res://Scenes/Bodies/bullet_wrapping.tscn" id="6_40ndn"]
+[ext_resource type="PackedScene" uid="uid://bc7mssumtw8v" path="res://Scenes/Legs/engine_complex.tscn" id="7_cp7mk"]
+[ext_resource type="PackedScene" uid="uid://bgbc7os8sqieh" path="res://Scenes/Legs/rotation_target.tscn" id="8_lgsga"]
+[ext_resource type="PackedScene" uid="uid://cf0llx3jwkfcf" path="res://Scenes/Legs/friction_linear.tscn" id="9_eeql7"]
+[ext_resource type="PackedScene" uid="uid://ckfjlmiw1srg2" path="res://Scenes/Legs/direct_acceleration.tscn" id="10_lgsga"]
+[ext_resource type="PackedScene" uid="uid://cva1nb23qxfk2" path="res://Scenes/Arms/damage_on_joust.tscn" id="11_eeql7"]
+
+[node name="TriangleShip" type="CharacterBody2D"]
+rotation = -1.5707964
+script = ExtResource("1_55ucc")
+
+[node name="CollisionPolygon2D" type="CollisionPolygon2D" parent="."]
+rotation = 1.5707964
+polygon = PackedVector2Array(0, -12, -4, 4, 4, 4)
+
+[node name="Health" parent="." instance=ExtResource("2_cp7mk")]
+death_sound = ExtResource("3_lgsga")
+
+[node name="ScreenWrap" parent="." instance=ExtResource("4_eeql7")]
+
+[node name="GunSimple" parent="." instance=ExtResource("5_y3rna")]
+ammo = ExtResource("6_40ndn")
+bullet_group = "players_bullets"
+
+[node name="EngineComplex" parent="." instance=ExtResource("7_cp7mk")]
+
+[node name="RotationTarget" parent="." instance=ExtResource("8_lgsga")]
+turning_speed = 360
+independent_aim = true
+
+[node name="FrictionLinear" parent="." instance=ExtResource("9_eeql7")]
+
+[node name="DirectAcceleration" parent="." instance=ExtResource("10_lgsga")]
+
+[node name="DamageOnJoust" parent="." instance=ExtResource("11_eeql7")]

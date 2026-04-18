@@ -2,14 +2,14 @@
 
 extends UniversalComponent
 
-@export var turning_speed: int = 100 # Degrees per second
-@export var independent_aim: bool = false # Use aim signals instead of move signals
+@export var turning_speed: int = 100
+@export var independent_aim: bool = false
 
-var target_rotation: float = 0.0 # Target angle to rotate toward
-var target_position: Vector2 # Target position for mouse aim
-var using_mouse: bool = false # Track input mode
-var mouse_target: Vector2 # Stored mouse position
-var joystick_target: Vector2 # Stored joystick direction
+var target_rotation: float = 0.0
+var target_position: Vector2
+var using_mouse: bool = false
+var mouse_target: Vector2
+var joystick_target: Vector2
 
 
 # Connect to appropriate input signals based on mode

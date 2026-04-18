@@ -1,0 +1,6 @@
+[gd_scene load_steps=2 format=3 uid="uid://cg5rnfuldr2n0"]
+
+[ext_resource type="Script" uid="uid://cbduwcamvn7qq" path="res://Scripts/Arms/damage_on_hit.gd" id="1_c4chl"]
+
+[node name="DamageOnHit" type="Node"]
+script = ExtResource("1_c4chl")

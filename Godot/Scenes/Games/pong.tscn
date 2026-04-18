@@ -192,7 +192,22 @@ spawn_scene = ExtResource("2_d3mj0")
 spawn_pattern = 1
 spawn_count_equation = "1"
 director = NodePath("../WaveDirector")
-spawn_at_game_start = true
+property_overrides = Array[ExtResource("19_gthws")]([SubResource("Resource_x2g5i")])
+initial_velocity = Vector2(150, 0)
+use_random_angle = true
+random_angle_min = 2.356
+random_angle_max = 3.927
+random_flip_h = true
+
+[node name="WaveDirector2" parent="." instance=ExtResource("13_3uayn")]
+trigger_type = 3
+wave_delay = 1.0
+
+[node name="WaveSpawner2" parent="." node_paths=PackedStringArray("director") instance=ExtResource("14_b3t13")]
+spawn_scene = ExtResource("2_d3mj0")
+spawn_pattern = 1
+spawn_count_equation = "1"
+director = NodePath("../WaveDirector2")
 property_overrides = Array[ExtResource("19_gthws")]([SubResource("Resource_x2g5i")])
 initial_velocity = Vector2(150, 0)
 use_random_angle = true

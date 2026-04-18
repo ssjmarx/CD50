@@ -5,11 +5,12 @@ extends UniversalComponent
 @export var duration: float = 60.0
 @export var count_up: bool = false
 @export var tick_interval: float = 1.0
+@export var loop_timer: bool = false
+@export var game_start: bool = false
 
 var _timer: Timer
 var _current_time: float
 var _is_running: bool = false
-
 
 # Create and configure internal timer
 func _ready() -> void:
@@ -17,9 +18,13 @@ func _ready() -> void:
 	_timer.wait_time = tick_interval
 	_timer.timeout.connect(_on_tick)
 	add_child(_timer)
+	
+	if game_start:
+		game.on_game_start.connect(func(): start_timer())
 
 # Start the timer (counts up or down based on count_up mode)
 func start_timer() -> void:
+	#print("timer started")
 	if count_up:
 		_current_time = 0.0
 	else:
@@ -44,6 +49,7 @@ func reset_timer() -> void:
 
 # Handle timer tick at tick_interval
 func _on_tick() -> void:
+	#print("tick")
 	if not _is_running:
 		return
 	
@@ -52,12 +58,19 @@ func _on_tick() -> void:
 		if _current_time >= duration:
 			_current_time = duration
 			stop_timer()
-			parent.timer_expired.emit()
+			game.timer_expired.emit()
+			if loop_timer:
+				#print("looping")
+				reset_timer()
+				start_timer()
 	else:
 		_current_time -= tick_interval
 		if _current_time <= 0:
 			_current_time = 0
 			stop_timer()
-			parent.timer_expired.emit()
+			game.timer_expired.emit()
+			if loop_timer:
+				reset_timer()
+				start_timer()
 	
-	parent.timer_tick.emit(_current_time)
+	game.timer_tick.emit(_current_time)

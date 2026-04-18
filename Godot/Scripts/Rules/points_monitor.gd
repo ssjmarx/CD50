@@ -7,7 +7,7 @@ extends UniversalComponent
 
 func _ready() -> void:
 	match score_type:
-		CommonEnums.ScoreType.GENERIC_SCORE:
+		CommonEnums.ScoreType.POINTS:
 			parent.on_points_changed.connect(_compare)
 		CommonEnums.ScoreType.P1_SCORE:
 			parent.on_p1_score.connect(_compare)

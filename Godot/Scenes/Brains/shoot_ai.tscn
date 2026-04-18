@@ -1,0 +1,7 @@
+[gd_scene load_steps=2 format=3 uid="uid://c8034ktag0uga"]
+
+[ext_resource type="Script" uid="uid://b7vkrsec1gsbi" path="res://Scripts/Brains/shoot_ai.gd" id="1_bula5"]
+
+[node name="ShootAi" type="Node"]
+script = ExtResource("1_bula5")
+target_group = "players"

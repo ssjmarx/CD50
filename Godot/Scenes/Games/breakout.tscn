@@ -1,16 +1,55 @@
-[gd_scene load_steps=16 format=3 uid="uid://c4ttsm1qowkgo"]
+[gd_scene load_steps=34 format=3 uid="uid://c4ttsm1qowkgo"]
 
-[ext_resource type="Script" uid="uid://cvjed6bfjokfh" path="res://Scripts/Games/breakout.gd" id="1_chg5i"]
+[ext_resource type="Script" uid="uid://bjdgpevhahi6d" path="res://Scripts/Core/universal_game_script.gd" id="1_lmwk8"]
 [ext_resource type="PackedScene" uid="uid://b4mr1t8pdtmf3" path="res://Scenes/Bodies/paddle.tscn" id="2_7epd8"]
+[ext_resource type="Script" uid="uid://bfkr4fdx316o5" path="res://Scripts/Core/collision_group.gd" id="2_vu4sl"]
 [ext_resource type="PackedScene" uid="uid://mw70bjrifcpb" path="res://Scenes/Bodies/ball.tscn" id="3_uvgxs"]
 [ext_resource type="PackedScene" uid="uid://eketockdsssi" path="res://Scenes/Legs/direct_movement.tscn" id="4_2njjq"]
 [ext_resource type="Script" uid="uid://bghaddibpt6f1" path="res://addons/crt/crt.gd" id="4_fkkyb"]
-[ext_resource type="PackedScene" uid="uid://cq0foubgjurmr" path="res://Scenes/Brains/interceptor_ai.tscn" id="5_t5v74"]
+[ext_resource type="PackedScene" uid="uid://6tweepbhleep" path="res://Scenes/Brains/player_control.tscn" id="5_oqfas"]
 [ext_resource type="PackedScene" uid="uid://b418fukpc5m41" path="res://Scenes/Components/collision_marker.tscn" id="6_fkkyb"]
+[ext_resource type="PackedScene" uid="uid://c8ynf452mj3if" path="res://Scenes/Components/score_on_hit.tscn" id="6_th3ku"]
 [ext_resource type="AudioStream" uid="uid://b3en0cgneptgr" path="res://Assets/Audio/lowDown.ogg" id="6_uvgxs"]
+[ext_resource type="PackedScene" uid="uid://cc1murtue63r4" path="res://Scenes/Flow/sound_on_hit.tscn" id="7_ckqoe"]
 [ext_resource type="PackedScene" uid="uid://tre5p2x1bb2k" path="res://Scenes/Rules/lives_counter.tscn" id="9_lmwk8"]
 [ext_resource type="PackedScene" uid="uid://dhulxxtcsipl6" path="res://Scenes/Rules/group_monitor.tscn" id="10_vu4sl"]
 [ext_resource type="PackedScene" uid="uid://bq6cdrx340jp7" path="res://Scenes/Flow/interface.tscn" id="11_r1nhx"]
+[ext_resource type="PackedScene" uid="uid://dwyyfxniivl1r" path="res://Scenes/Flow/wave_director.tscn" id="12_6wwyy"]
+[ext_resource type="PackedScene" uid="uid://vlbel76nqh5w" path="res://Scenes/Flow/wave_spawner.tscn" id="13_ckqoe"]
+[ext_resource type="PackedScene" uid="uid://cg5rnfuldr2n0" path="res://Scenes/Arms/damage_on_hit.tscn" id="16_oqfas"]
+[ext_resource type="PackedScene" uid="uid://vlxiy3uptf6y" path="res://Scenes/Bodies/brick.tscn" id="17_61uu3"]
+[ext_resource type="Script" uid="uid://cp0ni1lgml7c6" path="res://Scripts/Core/property_override.gd" id="17_th3ku"]
+[ext_resource type="PackedScene" uid="uid://clhg61503vle8" path="res://Scenes/Rules/variable_tuner.tscn" id="19_oqfas"]
+
+[sub_resource type="Resource" id="Resource_r1nhx"]
+script = ExtResource("2_vu4sl")
+group_name = "balls"
+targets = Array[String](["paddles", "bricks", "walls", "floors"])
+metadata/_custom_type_script = "uid://bfkr4fdx316o5"
+
+[sub_resource type="Resource" id="Resource_vu4sl"]
+script = ExtResource("2_vu4sl")
+group_name = "paddles"
+targets = Array[String](["balls"])
+metadata/_custom_type_script = "uid://bfkr4fdx316o5"
+
+[sub_resource type="Resource" id="Resource_6wwyy"]
+script = ExtResource("2_vu4sl")
+group_name = "bricks"
+targets = Array[String](["balls"])
+metadata/_custom_type_script = "uid://bfkr4fdx316o5"
+
+[sub_resource type="Resource" id="Resource_ckqoe"]
+script = ExtResource("2_vu4sl")
+group_name = "walls"
+targets = Array[String](["balls"])
+metadata/_custom_type_script = "uid://bfkr4fdx316o5"
+
+[sub_resource type="Resource" id="Resource_o41md"]
+script = ExtResource("2_vu4sl")
+group_name = "floors"
+targets = Array[String](["balls"])
+metadata/_custom_type_script = "uid://bfkr4fdx316o5"
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_per38"]
 size = Vector2(656, 8)
@@ -27,30 +66,48 @@ glow_enabled = true
 glow_intensity = 3.0
 glow_bloom = 0.33
 
-[node name="Breakout" type="Node2D"]
-script = ExtResource("1_chg5i")
+[sub_resource type="Resource" id="Resource_jyu46"]
+script = ExtResource("17_th3ku")
+node_path = NodePath("DamageOnHit")
+property_name = "target_groups"
+value = ["bricks"]
+metadata/_custom_type_script = "uid://cp0ni1lgml7c6"
 
-[node name="Paddle" parent="." groups=["paddle"] instance=ExtResource("2_7epd8")]
-position = Vector2(304, 320)
+[sub_resource type="Resource" id="Resource_oqfas"]
+script = ExtResource("17_th3ku")
+node_path = NodePath("AngledDeflector")
+property_name = "deflection_bias"
+value = Vector2(1, 5)
+metadata/_custom_type_script = "uid://cp0ni1lgml7c6"
+
+[sub_resource type="Resource" id="Resource_th3ku"]
+script = ExtResource("17_th3ku")
+node_path = NodePath("ScoreOnHit")
+property_name = "target_group"
+value = "bricks"
+metadata/_custom_type_script = "uid://cp0ni1lgml7c6"
+
+[sub_resource type="Resource" id="Resource_jp3pm"]
+script = ExtResource("17_th3ku")
+node_path = NodePath("ScoreOnHit")
+property_name = "score_type"
+value = 3
+metadata/_custom_type_script = "uid://cp0ni1lgml7c6"
+
+[node name="Breakout" type="Node2D"]
+script = ExtResource("1_lmwk8")
+game_title = "Breakout"
+collision_groups = Array[ExtResource("2_vu4sl")]([SubResource("Resource_r1nhx"), SubResource("Resource_vu4sl"), SubResource("Resource_6wwyy"), SubResource("Resource_ckqoe"), SubResource("Resource_o41md")])
+
+[node name="Paddle" parent="." groups=["paddles"] instance=ExtResource("2_7epd8")]
+position = Vector2(304, 312)
 width = 32
 height = 4
 lock_y = true
 
-[node name="AngledDeflector" parent="Paddle" index="2"]
-deflection_bias = Vector2(1, 5)
-
 [node name="DirectMovement" parent="Paddle" instance=ExtResource("4_2njjq")]
 
-[node name="InterceptorAi" parent="Paddle" instance=ExtResource("5_t5v74")]
-target_node = NodePath("../../Ball")
-turning_speed = 180
-aim_inaccuracy = 30
-
-[node name="Ball" parent="." instance=ExtResource("3_uvgxs")]
-position = Vector2(320, 304)
-
-[node name="PongAcceleration" parent="Ball" index="2"]
-acceleration_factor = 1.1
+[node name="PlayerControl" parent="Paddle" instance=ExtResource("5_oqfas")]
 
 [node name="Walls" type="StaticBody2D" parent="."]
 position = Vector2(-8, -8)
@@ -67,6 +124,9 @@ shape = SubResource("RectangleShape2D_n6jm7")
 position = Vector2(652, 192)
 shape = SubResource("RectangleShape2D_n6jm7")
 
+[node name="CollisionMarker" parent="Walls" instance=ExtResource("6_fkkyb")]
+collision_groups = Array[String](["walls"])
+
 [node name="Floor" type="Area2D" parent="."]
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="Floor"]
@@ -75,6 +135,9 @@ shape = SubResource("RectangleShape2D_7ju07")
 
 [node name="CollisionMarker" parent="Floor" instance=ExtResource("6_fkkyb")]
 collision_groups = Array[String](["floors"])
+
+[node name="SoundOnHit" parent="Floor" node_paths=PackedStringArray("sound") instance=ExtResource("7_ckqoe")]
+sound = NodePath("../../AudioStreamPlayer2D")
 
 [node name="CRT" type="CanvasLayer" parent="."]
 script = ExtResource("4_fkkyb")
@@ -102,10 +165,9 @@ max_polyphony = 3
 
 [node name="LivesCounter" parent="." instance=ExtResource("9_lmwk8")]
 
-[node name="GroupMonitor" parent="." instance=ExtResource("10_vu4sl")]
-target_group = "bricks"
-
 [node name="Interface" parent="." instance=ExtResource("11_r1nhx")]
+display_mode = 1
+display_lives = true
 
 [node name="Attract Text" parent="Interface" index="5"]
 offset_left = 146.0
@@ -113,9 +175,69 @@ offset_top = 320.0
 offset_right = 488.0
 offset_bottom = 352.0
 
-[connection signal="BallCollision" from="Ball" to="." method="_on_ball_ball_collision"]
-[connection signal="body_entered" from="Floor" to="." method="_on_floor_body_entered"]
+[node name="WaveDirector(balls)" parent="." instance=ExtResource("12_6wwyy")]
+trigger_type = 3
+wave_delay = 0.0
+
+[node name="WaveSpawner(balls)" parent="." node_paths=PackedStringArray("director") instance=ExtResource("13_ckqoe")]
+position = Vector2(320, 304)
+spawn_scene = ExtResource("3_uvgxs")
+spawn_pattern = 3
+spawn_count_equation = "1"
+director = NodePath("../WaveDirector(balls)")
+spawn_components = Array[PackedScene]([ExtResource("16_oqfas"), ExtResource("6_th3ku")])
+property_overrides = Array[ExtResource("17_th3ku")]([SubResource("Resource_jyu46"), SubResource("Resource_oqfas"), SubResource("Resource_th3ku"), SubResource("Resource_jp3pm")])
+initial_velocity = Vector2(0, 100)
+use_random_angle = true
+random_angle_min = -2.356
+random_angle_max = -0.785
+
+[node name="GroupMonitor(balls)" parent="." instance=ExtResource("10_vu4sl")]
+target_group = "balls"
+lose_life_on_clear = true
+
+[node name="WaveDirector(bricks)" parent="." instance=ExtResource("12_6wwyy")]
+trigger_type = 3
+wave_delay = 0.0
+
+[node name="WaveSpawner(bricks)" parent="." node_paths=PackedStringArray("director") instance=ExtResource("13_ckqoe")]
+position = Vector2(320, 64)
+spawn_scene = ExtResource("17_61uu3")
+spawn_pattern = 2
+spawn_count_equation = "1"
+stagger_delay = 0.0
+director = NodePath("../WaveDirector(bricks)")
+grid_health_max = 5
+random_angle_min = -2.356
+random_angle_max = -0.785
+
+[node name="GroupMonitor(bricks)" parent="." instance=ExtResource("10_vu4sl")]
+target_group = "bricks"
+victory_on_clear = true
+
+[node name="VariableTuner" parent="." node_paths=PackedStringArray("source_node") instance=ExtResource("19_oqfas")]
+source_node = NodePath("..")
+source_signal = "lives_changed"
+target_property = "current_multiplier"
+adjustment_amount = 1.0
+adjustment_mode = 2
+
+[node name="WaveDirector(balls)2" parent="." instance=ExtResource("12_6wwyy")]
+trigger_value = "balls"
+wave_delay = 1.0
+
+[node name="WaveSpawner(balls)2" parent="." node_paths=PackedStringArray("director") instance=ExtResource("13_ckqoe")]
+position = Vector2(320, 304)
+spawn_scene = ExtResource("3_uvgxs")
+spawn_pattern = 3
+spawn_count_equation = "1"
+director = NodePath("../WaveDirector(balls)2")
+spawn_components = Array[PackedScene]([ExtResource("16_oqfas"), ExtResource("6_th3ku")])
+property_overrides = Array[ExtResource("17_th3ku")]([SubResource("Resource_jyu46"), SubResource("Resource_oqfas"), SubResource("Resource_th3ku"), SubResource("Resource_jp3pm")])
+initial_velocity = Vector2(0, 100)
+use_random_angle = true
+random_angle_min = -2.356
+random_angle_max = -0.785
 
 [editable path="Paddle"]
-[editable path="Ball"]
 [editable path="Interface"]

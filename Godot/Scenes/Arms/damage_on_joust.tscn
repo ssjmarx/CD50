@@ -1,0 +1,6 @@
+[gd_scene load_steps=2 format=3 uid="uid://cva1nb23qxfk2"]
+
+[ext_resource type="Script" uid="uid://cj27nw3asf1tt" path="res://Scripts/Arms/damage_on_joust.gd" id="1_dl2sr"]
+
+[node name="DamageOnJoust" type="Node"]
+script = ExtResource("1_dl2sr")
