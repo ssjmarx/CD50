@@ -1,10 +1,30 @@
-[gd_scene load_steps=2 format=3 uid="uid://c5h0r2rnmwe4k"]
+[gd_scene load_steps=3 format=3 uid="uid://c5h0r2rnmwe4k"]
 
 [ext_resource type="Script" uid="uid://dts8sibxoa388" path="res://Scripts/Effects/death_particles.gd" id="1_3nswx"]
+[ext_resource type="PackedScene" uid="uid://dga83l4d2rwyv" path="res://Scenes/Flow/sound_synth.tscn" id="2_v24j3"]
 
 [node name="DeathParticles" type="Node2D"]
 script = ExtResource("1_3nswx")
+spread_speed = 100.0
+lifetime = 0.5
 
 [node name="Timer" type="Timer" parent="."]
 one_shot = true
 autostart = true
+
+[node name="SoundSynth" parent="." node_paths=PackedStringArray("source_node") instance=ExtResource("2_v24j3")]
+play_mode = 1
+wave_shape = 4
+effect = 3
+note = 57
+duration = 0.2
+source_node = NodePath("..")
+source_signal = "ready"
+
+[node name="SoundSynth2" parent="." node_paths=PackedStringArray("source_node") instance=ExtResource("2_v24j3")]
+play_mode = 1
+effect = 3
+note = 57
+duration = 0.4
+source_node = NodePath("..")
+source_signal = "ready"

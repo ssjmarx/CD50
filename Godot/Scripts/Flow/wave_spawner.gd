@@ -136,6 +136,7 @@ func _spawn_one(wave_num: int, index: int, total: int) -> void:
 		enemy.collision_groups.append(group)
 	
 	game.add_child(enemy)
+	#print("spawned enemy")
 	
 	if index == total - 1:
 		game.spawning_wave_complete.emit(wave_num)

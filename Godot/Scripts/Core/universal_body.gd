@@ -23,7 +23,7 @@ signal body_collided(collider: Node, normal: Vector2)
 
 # Entity dimensions for collision and clamping
 @export var width: int = 4
-@export var height: int = 16
+@export var height: int = 4
 
 # Position constraints (clamping bounds)
 @export var x_min: float = 0.0
@@ -49,6 +49,12 @@ func _ready() -> void:
 	mouse_position.connect(_on_mouse_position)
 	button_pressed.connect(_on_button_pressed)
 	button_released.connect(_on_button_released)
+	
+	var shape := RectangleShape2D.new()
+	shape.size = Vector2(width, height)
+	
+	if $CollisionShape2D:
+		$CollisionShape2D.shape = shape
 
 func _physics_process(delta: float) -> void:
 	# Apply shared velocity to position (priority 100, runs after Legs)
@@ -74,7 +80,7 @@ func _on_mouse_position(mouse_pos: Vector2) -> void:
 
 func _on_button_pressed(button: InputEvent) -> void:
 	# Generic action event
-	action.emit()
+	action.emit(button)
 	
 	# Map specific buttons to their events
 	if button.is_action("button_r"):

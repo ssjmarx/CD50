@@ -3,7 +3,7 @@
 **Last Updated:** 2026-04-18  
 **Engine:** Godot 4.x (GDScript)  
 **Architecture:** Entity-Component (composition over inheritance)  
-**Playable Games:** Pong, Breakout, Asteroids, Pongsteroids, Dogfight — ALL componentized, zero game scripts
+**Playable Games:** Pong, Breakout, Asteroids, Pongsteroids, Dogfight, Pongout, Breaksteroids — ALL componentized, zero game scripts
 
 ---
 
@@ -11,7 +11,7 @@
 
 GD50 is a modular arcade game collection built around a composable component architecture. Games are assembled from reusable components (Brains, Legs, Arms, Components, Rules, Flow) attached to generic `UniversalBody` (entity) and `UniversalGameScript` (game) base classes. The signal flow is: **Brains** read input → emit on **UniversalBody** input signals → UniversalBody routes to processed output signals → **Legs/Arms** listen to output signals and act. **Rules** components manage game logic (scores, groups, conditions). **Flow** components manage waves, spawning, and UI.
 
-**All five games run as pure scene assemblies** — no game-specific scripts exist. Every game is a `UniversalGameScript` root node with attached components configured in the editor.
+**All games run as pure scene assemblies** — no game-specific scripts exist. Every game is a `UniversalGameScript` root node with attached components configured in the editor.
 
 ---
 
@@ -26,7 +26,7 @@ GD50 is a modular arcade game collection built around a composable component arc
 ### `Scripts/Core/universal_game_script.gd` — `UniversalGameScript extends Node2D`
 - Master class for game coordinators. Generic container with **zero game-specific logic**. State machine (ATTRACT/PLAYING/PAUSED/GAME_OVER), P1/P2 + generic score tracking, collision matrix setup. All game behavior comes from attached Rule/Flow/Component nodes.
 - **Auto-emit property setters:** `current_score`, `current_multiplier` — emit signals on change
-- **Signals FROM components:** `victory`, `defeat`, `group_cleared`, `lives_changed`, `lives_depleted`, `timer_tick`, `timer_expired`, `spawning_wave`, `spawning_wave_complete`
+- **Signals FROM components:** `victory`, `defeat`, `group_cleared`, `group_member_removed`, `lives_changed`, `lives_depleted`, `timer_tick`, `timer_expired`, `spawning_wave`, `spawning_wave_complete`
 - **Signals TO components/UI:** `on_game_start`, `on_game_end`, `on_game_over`, `on_points_changed`, `on_multiplier_changed`, `state_changed`, `on_p1_score`, `on_p2_score`
 - Self-connects `victory` → `p1_win()` and `defeat` → `p1_lose()` in `_ready()`
 - Static helper: `find_ancestor(node)` walks tree to find the UGS
@@ -40,6 +40,7 @@ GD50 is a modular arcade game collection built around a composable component arc
 
 ### `Scripts/Core/collision_matrix.gd` — `CollisionMatrix extends RefCounted`
 - Auto-configures collision layers/masks from group definitions. Supports both `UniversalBody` and non-body nodes via `CollisionMarker` children.
+- **Known limitation:** Only watches direct children of the UGS root (`child_entered_tree`). Bodies parented to other bodies (e.g., RingSpawner bricks as children of a UFO) will NOT be auto-configured. Workaround: parent spawned entities to the game root and manually track position.
 
 ### `Scripts/Core/collision_group.gd` — `CollisionGroup extends Resource`
 - Custom resource defining a collision group name and its target groups. Used in UGS `collision_groups` export array.
@@ -108,26 +109,7 @@ This ensures that **visual identity = behavioral identity** — the player alway
 
 ### `Scripts/Bodies/ufo.gd` — extends UniversalBody
 - UFO entity with configurable hitbox sized from exports. **Drawing code only** — all behavior defined by attached components.
-- Scene: `ufo.tscn` (top-level, not yet assigned to a tier — not yet used in any game)
-
-### Scene Tier Details (by example)
-
-**`generic/triangle_ship_modern.tscn`** — The archetype:
-- `triangle_ship.gd` script, no color override, no group assignment
-- Mechanical components: Health, ScreenWrap, GunSimple (generic bullets), EngineComplex, RotationTarget, FrictionLinear, DirectAcceleration, DamageOnJoust, DeathEffect, VectorEngineExhaust
-- **No brain attached** — no control scheme, waiting to be specialized
-
-**`player/player_triangle_ship_modern.tscn`** — Player-rigged:
-- Same script + same mechanical components as generic
-- **Color: Cyan** (0, 1, 1, 1) — immediately readable as "me"
-- **Group: `players`**, **bullet_group: `players_bullets`**
-- **Brain: PlayerControl** — keyboard/mouse/gamepad input
-
-**`nonplayer/nonplayer_triangle_ship_modern.tscn`** — Threat-rigged:
-- Same script + same mechanical components as generic
-- **Color: Orange** (1, 0.65, 0, 1) — immediately readable as "enemy"
-- **Group: `enemies`**, **bullet_group: `enemies_bullets`** (note: currently set to `players_bullets` in scene — may be a config bug)
-- **Brains: AimAi + InterceptorAi + ShootAi** — triple AI stack targeting `players` group
+- Scenes: `generic/ufo.tscn` (standard UFO), `generic/ufo_shielded.tscn` (UFO with RingSpawner brick shield for Asterout)
 
 ---
 
@@ -146,6 +128,10 @@ This ensures that **visual identity = behavioral identity** — the player alway
 - AI brain that scans for targets in a vision cone and auto-fires when a target is detected. Checks angle difference and distance to determine if a target is in the cone, then emits `shoot` on a fire rate timer.
 - Exports: `target_group: String`, `vision_cone_angle: float = 30`, `vision_range: float = 500`, `fire_rate: float = 2.0`
 - Emits: `parent.shoot`
+
+### `Scripts/Brains/patrol_ai.gd` — extends Node
+- AI brain that follows a Curve2D path. Used for UFO patrol patterns in Asteroids. Generates random closed-loop paths and moves along them at configurable speed.
+- **Known bug:** Start position may not be correctly set — needs user fix.
 
 ---
 
@@ -206,6 +192,10 @@ This ensures that **visual identity = behavioral identity** — the player alway
 
 ### `Scripts/Components/damage_on_hit.gd` → moved to `Scripts/Arms/damage_on_hit.gd`
 
+### `Scripts/Components/death_effect.gd` — extends UniversalComponent
+- Spawns visual effect scenes on parent death. Listens to sibling Health's `zero_health` signal and instantiates configured effect scenes at the parent's position.
+- Exports: `effect_scenes: Array[PackedScene]`
+
 ### `Scripts/Components/die_on_hit.gd` — extends UniversalComponent
 - Kills parent entity on collision. Separate from DamageOnHit for composition flexibility (bullets deal damage AND die, asteroids just take damage).
 - Exports: `listen_signal: String = "body_collided"`
@@ -221,6 +211,11 @@ This ensures that **visual identity = behavioral identity** — the player alway
 
 ### `Scripts/Components/pong_acceleration.gd` — extends UniversalComponent
 - Ramps ball velocity through configurable speed levels on paddle collision. Auto-connects to `parent.body_collided` and filters by `target_group`.
+
+### `Scripts/Components/ring_spawner.gd` — extends UniversalComponent
+- Spawns entities (typically bricks) in a ring pattern around the parent body. Supports configurable radius, count, brick size, health, and optional orbit rotation.
+- Exports: `spawn_scene: PackedScene`, `ring_radius: float = 30.0`, `spawn_count: int = 12`, `brick_size: Vector2`, `brick_health: int = 1`, `spawn_groups: Array[String]`, `orbit_speed: float = 0.0` (radians/sec; 0 = static, positive = orbit)
+- **Known issue:** Bricks must be parented to game root (not the UFO body) for CollisionMatrix to detect them. Requires manual position tracking in `_process()` to follow parent movement.
 
 ### `Scripts/Components/score_on_death.gd` — extends UniversalComponent
 - Awards points to the game score when the parent entity dies (listens to sibling Health's `zero_health` signal).
@@ -243,6 +238,19 @@ This ensures that **visual identity = behavioral identity** — the player alway
 ### `Scripts/Components/split_on_death.gd` — extends Node
 - Spawns smaller fragment scenes when parent dies. Decrements size enum (LARGE→MEDIUM→SMALL).
 
+### `Scripts/Components/vector_engine_exhaust.gd` — extends UniversalComponent
+- Visual-only component that draws engine exhaust flame behind the parent ship when thrusting. Adds to the ship's visual feedback without affecting gameplay.
+
+---
+
+## Effect Scripts (Visual Effects)
+
+### `Scripts/Effects/death_particles.gd`
+- Self-destructing particle burst effect. Plays on entity death and frees itself when complete.
+
+### `Scripts/Effects/death_broken_triangle_ship.gd`
+- Self-destructing ship debris effect. Spawns broken triangle line fragments that drift apart. Plays on ship death and frees itself when complete.
+
 ---
 
 ## Rule Scripts (Game Logic)
@@ -259,7 +267,10 @@ This ensures that **visual identity = behavioral identity** — the player alway
 - Listens for a signal on a configurable source node and adjusts a property on the parent node. Used for AI difficulty ramping.
 
 ### `Scripts/Rules/group_monitor.gd` — extends Node
-- Polls a named group each frame. Emits signals on parent game script when group count transitions from >0 to 0.
+- Polls a named group each frame. Emits signals on parent game script when group count transitions:
+  - `group_cleared` — when count drops from >0 to 0 (existing behavior)
+  - `group_member_removed` — when count decreases by any amount (fires on each individual removal)
+- Both signals include the group name as an argument. `group_member_removed` supports per-death tracking (e.g., boosting AI difficulty each time a brick is destroyed).
 
 ### `Scripts/Rules/group_count_multiplier.gd` — extends UniversalComponent
 - Sets the game's score multiplier to the count of entities in a target group. Used for Asteroids-style risk/reward (more asteroids = higher multiplier).
@@ -276,7 +287,7 @@ This ensures that **visual identity = behavioral identity** — the player alway
 
 ---
 
-## Flow Scripts (Wave Management & UI)
+## Flow Scripts (Wave Management, Audio & UI)
 
 ### `Scripts/Flow/interface.gd` — extends Control
 - Reusable HUD with two display modes (`P1_P2_SCORE` for competitive, `POINTS_MULTIPLIER` for single-player). Auto-connects to parent UGS signals.
@@ -284,8 +295,22 @@ This ensures that **visual identity = behavioral identity** — the player alway
 ### `Scripts/Flow/sound_on_hit.gd` — extends UniversalComponent
 - Plays a sound when the parent experiences a collision. Auto-detects Area2D vs UniversalBody parents.
 
+### `Scripts/Flow/sound_synth.gd` — extends UniversalComponent
+- Procedural audio synthesis component. Generates audio waveforms programmatically (SQUARE, TRIANGLE, SAWTOOTH, SINE) with configurable frequency, duration, envelope (ATTACK, DECAY, SWEEP_UP, SWEEP_DOWN), and volume. Supports exclusive mode (one instance of a sound at a time).
+- The foundation of the audio system — all game sounds are generated procedurally, no audio files needed.
+
+### `Scripts/Flow/music_ramping.gd` — extends UniversalComponent
+- Reactive music component that adjusts playback based on a monitored group's count. Uses SoundSynth instances as "templates" — loops a sound with pitch scaling as group count → 0. Creates the classic "music speeds up as danger decreases" effect (Asteroids style).
+- Exports: `target_group: String`, synth template configuration
+
+### `Scripts/Flow/sfx_ramping.gd` — extends UniversalComponent
+- Dynamic SFX component that plays sounds with pitch/volume scaling based on group count or other parameters.
+
+### `Scripts/Flow/beep.gd` — extends UniversalComponent
+- Simple procedural beep sound. Lightweight alternative to SoundSynth for basic audio feedback.
+
 ### `Scripts/Flow/wave_director.gd` — extends UniversalComponent2D
-- Connects to a game signal and triggers wave spawning after a configurable delay. Supports four trigger types: `GROUP_CLEARED`, `TIMER_EXPIRED`, `LIVES_DEPLETED`, `GAME_START`. Has `max_waves` limit and game_over guard.
+- Connects to a game signal and triggers wave spawning after a configurable delay. Supports four trigger types: `GROUP_CLEARED`, `TIMER_EXPIRED`, `LIVES_DEPLETED`, `GAME_START`. Has `max_waves` limit and game over guard.
 - Exports: `trigger_type`, `trigger_value`, `wave_delay`, `max_waves`
 - Listens to: Configured trigger signal
 - Emits (on parent): `spawning_wave`
@@ -327,12 +352,14 @@ This ensures that **visual identity = behavioral identity** — the player alway
 - UI: Interface (POINTS_MULTIPLIER mode)
 
 ### `Scenes/Games/asteroids.tscn` — UniversalGameScript root + components
-- **Asteroids.** No game-specific script. Assembled entirely from UGS + components.
-- Player ship: PlayerControl + EngineSimple + FrictionLinear + RotationDirect + GunSimple + ScreenWrap
-- Bullets: DamageOnHit (target_groups: asteroids) + DieOnHit + ScreenCleanup
-- Asteroids: Health + SplitOnDeath + ScoreOnDeath + ScreenWrap
-- Flow: WaveDirector (GAME_START trigger) → WaveSpawner (SCREEN_EDGES, safe zone) + Timer (auto_start, loop) → WaveDirector → WaveSpawner
+- **Asteroids (polished).** No game-specific script. Full recreation with death effects, UFO, reactive music.
+- Player ship: PlayerControl + EngineSimple + FrictionLinear + RotationDirect + GunSimple + ScreenWrap + DeathEffect + VectorEngineExhaust
+- Bullets: DamageOnHit (target_groups: asteroids) + DieOnHit + ScreenCleanup + SoundSynth (shoot sound)
+- Asteroids: Health + SplitOnDeath + ScoreOnDeath + ScreenWrap + DeathEffect (particles)
+- UFO: PatrolAi + AimAi + ShootAi + GunSimple + Health + ScoreOnDeath + ScreenWrap + DeathEffect
+- Flow: WaveDirector (GAME_START trigger) → WaveSpawner (SCREEN_EDGES, safe zone) + Timer (auto_start, loop) → WaveDirector → WaveSpawner + Timer → WaveSpawner (UFO spawn)
 - Rules: GroupMonitor (asteroids) + GroupCountMultiplier (asteroids) + LivesCounter
+- Audio: MusicRamping (reactive pitch scaling based on asteroid count)
 - UI: Interface (POINTS_MULTIPLIER mode)
 
 ### `Scenes/Games/pongsteroids.tscn` — UniversalGameScript root + components
@@ -342,7 +369,7 @@ This ensures that **visual identity = behavioral identity** — the player alway
 - Validates cross-game component mixing — zero new components needed
 
 ### `Scenes/Games/dogfight.tscn` — UniversalGameScript root + components
-- **Dogfight.** Player triangle ship vs escalating waves of AI triangle ships, with asteroids spawning as neutral obstacles. No game-specific script.
+- **Dogfight.** Player triangle ship vs escalating waves of AI triangle ships, with asteroids as neutral obstacles. No game-specific script.
 - Collision groups: players, enemies, players_bullets, enemies_bullets, asteroids (5-way factional warfare)
 - Player ship: TriangleShipModern + PlayerControl + ScoreOnDeath (enemy scores on player death)
 - Enemy ships: TriangleShipModern + InterceptorAi (chases player, turning_speed=360) + AimAi (aims at player) + ShootAi (auto-fires in vision cone) + ScoreOnDeath (player scores on enemy death)
@@ -351,6 +378,33 @@ This ensures that **visual identity = behavioral identity** — the player alway
 - Rules: LivesCounter (10 lives, Asteroids-style game over on depletion)
 - Uses factional bullets — players_bullets hit enemies/asteroids, enemies_bullets hit players/asteroids, asteroids hit everyone
 
+### `Scenes/Games/pongout.tscn` — UniversalGameScript root + components
+- **Pongout.** Pong where goals are shielded by Breakout bricks. One goal ends the game. No game-specific script.
+- Two paddles (player + InterceptorAi opponent) with DirectMovement
+- Ball with DamageOnHit (bricks) + AngledDeflector + PongAcceleration
+- Two brick grids shielding each goal — player must break through opponent's bricks to score
+- VariableTuner on AI: boosts turning_speed as player destroys opponent's bricks (defensive ramping)
+- Goals: Area2D + Goal (first to score wins)
+- Rules: PointsMonitor × 2 (first goal = victory/defeat)
+- Flow: WaveDirector/WaveSpawner for ball respawn + brick grid spawn
+- UI: Interface (P1_P2_SCORE mode)
+
+### `Scenes/Games/breaksteroids.tscn` — UniversalGameScript root + components
+- **Breaksteroids.** Paddle + ball vs asteroid grid. Asteroids have health and split. No game-specific script.
+- Paddle at bottom with PlayerControl + DirectMovement + AngledDeflector
+- Ball with DamageOnHit (asteroids) + ScreenCleanup
+- Asteroid grid spawned via WaveSpawner (GRID pattern, random velocities for "pinball" feel)
+- Bottom Goal = lose life (ball falls off screen)
+- Rules: LivesCounter + GroupMonitor (asteroids cleared = next wave)
+- Audio: MusicRamping (reactive music based on asteroid count)
+- Notable emergent property: randomized asteroid collision shapes create unpredictable deflections — plays like "space pinball"
+
+### `Scenes/Games/asterout.tscn` — UniversalGameScript root + components
+- **Asterout.** ⚠️ EXISTS BUT NOT WORKING WELL — needs to be remade. Modern controls + UFO dogfighting with brick shields.
+- Current issues: RingSpawner bricks don't collide with player bullets (CollisionMatrix blindspot — bricks parented to UFO body instead of game root)
+- Design concept: player ship vs shielded UFOs (brick ring around UFO), break through shield to damage UFO
+- Should be rebuilt with RingSpawner fix (parent to game root + manual position tracking)
+
 ---
 
 ## Signal Flow Architecture
@@ -358,16 +412,18 @@ This ensures that **visual identity = behavioral identity** — the player alway
 ```
 INPUT (keyboard/mouse/gamepad)
   ↓
-BRAINS (player_control, interceptor_ai, aim_ai)
+BRAINS (player_control, interceptor_ai, aim_ai, patrol_ai, shoot_ai)
   ↓ emit on UniversalBody input signals
 UNIVERSAL BODY (routes input → output with axis locks)
   ↓ emit processed output signals
 LEGS (direct_movement, engine_simple, etc.) → modify parent velocity/position
 ARMS (gun_simple, damage_on_hit) → spawn bullets, deal damage
   ↓
-COMPONENTS (angled_deflector, pong_acceleration, die_on_hit, score_on_death, screen_cleanup) → react to collisions/life events
-RULES (goal, points_monitor, group_monitor, group_count_multiplier, lives_counter, variable_tuner) → emit game events on UGS
-FLOW (wave_director → wave_spawner, sound_on_hit, interface, timer) → manage spawning, sounds, HUD, timing
+COMPONENTS (angled_deflector, pong_acceleration, die_on_hit, score_on_death, screen_cleanup, death_effect, ring_spawner, vector_engine_exhaust) → react to collisions/life events
+RULES (goal, points_monitor, group_monitor, group_count_multiplier, lives_counter, variable_tuner, timer) → emit game events on UGS
+FLOW (wave_director → wave_spawner, sound_on_hit, sound_synth, music_ramping, sfx_ramping, beep, interface) → manage spawning, sounds, HUD, timing
+  ↓
+EFFECTS (death_particles, death_broken_triangle_ship) → self-destructing visual effects
 ```
 
 **Key signals on UniversalBody:**
@@ -376,13 +432,32 @@ FLOW (wave_director → wave_spawner, sound_on_hit, interface, timer) → manage
 - Collision (Components listen): `body_collided(collider, normal)`
 
 **Key signals on UniversalGameScript:**
-- From Rules: `victory`, `defeat`, `group_cleared`, `lives_changed`, `lives_depleted`, `timer_tick`, `timer_expired`, `spawning_wave`, `spawning_wave_complete`
+- From Rules: `victory`, `defeat`, `group_cleared`, `group_member_removed`, `lives_changed`, `lives_depleted`, `timer_tick`, `timer_expired`, `spawning_wave`, `spawning_wave_complete`
 - To Rules/UI: `on_game_start`, `on_game_end`, `on_game_over`, `on_points_changed`, `on_multiplier_changed`, `state_changed`, `on_p1_score`, `on_p2_score`
 
 ---
 
 ## Assets
 
-- **Audio:** Kenney game audio pack (lasers, power-ups, zaps, phase jumps, space trash, pep sounds, tones)
+- **Audio:** Procedural synthesis via SoundSynth component (all game audio generated at runtime)
+- **Audio files:** Kenney game audio pack (lasers, power-ups, zaps, phase jumps, space trash, pep sounds, tones) — available but largely superseded by procedural synthesis
 - **Fonts:** Kenney retro fonts (Pixel, High, Mini, Rocket, Future, Blocks, Square — regular and narrow variants)
 - **CRT Addon:** Custom CRT post-processing effect
+- **Effects:** Self-destructing effect scenes (death_particles, death_broken_triangle_ship)
+
+---
+
+## Component Catalog
+
+| Category | Count | Components |
+|----------|-------|------------|
+| Core | 7 | universal_body, universal_game_script, universal_component, universal_component_2d, collision_matrix, collision_group, property_override, common_enums |
+| Bodies | 9 | ball, paddle, asteroid, brick, bullet_simple, bullet_wrapping, triangle_ship, ufo, ufo_shielded |
+| Brains | 5 | player_control, interceptor_ai, aim_ai, shoot_ai, patrol_ai |
+| Legs | 8 | direct_movement, direct_acceleration, engine_simple, engine_complex, friction_linear, friction_static, rotation_direct, rotation_target |
+| Arms | 3 | gun_simple, damage_on_hit, damage_on_joust |
+| Components | 14 | angled_deflector, collision_marker, death_effect, die_on_hit, die_on_timer, health, pong_acceleration, ring_spawner, score_on_death, score_on_hit, screen_cleanup, screen_wrap, split_on_death, vector_engine_exhaust |
+| Rules | 7 | goal, points_monitor, variable_tuner, group_monitor, group_count_multiplier, lives_counter, timer |
+| Flow | 7 | interface, sound_on_hit, sound_synth, music_ramping, sfx_ramping, beep, wave_director, wave_spawner |
+| Effects | 2 | death_particles, death_broken_triangle_ship |
+| **Total** | **62** | |

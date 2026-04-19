@@ -1,4 +1,4 @@
-[gd_scene load_steps=37 format=3 uid="uid://bx72rpqpg34hc"]
+[gd_scene load_steps=40 format=3 uid="uid://bx72rpqpg34hc"]
 
 [ext_resource type="Script" uid="uid://bjdgpevhahi6d" path="res://Scripts/Core/universal_game_script.gd" id="1_woixt"]
 [ext_resource type="PackedScene" uid="uid://mw70bjrifcpb" path="res://Scenes/Bodies/generic/ball.tscn" id="2_ball"]
@@ -9,10 +9,8 @@
 [ext_resource type="PackedScene" uid="uid://b418fukpc5m41" path="res://Scenes/Components/collision_marker.tscn" id="6_e5qgl"]
 [ext_resource type="PackedScene" uid="uid://clhg61503vle8" path="res://Scenes/Rules/variable_tuner.tscn" id="6_egt1g"]
 [ext_resource type="PackedScene" uid="uid://eketockdsssi" path="res://Scenes/Legs/direct_movement.tscn" id="6_move"]
-[ext_resource type="AudioStream" uid="uid://ctmcfvxwus0wo" path="res://Assets/Audio/threeTone1.ogg" id="7_audio"]
 [ext_resource type="Script" uid="uid://bghaddibpt6f1" path="res://addons/crt/crt.gd" id="8_crt"]
 [ext_resource type="PackedScene" uid="uid://dshe01a1pw43p" path="res://Scenes/Rules/goal.tscn" id="8_pkkn6"]
-[ext_resource type="PackedScene" uid="uid://cc1murtue63r4" path="res://Scenes/Flow/sound_on_hit.tscn" id="9_5j7oo"]
 [ext_resource type="PackedScene" uid="uid://bq6cdrx340jp7" path="res://Scenes/Flow/interface.tscn" id="9_46oju"]
 [ext_resource type="PackedScene" uid="uid://dhulxxtcsipl6" path="res://Scenes/Rules/group_monitor.tscn" id="13_dpifu"]
 [ext_resource type="PackedScene" uid="uid://d1r6vipc03isf" path="res://Scenes/Rules/points_monitor.tscn" id="14_68rfy"]
@@ -23,11 +21,13 @@
 [ext_resource type="PackedScene" uid="uid://cg5rnfuldr2n0" path="res://Scenes/Arms/damage_on_hit.tscn" id="20_68rfy"]
 [ext_resource type="PackedScene" uid="uid://csg0e2wxlx4qd" path="res://Scenes/Components/angled_deflector.tscn" id="21_68rfy"]
 [ext_resource type="PackedScene" uid="uid://craitf0mklbon" path="res://Scenes/Rules/timer.tscn" id="21_dpifu"]
+[ext_resource type="PackedScene" uid="uid://dck1licbo5kuq" path="res://Scenes/Bodies/generic/ufo_shielded.tscn" id="24_8p135"]
+[ext_resource type="PackedScene" uid="uid://dv3y04bswv3t4" path="res://Scenes/Flow/music_ramping.tscn" id="25_ydxa1"]
 
 [sub_resource type="Resource" id="Resource_pkkn6"]
 script = ExtResource("2_egt1g")
 group_name = "balls"
-targets = Array[String](["paddles", "walls", "goals", "asteroids"])
+targets = Array[String](["paddles", "walls", "goals", "asteroids", "enemies"])
 metadata/_custom_type_script = "uid://bfkr4fdx316o5"
 
 [sub_resource type="Resource" id="Resource_5j7oo"]
@@ -39,7 +39,7 @@ metadata/_custom_type_script = "uid://bfkr4fdx316o5"
 [sub_resource type="Resource" id="Resource_dpifu"]
 script = ExtResource("2_egt1g")
 group_name = "paddles"
-targets = Array[String](["balls", "asteroids"])
+targets = Array[String](["balls"])
 metadata/_custom_type_script = "uid://bfkr4fdx316o5"
 
 [sub_resource type="Resource" id="Resource_68rfy"]
@@ -51,7 +51,19 @@ metadata/_custom_type_script = "uid://bfkr4fdx316o5"
 [sub_resource type="Resource" id="Resource_8p135"]
 script = ExtResource("2_egt1g")
 group_name = "asteroids"
-targets = Array[String](["paddles", "balls", "asteroids"])
+targets = Array[String](["balls", "asteroids"])
+metadata/_custom_type_script = "uid://bfkr4fdx316o5"
+
+[sub_resource type="Resource" id="Resource_ydxa1"]
+script = ExtResource("2_egt1g")
+group_name = "enemies"
+targets = Array[String](["balls"])
+metadata/_custom_type_script = "uid://bfkr4fdx316o5"
+
+[sub_resource type="Resource" id="Resource_dkt3g"]
+script = ExtResource("2_egt1g")
+group_name = "enemies_bullets"
+targets = Array[String](["asteroids"])
 metadata/_custom_type_script = "uid://bfkr4fdx316o5"
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_bg8lp"]
@@ -101,13 +113,18 @@ property_name = "deflection_bias"
 value = Vector2(5, 1)
 metadata/_custom_type_script = "uid://cp0ni1lgml7c6"
 
+[sub_resource type="Resource" id="Resource_5y4c8"]
+script = ExtResource("18_pxxt0")
+property_name = "size"
+value = 1
+metadata/_custom_type_script = "uid://cp0ni1lgml7c6"
+
 [node name="Pongsteroids" type="Node2D"]
 script = ExtResource("1_woixt")
-collision_groups = Array[ExtResource("2_egt1g")]([SubResource("Resource_pkkn6"), SubResource("Resource_5j7oo"), SubResource("Resource_dpifu"), SubResource("Resource_68rfy"), SubResource("Resource_8p135")])
+collision_groups = Array[ExtResource("2_egt1g")]([SubResource("Resource_pkkn6"), SubResource("Resource_5j7oo"), SubResource("Resource_dpifu"), SubResource("Resource_68rfy"), SubResource("Resource_8p135"), SubResource("Resource_ydxa1"), SubResource("Resource_dkt3g")])
 
 [node name="Player" parent="." groups=["paddles"] instance=ExtResource("3_paddle")]
 position = Vector2(64, 184)
-height = 32
 lock_x = true
 
 [node name="DirectMovement" parent="Player" instance=ExtResource("6_move")]
@@ -116,7 +133,6 @@ lock_x = true
 
 [node name="Opponent" parent="." groups=["paddles"] instance=ExtResource("3_paddle")]
 position = Vector2(576, 184)
-height = 32
 lock_x = true
 
 [node name="InterceptorAi" parent="Opponent" instance=ExtResource("4_ai")]
@@ -161,9 +177,6 @@ collision_groups = Array[String](["goals"])
 
 [node name="Goal" parent="P1 Goal" instance=ExtResource("8_pkkn6")]
 
-[node name="SoundOnHit" parent="P1 Goal" node_paths=PackedStringArray("sound") instance=ExtResource("9_5j7oo")]
-sound = NodePath("../../AudioStreamPlayer2D")
-
 [node name="P2 Goal" type="Area2D" parent="."]
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="P2 Goal"]
@@ -173,16 +186,8 @@ shape = SubResource("RectangleShape2D_l0p4r")
 [node name="CollisionMarker" parent="P2 Goal" instance=ExtResource("6_e5qgl")]
 collision_groups = Array[String](["goals"])
 
-[node name="SoundOnHit" parent="P2 Goal" node_paths=PackedStringArray("sound") instance=ExtResource("9_5j7oo")]
-sound = NodePath("../../AudioStreamPlayer2D")
-
 [node name="Goal" parent="P2 Goal" instance=ExtResource("8_pkkn6")]
 score_type = 1
-
-[node name="AudioStreamPlayer2D" type="AudioStreamPlayer2D" parent="."]
-position = Vector2(320, 192)
-stream = ExtResource("7_audio")
-max_polyphony = 3
 
 [node name="CanvasLayer" type="CanvasLayer" parent="."]
 script = ExtResource("8_crt")
@@ -281,6 +286,66 @@ use_random_angle = true
 duration = 6.0
 loop_timer = true
 game_start = true
+
+[node name="WaveDirector(LargeUfos)" parent="." instance=ExtResource("15_8p135")]
+trigger_type = 1
+trigger_value = "large ufos"
+wave_delay = 0.0
+
+[node name="WaveSpawner(LargeUfos)" parent="." node_paths=PackedStringArray("director") instance=ExtResource("16_ydxa1")]
+spawn_scene = ExtResource("24_8p135")
+spawn_count_equation = "1"
+spawn_radius = 315.0
+director = NodePath("../WaveDirector(LargeUfos)")
+use_safe_zone = true
+unsafe_groups = Array[String](["enemies"])
+safety_radius = 1000.0
+
+[node name="Timer(LargeUfos)" parent="." instance=ExtResource("21_dpifu")]
+duration = 15.0
+loop_timer = true
+game_start = true
+timer_id = "large ufos"
+
+[node name="VariableTuner" parent="Timer(LargeUfos)" node_paths=PackedStringArray("source_node") instance=ExtResource("6_egt1g")]
+source_node = NodePath("../..")
+source_signal = "timer_expired"
+filter_value = "large ufos"
+target_property = "duration"
+adjustment_amount = 1.2
+adjustment_mode = 1
+
+[node name="WaveDirector(SmallUfos)" parent="." instance=ExtResource("15_8p135")]
+trigger_type = 1
+trigger_value = "small ufos"
+wave_delay = 0.0
+
+[node name="WaveSpawner(SmallUfos)" parent="." node_paths=PackedStringArray("director") instance=ExtResource("16_ydxa1")]
+spawn_scene = ExtResource("24_8p135")
+spawn_count_equation = "1"
+spawn_radius = 315.0
+director = NodePath("../WaveDirector(SmallUfos)")
+property_overrides = Array[ExtResource("18_pxxt0")]([SubResource("Resource_5y4c8")])
+use_safe_zone = true
+unsafe_groups = Array[String](["enemies"])
+safety_radius = 1000.0
+
+[node name="Timer(SmallUfos)" parent="." instance=ExtResource("21_dpifu")]
+duration = 45.0
+loop_timer = true
+game_start = true
+timer_id = "small ufos"
+
+[node name="VariableTuner2" parent="Timer(SmallUfos)" node_paths=PackedStringArray("source_node") instance=ExtResource("6_egt1g")]
+source_node = NodePath("../..")
+source_signal = "timer_expired"
+filter_value = "small ufos"
+target_property = "duration"
+adjustment_amount = 0.85
+adjustment_mode = 1
+
+[node name="MusicRamping" parent="." instance=ExtResource("25_ydxa1")]
+target_group = "balls"
 
 [editable path="Player"]
 [editable path="Opponent"]

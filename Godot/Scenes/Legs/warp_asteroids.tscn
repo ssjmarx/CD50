@@ -1,0 +1,6 @@
+[gd_scene load_steps=2 format=3 uid="uid://ctcl3gid47wwl"]
+
+[ext_resource type="Script" uid="uid://dpp6kgtklwhon" path="res://Scripts/Legs/warp_asteroids.gd" id="1_1du7y"]
+
+[node name="WarpAsteroids" type="Node"]
+script = ExtResource("1_1du7y")

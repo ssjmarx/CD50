@@ -9,7 +9,7 @@ func _ready() -> void:
 	parent.connect(listen_signal, _on_collision)
 
 func _on_collision(collider: Node, _normal: Vector2) -> void:
-	print("scoreonhit collision detected")
+	#print("scoreonhit collision detected")
 	
 	if collider.is_in_group(target_group):
 		match score_type:

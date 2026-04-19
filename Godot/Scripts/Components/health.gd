@@ -24,11 +24,9 @@ func reduce_health(amount: int) -> void:
 func die() -> void:
 	parent.hide()
 	
-	# Stop physics movement
 	if "velocity" in parent:
 		parent.velocity = Vector2.ZERO
 	
-	# Disable all collision shapes
 	for child in parent.get_children():
 		if child is CollisionShape2D or child is CollisionPolygon2D:
 			child.set_deferred("disabled", true)
@@ -37,19 +35,8 @@ func die() -> void:
 				if shape is CollisionShape2D or shape is CollisionPolygon2D:
 					shape.set_deferred("disabled", true)
 	
-	# Disable all child components except this Health component
 	for child in parent.get_children():
 		if child != self: 
 			child.process_mode = Node.PROCESS_MODE_DISABLED
 	
-	# Play death sound if configured
-	if death_sound:
-		var player = AudioStreamPlayer2D.new()
-		parent.add_child(player)
-		player.stream = death_sound
-		player.play()
-		await player.finished
-		player.queue_free()
-	
-	# Remove entity from scene
 	parent.queue_free()

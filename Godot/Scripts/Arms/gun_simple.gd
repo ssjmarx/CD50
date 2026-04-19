@@ -17,8 +17,6 @@ var active_bullets: Array[CharacterBody2D]
 var aim_angle: float = 0.0
 var has_aim_input: bool = false
 
-@onready var sound = $AudioStreamPlayer2D
-
 # Connect to input signals
 func _ready() -> void:
 	parent.shoot.connect(_on_shoot)
@@ -56,7 +54,7 @@ func _on_shoot() -> void:
 	parent.get_parent().add_child(bullet)
 	active_bullets.push_back(bullet)
 	
-	sound.play()
+	#sound.play()
 
 # Forward bullet hit signal
 func _on_bullet_hit(target: Node2D) -> void:

@@ -7,6 +7,7 @@ extends UniversalComponent
 @export var tick_interval: float = 1.0
 @export var loop_timer: bool = false
 @export var game_start: bool = false
+@export var timer_id: String = ""
 
 var _timer: Timer
 var _current_time: float
@@ -58,7 +59,7 @@ func _on_tick() -> void:
 		if _current_time >= duration:
 			_current_time = duration
 			stop_timer()
-			game.timer_expired.emit()
+			game.timer_expired.emit(timer_id)
 			if loop_timer:
 				#print("looping")
 				reset_timer()
@@ -68,7 +69,7 @@ func _on_tick() -> void:
 		if _current_time <= 0:
 			_current_time = 0
 			stop_timer()
-			game.timer_expired.emit()
+			game.timer_expired.emit(timer_id)
 			if loop_timer:
 				reset_timer()
 				start_timer()

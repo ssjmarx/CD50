@@ -1,4 +1,4 @@
-[gd_scene load_steps=34 format=3 uid="uid://c4ttsm1qowkgo"]
+[gd_scene load_steps=32 format=3 uid="uid://c4ttsm1qowkgo"]
 
 [ext_resource type="Script" uid="uid://bjdgpevhahi6d" path="res://Scripts/Core/universal_game_script.gd" id="1_lmwk8"]
 [ext_resource type="PackedScene" uid="uid://b4mr1t8pdtmf3" path="res://Scenes/Bodies/generic/paddle.tscn" id="2_7epd8"]
@@ -9,8 +9,6 @@
 [ext_resource type="PackedScene" uid="uid://6tweepbhleep" path="res://Scenes/Brains/player_control.tscn" id="5_oqfas"]
 [ext_resource type="PackedScene" uid="uid://b418fukpc5m41" path="res://Scenes/Components/collision_marker.tscn" id="6_fkkyb"]
 [ext_resource type="PackedScene" uid="uid://c8ynf452mj3if" path="res://Scenes/Components/score_on_hit.tscn" id="6_th3ku"]
-[ext_resource type="AudioStream" uid="uid://b3en0cgneptgr" path="res://Assets/Audio/lowDown.ogg" id="6_uvgxs"]
-[ext_resource type="PackedScene" uid="uid://cc1murtue63r4" path="res://Scenes/Flow/sound_on_hit.tscn" id="7_ckqoe"]
 [ext_resource type="PackedScene" uid="uid://tre5p2x1bb2k" path="res://Scenes/Rules/lives_counter.tscn" id="9_lmwk8"]
 [ext_resource type="PackedScene" uid="uid://dhulxxtcsipl6" path="res://Scenes/Rules/group_monitor.tscn" id="10_vu4sl"]
 [ext_resource type="PackedScene" uid="uid://bq6cdrx340jp7" path="res://Scenes/Flow/interface.tscn" id="11_r1nhx"]
@@ -101,7 +99,7 @@ collision_groups = Array[ExtResource("2_vu4sl")]([SubResource("Resource_r1nhx"),
 
 [node name="Paddle" parent="." groups=["paddles"] instance=ExtResource("2_7epd8")]
 position = Vector2(304, 312)
-width = 32
+width = 64
 height = 4
 lock_y = true
 
@@ -136,9 +134,6 @@ shape = SubResource("RectangleShape2D_7ju07")
 [node name="CollisionMarker" parent="Floor" instance=ExtResource("6_fkkyb")]
 collision_groups = Array[String](["floors"])
 
-[node name="SoundOnHit" parent="Floor" node_paths=PackedStringArray("sound") instance=ExtResource("7_ckqoe")]
-sound = NodePath("../../AudioStreamPlayer2D")
-
 [node name="CRT" type="CanvasLayer" parent="."]
 script = ExtResource("4_fkkyb")
 resolution = Vector2(640, 360)
@@ -157,11 +152,6 @@ pixel_strength = -3.0
 
 [node name="CRT - bloom" type="WorldEnvironment" parent="."]
 environment = SubResource("Environment_per38")
-
-[node name="AudioStreamPlayer2D" type="AudioStreamPlayer2D" parent="."]
-position = Vector2(320, 192)
-stream = ExtResource("6_uvgxs")
-max_polyphony = 3
 
 [node name="LivesCounter" parent="." instance=ExtResource("9_lmwk8")]
 

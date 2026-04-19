@@ -1,0 +1,7 @@
+[gd_scene load_steps=2 format=3 uid="uid://dga83l4d2rwyv"]
+
+[ext_resource type="Script" uid="uid://e8yavddp8wmg" path="res://Scripts/Flow/sound_synth.gd" id="1_hptjd"]
+
+[node name="SoundSynth" type="Node2D"]
+script = ExtResource("1_hptjd")
+duration = 0.8

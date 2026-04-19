@@ -276,24 +276,11 @@ All four games prove the component architecture works at every level:
 - **Cross-game remix**: Pongsteroids assembled from Pong + Asteroids components — zero new code
 - **Full componentization**: All four games are editor assemblies, no game scripts
 
-### Component Catalog (Final Count)
-
-| Category | Count | Components |
-|----------|-------|------------|
-| Core | 7 | universal_body, universal_game_script, universal_component, universal_component_2d, collision_matrix, collision_group, property_override, common_enums |
-| Bodies | 8 | ball, paddle, asteroid, brick, bullet_simple, bullet_wrapping, triangle_ship, ufo |
-| Brains | 3 | player_control, interceptor_ai, aim_ai |
-| Legs | 8 | direct_movement, direct_acceleration, engine_simple, engine_complex, friction_linear, friction_static, rotation_direct, rotation_target |
-| Arms | 2 | gun_simple, damage_on_hit |
-| Components | 11 | angled_deflector, collision_marker, die_on_hit, die_on_timer, health, pong_acceleration, score_on_death, score_on_hit, screen_cleanup, screen_wrap, split_on_death |
-| Rules | 7 | goal, points_monitor, variable_tuner, group_monitor, group_count_multiplier, lives_counter, timer |
-| Flow | 4 | interface, sound_on_hit, wave_director, wave_spawner |
-
 ---
 
-## Update 7: Dogfight + New Components + Bodies Purification
+## Update 7: Dogfight + Bodies Purification + Scene Reorganization
 
-**Planning Document:** `planning/06 - Asteroids Polish and More Remix Games.md` (in progress)
+**Planning Document:** `planning/06 - Asteroids Polish and More Remix Games.md` (started)
 
 ### What Was Built
 
@@ -345,18 +332,124 @@ Scenes/Bodies/
 
 **Scripts remain flat** in `Scripts/Bodies/` — the organizational split is at the scene level only.
 
+---
+
+## Update 8: Asteroids Polish + Procedural Audio + Remix Games
+
+**Planning Document:** `planning/06 - Asteroids Polish and More Remix Games.md` (continued)
+
+### What Was Built
+
+#### Procedural Audio System
+
+A complete procedural audio synthesis system was built, replacing the Kenney audio file assets for game sounds. All game audio is now generated at runtime.
+
+**New Components:**
+
+| Component | Category | Purpose |
+|-----------|----------|---------|
+| `sound_synth` | Flow | Procedural audio synthesis — generates waveforms (SQUARE, TRIANGLE, SAWTOOTH, SINE) with configurable frequency, duration, envelope (ATTACK, DECAY, SWEEP_UP, SWEEP_DOWN), volume. Supports exclusive mode |
+| `music_ramping` | Flow | Reactive music — loops a SoundSynth template with pitch scaling as group count → 0. Classic "music speeds up as danger decreases" effect |
+| `sfx_ramping` | Flow | Dynamic SFX — plays sounds with pitch/volume scaling based on group count or parameters |
+| `beep` | Flow | Simple procedural beep — lightweight alternative to SoundSynth for basic audio feedback |
+
+**Audio design patterns established:**
+- Sound templates: SoundSynth configured once as a "template" that other components (MusicRamping, SFXRamping) reference
+- Multi-channel architecture: multiple SoundSynth instances can play simultaneously (shoot sounds, bounce sounds, music)
+- Exclusive mode: prevents the same sound from stacking (e.g., rapid-fire shooting only plays one bullet sound at a time)
+- Phase accumulation bug was fixed in SoundSynth — audio playback is now clean
+
+#### Asteroids Polish
+
+The Asteroids game was fully polished with death effects, UFO enemy, reactive music, and visual polish:
+
+**New Components:**
+
+| Component | Category | Purpose |
+|-----------|----------|---------|
+| `death_effect` | Component | Spawns visual effect scenes on parent death (listens to Health.zero_health) |
+| `patrol_ai` | Brain | Curve2D path following + random closed-loop path generation (for UFO patrol) |
+| `vector_engine_exhaust` | Component | Visual-only engine exhaust flame when thrusting |
+
+**New Effects:**
+
+| Effect | Purpose |
+|--------|---------|
+| `death_particles` | Self-destructing particle burst on entity death |
+| `death_broken_triangle_ship` | Self-destructing ship debris — broken triangle fragments drift apart |
+
+**Asteroids game now features:**
+- Death effects: asteroids explode with particles, ships break into debris
+- UFO enemy: patrols via PatrolAi, aims and shoots via AimAi + ShootAi, spawns on timer
+- Reactive music: MusicRamping with pitch scaling based on asteroid count
+- Engine exhaust: visual flame when thrusting
+- Sound synthesis: all sounds (shooting, bouncing, explosions, music) generated procedurally
+
+#### Remix Games
+
+Three new remix games were assembled:
+
+**Pongout** (`Games/pongout.tscn`) — Pong + Breakout:
+- Two paddles (player + InterceptorAi opponent) with brick grids shielding each goal
+- Ball with DamageOnHit (bricks) + AngledDeflector + PongAcceleration
+- First goal wins — player must break through opponent's brick shield to reach the goal
+- VariableTuner boosts AI turning_speed per brick destroyed (defensive ramping)
+- Status: ✅ Complete and working
+
+**Breaksteroids** (`Games/breaksteroids.tscn`) — Breakout + Asteroids:
+- Paddle at bottom, ball, asteroid grid with health and splitting
+- Bottom goal = lose life, asteroids cleared = next wave
+- Randomized asteroid shapes create unpredictable "space pinball" deflections
+- MusicRamping reactive audio based on asteroid count
+- Status: ✅ Complete and working
+
+**Asterout** (`Games/asterout.tscn`) — Asteroids + Breakout:
+- Modern controls + UFO dogfighting with brick shields (RingSpawner)
+- Player ship vs shielded UFOs — break through brick ring to damage UFO
+- Status: ⚠️ NOT WORKING WELL — needs to be remade
+- **Known issue:** RingSpawner bricks parented to UFO body aren't detected by CollisionMatrix (only watches UGS root children). Player bullets phase through bricks. Fix: parent bricks to game root + manual position tracking in `_process()`
+
+**New Components for Asterout:**
+
+| Component | Category | Purpose |
+|-----------|----------|---------|
+| `ring_spawner` | Component | Spawns entities in a ring pattern around parent. Configurable radius, count, size, health, orbit speed |
+
+**New Body Scenes:**
+
+| Scene | Purpose |
+|-------|---------|
+| `generic/ufo_shielded.tscn` | UFO with RingSpawner brick shield (for Asterout) |
+
+#### GroupMonitor Enhancement
+
+`group_monitor.gd` was enhanced with a new signal:
+
+| Signal | Purpose |
+|--------|---------|
+| `group_member_removed(group_name)` | Fires on each individual removal from the group (not just when group hits zero) |
+
+This enables per-death tracking — e.g., VariableTuner can boost AI difficulty each time a brick is destroyed, rather than waiting for the entire group to be cleared.
+
+### Known Bugs (Unfixed)
+
+- `patrol_ai.gd`: Start position may not be correctly set — needs user fix
+- `ufo_shielded.tscn`: UFO drawing scale may need adjustment
+
 ### Component Catalog (Updated)
 
 | Category | Count | Components |
 |----------|-------|------------|
 | Core | 7 | universal_body, universal_game_script, universal_component, universal_component_2d, collision_matrix, collision_group, property_override, common_enums |
-| Bodies | 9 | ball, paddle, asteroid, brick, bullet_simple, bullet_wrapping, triangle_ship, triangle_ship_modern, ufo |
-| Brains | 4 | player_control, interceptor_ai, aim_ai, shoot_ai |
+| Bodies | 9 | ball, paddle, asteroid, brick, bullet_simple, bullet_wrapping, triangle_ship, ufo, ufo_shielded |
+| Brains | 5 | player_control, interceptor_ai, aim_ai, shoot_ai, patrol_ai |
 | Legs | 8 | direct_movement, direct_acceleration, engine_simple, engine_complex, friction_linear, friction_static, rotation_direct, rotation_target |
 | Arms | 3 | gun_simple, damage_on_hit, damage_on_joust |
-| Components | 11 | angled_deflector, collision_marker, die_on_hit, die_on_timer, health, pong_acceleration, score_on_death, score_on_hit, screen_cleanup, screen_wrap, split_on_death |
+| Components | 14 | angled_deflector, collision_marker, death_effect, die_on_hit, die_on_timer, health, pong_acceleration, ring_spawner, score_on_death, score_on_hit, screen_cleanup, screen_wrap, split_on_death, vector_engine_exhaust |
 | Rules | 7 | goal, points_monitor, variable_tuner, group_monitor, group_count_multiplier, lives_counter, timer |
-| Flow | 4 | interface, sound_on_hit, wave_director, wave_spawner |
+| Flow | 7 | interface, sound_on_hit, sound_synth, music_ramping, sfx_ramping, beep, wave_director, wave_spawner |
+| Effects | 2 | death_particles, death_broken_triangle_ship |
+| **Total** | **62** | |
 
 ---
 
@@ -366,13 +459,16 @@ Scenes/Bodies/
 |---------|---------|--------|
 | Solar System Hub | Overview doc | ❌ Not built |
 | Entity Component System | Overview doc | ✅ Fully operational |
-| Game-Level Component System | Plan 03/04 | ✅ All 5 games componentized |
+| Game-Level Component System | Plan 03/04 | ✅ All 8 games componentized |
 | Pong | Plan 01/04 | ✅ Componentized — no game script |
 | Breakout | Plan 01/05 | ✅ Componentized — no game script |
-| Asteroids | Plan 02/05 | ✅ Componentized — no game script |
+| Asteroids | Plan 02/05 | ✅ Componentized + polished (death effects, UFO, reactive music) |
 | Pongsteroids | Plan 02/05 | ✅ Componentized — no game script |
 | Dogfight | Plan 06 | ✅ Componentized — no game script |
-| UFO Enemy | Plan 02 | ⚠️ Scene exists, not in any game |
+| Pongout | Plan 06 | ✅ Componentized — working |
+| Breaksteroids | Plan 06 | ✅ Componentized — working |
+| Asterout | Plan 06 | ⚠️ Exists but needs remake (RingSpawner collision bug) |
+| Procedural Audio System | — | ✅ SoundSynth + MusicRamping + SFXRamping + Beep |
 | Hub/Menu System | Plan 03 | ❌ Not started |
-| 6 Additional Games | Overview | ❌ Not started |
+| 6+ Additional Base Games | Overview | ❌ Not started |
 | Meta/Narrative Layer | Brainstorming | ❌ Not started |

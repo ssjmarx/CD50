@@ -1,93 +1,86 @@
-# Current Goal: Asteroids Polish and More Remix Games
+# Current Goal: Next Steps
 
-**Planning Document:** `planning/06 - Asteroids Polish and More Remix Games.md`  
-**Status:** 🔄 In Progress — Dogfight complete, Asteroids polish + remixes remaining  
-**Previous Goal:** Componentize Breakout, Asteroids, and Pongsteroids ✅ (completed 2026-04-17)
-
----
-
-## Objective
-
-Full Asteroids recreation (death effects, UFO, warp, reactive music), input system refactor for remappable buttons, and three new remix games.
+**Status:** 🔄 Plan 06 largely complete — deciding next direction  
+**Previous Goal:** Asteroids Polish and More Remix Games ✅ (mostly completed 2026-04-18)
 
 ---
 
-## Completed So Far
+## Plan 06 Completion Status
 
-- [x] **Dogfight** — Player vs AI triangle ships with escalating waves + asteroids (pure scene assembly)
-- [x] **ShootAi** — Vision cone AI brain for auto-firing at targets
-- [x] **DamageOnJoust** — Velocity-comparison collision damage (faster body wins)
-- [x] **Bodies Purification** — All body scripts now contain drawing code only, zero functional logic
-- [x] **triangle_ship_modern** — Pre-composed body with modern twin-stick controls
+### ✅ Completed
+- [x] **Input Refactor** — `action`/`end_action` signals pass InputEvent
+- [x] **Death Effects** — death_effect component + particle/debris effect scenes
+- [x] **UFO Enemy** — patrol_ai brain, UFO assembled from components, integrated into Asteroids
+- [x] **Visual Polish** — VectorEngineExhaust on ships, DeathEffect on asteroids/ships
+- [x] **Reactive Music** — MusicRamping with SoundSynth procedural audio
+- [x] **Procedural Audio System** — SoundSynth, SFXRamping, Beep (complete audio pipeline)
+- [x] **Dogfight** — Player vs AI triangle ships with escalating waves
+- [x] **Pongout** — Pong + Breakout hybrid (brick shields on goals)
+- [x] **Breaksteroids** — Breakout + Asteroids hybrid (paddle vs asteroid grid)
+- [x] **GroupMonitor enhancement** — `group_member_removed` signal for per-death tracking
 
----
+### ⚠️ Needs Rework
+- [ ] **Asterout** — Asteroids + Breakout hybrid (shielded UFOs). Current version has a RingSpawner collision bug and doesn't play well. Needs full remake with:
+  - RingSpawner fix: parent bricks to game root instead of UFO body (CollisionMatrix blindspot)
+  - Manual position tracking in `_process()` to follow UFO movement
+  - Rethink the game concept — may need a different approach than brick shields on UFOs
 
-## Remaining Scope
-
-### Input Refactor
-- `action`/`end_action` signals pass `InputEvent` argument so components can filter by action name
-- Enables remappable buttons through Godot's Input Map
-
-### Asteroids Polish (4 new components)
-- **Death effects:** `death_effect` component + 2 effect scenes (particles, ship debris)
-- **UFO enemy:** `patrol_ai` brain follows Curve2D paths, UFO assembled from components
-- **Warp:** `asteroids_warp` leg — teleport with intangibility on button_3
-- **Reactive music:** `music_ramping` rule — loop sound with pitch scaling as group count → 0
-
-### Remix Games (3)
-- **Pongout:** Pong where goals are shielded by breakout bricks, one goal ends the game
-- **Asterout:** Modern controls, UFO dogfighting with stationary brick shields
-- **Breaksteroids:** Paddle + ball vs asteroid grid, asteroids have health and split
+### 🔲 Skipped / Future
+- **Asteroids Warp** — emergency teleport with intangibility (not yet built)
 
 ---
 
-## New Components Needed (4-5)
+## Potential Next Directions
 
-| Component | Category | Purpose |
-|-----------|----------|---------|
-| `death_effect` | Component | Spawn visual effect scenes on parent death |
-| `patrol_ai` | Brain | Curve2D path following + random path generation |
-| `asteroids_warp` | Leg | Emergency teleport with intangibility |
-| `music_ramping` | Rule | Loop sound with pitch scaling based on group count |
-| `health_color` (optional) | Component | Color parent based on Health HP |
+### Option A: Fix Asterout + Move On
+- Remake Asterout with RingSpawner fix
+- Close out Plan 06 entirely
 
-## Modified Components
+### Option B: New Base Games
+- Build 1-2 new base games (Defender, Galaga, Frogger, etc.)
+- Each new game tests and expands the component library
 
-| Component | Change |
-|-----------|--------|
-| `universal_body` | `action`/`end_action` signals pass InputEvent |
-| Components listening to `action`/`end_action` | Accept InputEvent parameter |
+### Option C: Hub/Menu System
+- Build the cabinet interface for game selection
+- Required for the "infinite scroll" rapid-fire game experience
 
-## New Scenes & Folder
-
-- `Scenes/Effects/` — new folder for visual effects (self-destructing + persistent)
-- `death_effect_particles.tscn`, `death_effect_ship_debris.tscn`, `engine_flame.tscn`
-- `pongout.tscn`, `asterout.tscn`, `breaksteroids.tscn`
-
-## No Game Scripts
-
-All games are pure UGS scene assemblies.
+### Option D: Polish & Juice
+- Screen shake, hit flash, combo systems, more visual effects
+- Make existing games feel better before expanding
 
 ---
 
-## Implementation Phases
+## Known Bugs to Fix
 
-1. ~~**A: Input Refactor** — Update universal_body signals, verify existing games~~
-2. **B: Death Effects** — death_effect component + particle/debris effect scenes
-3. **C: UFO + Polish** — patrol_ai, asteroids_warp, music_ramping, UFO assembly, update asteroids.tscn
-4. **D: Pongout** — assemble and test
-5. **E: Asterout** — assemble and test
-6. **F: Breaksteroids** — assemble and test
+- `patrol_ai.gd`: Start position bug — UFO may not begin at the correct path position
+- `ufo_shielded.tscn`: UFO drawing scale may need adjustment
+- `ring_spawner.gd`: Bricks parented to non-root bodies bypass CollisionMatrix — needs architectural fix or workaround
 
 ---
 
-## Success Criteria
+## Component Catalog: 62 Components
 
-- [ ] `action`/`end_action` pass InputEvent — components can filter by action name
-- [ ] Asteroids explode with particle burst, ship with particles + debris lines
-- [ ] UFO enemy patrols and shoots in Asteroids
-- [ ] Ship can warp (button_3) with intangibility
-- [ ] Reactive music speeds up as asteroid count decreases
-- [ ] Pongout, Asterout, Breaksteroids all playable
-- [x] Dogfight playable (pure scene assembly)
-- [x] All games are pure UGS scene assemblies, zero game scripts
+| Category | Count |
+|----------|-------|
+| Core | 7 |
+| Bodies | 9 |
+| Brains | 5 |
+| Legs | 8 |
+| Arms | 3 |
+| Components | 14 |
+| Rules | 7 |
+| Flow | 7 |
+| Effects | 2 |
+
+## Game Catalog: 8 Games (7 working, 1 needs remake)
+
+| Game | Status |
+|------|--------|
+| Pong | ✅ Working |
+| Breakout | ✅ Working |
+| Asteroids | ✅ Working (polished) |
+| Pongsteroids | ✅ Working |
+| Dogfight | ✅ Working |
+| Pongout | ✅ Working |
+| Breaksteroids | ✅ Working |
+| Asterout | ⚠️ Needs remake |

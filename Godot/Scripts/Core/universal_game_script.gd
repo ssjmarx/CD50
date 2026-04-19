@@ -52,11 +52,13 @@ signal lives_depleted
 @warning_ignore("unused_signal")
 signal timer_tick(current_time: float)
 @warning_ignore("unused_signal")
-signal timer_expired
+signal timer_expired(timer_id: String)
 @warning_ignore("unused_signal")
 signal spawning_wave(director, wave_number: int)
 @warning_ignore("unused_signal")
 signal spawning_wave_complete(director, wave_number: int)
+@warning_ignore("unused_signal")
+signal group_member_removed(group_name: String)
 
 # Signals TO other components, they listen and react
 signal on_game_start

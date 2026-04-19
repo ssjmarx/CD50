@@ -1,8 +1,7 @@
-[gd_scene load_steps=21 format=3 uid="uid://b1v4hc08l20lk"]
+[gd_scene load_steps=22 format=3 uid="uid://b1v4hc08l20lk"]
 
 [ext_resource type="Script" uid="uid://nx6wkwvymri1" path="res://Scripts/Bodies/triangle_ship.gd" id="1_xpqot"]
 [ext_resource type="PackedScene" uid="uid://bj81pr736k256" path="res://Scenes/Components/health.tscn" id="2_7taai"]
-[ext_resource type="AudioStream" uid="uid://cd52kylnvmrya" path="res://Assets/Audio/zapThreeToneDown.ogg" id="3_s5tp5"]
 [ext_resource type="PackedScene" uid="uid://cqh5t1y5b71wr" path="res://Scenes/Components/screen_wrap.tscn" id="4_olkve"]
 [ext_resource type="PackedScene" uid="uid://bapmn3uxv7pqb" path="res://Scenes/Arms/gun_simple.tscn" id="5_trksg"]
 [ext_resource type="PackedScene" uid="uid://chmnjqkckrar5" path="res://Scenes/Bodies/generic/bullet_wrapping.tscn" id="6_qd0wo"]
@@ -16,12 +15,16 @@
 [ext_resource type="PackedScene" uid="uid://dewo285lx7p70" path="res://Scenes/Effects/death_broken_triangle_ship.tscn" id="14_0ovpv"]
 [ext_resource type="PackedScene" uid="uid://b5qnknhyvemd5" path="res://Scenes/Components/vector_engine_exhaust.tscn" id="15_ummt8"]
 [ext_resource type="PackedScene" uid="uid://b2utyb8vjdhru" path="res://Scenes/Brains/aim_ai.tscn" id="16_xwb4j"]
-[ext_resource type="PackedScene" uid="uid://cq0foubgjurmr" path="res://Scenes/Brains/interceptor_ai.tscn" id="17_l3our"]
 [ext_resource type="PackedScene" uid="uid://c8034ktag0uga" path="res://Scenes/Brains/shoot_ai.tscn" id="18_g2hj8"]
+[ext_resource type="PackedScene" uid="uid://duiftqhlo478k" path="res://Scenes/Brains/patrol_ai.tscn" id="19_4wtmv"]
 [ext_resource type="PackedScene" uid="uid://ic3mj0x3ub4c" path="res://Scenes/Components/score_on_death.tscn" id="19_xjk3s"]
+[ext_resource type="PackedScene" uid="uid://dga83l4d2rwyv" path="res://Scenes/Flow/sound_synth.tscn" id="20_4wtmv"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_eeql7"]
 size = Vector2(8, 8)
+
+[sub_resource type="Resource" id="Resource_xjk3s"]
+metadata/__load_path__ = "res://Assets/Audio/zapThreeToneDown.ogg"
 
 [node name="TriangleShip" type="CharacterBody2D" groups=["enemies"]]
 rotation = -1.5707964
@@ -33,7 +36,7 @@ collision_groups = Array[String](["enemies"])
 shape = SubResource("RectangleShape2D_eeql7")
 
 [node name="Health" parent="." instance=ExtResource("2_7taai")]
-death_sound = ExtResource("3_s5tp5")
+death_sound = SubResource("Resource_xjk3s")
 
 [node name="ScreenWrap" parent="." instance=ExtResource("4_olkve")]
 
@@ -64,13 +67,32 @@ target_group = "players"
 turning_speed = 180
 aim_inaccuracy = 15
 
-[node name="InterceptorAi" parent="." instance=ExtResource("17_l3our")]
-target_group = "players"
-turning_speed = 180
-aim_inaccuracy = 15
+[node name="PatrolAi" parent="." instance=ExtResource("19_4wtmv")]
+waypoint_count = 6
+loop_mode = 1
 
 [node name="ShootAi" parent="." instance=ExtResource("18_g2hj8")]
 vision_cone_angle = 5.0
 
+[node name="ShootAi2" parent="." instance=ExtResource("18_g2hj8")]
+target_group = "asteroids"
+
 [node name="ScoreOnDeath" parent="." instance=ExtResource("19_xjk3s")]
 base_score = 50
+
+[node name="SoundSynth" parent="." node_paths=PackedStringArray("source_node") instance=ExtResource("20_4wtmv")]
+play_mode = 1
+wave_shape = 2
+effect = 2
+note = 48
+volume = 0.1
+source_node = NodePath("..")
+source_signal = "thrust"
+
+[node name="SoundSynth2" parent="." node_paths=PackedStringArray("source_node") instance=ExtResource("20_4wtmv")]
+play_mode = 1
+effect = 3
+note = 69
+volume = 0.1
+source_node = NodePath("..")
+source_signal = "shoot"

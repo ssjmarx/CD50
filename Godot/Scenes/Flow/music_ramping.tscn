@@ -1,0 +1,23 @@
+[gd_scene load_steps=3 format=3 uid="uid://dv3y04bswv3t4"]
+
+[ext_resource type="Script" uid="uid://8w5peucouwif" path="res://Scripts/Flow/music_ramping.gd" id="1_s1wx4"]
+[ext_resource type="PackedScene" uid="uid://dga83l4d2rwyv" path="res://Scenes/Flow/sound_synth.tscn" id="2_funv2"]
+
+[node name="MusicRamping" type="Node2D"]
+script = ExtResource("1_s1wx4")
+
+[node name="SoundSynth_A" parent="." instance=ExtResource("2_funv2")]
+play_mode = 1
+effect = 4
+note = 52
+volume = 0.1
+duration = 0.8
+positional = false
+
+[node name="SoundSynth_B" parent="." instance=ExtResource("2_funv2")]
+play_mode = 1
+effect = 4
+note = 53
+volume = 0.1
+duration = 0.8
+positional = false

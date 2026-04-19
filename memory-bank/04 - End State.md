@@ -41,13 +41,16 @@ These are faithful recreations of arcade classics, built from the component syst
 ### Phase 2: Remix Games (The Mashups)
 Games that combine elements from multiple classics, like the existing **Pongsteroids**. Created by assembling components from different games into new configurations.
 
-| Remix | Combination | Concept |
-|-------|------------|---------|
-| **Pongsteroids** | Pong + Asteroids | ✅ Already built |
-| **Breakoutvader** | Breakout + Galaga | Bricks that shoot back |
-| **Asterong** | Asteroids + Pong | Ships play pong with an asteroid |
-| **Frogger Command** | Frogger + Missile Command | Guide frogs while shooting missiles |
-| **Tetris Kong** | Tetris + Donkey Kong | Stack blocks to reach the top |
+| Remix | Combination | Concept | Status |
+|-------|------------|---------|--------|
+| **Pongsteroids** | Pong + Asteroids | Pong + asteroids in the field | ✅ Built |
+| **Pongout** | Pong + Breakout | Brick shields on goals, first to break through scores | ✅ Built |
+| **Breaksteroids** | Breakout + Asteroids | Paddle vs asteroid grid, pinball-style chaos | ✅ Built |
+| **Asterout** | Asteroids + Breakout | Shielded UFOs with brick rings | ⚠️ Needs remake |
+| **Breakoutvader** | Breakout + Galaga | Bricks that shoot back | 🔲 Planned |
+| **Asterong** | Asteroids + Pong | Ships play pong with an asteroid | 🔲 Planned |
+| **Frogger Command** | Frogger + Missile Command | Guide frogs while shooting missiles | 🔲 Planned |
+| **Tetris Kong** | Tetris + Donkey Kong | Stack blocks to reach the top | 🔲 Planned |
 (the full list is intended to be at least forty remixes)
 
 ## The Infinite Scroll
@@ -214,15 +217,18 @@ Scenes/Bodies/
 **Why:** For the final vision of rapid-fire game succession, players must instantly recognize what an entity does by what it looks like. Visual identity = behavioral identity. Pre-rigged player/nonplayer scenes mean games just drop in the
 
 ```
-WHERE WE ARE (Current)
+WHERE WE ARE (Current — 2026-04-18)
 ├── ✅ Entity component system (Bodies + Brains + Legs + Arms)
-├── ✅ 4 playable games (Pong, Breakout, Asteroids, Pongsteroids)
-├── ✅ Component reuse validated (Pongsteroids)
-├── ✅ Game-level componentization proven (Component Pong)
+├── ✅ 8 playable games (Pong, Breakout, Asteroids, Pongsteroids, Dogfight, Pongout, Breaksteroids, Asterout)
+├── ✅ Component reuse validated (Pongsteroids, Pongout, Breaksteroids)
+├── ✅ Game-level componentization proven (all games componentized)
 ├── ✅ UniversalGameScript as generic game container
-├── ✅ ALL games componentized — zero game scripts (2026-04-17)
-├── ✅ 50 reusable components across 8 categories
-└── ✅ Full architecture validation (entity-level, game-level, cross-game remix)
+├── ✅ ALL games componentized — zero game scripts
+├── ✅ 62 reusable components across 9 categories
+├── ✅ Full architecture validation (entity-level, game-level, cross-game remix)
+├── ✅ Bodies scene reorganization (generic/player/nonplayer tiers)
+├── ✅ Procedural audio system (SoundSynth + MusicRamping)
+└── ✅ Visual effects system (death particles, ship debris, engine exhaust)
 
 NEXT STEPS
 ├── 🔲 Build the Hub/Menu (cabinet interface)

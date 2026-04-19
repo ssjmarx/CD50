@@ -1,0 +1,6 @@
+[gd_scene load_steps=2 format=3 uid="uid://qtgpgjpw1e77"]
+
+[ext_resource type="Script" uid="uid://cf5gwnccs1epv" path="res://Scripts/Flow/sfx_ramping.gd" id="1_yf3j2"]
+
+[node name="SfxRamping" type="Node2D"]
+script = ExtResource("1_yf3j2")

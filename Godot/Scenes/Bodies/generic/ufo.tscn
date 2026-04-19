@@ -1,20 +1,74 @@
-[gd_scene load_steps=3 format=3 uid="uid://dck1licbo5kuq"]
+[gd_scene load_steps=13 format=3 uid="uid://dh545dmdhudol"]
 
-[ext_resource type="Script" uid="uid://c7pmihw887om8" path="res://Scripts/Bodies/ufo.gd" id="1_0xwvu"]
+[ext_resource type="Script" uid="uid://c7pmihw887om8" path="res://Scripts/Bodies/ufo.gd" id="1_5nqnc"]
+[ext_resource type="PackedScene" uid="uid://duiftqhlo478k" path="res://Scenes/Brains/patrol_ai.tscn" id="2_wpuss"]
+[ext_resource type="PackedScene" uid="uid://b3hvkyy38ihr1" path="res://Scenes/Components/screen_cleanup.tscn" id="3_bxwad"]
+[ext_resource type="PackedScene" uid="uid://eketockdsssi" path="res://Scenes/Legs/direct_movement.tscn" id="4_g5t1l"]
+[ext_resource type="PackedScene" uid="uid://bapmn3uxv7pqb" path="res://Scenes/Arms/gun_simple.tscn" id="5_f8qpq"]
+[ext_resource type="PackedScene" uid="uid://chmnjqkckrar5" path="res://Scenes/Bodies/generic/bullet_wrapping.tscn" id="6_8adbe"]
+[ext_resource type="PackedScene" uid="uid://c8034ktag0uga" path="res://Scenes/Brains/shoot_ai.tscn" id="7_sfmur"]
+[ext_resource type="PackedScene" uid="uid://b2utyb8vjdhru" path="res://Scenes/Brains/aim_ai.tscn" id="8_i51fb"]
+[ext_resource type="PackedScene" uid="uid://bj81pr736k256" path="res://Scenes/Components/health.tscn" id="9_ywu8s"]
+[ext_resource type="PackedScene" uid="uid://145njn1uody4" path="res://Scenes/Components/death_effect.tscn" id="10_c3yyw"]
+[ext_resource type="PackedScene" uid="uid://c5h0r2rnmwe4k" path="res://Scenes/Effects/death_particles.tscn" id="11_dt6ik"]
+[ext_resource type="PackedScene" uid="uid://dga83l4d2rwyv" path="res://Scenes/Flow/sound_synth.tscn" id="12_aewtr"]
 
-[sub_resource type="RectangleShape2D" id="RectangleShape2D_da2tq"]
-size = Vector2(8, 8)
-
-[node name="UFO" type="CharacterBody2D"]
-script = ExtResource("1_0xwvu")
-collision_groups = Array[String](["ships"])
+[node name="UFO" type="CharacterBody2D" groups=["enemies"]]
+script = ExtResource("1_5nqnc")
+width = 16
+height = 16
+x_min = -100.0
+x_max = 740.0
+y_min = -100.0
+y_max = 460.0
+collision_groups = Array[String](["enemies"])
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="."]
-shape = SubResource("RectangleShape2D_da2tq")
 
-[node name="HurtBox" type="Area2D" parent="."]
+[node name="PatrolAi" parent="." instance=ExtResource("2_wpuss")]
 
-[node name="CollisionShape2D" type="CollisionShape2D" parent="HurtBox"]
-shape = SubResource("RectangleShape2D_da2tq")
+[node name="ScreenCleanup" parent="." instance=ExtResource("3_bxwad")]
+margin = 64
 
-[node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="."]
+[node name="DirectMovement" parent="." instance=ExtResource("4_g5t1l")]
+speed = 75
+
+[node name="GunSimple" parent="." instance=ExtResource("5_f8qpq")]
+ammo = ExtResource("6_8adbe")
+max_bullets = 1
+joy_input = true
+bullet_group = "enemies_bullets"
+
+[node name="ShootAi" parent="." instance=ExtResource("7_sfmur")]
+vision_cone_angle = 360.0
+vision_range = 1000.0
+fire_rate = 1.0
+
+[node name="AimAi" parent="." instance=ExtResource("8_i51fb")]
+target_group = "players"
+turning_speed = 180
+aim_inaccuracy = 180
+
+[node name="Health" parent="." instance=ExtResource("9_ywu8s")]
+
+[node name="DeathEffect" parent="." instance=ExtResource("10_c3yyw")]
+effect_scenes = Array[PackedScene]([ExtResource("11_dt6ik")])
+
+[node name="SoundSynth" parent="." instance=ExtResource("12_aewtr")]
+effect = 1
+volume = 0.1
+exclusive = true
+
+[node name="ShootAi2" parent="." instance=ExtResource("7_sfmur")]
+target_group = "asteroids"
+
+[node name="AimAi2" parent="." instance=ExtResource("8_i51fb")]
+target_group = "asteroids"
+
+[node name="SoundSynth2" parent="." node_paths=PackedStringArray("source_node") instance=ExtResource("12_aewtr")]
+play_mode = 1
+effect = 3
+note = 69
+volume = 0.1
+source_node = NodePath("..")
+source_signal = "shoot"

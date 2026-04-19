@@ -1,4 +1,4 @@
-[gd_scene load_steps=28 format=3 uid="uid://6x4ilf17gq08"]
+[gd_scene load_steps=26 format=3 uid="uid://6x4ilf17gq08"]
 
 [ext_resource type="Script" uid="uid://bjdgpevhahi6d" path="res://Scripts/Core/universal_game_script.gd" id="1_qu73x"]
 [ext_resource type="Script" uid="uid://bfkr4fdx316o5" path="res://Scripts/Core/collision_group.gd" id="2_5wgpo"]
@@ -7,13 +7,11 @@
 [ext_resource type="PackedScene" uid="uid://cq0foubgjurmr" path="res://Scenes/Brains/interceptor_ai.tscn" id="4_5wgpo"]
 [ext_resource type="PackedScene" uid="uid://6tweepbhleep" path="res://Scenes/Brains/player_control.tscn" id="5_5wgpo"]
 [ext_resource type="PackedScene" uid="uid://eketockdsssi" path="res://Scenes/Legs/direct_movement.tscn" id="5_qu73x"]
-[ext_resource type="AudioStream" uid="uid://ctmcfvxwus0wo" path="res://Assets/Audio/threeTone1.ogg" id="6_glgdb"]
 [ext_resource type="PackedScene" uid="uid://b418fukpc5m41" path="res://Scenes/Components/collision_marker.tscn" id="6_qu73x"]
 [ext_resource type="PackedScene" uid="uid://clhg61503vle8" path="res://Scenes/Rules/variable_tuner.tscn" id="7_hvtep"]
 [ext_resource type="Script" uid="uid://bghaddibpt6f1" path="res://addons/crt/crt.gd" id="7_lngll"]
 [ext_resource type="PackedScene" uid="uid://bq6cdrx340jp7" path="res://Scenes/Flow/interface.tscn" id="8_d3mj0"]
 [ext_resource type="PackedScene" uid="uid://dshe01a1pw43p" path="res://Scenes/Rules/goal.tscn" id="9_ortq3"]
-[ext_resource type="PackedScene" uid="uid://cc1murtue63r4" path="res://Scenes/Flow/sound_on_hit.tscn" id="10_dvcgw"]
 [ext_resource type="PackedScene" uid="uid://dhulxxtcsipl6" path="res://Scenes/Rules/group_monitor.tscn" id="12_7olh1"]
 [ext_resource type="PackedScene" uid="uid://dwyyfxniivl1r" path="res://Scenes/Flow/wave_director.tscn" id="13_3uayn"]
 [ext_resource type="PackedScene" uid="uid://vlbel76nqh5w" path="res://Scenes/Flow/wave_spawner.tscn" id="14_b3t13"]
@@ -70,7 +68,6 @@ collision_groups = Array[ExtResource("2_5wgpo")]([SubResource("Resource_dvcgw"),
 
 [node name="Player" parent="." groups=["paddles"] instance=ExtResource("3_qu73x")]
 position = Vector2(64, 184)
-height = 32
 lock_x = true
 
 [node name="DirectMovement" parent="Player" instance=ExtResource("5_qu73x")]
@@ -79,7 +76,6 @@ lock_x = true
 
 [node name="Opponent" parent="." groups=["paddles"] instance=ExtResource("3_qu73x")]
 position = Vector2(576, 184)
-height = 32
 lock_x = true
 
 [node name="InterceptorAi" parent="Opponent" instance=ExtResource("4_5wgpo")]
@@ -124,9 +120,6 @@ collision_groups = Array[String](["goals"])
 
 [node name="Goal" parent="P1 Goal" instance=ExtResource("9_ortq3")]
 
-[node name="SoundOnHit" parent="P1 Goal" node_paths=PackedStringArray("sound") instance=ExtResource("10_dvcgw")]
-sound = NodePath("../../AudioStreamPlayer2D")
-
 [node name="P2 Goal" type="Area2D" parent="."]
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="P2 Goal"]
@@ -136,16 +129,8 @@ shape = SubResource("RectangleShape2D_vlhw5")
 [node name="CollisionMarker" parent="P2 Goal" instance=ExtResource("6_qu73x")]
 collision_groups = Array[String](["goals"])
 
-[node name="SoundOnHit" parent="P2 Goal" node_paths=PackedStringArray("sound") instance=ExtResource("10_dvcgw")]
-sound = NodePath("../../AudioStreamPlayer2D")
-
 [node name="Goal" parent="P2 Goal" instance=ExtResource("9_ortq3")]
 score_type = 1
-
-[node name="AudioStreamPlayer2D" type="AudioStreamPlayer2D" parent="."]
-position = Vector2(320, 192)
-stream = ExtResource("6_glgdb")
-max_polyphony = 3
 
 [node name="CanvasLayer" type="CanvasLayer" parent="."]
 script = ExtResource("7_lngll")

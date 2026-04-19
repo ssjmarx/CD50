@@ -50,6 +50,9 @@ func _on_parent_died(_parent: Node) -> void:
 			if parent.size > 0:
 				fragment.size = parent.size - 1
 		
+		if "color" in parent and "color" in parent:
+			fragment.color = parent.color
+		
 		fragment.velocity = direction * fragment_speed
 		fragment.global_position = parent.global_position + direction * offset_amount
 

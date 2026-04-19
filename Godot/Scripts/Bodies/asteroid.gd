@@ -5,6 +5,7 @@ extends UniversalBody
 @export var size: Size = Size.LARGE
 @export var num_vertices: int = 10
 @export var jaggedness: float = 0.3
+@export var color: Color = Color.WHITE
 
 var points: PackedVector2Array
 
@@ -42,7 +43,7 @@ func _setup_collision_polygons(poly_points: PackedVector2Array) -> void:
 func _draw() -> void:
 	var outline := PackedVector2Array(points)
 	outline.append(points[0])
-	draw_polyline(outline, Color.WHITE, 2.0)
+	draw_polyline(outline, color, 2.0)
 
 # Generate random jagged polygon vertices
 func _generate_jagged_points() -> PackedVector2Array:
