@@ -27,5 +27,11 @@ func _physics_process(_delta: float) -> void:
 		game.group_cleared.emit(target_group)
 		if lose_life_on_clear:
 			game.get_node("LivesCounter").lose_life()
+		if extra_life_on_clear:
+			game.get_node("LivesCounter").extra_life()
+		if victory_on_clear:
+			game.victory.emit()
+		if defeat_on_clear:
+			game.defeat.emit()
 	
 	_previous_count = count

@@ -13,8 +13,8 @@
 [ext_resource type="PackedScene" uid="uid://bq6cdrx340jp7" path="res://Scenes/Flow/interface.tscn" id="8_d3mj0"]
 [ext_resource type="PackedScene" uid="uid://dshe01a1pw43p" path="res://Scenes/Rules/goal.tscn" id="9_ortq3"]
 [ext_resource type="PackedScene" uid="uid://dhulxxtcsipl6" path="res://Scenes/Rules/group_monitor.tscn" id="12_7olh1"]
-[ext_resource type="PackedScene" uid="uid://dwyyfxniivl1r" path="res://Scenes/Flow/wave_director.tscn" id="13_3uayn"]
-[ext_resource type="PackedScene" uid="uid://vlbel76nqh5w" path="res://Scenes/Flow/wave_spawner.tscn" id="14_b3t13"]
+[ext_resource type="PackedScene" uid="uid://dwyyfxniivl1r" path="res://Scenes/Rules/wave_director.tscn" id="13_3uayn"]
+[ext_resource type="PackedScene" uid="uid://vlbel76nqh5w" path="res://Scenes/Rules/wave_spawner.tscn" id="14_b3t13"]
 [ext_resource type="PackedScene" uid="uid://d1r6vipc03isf" path="res://Scenes/Rules/points_monitor.tscn" id="17_gthws"]
 [ext_resource type="Script" uid="uid://cp0ni1lgml7c6" path="res://Scripts/Core/property_override.gd" id="19_gthws"]
 

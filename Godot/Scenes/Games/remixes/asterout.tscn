@@ -5,8 +5,8 @@
 [ext_resource type="PackedScene" uid="uid://bq6cdrx340jp7" path="res://Scenes/Flow/interface.tscn" id="2_betjh"]
 [ext_resource type="Script" uid="uid://bfkr4fdx316o5" path="res://Scripts/Core/collision_group.gd" id="2_i8hbb"]
 [ext_resource type="PackedScene" uid="uid://dhulxxtcsipl6" path="res://Scenes/Rules/group_monitor.tscn" id="3_ueswc"]
-[ext_resource type="PackedScene" uid="uid://dwyyfxniivl1r" path="res://Scenes/Flow/wave_director.tscn" id="4_i8hbb"]
-[ext_resource type="PackedScene" uid="uid://vlbel76nqh5w" path="res://Scenes/Flow/wave_spawner.tscn" id="5_s6x70"]
+[ext_resource type="PackedScene" uid="uid://dwyyfxniivl1r" path="res://Scenes/Rules/wave_director.tscn" id="4_i8hbb"]
+[ext_resource type="PackedScene" uid="uid://vlbel76nqh5w" path="res://Scenes/Rules/wave_spawner.tscn" id="5_s6x70"]
 [ext_resource type="PackedScene" uid="uid://c1cjxj1iklep7" path="res://Scenes/Bodies/player/player_triangle_ship_modern.tscn" id="6_wx2tq"]
 [ext_resource type="PackedScene" uid="uid://d2cvj1qyemnu4" path="res://Scenes/Bodies/generic/asteroid.tscn" id="8_03rb7"]
 [ext_resource type="PackedScene" uid="uid://csg0e2wxlx4qd" path="res://Scenes/Components/angled_deflector.tscn" id="9_5vlji"]
@@ -25,13 +25,13 @@ metadata/_custom_type_script = "uid://bfkr4fdx316o5"
 [sub_resource type="Resource" id="Resource_wx2tq"]
 script = ExtResource("2_i8hbb")
 group_name = "asteroids"
-targets = Array[String](["players", "players_bullets"])
+targets = Array[String](["players", "players_bullets", "bricks"])
 metadata/_custom_type_script = "uid://bfkr4fdx316o5"
 
 [sub_resource type="Resource" id="Resource_j0yx7"]
 script = ExtResource("2_i8hbb")
 group_name = "bricks"
-targets = Array[String](["players", "players_bullets"])
+targets = Array[String](["players", "players_bullets", "asteroids"])
 metadata/_custom_type_script = "uid://bfkr4fdx316o5"
 
 [sub_resource type="Resource" id="Resource_03rb7"]
@@ -99,6 +99,7 @@ lose_life_on_clear = true
 
 [node name="GroupMonitor2" parent="." instance=ExtResource("3_ueswc")]
 target_group = "enemies"
+victory_on_clear = true
 
 [node name="WaveDirector" parent="." instance=ExtResource("4_i8hbb")]
 trigger_value = "players"
@@ -108,18 +109,11 @@ trigger_value = "enemies"
 
 [node name="WaveSpawner" parent="." node_paths=PackedStringArray("director") instance=ExtResource("5_s6x70")]
 spawn_scene = ExtResource("6_wx2tq")
-spawn_pattern = 1
 spawn_count_equation = "1"
 director = NodePath("../WaveDirector")
 use_safe_zone = true
 safety_radius = 50.0
 use_random_angle = true
-
-[node name="WaveSpawner2" parent="." node_paths=PackedStringArray("director") instance=ExtResource("5_s6x70")]
-spawn_scene = ExtResource("14_betjh")
-spawn_count_equation = "1"
-stagger_delay = 1.0
-director = NodePath("../WaveDirector2")
 
 [node name="WaveDirector(asteroids)" parent="." instance=ExtResource("4_i8hbb")]
 trigger_type = 1
@@ -145,7 +139,6 @@ target_property = "current_multiplier"
 adjustment_amount = 1.0
 
 [node name="LivesCounter" parent="." instance=ExtResource("13_v06a6")]
-max_lives = 5
 
 [node name="TriangleShip" parent="." instance=ExtResource("6_wx2tq")]
 position = Vector2(64, 320)
@@ -153,6 +146,10 @@ rotation = -0.7853982
 scale = Vector2(0.99999994, 0.99999994)
 
 [node name="UFO" parent="." instance=ExtResource("14_betjh")]
+position = Vector2(576, 64)
+
+[node name="AimAi" parent="UFO" index="6"]
+aim_inaccuracy = 15
 
 [editable path="TriangleShip"]
 [editable path="UFO"]
