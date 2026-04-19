@@ -18,6 +18,8 @@ func _ready() -> void:
 		$AimAi.aim_inaccuracy = $AimAi.aim_inaccuracy / 2
 		$ShootAi.fire_rate = $ShootAi.fire_rate / 2.0
 		$SoundSynth.note = 72
+		$ShootAi2.fire_rate = $ShootAi2.fire_rate / 2.0
+		$AimAi2.aim_inaccuracy = $AimAi2.aim_inaccuracy / 2
 	
 	super._ready()
 	

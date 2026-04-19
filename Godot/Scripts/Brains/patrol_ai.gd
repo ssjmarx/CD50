@@ -50,20 +50,23 @@ func _physics_process(_delta: float) -> void:
 
 func _generate_random_path() -> Curve2D:
 	curve = Curve2D.new()
-	
+
 	var viewport = get_viewport().get_visible_rect()
 	var w = viewport.size.x
 	var h = viewport.size.y
+
+	var end_edge = randi() % 4
 	
-	var end_edge = randi() % 3
-	
-	curve.add_point(parent.global_position)
-	
+	var start_pos = parent.global_position
+	start_pos.x = clampf(start_pos.x, parent.x_min, parent.x_max)
+	start_pos.y = clampf(start_pos.y, parent.y_min, parent.y_max)
+	curve.add_point(start_pos)
+
 	for i in range(waypoint_count - 2):
 		curve.add_point(Vector2(randf_range(0 + margin, w - margin), randf_range(0 + margin, h - margin)))
-	
+
 	curve.add_point(_point_on_edge(end_edge, w, h))
-	
+
 	return curve
 
 func _point_on_edge(edge: int, w: float, h: float) -> Vector2:
