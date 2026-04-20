@@ -1,0 +1,6 @@
+[gd_scene load_steps=2 format=3 uid="uid://q3xxo1hdrr4j"]
+
+[ext_resource type="Script" uid="uid://lkt64afp4ksn" path="res://Scripts/Flow/tetromino_spawner.gd" id="1_di0bt"]
+
+[node name="TetrominoSpawner" type="Node2D"]
+script = ExtResource("1_di0bt")

@@ -1,0 +1,6 @@
+[gd_scene load_steps=2 format=3 uid="uid://bn32q5kmricio"]
+
+[ext_resource type="Script" uid="uid://c6c6daqk1jdg0" path="res://Scripts/Legs/grid_movement.gd" id="1_xxiyx"]
+
+[node name="GridMovement" type="Node"]
+script = ExtResource("1_xxiyx")

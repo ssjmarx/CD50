@@ -1,0 +1,6 @@
+[gd_scene load_steps=2 format=3 uid="uid://bi56x5nejv4l0"]
+
+[ext_resource type="Script" uid="uid://n20bjprbojhu" path="res://Scripts/Brains/shoot_ai_swarm.gd" id="1_aklki"]
+
+[node name="ShootAiSwarm" type="Node"]
+script = ExtResource("1_aklki")

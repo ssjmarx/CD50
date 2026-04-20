@@ -1,0 +1,7 @@
+[gd_scene load_steps=2 format=3 uid="uid://btpqd0s0vatc8"]
+
+[ext_resource type="Script" uid="uid://cfnlh4qhn0a7p" path="res://Scripts/Brains/swarm_ai.gd" id="1_17ufo"]
+
+[node name="SwarmAi" type="Node"]
+script = ExtResource("1_17ufo")
+bus_group = null

@@ -11,7 +11,6 @@ play_mode = 1
 effect = 4
 note = 52
 volume = 0.1
-duration = 0.8
 positional = false
 
 [node name="SoundSynth_B" parent="." instance=ExtResource("2_funv2")]
@@ -19,5 +18,4 @@ play_mode = 1
 effect = 4
 note = 53
 volume = 0.1
-duration = 0.8
 positional = false

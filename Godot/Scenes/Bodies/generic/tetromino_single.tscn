@@ -1,0 +1,7 @@
+[gd_scene load_steps=2 format=3 uid="uid://dcynt5doi4k20"]
+
+[ext_resource type="Script" uid="uid://vi07llk3m5n4" path="res://Scripts/Bodies/tetromino.gd" id="1_bg046"]
+
+[node name="Tetromino" type="CharacterBody2D"]
+script = ExtResource("1_bg046")
+collision_groups = Array[String](["bricks"])

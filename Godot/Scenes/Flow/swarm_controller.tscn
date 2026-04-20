@@ -1,0 +1,6 @@
+[gd_scene load_steps=2 format=3 uid="uid://bycsf31pwnvgl"]
+
+[ext_resource type="Script" uid="uid://bab4ysa05o037" path="res://Scripts/Flow/swarm_controller.gd" id="1_jhjy3"]
+
+[node name="SwarmController" type="Node"]
+script = ExtResource("1_jhjy3")

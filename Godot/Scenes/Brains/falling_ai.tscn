@@ -1,0 +1,6 @@
+[gd_scene load_steps=2 format=3 uid="uid://bn40fvreld4pl"]
+
+[ext_resource type="Script" uid="uid://b010wfwgvs7d7" path="res://Scripts/Brains/falling_ai.gd" id="1_rajhx"]
+
+[node name="FallingAi" type="Node"]
+script = ExtResource("1_rajhx")

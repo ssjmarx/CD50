@@ -1,0 +1,6 @@
+[gd_scene load_steps=2 format=3 uid="uid://b5e1kfq2kb683"]
+
+[ext_resource type="Script" uid="uid://baj6c0otetkgv" path="res://Scripts/Flow/grid_basic.gd" id="1_jrtk3"]
+
+[node name="GridBasic" type="Node2D" groups=["grid"]]
+script = ExtResource("1_jrtk3")

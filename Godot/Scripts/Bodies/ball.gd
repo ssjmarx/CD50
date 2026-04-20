@@ -2,7 +2,6 @@
 
 extends UniversalBody
 
-@export var initial_velocity: Vector2 = Vector2(0, 0)
 @export var radius: float = 4.0 
 @export var color: Color = Color.WHITE
 

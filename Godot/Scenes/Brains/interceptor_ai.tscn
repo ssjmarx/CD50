@@ -2,6 +2,5 @@
 
 [ext_resource type="Script" uid="uid://ckeohjx4f2ra" path="res://Scripts/Brains/interceptor_ai.gd" id="1_fp7wx"]
 
-[node name="InterceptorAi" type="Node"]
+[node name="InterceptorAi" type="Node" groups=["interceptor_ais"]]
 script = ExtResource("1_fp7wx")
-target_node = NodePath(".")

@@ -1,0 +1,6 @@
+[gd_scene load_steps=2 format=3 uid="uid://dl63uuwsbx8qr"]
+
+[ext_resource type="Script" uid="uid://3psorfjfs7rn" path="res://Scripts/Rules/line_clear_monitor.gd" id="1_bjjbd"]
+
+[node name="LineClearMonitor" type="Node"]
+script = ExtResource("1_bjjbd")
