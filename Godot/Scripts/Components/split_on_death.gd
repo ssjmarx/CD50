@@ -9,7 +9,7 @@ extends UniversalComponent
 @export var score_adjustment: int = 1
 @export var score_adjustment_mode: CommonEnums.AdjustmentMode = CommonEnums.AdjustmentMode.ADD
 
-var base_angle := randf() * TAU
+var base_angle: float = randf() * TAU
 
 # Connect to parent's death signal
 func _ready() -> void:
@@ -41,8 +41,8 @@ func _on_parent_died(_parent: Node) -> void:
 
 	# Spawn fragments in spread pattern
 	for i in spawn_count:
-		var angle := base_angle + (i * TAU / spawn_count) + randf_range(-0.3, 0.3)
-		var direction := Vector2.from_angle(angle)
+		var angle: float = base_angle + (i * TAU / spawn_count) + randf_range(-0.3, 0.3)
+		var direction: Vector2 = Vector2.from_angle(angle)
 		var fragment = fragment_scene.instantiate()
 		
 		# Reduce fragment size if both parent and fragment have size enum

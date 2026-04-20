@@ -50,7 +50,7 @@ func _ready() -> void:
 	button_pressed.connect(_on_button_pressed)
 	button_released.connect(_on_button_released)
 	
-	var shape := RectangleShape2D.new()
+	var shape: RectangleShape2D = RectangleShape2D.new()
 	shape.size = Vector2(width, height)
 
 func _physics_process(delta: float) -> void:
@@ -117,6 +117,6 @@ func move_parent_physics(movement: Vector2) -> KinematicCollision2D:
 
 # Move entity toward target with physics collision detection
 func move_parent_physics_toward(target: Vector2, max_distance: float) -> KinematicCollision2D:
-	var direction := (target - position).normalized()
-	var distance := minf(position.distance_to(target), max_distance)
+	var direction: Vector2 = (target - position).normalized()
+	var distance: float = minf(position.distance_to(target), max_distance)
 	return move_and_collide(direction * distance)

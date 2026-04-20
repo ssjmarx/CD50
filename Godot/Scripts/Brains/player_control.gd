@@ -1,11 +1,10 @@
-# Player control brain. Reads keyboard/mouse/gamepad and emits input signals to parent.
+# Player control brain. Reads keyboard, mouse, and gamepad input, then emits signals to the parent body.
 
 extends UniversalComponent
 
-var using_mouse: bool = false # Track if mouse is being used
+var using_mouse: bool = false
 
-
-# Handle mouse and button inputs
+# Forward mouse motion and button press/release to parent signals
 func _unhandled_input(event: InputEvent) -> void:
 	if event is InputEventMouseMotion:
 		parent.mouse_position.emit(event.position)
@@ -15,7 +14,7 @@ func _unhandled_input(event: InputEvent) -> void:
 		if event.is_released():
 			parent.button_released.emit(event)
 
-# Emit joystick direction signals every frame
+# Emit joystick directions every physics frame for movement and aiming
 func _physics_process(_delta: float) -> void:
 	var direction: Vector2 = Vector2.ZERO
 	direction.y = Input.get_axis("button_up", "button_down")

@@ -1,9 +1,10 @@
 # Current Status: GD50 — Arcade Cabinet
 
-**Last Updated:** 2026-04-18  
+**Last Updated:** 2026-04-20  
 **Engine:** Godot 4.x (GDScript)  
 **Architecture:** Entity-Component (composition over inheritance)  
-**Playable Games:** Pong, Breakout, Asteroids, Pongsteroids, Dogfight, Pongout, Breaksteroids — ALL componentized, zero game scripts
+**Playable Games:** Pong, Breakout, Asteroids, Pongsteroids, Dogfight, Pongout, Breaksteroids — ALL componentized, zero game scripts  
+**In Progress:** Space Invaders, Tetris (Plan 07 — grid foundation built)
 
 ---
 
@@ -75,6 +76,37 @@ Scenes/Bodies/
 
 This ensures that **visual identity = behavioral identity** — the player always knows what something does by what it looks like, even as they cycle through dozens of games in rapid succession.
 
+### Current Body Scene Inventory
+
+```
+Scenes/Bodies/generic/
+├── asteroid.tscn
+├── ball.tscn
+├── brick.tscn
+├── brick_damaging.tscn          — Brick variant that deals damage on contact
+├── bullet_simple.tscn
+├── bullet_wrapping.tscn
+├── paddle.tscn
+├── tetromino.tscn               — Multi-block tetromino piece (4 cells)
+├── tetromino_single.tscn        — Single tetromino cell/block
+├── triangle_ship.tscn           — Classic Asteroids ship
+├── triangle_ship_modern.tscn    — Modern twin-stick ship
+├── ufo.tscn
+└── ufo_shielded.tscn            — UFO with RingSpawner brick shield
+
+Scenes/Bodies/player/
+├── player_paddle.tscn
+├── player_triangle_ship.tscn
+└── player_triangle_ship_modern.tscn
+
+Scenes/Bodies/nonplayer/
+├── nonplayer_paddle.tscn
+├── nonplayer_triangle_ship.tscn
+└── nonplayer_triangle_ship_modern.tscn
+```
+
+**Note:** Player/nonplayer bullet scenes were removed — bullets use generic scenes with collision groups configured per-game instead.
+
 ### `Scripts/Bodies/asteroid.gd` — extends UniversalBody
 - Asteroid with procedural jagged polygon, three sizes (SMALL/MEDIUM/LARGE). **Drawing code only** — all behavior handled by attached components (Health, SplitOnDeath, ScoreOnDeath, ScreenWrap, DamageOnHit).
 - Scene: `generic/asteroid.tscn` only (asteroids are factionless — no player/nonplayer variant)
@@ -85,19 +117,23 @@ This ensures that **visual identity = behavioral identity** — the player alway
 
 ### `Scripts/Bodies/brick.gd` — extends UniversalBody
 - Breakout brick with health-based coloring (green=1hp, yellow=2hp, orange=3hp, red=4hp). Redraws on health change. **Drawing code only** — all gameplay behavior handled by attached components.
-- Scene: `generic/brick.tscn` only (bricks are targets — no player/nonplayer variant)
+- Scenes: `generic/brick.tscn`, `generic/brick_damaging.tscn` (variant that deals damage on contact)
 
 ### `Scripts/Bodies/bullet_simple.gd` — extends UniversalBody
 - Simple bullet. Flies straight, despawns on physics hit or screen exit. All behavior via components (DamageOnHit, DieOnHit).
-- Scenes: `generic/bullet_simple.tscn`, `player/player_bullet_simple.tscn`, `nonplayer/nonplayer_bullet_simple.tscn`
+- Scene: `generic/bullet_simple.tscn` (player/nonplayer variants removed — use generic with per-game collision groups)
 
 ### `Scripts/Bodies/bullet_wrapping.gd` — extends UniversalBody
 - Bullet with timer-based lifetime instead of screen exit detection. Otherwise identical to bullet_simple.
-- Scenes: `generic/bullet_wrapping.tscn`, `player/player_bullet_wrapping.tscn`, `nonplayer/nonplayer_bullet_wrapping.tscn`
+- Scene: `generic/bullet_wrapping.tscn` (player/nonplayer variants removed — use generic with per-game collision groups)
 
 ### `Scripts/Bodies/paddle.gd` — extends UniversalBody
 - Pong-style paddle. Sets collision shape from exports. All movement, AI, and deflection handled by attached components.
 - Scenes: `generic/paddle.tscn`, `player/player_paddle.tscn`, `nonplayer/nonplayer_paddle.tscn`
+
+### `Scripts/Bodies/tetromino.gd` — extends UniversalBody
+- Tetromino piece for Tetris and Tetris-remix games. **Drawing code only** — visual representation of a multi-cell grid piece. Grid snap movement, rotation, formation tracking, and line clearing handled by attached components (GridMovement, GridRotation, TetrominoFormation, FallingAI).
+- Scenes: `generic/tetromino.tscn` (full tetromino), `generic/tetromino_single.tscn` (single cell)
 
 ### `Scripts/Bodies/triangle_ship.gd` — extends UniversalBody
 - Triangular polyline ship shape with configurable color export. **Drawing code only** — all behavior handled by attached components.
@@ -129,9 +165,24 @@ This ensures that **visual identity = behavioral identity** — the player alway
 - Exports: `target_group: String`, `vision_cone_angle: float = 30`, `vision_range: float = 500`, `fire_rate: float = 2.0`
 - Emits: `parent.shoot`
 
+### `Scripts/Brains/shoot_ai_swarm.gd` — extends Node
+- Formation-aware shooting AI for Space Invaders-style games. Checks that the body is on the edge of its formation before firing, preventing friendly fire and controlling which row shoots. Random roll odds ramp up to 100% as time approaches `max_shot_interval`, then reset on firing.
+- Exports: `fire_directions`, `max_shot_interval`, `edge_margin`, `fire_direction: Vector2`
+- **Plan 07 component** — designed for Space Invaders invader shooting
+
 ### `Scripts/Brains/patrol_ai.gd` — extends Node
 - AI brain that follows a Curve2D path. Used for UFO patrol patterns in Asteroids. Generates random closed-loop paths and moves along them at configurable speed.
 - **Known bug:** Start position may not be correctly set — needs user fix.
+
+### `Scripts/Brains/falling_ai.gd` — extends Node
+- Gravity as an input source. Emits `body.input_move(DOWN)` on a timer. Designed so gravity flows through the same signal chain as player input — everything routes through one movement leg. Can be paused (when piece is locked, during line clear animation).
+- Exports: `fall_interval: float`, `paused: bool`
+- **Plan 07 component** — designed for Tetris piece gravity
+
+### `Scripts/Brains/swarm_ai.gd` — extends Node
+- Antenna brain that receives commands from `swarm_controller` via signal bus and relays them as body movement signals. Intentionally thin — the intelligence lives in `swarm_controller`. Individual invaders remain autonomous and die independently.
+- Exports: `bus_group: String` — which signal bus to connect to
+- **Plan 07 component** — designed for Space Invaders invader movement
 
 ---
 
@@ -160,6 +211,25 @@ This ensures that **visual identity = behavioral identity** — the player alway
 
 ### `Scripts/Legs/rotation_target.gd` — extends Node
 - Smoothly rotates toward mouse position or joystick direction. Supports `independant_aim` mode.
+
+### `Scripts/Legs/grid_movement.gd` — extends Node
+- Discrete grid snap movement. Translates `move` and `move_to` signals into grid cell hops. Stores the most recent movement command between hops. On each hop tick: snaps to the target grid cell instantly (no interpolation). Enforces grid bounds, checks occupancy before moving (optional), supports movement ratchets (block specific directions), and hard drop mode.
+- Exports: `hop_delay`, `grid_name`, `block_on_occupied`, `prevent_movement_up/down/left/right`, `enable_hard_drop`
+- **Plan 07 component** — designed for Space Invaders invaders and Tetris pieces
+
+### `Scripts/Legs/grid_rotation.gd` — extends Node
+- Discrete rotation in configurable steps (default 90°, optional 45°). Ties facing direction to movement input and locks it to the grid. Purely handles rotation — does not move the body.
+- Exports: `rotation_step: int`, `clockwise: bool`
+- **Plan 07 component** — designed for Tetris tetromino rotation
+
+### `Scripts/Legs/tetromino_formation.gd` — extends Node
+- Manages a multi-cell shape on the grid. The tetromino is one body that occupies 4 grid cells via an offsets array. Handles rotation of offsets, landing detection, lock delay, cell registration in grid occupancy map, and visual sprite creation on lock. Interactable followers for remix scenarios.
+- Exports: `offsets: Array[Vector2i]`, `lock_delay: float`, `formation_group: String`
+- **Plan 07 component** — designed for Tetris, future Centipede-style games
+
+### `Scripts/Legs/warp_asteroids.gd` — extends Node
+- Emergency teleport with intangibility for Asteroids-style games. Warps the parent to a random position and grants temporary invulnerability.
+- **Previously listed as "Asteroids Warp — Skipped/Future"** — now built.
 
 ---
 
@@ -230,7 +300,7 @@ This ensures that **visual identity = behavioral identity** — the player alway
 - Emits: Calls `game.add_score()`
 
 ### `Scripts/Components/screen_cleanup.gd` — extends UniversalComponent
-- Removes (queue_free) parent entity when it moves outside the viewport bounds plus configurable margin.
+- Removes (queuefree) parent entity when it moves outside the viewport bounds plus configurable margin.
 
 ### `Scripts/Components/screen_wrap.gd` — extends Node
 - Asteroids-style screen wrapping. Warps parent to opposite edge when beyond viewport bounds plus margin.
@@ -285,9 +355,32 @@ This ensures that **visual identity = behavioral identity** — the player alway
 - Exports: `duration`, `count_up`, `tick_interval`, `loop_timer`, `auto_start`
 - Emits (on parent): `timer_tick`, `timer_expired`
 
+### `Scripts/Rules/line_clear_monitor.gd` — extends UniversalComponent
+- Generic line-clear detection. Monitors a `grid_basic` for completed lines (horizontal, vertical, or both) and clears them. On detection: clears the line, shifts remaining cells, emits score signal. Configurable for horizontal/vertical/both directions.
+- Exports: `grid_name`, `check_horizontal`, `check_vertical`, `clear_direction`, `score_per_line`
+- **Plan 07 component** — designed for Tetris, future puzzle/remix games
+
+### `Scripts/Rules/wave_director.gd` — extends UniversalComponent2D
+- Connects to a game signal and triggers wave spawning after a configurable delay. Supports four trigger types: `GROUP_CLEARED`, `TIMER_EXPIRED`, `LIVES_DEPLETED`, `GAME_START`. Has `max_waves` limit and game over guard.
+- Exports: `trigger_type`, `trigger_value`, `wave_delay`, `max_waves`
+- Listens to: Configured trigger signal
+- Emits (on parent): `spawning_wave`
+
+### `Scripts/Rules/wave_spawner.gd` — extends UniversalComponent2D
+- Spawns entities in patterns (SCREEN_EDGES, SCREEN_CENTER, GRID, POSITION). Expression-based count equations with `wave_number` variable. Features:
+  - **Safe zone:** Waits for unsafe groups to vacate a radius around the spawner before spawning
+  - **Spawn groups:** Adds spawned entities to configurable groups via `add_to_group()`
+  - **Spawn components:** Attaches additional component scenes to spawned entities
+  - **Property overrides:** Configures spawned entity properties with typed array support
+  - **Game over guards:** Checks game state before spawning and on each staggered spawn
+  - **GRID pattern:** Configurable columns, rows, spacing, and health-by-row
+- Exports: `spawn_scene`, `spawn_pattern`, `spawn_count_equation`, `spawn_radius`, `stagger_delay`, `director`, `spawn_components`, `property_overrides`, `spawn_groups`, `use_safe_zone`, `unsafe_groups`, `safety_radius`, grid exports, velocity/angle/flip exports
+- Listens to: `game.spawning_wave`
+- Emits (on game): `spawning_wave_complete`
+
 ---
 
-## Flow Scripts (Wave Management, Audio & UI)
+## Flow Scripts (Wave Management, Grid, Audio & UI)
 
 ### `Scripts/Flow/interface.gd` — extends Control
 - Reusable HUD with two display modes (`P1_P2_SCORE` for competitive, `POINTS_MULTIPLIER` for single-player). Auto-connects to parent UGS signals.
@@ -309,29 +402,35 @@ This ensures that **visual identity = behavioral identity** — the player alway
 ### `Scripts/Flow/beep.gd` — extends UniversalComponent
 - Simple procedural beep sound. Lightweight alternative to SoundSynth for basic audio feedback.
 
-### `Scripts/Flow/wave_director.gd` — extends UniversalComponent2D
-- Connects to a game signal and triggers wave spawning after a configurable delay. Supports four trigger types: `GROUP_CLEARED`, `TIMER_EXPIRED`, `LIVES_DEPLETED`, `GAME_START`. Has `max_waves` limit and game over guard.
-- Exports: `trigger_type`, `trigger_value`, `wave_delay`, `max_waves`
-- Listens to: Configured trigger signal
-- Emits (on parent): `spawning_wave`
+### `Scripts/Flow/grid_basic.gd` — extends UniversalComponent
+- Defines a grid in the scene with active occupancy tracking. Exposes coordinate conversion (`grid_to_world`, `world_to_grid`), bounds checking, and a 2D occupancy array where bodies register/unregister cells. Foundation for all grid-based games.
+- Exports: `rows: int`, `columns: int`, `cell_size: Vector2`, `origin: Vector2`
+- **Plan 07 component** — shared foundation for Space Invaders and Tetris
 
-### `Scripts/Flow/wave_spawner.gd` — extends UniversalComponent2D
-- Spawns entities in patterns (SCREEN_EDGES, SCREEN_CENTER, GRID, POSITION). Expression-based count equations with `wave_number` variable. Features:
-  - **Safe zone:** Waits for unsafe groups to vacate a radius around the spawner before spawning
-  - **Spawn groups:** Adds spawned entities to configurable groups via `add_to_group()`
-  - **Spawn components:** Attaches additional component scenes to spawned entities
-  - **Property overrides:** Configures spawned entity properties with typed array support
-  - **Game over guards:** Checks game state before spawning and on each staggered spawn
-  - **GRID pattern:** Configurable columns, rows, spacing, and health-by-row
-- Exports: `spawn_scene`, `spawn_pattern`, `spawn_count_equation`, `spawn_radius`, `stagger_delay`, `director`, `spawn_components`, `property_overrides`, `spawn_groups`, `use_safe_zone`, `unsafe_groups`, `safety_radius`, grid exports, velocity/angle/flip exports
-- Listens to: `game.spawning_wave`
-- Emits (on game): `spawning_wave_complete`
+### `Scripts/Flow/swarm_controller.gd` — extends UniversalComponent
+- Orchestrates synchronized movement of all invaders in a swarm. Signal bus pattern — emits `swarm_move(direction)` that each `swarm_ai` brain connects to. Tracks member positions, detects boundary hits for direction reversal + step-down, and speed-ramps tick interval as members die.
+- Exports: `base_tick_interval`, `min_tick_interval`, `speed_ramp_enabled`, `step_down_distance`, `invader_group`, `bus_group`
+- **Plan 07 component** — designed for Space Invaders, future swarm-based games
+
+### `Scripts/Flow/tetromino_spawner.gd` — extends UniversalComponent
+- Spawns the next tetromino piece at the top of the grid. Maintains a bag/queue of upcoming pieces, configures `falling_ai` fall interval on each new piece, and signals the next piece to `interface` for preview display.
+- Exports: `piece_pool`, `spawn_position`, `randomizer_mode`
+- **Plan 07 component** — designed for Tetris
 
 ---
 
 ## Game Scenes (All Componentized)
 
-### `Scenes/Games/pong.tscn` — UniversalGameScript root + components
+Games are organized into three categories:
+
+```
+Scenes/Games/
+├── originals/     — New games unique to GD50
+├── remakes/       — Classic arcade recreations
+└── remixes/       — Mashups combining elements from multiple games
+```
+
+### `Scenes/Games/remakes/pong.tscn` — UniversalGameScript root + components
 - **Pong.** No game-specific script. Assembled entirely from UGS + components.
 - Root: `UniversalGameScript` with collision groups (balls, walls, paddles, goals)
 - Player paddle: PlayerControl + DirectMovement
@@ -342,7 +441,7 @@ This ensures that **visual identity = behavioral identity** — the player alway
 - Rules: PointsMonitor × 2 (P1 score ≥ 11 = victory, P2 score ≥ 11 = defeat)
 - UI: Interface (P1_P2_SCORE mode)
 
-### `Scenes/Games/breakout.tscn` — UniversalGameScript root + components
+### `Scenes/Games/remakes/breakout.tscn` — UniversalGameScript root + components
 - **Breakout.** No game-specific script. Assembled entirely from UGS + components.
 - Uses GRID spawn pattern for brick layout with health-by-row
 - Ball: DamageOnHit (target_groups: bricks) + ScoreOnHit + DieOnHit + ScreenCleanup
@@ -351,7 +450,7 @@ This ensures that **visual identity = behavioral identity** — the player alway
 - Rules: GroupMonitor (bricks) → WaveDirector → WaveSpawner
 - UI: Interface (POINTS_MULTIPLIER mode)
 
-### `Scenes/Games/asteroids.tscn` — UniversalGameScript root + components
+### `Scenes/Games/remakes/asteroids.tscn` — UniversalGameScript root + components
 - **Asteroids (polished).** No game-specific script. Full recreation with death effects, UFO, reactive music.
 - Player ship: PlayerControl + EngineSimple + FrictionLinear + RotationDirect + GunSimple + ScreenWrap + DeathEffect + VectorEngineExhaust
 - Bullets: DamageOnHit (target_groups: asteroids) + DieOnHit + ScreenCleanup + SoundSynth (shoot sound)
@@ -362,13 +461,13 @@ This ensures that **visual identity = behavioral identity** — the player alway
 - Audio: MusicRamping (reactive pitch scaling based on asteroid count)
 - UI: Interface (POINTS_MULTIPLIER mode)
 
-### `Scenes/Games/pongsteroids.tscn` — UniversalGameScript root + components
+### `Scenes/Games/remixes/pongsteroids.tscn` — UniversalGameScript root + components
 - **Pongsteroids.** No game-specific script. Pong + Asteroids hybrid assembled from both games' components.
 - Pong layer: paddles, ball, goals (same as pong.tscn)
 - Asteroids layer: asteroid spawner + asteroid entities with Health + SplitOnDeath + ScreenWrap
 - Validates cross-game component mixing — zero new components needed
 
-### `Scenes/Games/dogfight.tscn` — UniversalGameScript root + components
+### `Scenes/Games/originals/dogfight.tscn` — UniversalGameScript root + components
 - **Dogfight.** Player triangle ship vs escalating waves of AI triangle ships, with asteroids as neutral obstacles. No game-specific script.
 - Collision groups: players, enemies, players_bullets, enemies_bullets, asteroids (5-way factional warfare)
 - Player ship: TriangleShipModern + PlayerControl + ScoreOnDeath (enemy scores on player death)
@@ -378,7 +477,7 @@ This ensures that **visual identity = behavioral identity** — the player alway
 - Rules: LivesCounter (10 lives, Asteroids-style game over on depletion)
 - Uses factional bullets — players_bullets hit enemies/asteroids, enemies_bullets hit players/asteroids, asteroids hit everyone
 
-### `Scenes/Games/pongout.tscn` — UniversalGameScript root + components
+### `Scenes/Games/remixes/pongout.tscn` — UniversalGameScript root + components
 - **Pongout.** Pong where goals are shielded by Breakout bricks. One goal ends the game. No game-specific script.
 - Two paddles (player + InterceptorAi opponent) with DirectMovement
 - Ball with DamageOnHit (bricks) + AngledDeflector + PongAcceleration
@@ -389,7 +488,7 @@ This ensures that **visual identity = behavioral identity** — the player alway
 - Flow: WaveDirector/WaveSpawner for ball respawn + brick grid spawn
 - UI: Interface (P1_P2_SCORE mode)
 
-### `Scenes/Games/breaksteroids.tscn` — UniversalGameScript root + components
+### `Scenes/Games/remixes/breaksteroids.tscn` — UniversalGameScript root + components
 - **Breaksteroids.** Paddle + ball vs asteroid grid. Asteroids have health and split. No game-specific script.
 - Paddle at bottom with PlayerControl + DirectMovement + AngledDeflector
 - Ball with DamageOnHit (asteroids) + ScreenCleanup
@@ -399,11 +498,18 @@ This ensures that **visual identity = behavioral identity** — the player alway
 - Audio: MusicRamping (reactive music based on asteroid count)
 - Notable emergent property: randomized asteroid collision shapes create unpredictable deflections — plays like "space pinball"
 
-### `Scenes/Games/asterout.tscn` — UniversalGameScript root + components
+### `Scenes/Games/remixes/asterout.tscn` — UniversalGameScript root + components
 - **Asterout.** ⚠️ EXISTS BUT NOT WORKING WELL — needs to be remade. Modern controls + UFO dogfighting with brick shields.
 - Current issues: RingSpawner bricks don't collide with player bullets (CollisionMatrix blindspot — bricks parented to UFO body instead of game root)
 - Design concept: player ship vs shielded UFOs (brick ring around UFO), break through shield to damage UFO
 - Should be rebuilt with RingSpawner fix (parent to game root + manual position tracking)
+
+---
+
+## Debug Scenes
+
+### `Scenes/Debug/grid_test.tscn`
+- Test scene for validating grid-based components (GridBasic, GridMovement, GridRotation). Used during Plan 07 development.
 
 ---
 
@@ -412,16 +518,16 @@ This ensures that **visual identity = behavioral identity** — the player alway
 ```
 INPUT (keyboard/mouse/gamepad)
   ↓
-BRAINS (player_control, interceptor_ai, aim_ai, patrol_ai, shoot_ai)
+BRAINS (player_control, interceptor_ai, aim_ai, patrol_ai, shoot_ai, shoot_ai_swarm, swarm_ai, falling_ai)
   ↓ emit on UniversalBody input signals
 UNIVERSAL BODY (routes input → output with axis locks)
   ↓ emit processed output signals
-LEGS (direct_movement, engine_simple, etc.) → modify parent velocity/position
-ARMS (gun_simple, damage_on_hit) → spawn bullets, deal damage
+LEGS (direct_movement, engine_simple, grid_movement, grid_rotation, tetromino_formation, warp_asteroids, etc.) → modify parent velocity/position
+ARMS (gun_simple, damage_on_hit, damage_on_joust) → spawn bullets, deal damage
   ↓
 COMPONENTS (angled_deflector, pong_acceleration, die_on_hit, score_on_death, screen_cleanup, death_effect, ring_spawner, vector_engine_exhaust) → react to collisions/life events
-RULES (goal, points_monitor, group_monitor, group_count_multiplier, lives_counter, variable_tuner, timer) → emit game events on UGS
-FLOW (wave_director → wave_spawner, sound_on_hit, sound_synth, music_ramping, sfx_ramping, beep, interface) → manage spawning, sounds, HUD, timing
+RULES (goal, points_monitor, group_monitor, group_count_multiplier, lives_counter, variable_tuner, timer, line_clear_monitor, wave_director, wave_spawner) → emit game events on UGS
+FLOW (interface, sound_on_hit, sound_synth, music_ramping, sfx_ramping, beep, grid_basic, swarm_controller, tetromino_spawner) → manage spawning, grids, sounds, HUD, timing
   ↓
 EFFECTS (death_particles, death_broken_triangle_ship) → self-destructing visual effects
 ```
@@ -451,13 +557,19 @@ EFFECTS (death_particles, death_broken_triangle_ship) → self-destructing visua
 
 | Category | Count | Components |
 |----------|-------|------------|
-| Core | 7 | universal_body, universal_game_script, universal_component, universal_component_2d, collision_matrix, collision_group, property_override, common_enums |
-| Bodies | 9 | ball, paddle, asteroid, brick, bullet_simple, bullet_wrapping, triangle_ship, ufo, ufo_shielded |
-| Brains | 5 | player_control, interceptor_ai, aim_ai, shoot_ai, patrol_ai |
-| Legs | 8 | direct_movement, direct_acceleration, engine_simple, engine_complex, friction_linear, friction_static, rotation_direct, rotation_target |
+| Core | 8 | universal_body, universal_game_script, universal_component, universal_component_2d, collision_matrix, collision_group, property_override, common_enums |
+| Bodies | 9 | ball, paddle, asteroid, brick, bullet_simple, bullet_wrapping, tetromino, triangle_ship, ufo |
+| Brains | 8 | player_control, interceptor_ai, aim_ai, shoot_ai, shoot_ai_swarm, patrol_ai, falling_ai, swarm_ai |
+| Legs | 12 | direct_movement, direct_acceleration, engine_simple, engine_complex, friction_linear, friction_static, rotation_direct, rotation_target, grid_movement, grid_rotation, tetromino_formation, warp_asteroids |
 | Arms | 3 | gun_simple, damage_on_hit, damage_on_joust |
 | Components | 14 | angled_deflector, collision_marker, death_effect, die_on_hit, die_on_timer, health, pong_acceleration, ring_spawner, score_on_death, score_on_hit, screen_cleanup, screen_wrap, split_on_death, vector_engine_exhaust |
-| Rules | 7 | goal, points_monitor, variable_tuner, group_monitor, group_count_multiplier, lives_counter, timer |
-| Flow | 7 | interface, sound_on_hit, sound_synth, music_ramping, sfx_ramping, beep, wave_director, wave_spawner |
+| Rules | 8 | goal, points_monitor, variable_tuner, group_monitor, group_count_multiplier, lives_counter, timer, line_clear_monitor |
+| Flow | 11 | interface, sound_on_hit, sound_synth, music_ramping, sfx_ramping, beep, grid_basic, swarm_controller, tetromino_spawner, wave_director*, wave_spawner* |
 | Effects | 2 | death_particles, death_broken_triangle_ship |
-| **Total** | **62** | |
+| **Total** | **75** | |
+
+*\* wave_director and wave_spawner scripts live in `Scripts/Rules/` but are categorized as Flow by function (wave/spawn management).*
+</task_progress>
+</task_progress>
+</write_to_file>
+</invoke>

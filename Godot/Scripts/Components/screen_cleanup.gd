@@ -12,7 +12,7 @@ func _physics_process(delta: float) -> void:
 	if _counter < activation_time:
 		return
 	
-	var pos = parent.global_position
+	var pos: Vector2 = parent.global_position
 	if pos.x < -margin or pos.x > bounds.x + margin or pos.y < -margin or pos.y > bounds.y + margin:
 		#print("cleaning up enemy")
 		parent.queue_free()

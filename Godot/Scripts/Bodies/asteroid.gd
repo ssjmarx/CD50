@@ -1,13 +1,12 @@
-# Asteroid with procedural jagged polygon and physics bouncing. Three selectable sizes.
+# Asteroid with procedural jagged polygon. Three selectable sizes with radius-based generation.
 
 extends UniversalBody
 
+# Generation and appearance
 @export var size: Size = Size.LARGE
 @export var num_vertices: int = 10
 @export var jaggedness: float = 0.3
 @export var color: Color = Color.WHITE
-
-var points: PackedVector2Array
 
 enum Size {
 	SMALL,
@@ -15,7 +14,9 @@ enum Size {
 	LARGE
 	}
 
-# Get radius based on size enum
+var points: PackedVector2Array
+
+# Radius derived from size enum
 var radius: float:
 	get:
 		match size:
@@ -24,32 +25,29 @@ var radius: float:
 			Size.SMALL: return 5.0
 		return 20.0
 
-# Initialize asteroid
+# Generate polygon, join asteroids group, and defer collision setup
 func _ready() -> void:
 	add_to_group("asteroids")
-	
 	points = _generate_jagged_points()
-	
-	# Defer polygon setup to avoid physics query flushing errors
 	_setup_collision_polygons.call_deferred(points)
 
-# Set collision polygon on all colliders
+# Apply the polygon to all collision layers (CollisionPolygon2D, HitBox, HurtBox)
 func _setup_collision_polygons(poly_points: PackedVector2Array) -> void:
 	$CollisionPolygon2D.polygon = poly_points
 	$HitBox/CollisionPolygon2D.polygon = poly_points
 	$HurtBox/CollisionPolygon2D.polygon = poly_points
 
-# Draw white outline polygon
+# Draw the polygon outline with the first point appended to close the loop
 func _draw() -> void:
-	var outline := PackedVector2Array(points)
+	var outline: PackedVector2Array = PackedVector2Array(points)
 	outline.append(points[0])
 	draw_polyline(outline, color, 2.0)
 
-# Generate random jagged polygon vertices
+# Build a jagged polygon by varying vertex distances from center
 func _generate_jagged_points() -> PackedVector2Array:
 	var jagged: PackedVector2Array = []
 	for i in num_vertices:
-		var angle := (TAU / num_vertices) * i
-		var r := radius * (1.0 + randf_range(-jaggedness, jaggedness))
+		var angle: float = (TAU / num_vertices) * i
+		var r: float = radius * (1.0 + randf_range(-jaggedness, jaggedness))
 		jagged.append(Vector2(cos(angle), sin(angle)) * r)
 	return jagged

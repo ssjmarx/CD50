@@ -1,6 +1,6 @@
 # Recent Progress: GD50 — Development History
 
-**Last Updated:** 2026-04-18
+**Last Updated:** 2026-04-20
 
 ---
 
@@ -453,6 +453,97 @@ This enables per-death tracking — e.g., VariableTuner can boost AI difficulty 
 
 ---
 
+## Update 9: Grid Foundation + Space Invaders & Tetris Components
+
+**Planning Document:** `planning/07 - Space Invaders and Tetris.md`
+
+### What Was Planned
+- Build Space Invaders and Tetris as the 9th and 10th games
+- Create a grid system foundation shared by both games (grid_basic, grid_movement, grid_rotation)
+- Build Space Invaders-specific components (swarm_controller, swarm_ai, shoot_ai_swarm)
+- Build Tetris-specific components (falling_ai, tetromino_formation, tetromino_spawner, line_clear_monitor)
+- Build shared utility components (variable_tuner_global)
+- Enhance wave_spawner with grid_score_by_row and universal_body with autofire toggle
+
+### What Was Actually Built
+
+**Grid Foundation (Phase 1):**
+
+| Component | Category | Purpose |
+|-----------|----------|---------|
+| `grid_basic` | Flow | Grid coordinate system + active occupancy tracking. Exposes `grid_to_world`, `world_to_grid`, bounds checking, register/unregister cells |
+| `grid_movement` | Leg | Discrete grid snap movement with hop_delay, movement ratchets, occupancy checks, hard drop mode |
+| `grid_rotation` | Leg | Discrete rotation steps (90°/45°), ties facing to movement input |
+
+**Space Invaders Components (Phase 2):**
+
+| Component | Category | Purpose |
+|-----------|----------|---------|
+| `swarm_controller` | Flow | Orchestrates synchronized swarm movement via signal bus pattern. Speed ramps as members die |
+| `swarm_ai` | Brain | Antenna brain — receives swarm_controller commands, relays as body movement signals |
+| `shoot_ai_swarm` | Brain | Formation-aware edge shooting. Random roll odds ramp to 100% over max_shot_interval |
+
+**Tetris Components (Phase 3):**
+
+| Component | Category | Purpose |
+|-----------|----------|---------|
+| `falling_ai` | Brain | Gravity as input source — emits `input_move(DOWN)` on timer. Routes through same signal chain as player input |
+| `tetromino_formation` | Leg | Multi-cell shape management on grid. Offsets array, rotation, landing detection, lock delay, cell registration |
+| `tetromino_spawner` | Flow | Spawns next tetromino piece at grid top. Bag/queue with 7-bag or random mode |
+| `line_clear_monitor` | Rule | Generic line-clear detection for grid_basic. Horizontal/vertical/both, configurable clear direction |
+
+**New Body:**
+
+| Body | Purpose |
+|------|---------|
+| `tetromino` | Tetris piece — visual representation of a multi-cell grid piece. Scenes: tetromino.tscn (full piece), tetromino_single.tscn (single cell) |
+
+**Other New Components:**
+
+| Component | Category | Purpose |
+|-----------|----------|---------|
+| `warp_asteroids` | Leg | Emergency teleport with intangibility for Asteroids-style games (previously listed as "Skipped/Future") |
+
+**New Body Scenes:**
+
+| Scene | Purpose |
+|-------|---------|
+| `brick_damaging.tscn` | Brick variant that deals damage on contact |
+| `tetromino.tscn` | Full tetromino piece (4 cells) |
+| `tetromino_single.tscn` | Single tetromino cell/block |
+
+**Scene Reorganizations:**
+
+- **Game scenes** reorganized from flat `Scenes/Games/` into three subdirectories: `originals/` (Dogfight), `remakes/` (Pong, Breakout, Asteroids), `remixes/` (Pongsteroids, Pongout, Breaksteroids, Asterout)
+- **Player/nonplayer bullet scenes removed** — bullets now use generic scenes with per-game collision groups configured in the editor, simplifying the body scene inventory
+
+**Debug scene added:** `Scenes/Debug/grid_test.tscn` for validating grid components
+
+### Status
+- Grid foundation: ✅ Built (grid_basic, grid_movement, grid_rotation)
+- Space Invaders components: ✅ Built (swarm_controller, swarm_ai, shoot_ai_swarm)
+- Tetris components: ✅ Built (falling_ai, tetromino_formation, tetromino_spawner, line_clear_monitor)
+- Space Invaders game scene: 🔲 Not yet composed
+- Tetris game scene: 🔲 Not yet composed
+- Enhancements (wave_spawner grid_score_by_row, universal_body autofire, variable_tuner_global): 🔲 Not yet built
+
+### Component Catalog (Updated)
+
+| Category | Count | Components |
+|----------|-------|------------|
+| Core | 8 | universal_body, universal_game_script, universal_component, universal_component_2d, collision_matrix, collision_group, property_override, common_enums |
+| Bodies | 9 | ball, paddle, asteroid, brick, bullet_simple, bullet_wrapping, tetromino, triangle_ship, ufo |
+| Brains | 8 | player_control, interceptor_ai, aim_ai, shoot_ai, shoot_ai_swarm, patrol_ai, falling_ai, swarm_ai |
+| Legs | 12 | direct_movement, direct_acceleration, engine_simple, engine_complex, friction_linear, friction_static, rotation_direct, rotation_target, grid_movement, grid_rotation, tetromino_formation, warp_asteroids |
+| Arms | 3 | gun_simple, damage_on_hit, damage_on_joust |
+| Components | 14 | angled_deflector, collision_marker, death_effect, die_on_hit, die_on_timer, health, pong_acceleration, ring_spawner, score_on_death, score_on_hit, screen_cleanup, screen_wrap, split_on_death, vector_engine_exhaust |
+| Rules | 8 | goal, points_monitor, variable_tuner, group_monitor, group_count_multiplier, lives_counter, timer, line_clear_monitor |
+| Flow | 11 | interface, sound_on_hit, sound_synth, music_ramping, sfx_ramping, beep, grid_basic, swarm_controller, tetromino_spawner, wave_director, wave_spawner |
+| Effects | 2 | death_particles, death_broken_triangle_ship |
+| **Total** | **75** | |
+
+---
+
 ## Summary: What Exists vs What Was Planned
 
 | Feature | Planned | Status |
@@ -468,7 +559,11 @@ This enables per-death tracking — e.g., VariableTuner can boost AI difficulty 
 | Pongout | Plan 06 | ✅ Componentized — working |
 | Breaksteroids | Plan 06 | ✅ Componentized — working |
 | Asterout | Plan 06 | ⚠️ Exists but needs remake (RingSpawner collision bug) |
+| Space Invaders | Plan 07 | 🔧 Components built, game scene not yet composed |
+| Tetris | Plan 07 | 🔧 Components built, game scene not yet composed |
+| Grid System | Plan 07 | ✅ grid_basic + grid_movement + grid_rotation |
+| Swarm System | Plan 07 | ✅ swarm_controller + swarm_ai + shoot_ai_swarm |
 | Procedural Audio System | — | ✅ SoundSynth + MusicRamping + SFXRamping + Beep |
+| Warp/Asteroids Emergency Teleport | Plan 06→07 | ✅ warp_asteroids leg built |
 | Hub/Menu System | Plan 03 | ❌ Not started |
-| 6+ Additional Base Games | Overview | ❌ Not started |
 | Meta/Narrative Layer | Brainstorming | ❌ Not started |

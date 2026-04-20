@@ -1,6 +1,6 @@
 # End State: GD50 — The Polybius Cabinet
 
-**Last Updated:** 2026-04-18  
+**Last Updated:** 2026-04-20  
 **Source Material:** `planning/brainstorming/` folder
 
 ---
@@ -214,23 +214,32 @@ Scenes/Bodies/
     └── nonplayer_triangle_ship_modern.tscn = generic + AimAi + InterceptorAi + ShootAi + orange color + "enemies" group
 ```
 
-**Why:** For the final vision of rapid-fire game succession, players must instantly recognize what an entity does by what it looks like. Visual identity = behavioral identity. Pre-rigged player/nonplayer scenes mean games just drop in the
+**Why:** For the final vision of rapid-fire game succession, players must instantly recognize what an entity does by what it looks like. Visual identity = behavioral identity. Pre-rigged player/nonplayer scenes mean games just drop in the appropriate body and it works.
+
+---
+
+## WHERE WE ARE
 
 ```
-WHERE WE ARE (Current — 2026-04-18)
+WHERE WE ARE (Current — 2026-04-20)
 ├── ✅ Entity component system (Bodies + Brains + Legs + Arms)
-├── ✅ 8 playable games (Pong, Breakout, Asteroids, Pongsteroids, Dogfight, Pongout, Breaksteroids, Asterout)
+├── ✅ 8 working games + 2 in progress (Space Invaders, Tetris components built)
 ├── ✅ Component reuse validated (Pongsteroids, Pongout, Breaksteroids)
 ├── ✅ Game-level componentization proven (all games componentized)
 ├── ✅ UniversalGameScript as generic game container
 ├── ✅ ALL games componentized — zero game scripts
-├── ✅ 62 reusable components across 9 categories
+├── ✅ 75 reusable components across 9 categories
 ├── ✅ Full architecture validation (entity-level, game-level, cross-game remix)
 ├── ✅ Bodies scene reorganization (generic/player/nonplayer tiers)
 ├── ✅ Procedural audio system (SoundSynth + MusicRamping)
-└── ✅ Visual effects system (death particles, ship debris, engine exhaust)
+├── ✅ Visual effects system (death particles, ship debris, engine exhaust)
+├── ✅ Grid system foundation (grid_basic, grid_movement, grid_rotation)
+├── ✅ Swarm system (swarm_controller, swarm_ai, shoot_ai_swarm)
+└── ✅ Tetris system (falling_ai, tetromino_formation, tetromino_spawner, line_clear_monitor)
 
 NEXT STEPS
+├── 🔲 Compose Space Invaders game scene
+├── 🔲 Compose Tetris game scene
 ├── 🔲 Build the Hub/Menu (cabinet interface)
 ├── 🔲 Build 6+ more base games
 └── 🔲 Build remix games (zero new code needed)
