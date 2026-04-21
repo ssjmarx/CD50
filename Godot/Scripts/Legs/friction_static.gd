@@ -2,9 +2,11 @@
 
 extends Node2D
 
-@export var friction: int = 300 # Deceleration rate (pixels per second squared)
+# Friction configuration
+@export var friction: int = 300
 
-@onready var parent = get_parent() # Reference to attached body
+# Parent reference
+@onready var parent = get_parent()
 
 # Set high process priority to run after other movement components
 func _ready() -> void:

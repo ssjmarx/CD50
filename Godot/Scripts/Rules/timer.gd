@@ -25,7 +25,6 @@ func _ready() -> void:
 
 # Start the timer (counts up or down based on count_up mode)
 func start_timer() -> void:
-	#print("timer started")
 	if count_up:
 		_current_time = 0.0
 	else:
@@ -50,7 +49,6 @@ func reset_timer() -> void:
 
 # Handle timer tick at tick_interval
 func _on_tick() -> void:
-	#print("tick")
 	if not _is_running:
 		return
 	
@@ -61,7 +59,6 @@ func _on_tick() -> void:
 			stop_timer()
 			game.timer_expired.emit(timer_id)
 			if loop_timer:
-				#print("looping")
 				reset_timer()
 				start_timer()
 	else:

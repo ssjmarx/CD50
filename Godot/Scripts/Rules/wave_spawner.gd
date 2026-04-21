@@ -1,5 +1,9 @@
+# Wave spawner. Instantiates entities in patterns (screen edges, center, grid, position)
+# with optional stagger timing, safe zones, and component/property attachment.
+
 extends UniversalComponent2D
 
+# Spawn scene and pattern
 @export var spawn_scene: PackedScene
 @export var spawn_pattern: CommonEnums.SpawnPattern = CommonEnums.SpawnPattern.SCREEN_EDGES
 @export var spawn_count_equation: String = "3 + wave_number"
@@ -7,26 +11,28 @@ extends UniversalComponent2D
 @export var spawn_spacing: float
 @export var stagger_delay: float = 0.1
 @export var director: Node
+
+# Attached components and property overrides
 @export var spawn_components: Array[PackedScene] = []
 @export var property_overrides: Array[PropertyOverride] = []
 @export var spawn_groups: Array[String] = []
 @export var spawn_collision_groups: Array[String] = []
 
-# configuration for safe zone
+# Safe zone configuration
 @export var use_safe_zone: bool = false
 @export var unsafe_groups: Array[String] = ["enemies", "asteroids"]
 @export var safety_radius: float = 100.0 
 
-# grid configuration
-@export var grid_width = 16
-@export var grid_height = 8
-@export var grid_columns = 32
-@export var grid_rows = 6
-@export var grid_spacing = 3
+# Grid configuration
+@export var grid_width: int = 16
+@export var grid_height: int = 8
+@export var grid_columns: int = 32
+@export var grid_rows: int = 6
+@export var grid_spacing: int = 3
 @export var grid_health_by_row: bool = true
 @export var grid_health_max: int = 6
 
-# initial velocity configuration
+# Initial velocity configuration
 @export var initial_velocity: Vector2 = Vector2.ZERO
 @export var use_random_angle: bool = false
 @export var random_angle_min: float = 0.0
@@ -34,17 +40,19 @@ extends UniversalComponent2D
 @export var random_flip_h: bool = false
 @export var random_flip_v: bool = false
 
-var expression: Expression
+# Runtime state
+var _expression: Expression
 
+# Parse spawn count expression and connect to wave signal
 func _ready() -> void:
-	expression = Expression.new()
+	_expression = Expression.new()
 	game.spawning_wave.connect(_on_spawning_wave)
 
+# Determine spawn count and stagger-spawn entities when a wave begins
 func _on_spawning_wave(signaller = game, wave_number: int = 0) -> void:
 	if game.current_state == CommonEnums.State.GAME_OVER:
 		return
 	
-	#print("on spawning wave")
 	if director != null and signaller != director and signaller != game:
 		return
 	
@@ -52,8 +60,8 @@ func _on_spawning_wave(signaller = game, wave_number: int = 0) -> void:
 	if spawn_pattern == CommonEnums.SpawnPattern.GRID:
 		spawn_count = grid_columns * grid_rows
 	else:
-		expression.parse(spawn_count_equation, ["wave_number"])
-		spawn_count = expression.execute([wave_number])
+		_expression.parse(spawn_count_equation, ["wave_number"])
+		spawn_count = _expression.execute([wave_number])
 	
 	if use_safe_zone:
 		await _wait_for_safe_zone()
@@ -62,11 +70,11 @@ func _on_spawning_wave(signaller = game, wave_number: int = 0) -> void:
 		var delay = i * stagger_delay
 		get_tree().create_timer(delay).timeout.connect(func(): _spawn_one(wave_number, i, spawn_count))
 
+# Instantiate and position a single enemy, attach components/properties/groups
 func _spawn_one(wave_num: int, index: int, total: int) -> void:
 	if game.current_state == CommonEnums.State.GAME_OVER:
 		return
 	
-	#print("spawn one")
 	var enemy = spawn_scene.instantiate()
 	
 	match spawn_pattern:
@@ -136,11 +144,12 @@ func _spawn_one(wave_num: int, index: int, total: int) -> void:
 		enemy.collision_groups.append(group)
 	
 	game.add_child(enemy)
-	#print("spawned enemy")
 	
+	# Emit completion signal on last spawn
 	if index == total - 1:
 		game.spawning_wave_complete.emit(wave_num)
 
+# Wait until no unsafe-group entities are within safety_radius of the spawner
 func _wait_for_safe_zone() -> void:
 	while true:
 		var is_safe = true

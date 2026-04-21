@@ -99,7 +99,6 @@ func _unhandled_input(event: InputEvent) -> void:
 
 # Transition to PLAYING state and initialize game
 func start_game() -> void:
-	#print("starting game!")
 	current_state = states.PLAYING
 	on_game_start.emit()
 
@@ -151,14 +150,17 @@ func set_state(new_state: CommonEnums.State) -> void:
 func get_state() -> CommonEnums.State:
 	return current_state
 
+# Add to player 1 score with current multiplier and emit update
 func add_p1_score(amount) -> void:
 	p1_score += amount * current_multiplier
 	on_p1_score.emit(p1_score)
 
+# Add to player 2 score with current multiplier and emit update
 func add_p2_score(amount) -> void:
 	p2_score += amount * current_multiplier
 	on_p2_score.emit(p2_score)
 
+# Walk up the tree to find the nearest UniversalGameScript ancestor
 static func find_ancestor(node: Node) -> UniversalGameScript:
 	var parent = node.get_parent()
 	while parent:

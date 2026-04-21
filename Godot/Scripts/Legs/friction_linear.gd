@@ -2,8 +2,9 @@
 
 extends UniversalComponent
 
-@export var top_speed: int = 400 # Speed at which max_friction is reached
-@export var max_friction: int = 400 # Maximum deceleration (pixels per second squared)
+# Friction configuration
+@export var top_speed: int = 400
+@export var max_friction: int = 400
 
 
 # Set high process priority to run after other movement components

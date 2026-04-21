@@ -70,9 +70,8 @@ func set_p1_score(new_score) -> void:
 func set_p2_score(new_score) -> void:
 	$"P2 Score".text = str(int(new_score))
 
-# Update timer display (TODO: implement)
+# Update timer display — TODO: implement
 func set_timer(_new_time) -> void:
-	#i'll add this later
 	pass
 
 # Show UI element by type

@@ -1,16 +1,18 @@
-# connects to signals in universal_game_script, and emits a wave-spawning signal when the connected signal fires
+# Wave director. Connects to a game trigger signal and emits a wave-spawning
+# signal after a configurable delay, with optional wave count limits.
 
 extends UniversalComponent2D
 
-# Conditional exports based on trigger_type
+# Trigger configuration
 @export var trigger_type: CommonEnums.Trigger = CommonEnums.Trigger.GROUP_CLEARED
 @export var trigger_value: String = ""
 @export var wave_delay: float = 2.0
 @export var max_waves: int = 0
 
+# Runtime state
 var current_wave: int = 1
 
-# connect to configured trigger
+# Connect to the configured trigger signal
 func _ready() -> void:
 	match trigger_type:
 		CommonEnums.Trigger.GROUP_CLEARED:
@@ -22,10 +24,8 @@ func _ready() -> void:
 		CommonEnums.Trigger.GAME_START:
 			game.on_game_start.connect(_on_wave_triggered)
 
-
-# spawn configured wave when trigger fires
+# Validate trigger conditions, wait for delay, then emit the wave spawn signal
 func _on_wave_triggered(arg1 = null) -> void:
-	#print("on wave triggered1")
 	if trigger_value != "" and arg1 != trigger_value:
 		return
 	
@@ -34,10 +34,8 @@ func _on_wave_triggered(arg1 = null) -> void:
 	
 	if game.current_state == CommonEnums.State.GAME_OVER:
 		return
-	#print("on wave triggered2")
 	
 	await get_tree().create_timer(wave_delay).timeout
 	
 	parent.spawning_wave.emit(self, current_wave)
 	current_wave += 1
-	#print("on wave triggered3")

@@ -2,12 +2,14 @@
 
 extends UniversalComponent
 
-@export var acceleration: int = 170 # Pixels per second squared
-@export var top_speed: int = 300 # Max velocity (0 = infinite)
-@export var button_only: bool = true # Only thrust on button press
+# Engine configuration
+@export var acceleration: int = 170
+@export var top_speed: int = 300
+@export var button_only: bool = true
 
-var thrusting: bool = false # Thrust button state
-var joystick_input: bool = false # Joystick input state
+# Runtime state
+var thrusting: bool = false
+var joystick_input: bool = false
 
 
 # Connect to input signals

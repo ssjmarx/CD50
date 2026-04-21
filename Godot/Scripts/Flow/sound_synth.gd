@@ -1,17 +1,27 @@
+# Synthesized audio generator. Produces real-time waveforms (sine, square, sawtooth,
+# triangle, noise) with optional effects (warble, tremolo, sweep, decay).
+# Supports continuous playback or signal-triggered one-shots.
+
 extends UniversalComponent2D
 
+# Playback mode and wave configuration
 @export var play_mode: PlayMode = PlayMode.CONTINUOUS
 @export var wave_shape: WaveShape = WaveShape.SQUARE
 @export var effect: Effect = Effect.NONE
 @export var note: Semitone = Semitone.C4
 @export var volume: float = 0.2
-@export var duration: float = 0.15  
+@export var duration: float = 0.15
+
+# Signal-triggered playback configuration
 @export var source_node: Node
-@export var source_signal: String 
-@export var filter_value: String = "" 
+@export var source_signal: String
+@export var filter_value: String = ""
+
+# Player configuration
 @export var positional: bool = true
 @export var exclusive: bool = false
 
+# Enums
 enum PlayMode { CONTINUOUS, ON_SIGNAL }
 enum WaveShape { SINE, SQUARE, SAWTOOTH, TRIANGLE, NOISE }
 enum Effect { NONE, WARBLE, TREMOLO, SWEEP_DOWN, DECAY }
@@ -27,7 +37,7 @@ enum Semitone {
 	F5 = 77, FS5 = 78, G5 = 79, GS5 = 80, A5 = 81, AS5 = 82, B5 = 83,
 }
 
-
+# Runtime state
 var _stream: AudioStreamGenerator
 var _playback: AudioStreamGeneratorPlayback
 var _player: Node
@@ -35,11 +45,11 @@ var _frame_pos: int = 0
 var _shot_end: int = 0
 var _phase: float = 0.0
 
+# Create the audio stream, player, and connect signal source if in ON_SIGNAL mode
 func _ready() -> void:
 	_stream = AudioStreamGenerator.new()
 	_stream.mix_rate = 22050
 	
-	# Create player as child
 	if positional:
 		_player = AudioStreamPlayer2D.new()
 	else:
@@ -49,7 +59,7 @@ func _ready() -> void:
 	_player.volume_db = linear_to_db(volume)
 	add_child(_player)
 	
-	# Start playback and get buffer
+	# Start playback and fill initial buffer
 	_player.play()
 	_playback = _player.get_stream_playback()
 	
@@ -62,6 +72,7 @@ func _ready() -> void:
 		PlayMode.CONTINUOUS:
 			pass
 
+# Fill the audio buffer each frame; continuous or one-shot mode
 func _process(_delta: float) -> void:
 	var to_fill = _playback.get_frames_available()
 	
@@ -74,6 +85,7 @@ func _process(_delta: float) -> void:
 				_frame_pos += 1
 		
 		PlayMode.ON_SIGNAL:
+			# Fill remaining frames for the current one-shot
 			var remaining = _shot_end - _frame_pos
 			var to_push = mini(to_fill, remaining)
 			for i in to_push:
@@ -85,11 +97,13 @@ func _process(_delta: float) -> void:
 				_player.stop()
 				set_process(false)
 
+# Signal handler: play one-shot if filter matches (or no filter set)
 func _on_signal(arg1 = "", _arg2 = null) -> void:
 	if filter_value != "" and arg1 != filter_value:
 		return
 	play_one_shot()
 
+# Start a one-shot playback from the beginning of the waveform
 func play_one_shot() -> void:
 	if exclusive and _player.playing:
 		return
@@ -100,6 +114,7 @@ func play_one_shot() -> void:
 		_player.play()
 		_playback = _player.get_stream_playback()
 	
+	# Fill as many frames as the buffer can hold
 	var to_push = mini(_playback.get_frames_available(), _shot_end)
 	for i in to_push:
 		var t = float(_frame_pos) / _stream.mix_rate
@@ -107,15 +122,19 @@ func play_one_shot() -> void:
 		_playback.push_frame(Vector2(sample, sample))
 		_frame_pos += 1
 	
+	# Continue in _process if there are more frames to fill
 	if _frame_pos >= _shot_end:
 		set_process(false)
 	else:
 		set_process(true)
 
+# --- Audio Generation ---
 
+# Convert the semitone enum value to a frequency in Hz (A4 = 440Hz reference)
 func _get_frequency() -> float:
 	return 440.0 * pow(2.0, (note - 69) / 12.0)
 
+# Generate a single audio sample at the given time, applying wave shape and effects
 func _get_sample(t: float) -> float:
 	var freq = _get_frequency()
 	
@@ -126,11 +145,12 @@ func _get_sample(t: float) -> float:
 		Effect.SWEEP_DOWN:
 			freq *= max(0.1, 1.0 - t * 2.0)
 	
-	# Accumulate phase
+	# Accumulate phase for continuous waveform
 	_phase += freq / _stream.mix_rate
 	
 	var sample: float
 	
+	# Wave shape generation
 	match wave_shape:
 		WaveShape.SINE:
 			sample = sin(TAU * _phase)

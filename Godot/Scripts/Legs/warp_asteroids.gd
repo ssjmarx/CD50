@@ -1,15 +1,22 @@
+# Emergency teleport with temporary intangibility for Asteroids-style games.
+# Warps to a random position, hides briefly, then reappears with collision restored.
+
 extends UniversalComponent
 
+# Warp configuration
 @export var chance_of_death: float = 0.25
 @export var warp_duration: float = 0.5
 
+# Connect to action signal
 func _ready() -> void:
 	parent.action.connect(_on_action)
 
+# Trigger warp on button_1 press
 func _on_action(button: InputEvent) -> void:
 	if button.is_action("button_1"):
 		_do_warp()
 
+# Teleport to a random position, disable collisions, wait, then restore
 func _do_warp() -> void:
 	set_process(false)
 	parent.velocity = Vector2.ZERO

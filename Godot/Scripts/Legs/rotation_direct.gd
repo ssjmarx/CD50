@@ -2,10 +2,12 @@
 
 extends UniversalComponent
 
-@export var turning_speed: int = 100 # Degrees per second
+# Rotation configuration
+@export var turning_speed: int = 100
 
-var turning_left: bool = false # Left rotation state
-var turning_right: bool = false # Right rotation state
+# Runtime state
+var turning_left: bool = false
+var turning_right: bool = false
 
 
 # Connect to movement input signal

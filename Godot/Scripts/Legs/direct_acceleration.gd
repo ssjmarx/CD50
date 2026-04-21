@@ -2,12 +2,14 @@
 
 extends UniversalComponent
 
-@export var mouse_enabled: bool = false # Allow mouse following
-@export var acceleration: int = 50 # Pixels per second squared
+# Movement configuration
+@export var mouse_enabled: bool = false
+@export var acceleration: int = 50
 
-var input: Vector2 # Movement direction from keyboard/joystick
-var target: Vector2 # Mouse target position
-var using_mouse: bool = false # Track input mode
+# Runtime state
+var input: Vector2
+var target: Vector2
+var using_mouse: bool = false
 
 # Add acceleration in direction of input or toward mouse
 func _physics_process(delta):

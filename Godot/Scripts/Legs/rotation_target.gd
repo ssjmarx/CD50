@@ -2,9 +2,11 @@
 
 extends UniversalComponent
 
+# Rotation configuration
 @export var turning_speed: int = 100
 @export var independent_aim: bool = false
 
+# Runtime state
 var target_rotation: float = 0.0
 var target_position: Vector2
 var using_mouse: bool = false

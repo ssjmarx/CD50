@@ -1,36 +1,47 @@
-extends UniversalComponent  # Leg component, non-spatial
+# Tetromino formation leg. Handles grid-based movement, DAS auto-repeat,
+# rotation with wall kicks, lock delay, and hard drop for Tetris pieces.
+
+extends UniversalComponent
 
 enum FallDirection { DOWN, UP, LEFT, RIGHT }
 
+# Fall and timing configuration
 @export var fall_direction: FallDirection = FallDirection.DOWN
 @export var fall_interval: float = 1.0
 @export var lock_delay: float = 0.5
 @export var das_delay: float = 0.2
 @export var das_repeat: float = 0.05
+
+# Direction lock configuration (disable movement in specific directions)
 @export var lock_input_up: bool = true
 @export var lock_input_down: bool = false
 @export var lock_input_left: bool = false
 @export var lock_input_right: bool = false
 
-# --- State ---
+# Grid state
 var _grid: Node2D
 var _core_cell: Vector2i = Vector2i(-1, -1)
 var _offsets: Array[Vector2i] = []
-var _base_offsets: Array[Vector2i] = []  # unrotated, for reference
+var _base_offsets: Array[Vector2i] = []
 
+# Fall and lock timers
 var _fall_timer: float = 0.0
 var _lock_timer: float = 0.0
 var _is_locking: bool = false
 var _is_locked: bool = false
 
+# DAS (Delayed Auto Shift) state
 var _held_direction: Vector2 = Vector2.ZERO
 var _das_timer: float = 0.0
 var _das_active: bool = false
 
+# Emitted when a piece locks in place; listened to by line_clear_monitor
 signal piece_locked
-signal piece_settled(cells: Array[Vector2i])  # for line_clear_monitor
+# Emitted with the settled cell positions after locking
+signal piece_settled(cells: Array[Vector2i])
 
-func _ready():
+# Connect signals and initialize grid position
+func _ready() -> void:
 	_grid = get_tree().get_first_node_in_group("grid")
 	parent.move.connect(_on_move)
 	parent.thrust.connect(_on_thrust)
@@ -41,12 +52,14 @@ func _ready():
 	
 	call_deferred("_init_position")
 
-func _init_position():
+# Snap parent to grid cell on first frame (after grid is ready)
+func _init_position() -> void:
 	if _grid:
 		_core_cell = _grid.world_to_grid(parent.global_position)
 		parent.global_position = _grid.grid_to_world(_core_cell.y, _core_cell.x)
 
-func _process(delta):
+# Handle auto-fall, floor detection, DAS, and lock delay each frame
+func _process(delta: float) -> void:
 	if _is_locked: return
 	
 	# Auto-fall
@@ -55,7 +68,7 @@ func _process(delta):
 		_fall_timer = 0.0
 		_try_move(_get_fall_step())
 	
-	# Floor detection → start or cancel locking
+	# Floor detection — start or cancel locking
 	if _is_on_floor():
 		if not _is_locking:
 			_is_locking = true
@@ -77,7 +90,7 @@ func _process(delta):
 			_das_timer = 0.0
 			_try_step(_held_direction)
 	
-	# Lock delay
+	# Lock delay countdown
 	if _is_locking:
 		_lock_timer += delta
 		if _lock_timer >= lock_delay:
@@ -85,7 +98,8 @@ func _process(delta):
 
 # --- Movement ---
 
-func _on_move(direction: Vector2):
+# Handle directional input; immediate step on new direction, track for DAS
+func _on_move(direction: Vector2) -> void:
 	if _is_locked: return
 	
 	if direction == Vector2.ZERO:
@@ -95,17 +109,18 @@ func _on_move(direction: Vector2):
 		return
 	
 	if direction != _held_direction:
-		# New direction — immediate step + reset DAS
 		_held_direction = direction
 		_das_timer = 0.0
 		_das_active = false
 		_try_step(direction)
 
-func _try_step(direction: Vector2):
+# Convert direction to grid step and attempt move
+func _try_step(direction: Vector2) -> void:
 	var step = _direction_to_step(direction)
 	if step != Vector2i.ZERO:
 		_try_move(step)
 
+# Move one grid step if all target cells are valid and unoccupied
 func _try_move(step: Vector2i) -> bool:
 	var target_cells = _get_target_cells(step)
 	
@@ -124,12 +139,14 @@ func _try_move(step: Vector2i) -> bool:
 	
 	return true
 
+# Return all cell positions after applying a step offset
 func _get_target_cells(step: Vector2i) -> Array[Vector2i]:
 	var cells: Array[Vector2i] = []
 	for offset in _offsets:
 		cells.append(_core_cell + offset + step)
 	return cells
 
+# Return current cell positions (no step offset)
 func _get_current_cells() -> Array[Vector2i]:
 	var cells: Array[Vector2i] = []
 	for offset in _offsets:
@@ -138,69 +155,64 @@ func _get_current_cells() -> Array[Vector2i]:
 
 # --- Rotation ---
 
-func _on_thrust():
+# Rotate clockwise on thrust signal
+func _on_thrust() -> void:
 	if _is_locked: return
 	_try_rotate(true)
 
+# Attempt rotation with wall kick fallbacks; resets lock timer on success
 func _try_rotate(clockwise: bool) -> bool:
-	#print("trying rotation")
 	var rotated = _get_rotated_offsets(clockwise)
 	
 	if _can_place(rotated):
 		_offsets = rotated
 		parent.update_offsets(_offsets)
 		if _is_locking: _lock_timer = 0.0
-		#print("rotation: can place!")
 		return true
 	
-	# Wall kicks
+	# Wall kicks — try shifting the piece to fit
 	for kick in [Vector2i(-1,0), Vector2i(1,0), Vector2i(0,-1), Vector2i(-2,0), Vector2i(2,0)]:
-		#print("rotation: kicking wall")
 		var kicked: Array[Vector2i] = []
 		for offset in rotated:
 			kicked.append(offset + kick)
-			#print("rotation: wall kicked")
 		if _can_place(kicked):
 			_offsets = kicked
 			_core_cell += kick
 			parent.global_position = _grid.grid_to_world(_core_cell.y, _core_cell.x)
 			parent.update_offsets(_offsets)
 			if _is_locking: _lock_timer = 0.0
-			#print("rotation: can place kicked!")
 			return true
 	
-	#print("cannot rotate")
 	return false
 
+# Rotate all offsets 90 degrees around the core cell
 func _get_rotated_offsets(clockwise: bool) -> Array[Vector2i]:
-	#print("getting offsets")
 	var result: Array[Vector2i] = []
 	for offset in _offsets:
 		if clockwise:
 			result.append(Vector2i(-offset.y, offset.x))
 		else:
 			result.append(Vector2i(offset.y, -offset.x))
-	#print("returning offsets")
 	return result
 
+# Check if all offsets can be placed at the current core cell
 func _can_place(test_offsets: Array[Vector2i]) -> bool:
 	for offset in test_offsets:
 		var cell = _core_cell + offset
 		if not _grid.is_valid_cell(cell.y, cell.x):
-			#print("cannot place (invalid cell)")
 			return false
 		if _grid.is_occupied(cell.y, cell.x):
-			#print("cannot place (occupied cell)")
 			return false
 	return true
 
 # --- Locking ---
 
-func _lock_piece():
+# Lock the piece in place, register cells on the grid, emit signals
+func _lock_piece() -> void:
 	_is_locked = true
 	_held_direction = Vector2.ZERO
 	
-	# Kill brain/AI nodes — settled pieces don't need them
+	# Remove brain/AI nodes — settled pieces don't need them
 	for child in parent.get_children():
 		var child_name = child.name.to_lower()
 		if "player" in child_name or "_ai" in child_name:
@@ -212,10 +224,11 @@ func _lock_piece():
 	piece_locked.emit()
 	piece_settled.emit(_get_current_cells())
 
-
+# Check if the piece cannot fall further
 func _is_on_floor() -> bool:
 	return not _can_place_with_step(_get_fall_step())
 
+# Check if all cells are valid and unoccupied after a step
 func _can_place_with_step(step: Vector2i) -> bool:
 	for offset in _offsets:
 		var cell = _core_cell + offset + step
@@ -227,7 +240,8 @@ func _can_place_with_step(step: Vector2i) -> bool:
 
 # --- Hard Drop ---
 
-func _on_shoot():
+# Instantly drop the piece to the lowest valid position and lock
+func _on_shoot() -> void:
 	if _is_locked: return
 	while _can_place_with_step(_get_fall_step()):
 		_core_cell += _get_fall_step()
@@ -236,6 +250,7 @@ func _on_shoot():
 
 # --- Utility ---
 
+# Convert a continuous direction to a discrete grid step, respecting direction locks
 func _direction_to_step(dir: Vector2) -> Vector2i:
 	if abs(dir.x) > abs(dir.y):
 		if dir.x > 0 and lock_input_right: return Vector2i.ZERO
@@ -247,11 +262,13 @@ func _direction_to_step(dir: Vector2) -> Vector2i:
 		return Vector2i(0, 1 if dir.y > 0 else -1)
 	return Vector2i.ZERO
 
+# Copy shape offsets from the parent body into a typed array
 func _get_typed_offsets(shape_key) -> Array[Vector2i]:
 	var result: Array[Vector2i] = []
 	result.assign(parent.SHAPE_OFFSETS[shape_key])
 	return result
 
+# Return the grid step vector for the current fall direction
 func _get_fall_step() -> Vector2i:
 	match fall_direction:
 		FallDirection.DOWN: return Vector2i(0, 1)

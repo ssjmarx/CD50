@@ -1,13 +1,19 @@
+# Simple square wave beep generator using AudioStreamGenerator.
+# Produces a short tone at a given frequency and duration.
+
 extends UniversalComponent
 
+# Tone configuration
 @export var f: float = 160.0
 @export var duration: float = 0.1
 
+# Audio state
 var _stream: AudioStreamGenerator
 var _playback: AudioStreamGeneratorPlayback
 var _frames_remaining: int = 0
 var _frame_position: int = 0
 
+# Set up the audio stream and start playback
 func _ready() -> void:
 	_stream = AudioStreamGenerator.new()
 	_stream.mix_rate = 22050
@@ -20,6 +26,7 @@ func _ready() -> void:
 	_frames_remaining = int(duration * _stream.mix_rate)
 	_frame_position = 0
 
+# Fill the audio buffer with a square wave sample each frame
 func _process(_delta: float) -> void:
 	var to_fill = _playback.get_frames_available()
 	for i in to_fill:
