@@ -6,8 +6,8 @@ extends UniversalComponent
 @export var spawn_scene: PackedScene
 @export var ring_radius: float = 30.0
 @export var spawn_count: int = 12
-@export var brick_size: Vector2 = Vector2(4, 4)
-@export var brick_health: int = 1
+@export var component_size: Vector2 = Vector2(4, 4)
+@export var component_health: int = 1
 @export var spawn_groups: Array[String] = ["bricks"]
 @export var orbit_speed: float = 0.0
 
@@ -19,14 +19,14 @@ func _ready() -> void:
 		var angle: float = TAU * i / spawn_count
 		
 		var body: CharacterBody2D = spawn_scene.instantiate()
-		body.width = brick_size.x
-		body.height = brick_size.y
+		body.width = component_size.x
+		body.height = component_size.y
 		
 		# Update the first collision shape to match brick size
 		for child: Node in body.get_children():
 			if child is CollisionShape2D or child is CollisionPolygon2D:
 				if child.shape is RectangleShape2D:
-					child.shape.size = brick_size
+					child.shape.size = component_size
 				break
 		
 		body.position = Vector2.from_angle(angle) * ring_radius
@@ -34,8 +34,8 @@ func _ready() -> void:
 		# Configure health if the Health component is present
 		if body.has_node("Health"):
 			var health: Node = body.get_node("Health")
-			health.max_health = brick_health
-			health.current_health = brick_health
+			health.max_health = component_health
+			health.current_health = component_health
 		
 		for group: String in spawn_groups:
 			body.add_to_group(group)

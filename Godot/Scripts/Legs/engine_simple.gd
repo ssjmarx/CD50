@@ -28,7 +28,7 @@ func _on_move(joystick: Vector2) -> void:
 		joystick_input = true
 
 # Apply acceleration in forward direction, limit speed
-func _physics_process(delta):
+func _physics_process(delta: float):
 	var forward = Vector2.from_angle(parent.rotation)
 	if thrusting or joystick_input:
 		parent.velocity += forward * acceleration * delta

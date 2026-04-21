@@ -3,14 +3,14 @@
 
 extends UniversalComponent
 
-# Joust configuration
-@export var damage_amount: int = 1
-@export var tie_breaker: Tie = Tie.NO_DAMAGE
-
 enum Tie { 
 	BOTH_DAMAGE, 
 	NO_DAMAGE 
 	}
+
+# Joust configuration
+@export var damage_amount: int = 1
+@export var tie_breaker: Tie = Tie.NO_DAMAGE
 
 # Connect to parent's collision signal
 func _ready() -> void:

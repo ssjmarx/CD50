@@ -10,11 +10,11 @@ extends UniversalComponent
 @export var extra_life: bool = false
 
 # Connect to parent Area2D's body_entered signal
-func _ready():
+func _ready() -> void::
 	parent.body_entered.connect(_on_body_entered)
 
 # Award score and apply life effects when a body enters the goal zone
-func _on_body_entered(_body):
+func _on_body_entered(_body: Node) -> void:
 	match score_type:
 		CommonEnums.ScoreType.P1_SCORE:
 			game.add_p1_score(score_amount)

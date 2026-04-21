@@ -12,7 +12,7 @@ var target: Vector2
 var using_mouse: bool = false
 
 # Add acceleration in direction of input or toward mouse
-func _physics_process(delta):
+func _physics_process(delta: float):
 
 	if not using_mouse:
 		parent.velocity += input * acceleration * delta

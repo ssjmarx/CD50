@@ -4,7 +4,7 @@
 extends UniversalComponent
 
 # Tone configuration
-@export var f: float = 160.0
+@export var frequency: float = 160.0
 @export var duration: float = 0.1
 
 # Audio state
@@ -31,6 +31,6 @@ func _process(_delta: float) -> void:
 	var to_fill = _playback.get_frames_available()
 	for i in to_fill:
 		var t = float(_frame_position) / _stream.mix_rate
-		var sample = 2.0 * (f * t - floor(f * t + 0.5))
+		var sample = 2.0 * (frequency * t - floor(frequency * t + 0.5))
 		_playback.push_frame(Vector2(sample, sample))
 		_frame_position += 1

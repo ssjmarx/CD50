@@ -18,7 +18,7 @@ func _ready() -> void:
 	parent.end_thrust.connect(_on_end_thrust)
 
 # Ramp acceleration up/down based on input, apply to velocity
-func _physics_process(delta):
+func _physics_process(delta: float):
 	if thrusting or joystick_input:
 		current_acceleration = min(current_acceleration + jerk * delta, max_acceleration)
 	else:
@@ -30,7 +30,7 @@ func _physics_process(delta):
 
 # Track joystick input if not button-only mode
 func _on_move(joystick: Vector2) -> void:
-	if button_only == true:
+	if button_only:
 		return
 	if joystick == Vector2.ZERO:
 		joystick_input = false
