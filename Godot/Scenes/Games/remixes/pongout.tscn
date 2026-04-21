@@ -1,4 +1,4 @@
-[gd_scene load_steps=33 format=3 uid="uid://emkukeinpgn7"]
+[gd_scene load_steps=35 format=3 uid="uid://emkukeinpgn7"]
 
 [ext_resource type="PackedScene" uid="uid://b4mr1t8pdtmf3" path="res://Scenes/Bodies/generic/paddle.tscn" id="1_3w2rb"]
 [ext_resource type="Script" uid="uid://bjdgpevhahi6d" path="res://Scripts/Core/universal_game_script.gd" id="1_oiil1"]
@@ -19,6 +19,7 @@
 [ext_resource type="Script" uid="uid://cp0ni1lgml7c6" path="res://Scripts/Core/property_override.gd" id="15_0l32p"]
 [ext_resource type="PackedScene" uid="uid://vlxiy3uptf6y" path="res://Scenes/Bodies/generic/brick.tscn" id="16_b37m3"]
 [ext_resource type="PackedScene" uid="uid://cg5rnfuldr2n0" path="res://Scenes/Arms/damage_on_hit.tscn" id="16_q26ju"]
+[ext_resource type="PackedScene" uid="uid://csg0e2wxlx4qd" path="res://Scenes/Components/angled_deflector.tscn" id="18_txdd4"]
 
 [sub_resource type="Resource" id="Resource_f1the"]
 script = ExtResource("2_ejb7n")
@@ -67,6 +68,13 @@ script = ExtResource("15_0l32p")
 node_path = NodePath("AngledDeflector")
 property_name = "deflection_bias"
 value = Vector2(5, 1)
+metadata/_custom_type_script = "uid://cp0ni1lgml7c6"
+
+[sub_resource type="Resource" id="Resource_7hud6"]
+script = ExtResource("15_0l32p")
+node_path = NodePath("AngledDeflector2")
+property_name = "target_group"
+value = "bricks"
 metadata/_custom_type_script = "uid://cp0ni1lgml7c6"
 
 [sub_resource type="Resource" id="Resource_oiil1"]
@@ -214,8 +222,8 @@ spawn_scene = ExtResource("14_v6utc")
 spawn_pattern = 1
 spawn_count_equation = "1"
 director = NodePath("../WaveDirector")
-spawn_components = Array[PackedScene]([ExtResource("16_q26ju")])
-property_overrides = Array[ExtResource("15_0l32p")]([SubResource("Resource_x2g5i")])
+spawn_components = Array[PackedScene]([ExtResource("16_q26ju"), ExtResource("18_txdd4")])
+property_overrides = Array[ExtResource("15_0l32p")]([SubResource("Resource_x2g5i"), SubResource("Resource_7hud6")])
 initial_velocity = Vector2(150, 0)
 use_random_angle = true
 random_angle_min = 2.356

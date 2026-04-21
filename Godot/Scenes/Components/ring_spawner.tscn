@@ -4,3 +4,4 @@
 
 [node name="RingSpawner" type="Node"]
 script = ExtResource("1_eavj6")
+component_health = 4

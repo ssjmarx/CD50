@@ -53,6 +53,9 @@ func _ready() -> void:
 	var shape: RectangleShape2D = RectangleShape2D.new()
 	shape.size = Vector2(width, height)
 
+	if $CollisionShape2D:
+		$CollisionShape2D.shape = shape
+
 func _physics_process(delta: float) -> void:
 	# Apply shared velocity to position (priority 100, runs after Legs)
 	move_parent_physics(velocity * delta)
