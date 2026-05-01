@@ -10,7 +10,7 @@ config_version=5
 
 [application]
 
-config/name="GD50"
+config/name="CD50"
 run/main_scene="uid://bjs0gtnsur7e6"
 config/features=PackedStringArray("4.5")
 run/max_fps=120

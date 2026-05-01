@@ -194,12 +194,9 @@ wave_delay = 0.0
 position = Vector2(320, 64)
 spawn_scene = ExtResource("17_61uu3")
 spawn_pattern = 2
-spawn_count_equation = "1"
 stagger_delay = 0.0
 director = NodePath("../WaveDirector(bricks)")
 grid_health_max = 5
-random_angle_min = -2.356
-random_angle_max = -0.785
 
 [node name="GroupMonitor(bricks)" parent="." instance=ExtResource("10_vu4sl")]
 target_group = "bricks"

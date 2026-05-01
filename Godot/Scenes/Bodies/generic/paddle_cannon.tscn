@@ -1,0 +1,28 @@
+[gd_scene load_steps=7 format=3 uid="uid://dteoyhxdw5pni"]
+
+[ext_resource type="Script" uid="uid://66jbbstfhxx4" path="res://Scripts/Bodies/paddle_cannon.gd" id="1_05xxv"]
+[ext_resource type="PackedScene" uid="uid://bj81pr736k256" path="res://Scenes/Components/health.tscn" id="1_kavo4"]
+[ext_resource type="PackedScene" uid="uid://bapmn3uxv7pqb" path="res://Scenes/Arms/gun_simple.tscn" id="2_05xxv"]
+[ext_resource type="PackedScene" uid="uid://b3lugns3ik8vj" path="res://Scenes/Bodies/generic/bullet_simple.tscn" id="3_60yti"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_868uc"]
+size = Vector2(8, 8)
+
+[sub_resource type="Resource" id="Resource_f2725"]
+metadata/__load_path__ = "res://Assets/Audio/zapThreeToneDown.ogg"
+
+[node name="PaddleCannon" type="CharacterBody2D"]
+rotation = -1.5707964
+script = ExtResource("1_05xxv")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+shape = SubResource("RectangleShape2D_868uc")
+
+[node name="Health" parent="." instance=ExtResource("1_kavo4")]
+death_sound = SubResource("Resource_f2725")
+
+[node name="GunSimple" parent="." instance=ExtResource("2_05xxv")]
+ammo = ExtResource("3_60yti")
+max_bullets = 1
+muzzle_offset = 10
+bullet_group = "players_bullets"
