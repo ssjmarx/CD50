@@ -27,7 +27,7 @@ func _on_signal_recieved(arg) -> void:
 	if filter_value != "" and arg != filter_value:
 		return
 	
-	for target in get_tree().get_nodes_in_group(target_group):
+	for target in get_group_nodes(target_group):
 		var node: Node = target
 		if target_node != "":
 			node = target.get_node(target_node)

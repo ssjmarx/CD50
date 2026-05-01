@@ -21,7 +21,7 @@ var _peak_interval: float = INF
 func _ready() -> void:
 	_synth_a = $SoundSynth_A
 	_synth_b = $SoundSynth_B
-	_initial_count = get_tree().get_nodes_in_group(target_group).size()
+	_initial_count = get_group_count(target_group)
 	_current_interval = max_interval
 
 # Adjust beat interval based on remaining group members and fire beats
@@ -29,7 +29,7 @@ func _process(delta: float) -> void:
 	if game.current_state != CommonEnums.State.PLAYING:
 		return
 	
-	var count = get_tree().get_nodes_in_group(target_group).size()
+	var count = get_group_count(target_group)
 	
 	if count == 0:
 		_initial_count = 0

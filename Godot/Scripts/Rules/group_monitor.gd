@@ -11,7 +11,7 @@ extends UniversalComponent
 var _previous_count: int = -1
 
 func _physics_process(_delta: float) -> void:
-	var count = get_tree().get_nodes_in_group(target_group).size()
+	var count = get_group_count(target_group)
 	
 	# First frame: record initial count
 	if _previous_count == -1:

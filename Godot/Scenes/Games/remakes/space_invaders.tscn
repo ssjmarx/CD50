@@ -1,11 +1,11 @@
-[gd_scene load_steps=14 format=3 uid="uid://vt2aalri00kw"]
+[gd_scene load_steps=16 format=3 uid="uid://vt2aalri00kw"]
 
 [ext_resource type="Script" uid="uid://bghaddibpt6f1" path="res://addons/crt/crt.gd" id="1_vq5hb"]
 [ext_resource type="Script" uid="uid://bjdgpevhahi6d" path="res://Scripts/Core/universal_game_script.gd" id="1_vskpd"]
 [ext_resource type="Script" uid="uid://bfkr4fdx316o5" path="res://Scripts/Core/collision_group.gd" id="2_6vykp"]
 [ext_resource type="PackedScene" uid="uid://blcwsjhbx62t5" path="res://Scenes/Bodies/player/player_paddle_cannon.tscn" id="2_s60y6"]
 [ext_resource type="PackedScene" uid="uid://vlbel76nqh5w" path="res://Scenes/Rules/wave_spawner.tscn" id="4_wevyt"]
-[ext_resource type="PackedScene" uid="uid://dh545dmdhudol" path="res://Scenes/Bodies/generic/ufo.tscn" id="5_xapur"]
+[ext_resource type="PackedScene" uid="uid://dh545dmdhudol" path="res://Scenes/Bodies/generic/ufo.tscn" id="6_6vykp"]
 [ext_resource type="PackedScene" uid="uid://dwyyfxniivl1r" path="res://Scenes/Rules/wave_director.tscn" id="6_nhucj"]
 [ext_resource type="PackedScene" uid="uid://bq6cdrx340jp7" path="res://Scenes/Flow/interface.tscn" id="7_6gge3"]
 
@@ -24,13 +24,25 @@ metadata/_custom_type_script = "uid://bfkr4fdx316o5"
 [sub_resource type="Resource" id="Resource_jba1y"]
 script = ExtResource("2_6vykp")
 group_name = "players_bullets"
-targets = Array[String](["enemies"])
+targets = Array[String](["enemies", "asteroids", "bricks"])
 metadata/_custom_type_script = "uid://bfkr4fdx316o5"
 
 [sub_resource type="Resource" id="Resource_yp3rw"]
 script = ExtResource("2_6vykp")
 group_name = "enemies_bullets"
 targets = Array[String](["players"])
+metadata/_custom_type_script = "uid://bfkr4fdx316o5"
+
+[sub_resource type="Resource" id="Resource_k2lq6"]
+script = ExtResource("2_6vykp")
+group_name = "asteroids"
+targets = Array[String](["players_bullets"])
+metadata/_custom_type_script = "uid://bfkr4fdx316o5"
+
+[sub_resource type="Resource" id="Resource_bum5r"]
+script = ExtResource("2_6vykp")
+group_name = "bricks"
+targets = Array[String](["players_bullets"])
 metadata/_custom_type_script = "uid://bfkr4fdx316o5"
 
 [sub_resource type="Environment" id="Environment_vskpd"]
@@ -42,7 +54,7 @@ glow_bloom = 0.33
 [node name="SpaceInvaders" type="Node2D"]
 script = ExtResource("1_vskpd")
 game_title = "Space Invaders"
-collision_groups = Array[ExtResource("2_6vykp")]([SubResource("Resource_y7sge"), SubResource("Resource_6vykp"), SubResource("Resource_jba1y"), SubResource("Resource_yp3rw")])
+collision_groups = Array[ExtResource("2_6vykp")]([SubResource("Resource_y7sge"), SubResource("Resource_6vykp"), SubResource("Resource_jba1y"), SubResource("Resource_yp3rw"), SubResource("Resource_k2lq6"), SubResource("Resource_bum5r")])
 
 [node name="PaddleCannon" parent="." instance=ExtResource("2_s60y6")]
 position = Vector2(320, 312)
@@ -69,14 +81,16 @@ environment = SubResource("Environment_vskpd")
 
 [node name="WaveSpawner" parent="." node_paths=PackedStringArray("director") instance=ExtResource("4_wevyt")]
 position = Vector2(320, 64)
-spawn_scene = ExtResource("5_xapur")
+spawn_scene = ExtResource("6_6vykp")
 spawn_pattern = 2
-stagger_delay = 0.05
+stagger_delay = 0.01
 director = NodePath("../WaveDirector")
+spawn_groups = Array[String](["enemies"])
+spawn_collision_groups = Array[String](["enemies"])
 grid_height = 16
-grid_columns = 11
+grid_columns = 200
 grid_rows = 5
-grid_spacing = 4
+grid_spacing = 8
 grid_health_by_row = false
 
 [node name="WaveDirector" parent="." instance=ExtResource("6_nhucj")]

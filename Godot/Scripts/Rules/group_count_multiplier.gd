@@ -6,6 +6,11 @@ extends UniversalComponent
 # Group configuration
 @export var target_group: String
 
-# Update multiplier every physics frame to match group count
+var _last_count: int = -1
+
+# Update multiplier only when group count changes
 func _physics_process(_delta: float) -> void:
-	game.current_multiplier = get_tree().get_nodes_in_group(target_group).size()
+	var count = get_group_count(target_group)
+	if count != _last_count:
+		_last_count = count
+		game.current_multiplier = count

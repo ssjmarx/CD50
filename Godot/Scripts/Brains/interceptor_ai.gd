@@ -13,11 +13,11 @@ var _initialized: bool = false
 
 # Find the closest valid target and smoothly steer toward it with noise
 func _physics_process(delta: float) -> void:
-	var nodes: Array[Node] = get_tree().get_nodes_in_group(target_group)
+	var nodes := get_group_nodes(target_group)
 	var closest_node: Node = null
 	var closest_dist: float = INF
 
-	for node: Node in nodes:
+	for node in nodes:
 		if not is_instance_valid(node):
 			continue
 		var dist: float = parent.global_position.distance_squared_to(node.global_position)

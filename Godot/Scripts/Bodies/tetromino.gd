@@ -8,6 +8,7 @@ enum Shape { I, O, T, S, Z, L, J }
 @export var shape: Shape = Shape.T
 @export var color: Color = Color.CYAN
 @export var tile_size: float = 20.0
+@export var randomize_shape = false
 
 # Grid offsets for each shape type (relative to pivot tile)
 const SHAPE_OFFSETS: Dictionary = {
@@ -24,6 +25,9 @@ var current_offsets: Array[Vector2i] = []
 
 # Disable physics, load shape offsets, and build collision
 func _ready() -> void:
+	if randomize_shape:
+		shape = Shape.values().pick_random()
+	
 	velocity = Vector2.ZERO
 	set_physics_process(false)
 	current_offsets.assign(SHAPE_OFFSETS[shape])

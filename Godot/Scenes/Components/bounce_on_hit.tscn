@@ -1,6 +1,6 @@
 [gd_scene load_steps=2 format=3]
 
-[ext_resource type="Script" uid="" path="res://Scripts/Components/bounce_on_hit.gd" id="1"]
+[ext_resource type="Script" uid="uid://cp03nw1tert3b" path="res://Scripts/Components/bounce_on_hit.gd" id="1"]
 
 [node name="BounceOnHit" type="Node"]
 script = ExtResource("1")

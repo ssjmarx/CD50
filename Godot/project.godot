@@ -16,6 +16,10 @@ config/features=PackedStringArray("4.5")
 run/max_fps=120
 config/icon="res://icon.svg"
 
+[autoload]
+
+GroupCache="*res://Scripts/Core/group_cache.gd"
+
 [display]
 
 window/size/viewport_width=640

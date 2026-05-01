@@ -23,9 +23,9 @@ func _physics_process(delta: float) -> void:
 
 # Check if any target in the group is within the angular cone and range
 func _get_target_in_cone() -> Node2D:
-	var target_nodes: Array[Node] = get_tree().get_nodes_in_group(target_group)
+	var target_nodes := get_group_nodes(target_group)
 	
-	for node: Node in target_nodes:
+	for node in target_nodes:
 		if not is_instance_valid(node):
 			return null
 		else:

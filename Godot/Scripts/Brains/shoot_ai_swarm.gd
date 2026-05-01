@@ -25,34 +25,38 @@ func _process(delta: float) -> void:
 
 # Check if this entity is the outermost member on the specified edge within its column/row
 func _is_on_edge() -> bool:
-	var members: Array[Node] = get_tree().get_nodes_in_group(formation_group)
+	var members := get_group_nodes(formation_group)
 	var my_pos: Vector2 = parent.global_position
 	
 	match edge:
 		"bottom":
-			for member: Node in members:
+			for member in members:
 				if member == parent: continue
+				if not is_instance_valid(member): continue
 				if abs(member.global_position.x - my_pos.x) <= column_tolerance:
 					if member.global_position.y > my_pos.y:
 						return false
 			return true
 		"top":
-			for member: Node in members:
+			for member in members:
 				if member == parent: continue
+				if not is_instance_valid(member): continue
 				if abs(member.global_position.x - my_pos.x) <= column_tolerance:
 					if member.global_position.y < my_pos.y:
 						return false
 			return true
 		"left":
-			for member: Node in members:
+			for member in members:
 				if member == parent: continue
+				if not is_instance_valid(member): continue
 				if abs(member.global_position.y - my_pos.y) <= row_tolerance:
 					if member.global_position.x < my_pos.x:
 						return false
 			return true
 		"right":
-			for member: Node in members:
+			for member in members:
 				if member == parent: continue
+				if not is_instance_valid(member): continue
 				if abs(member.global_position.y - my_pos.y) <= row_tolerance:
 					if member.global_position.x > my_pos.x:
 						return false

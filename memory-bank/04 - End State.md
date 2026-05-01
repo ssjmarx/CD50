@@ -1,6 +1,6 @@
 # End State: GD50 — The Polybius Cabinet
 
-**Last Updated:** 2026-04-20  
+**Last Updated:** 2026-04-30  
 **Source Material:** `planning/brainstorming/` folder
 
 ---
@@ -221,7 +221,7 @@ Scenes/Bodies/
 ## WHERE WE ARE
 
 ```
-WHERE WE ARE (Current — 2026-04-20)
+WHERE WE ARE (Current — 2026-04-30)
 ├── ✅ Entity component system (Bodies + Brains + Legs + Arms)
 ├── ✅ 8 working games + 2 in progress (Space Invaders, Tetris components built)
 ├── ✅ Component reuse validated (Pongsteroids, Pongout, Breaksteroids)
@@ -231,14 +231,16 @@ WHERE WE ARE (Current — 2026-04-20)
 ├── ✅ 75 reusable components across 9 categories
 ├── ✅ Full architecture validation (entity-level, game-level, cross-game remix)
 ├── ✅ Bodies scene reorganization (generic/player/nonplayer tiers)
-├── ✅ Procedural audio system (SoundSynth + MusicRamping)
+├── ✅ Procedural audio system (SoundSynth + MusicRamping — performance-optimized)
 ├── ✅ Visual effects system (death particles, ship debris, engine exhaust)
 ├── ✅ Grid system foundation (grid_basic, grid_movement, grid_rotation)
 ├── ✅ Swarm system (swarm_controller, swarm_ai, shoot_ai_swarm)
-└── ✅ Tetris system (falling_ai, tetromino_formation, tetromino_spawner, line_clear_monitor)
+├── ✅ Tetris system (falling_ai, tetromino_formation, tetromino_spawner, line_clear_monitor)
+├── ✅ Code quality pass (Plan 08 — process migration, signal hygiene, style normalization)
+└── ✅ Performance optimization (Plan 09 — GroupCache, batch spawning, SoundSynth voice limiting)
 
 NEXT STEPS
-├── 🔲 Compose Space Invaders game scene
+├── 🔧 Compose Space Invaders game scene (in progress)
 ├── 🔲 Compose Tetris game scene
 ├── 🔲 Build the Hub/Menu (cabinet interface)
 ├── 🔲 Build 6+ more base games

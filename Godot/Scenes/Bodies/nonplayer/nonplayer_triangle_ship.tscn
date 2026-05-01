@@ -1,4 +1,4 @@
-[gd_scene load_steps=15 format=3 uid="uid://cee4ekxw2bppk"]
+[gd_scene load_steps=16 format=3 uid="uid://cee4ekxw2bppk"]
 
 [ext_resource type="Script" uid="uid://nx6wkwvymri1" path="res://Scripts/Bodies/triangle_ship.gd" id="1_dbm8e"]
 [ext_resource type="PackedScene" uid="uid://bj81pr736k256" path="res://Scenes/Components/health.tscn" id="2_ri8sq"]
@@ -11,6 +11,7 @@
 [ext_resource type="PackedScene" uid="uid://c5h0r2rnmwe4k" path="res://Scenes/Effects/death_particles.tscn" id="10_r8jml"]
 [ext_resource type="PackedScene" uid="uid://dewo285lx7p70" path="res://Scenes/Effects/death_broken_triangle_ship.tscn" id="11_0laft"]
 [ext_resource type="PackedScene" uid="uid://b5qnknhyvemd5" path="res://Scenes/Components/vector_engine_exhaust.tscn" id="12_ovkdl"]
+[ext_resource type="PackedScene" uid="uid://cq0foubgjurmr" path="res://Scenes/Brains/interceptor_ai.tscn" id="13_ck0bw"]
 [ext_resource type="PackedScene" uid="uid://dga83l4d2rwyv" path="res://Scenes/Flow/sound_synth.tscn" id="13_m7nu6"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_533y8"]
@@ -60,3 +61,6 @@ note = 69
 volume = 0.1
 source_node = NodePath("..")
 source_signal = "shoot"
+
+[node name="InterceptorAi" parent="." instance=ExtResource("13_ck0bw")]
+target_group = "players"

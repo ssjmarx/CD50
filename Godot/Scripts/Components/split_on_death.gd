@@ -2,7 +2,8 @@
 
 extends UniversalComponent
 
-@export var fragment_path: String = "" 
+@export var fragment_scene: PackedScene
+@export var fragment_path: String = ""
 @export var spawn_count: int = 2
 @export var fragment_speed: float = 100.0
 @export var offset_amount: int = 20
@@ -11,15 +12,14 @@ extends UniversalComponent
 
 var base_angle: float = randf() * TAU
 
-# Connect to parent's death signal
+# Preload fragment scene once at ready time (avoids circular dep in .tscn for self-referencing scenes)
 func _ready() -> void:
 	parent.get_node("Health").zero_health.connect(_on_parent_died)
+	if fragment_scene == null and fragment_path != "":
+		fragment_scene = load(fragment_path)
 
 # Spawn fragments when parent dies
 func _on_parent_died(_parent: Node) -> void:
-	if fragment_path == "":
-		return
-	var fragment_scene: PackedScene = load(fragment_path)
 	if fragment_scene == null:
 		return
 	# Don't spawn if parent is at minimum size

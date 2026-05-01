@@ -53,6 +53,14 @@ var _axis_lock_y_pos: float
 # Collision groups for CollisionMatrix configuration (first is primary layer)
 @export var collision_groups: Array[String] = []
 
+func _enter_tree() -> void:
+	for group in collision_groups:
+		GroupCache.mark_dirty(group)
+
+func _exit_tree() -> void:
+	for group in collision_groups:
+		GroupCache.mark_dirty(group)
+
 func _ready() -> void:
 	# Run after all Legs and friction components
 	process_priority = 100

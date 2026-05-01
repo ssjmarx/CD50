@@ -21,23 +21,24 @@ func reduce_health(amount: int) -> void:
 
 # Hide parent, zero velocity, disable all colliders and child processing, then free
 func die() -> void:
+	# Immediately mark all parent's groups dirty so cached lookups refresh
+	for group in parent.get_groups():
+		GroupCache.mark_dirty(group)
+	
 	parent.hide()
 	
 	if "velocity" in parent:
 		parent.velocity = Vector2.ZERO
 	
-	# Disable all collision shapes (direct children and inside Area2D children)
+	# Single-pass: disable collision shapes and processing on all siblings
 	for child: Node in parent.get_children():
+		if child != self:
+			child.process_mode = Node.PROCESS_MODE_DISABLED
 		if child is CollisionShape2D or child is CollisionPolygon2D:
 			child.set_deferred("disabled", true)
 		elif child is Area2D:
 			for shape: Node in child.get_children():
 				if shape is CollisionShape2D or shape is CollisionPolygon2D:
 					shape.set_deferred("disabled", true)
-	
-	# Disable processing on all siblings
-	for child: Node in parent.get_children():
-		if child != self: 
-			child.process_mode = Node.PROCESS_MODE_DISABLED
 	
 	parent.queue_free()

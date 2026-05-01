@@ -1,6 +1,7 @@
 # Synthesized audio generator. Produces real-time waveforms (sine, square, sawtooth,
 # triangle, noise) with optional effects (warble, tremolo, sweep, decay).
 # Supports continuous playback or signal-triggered one-shots.
+# Voice limiting mimics arcade hardware polyphony caps.
 
 extends UniversalComponent2D
 
@@ -37,6 +38,14 @@ enum Semitone {
 	F5 = 77, FS5 = 78, G5 = 79, GS5 = 80, A5 = 81, AS5 = 82, B5 = 83,
 }
 
+# Voice limiting (arcade hardware had 1-3 sound channels)
+const MAX_VOICES: int = 6
+const MAX_FILL_PER_FRAME: int = 256
+static var _active_voices: int = 0
+static var _continuous_registry: Dictionary = {}  # signature -> WeakRef to self
+var _voice_active: bool = false
+var _signature: String = ""
+
 # Runtime state
 var _stream: AudioStreamGenerator
 var _playback: AudioStreamGeneratorPlayback
@@ -59,25 +68,59 @@ func _ready() -> void:
 	_player.volume_db = linear_to_db(volume)
 	add_child(_player)
 	
-	# Start playback and fill initial buffer
-	_player.play()
-	_playback = _player.get_stream_playback()
+	_signature = str(wave_shape) + "_" + str(effect) + "_" + str(note)
 	
+	# Start playback and fill initial buffer
 	match play_mode:
 		PlayMode.ON_SIGNAL:
 			if source_node != null:
 				source_node.connect(source_signal, _on_signal)
-				_player.stop()
-				set_process(false)
+			_player.stop()
+			set_process(false)
 		PlayMode.CONTINUOUS:
-			pass
+			_try_claim_continuous()
+
+# Try to register as the active CONTINUOUS synth for this signature
+func _try_claim_continuous() -> void:
+	var ref = _continuous_registry.get(_signature)
+	if ref != null and ref.get_ref() != null:
+		# Another synth already holds this slot — stay silent but keep processing
+		_player.stop()
+		_voice_active = false
+		return
+	# Slot is free — claim it
+	if _active_voices >= MAX_VOICES:
+		_player.stop()
+		set_process(false)
+		return
+	_active_voices += 1
+	_voice_active = true
+	_continuous_registry[_signature] = weakref(self)
+	_player.play()
+	_playback = _player.get_stream_playback()
+
+# Release voice when leaving the tree
+func _exit_tree() -> void:
+	if _voice_active:
+		_active_voices -= 1
+		_voice_active = false
+	if play_mode == PlayMode.CONTINUOUS:
+		var ref = _continuous_registry.get(_signature)
+		if ref != null and ref.get_ref() == self:
+			_continuous_registry.erase(_signature)
 
 # Fill the audio buffer each frame; continuous or one-shot mode
 func _process(_delta: float) -> void:
-	var to_fill = _playback.get_frames_available()
-	
 	match play_mode:
 		PlayMode.CONTINUOUS:
+			# If not active, check if the slot opened up
+			if not _voice_active:
+				var ref = _continuous_registry.get(_signature)
+				if ref == null or ref.get_ref() == null:
+					_try_claim_continuous()
+				if not _voice_active:
+					return
+			var to_fill = mini(_playback.get_frames_available(), MAX_FILL_PER_FRAME)
 			for i in to_fill:
 				var t = float(_frame_pos) / _stream.mix_rate
 				var sample = _get_sample(t)
@@ -86,8 +129,9 @@ func _process(_delta: float) -> void:
 		
 		PlayMode.ON_SIGNAL:
 			# Fill remaining frames for the current one-shot
+			var to_fill = mini(_playback.get_frames_available(), MAX_FILL_PER_FRAME)
 			var remaining = _shot_end - _frame_pos
-			var to_push = mini(to_fill, remaining)
+			var to_push = mini(mini(to_fill, remaining), MAX_FILL_PER_FRAME)
 			for i in to_push:
 				var t = float(_frame_pos) / _stream.mix_rate
 				var sample = _get_sample(t)
@@ -96,6 +140,9 @@ func _process(_delta: float) -> void:
 			if _frame_pos >= _shot_end:
 				_player.stop()
 				set_process(false)
+				if _voice_active:
+					_active_voices -= 1
+					_voice_active = false
 
 # Signal handler: play one-shot if filter matches (or no filter set)
 func _on_signal(arg1 = "", _arg2 = null) -> void:
@@ -107,6 +154,10 @@ func _on_signal(arg1 = "", _arg2 = null) -> void:
 func play_one_shot() -> void:
 	if exclusive and _player.playing:
 		return
+	if _active_voices >= MAX_VOICES:
+		return
+	_active_voices += 1
+	_voice_active = true
 	_frame_pos = 0
 	_shot_end = int(duration * _stream.mix_rate)
 	_phase = 0.0
@@ -115,7 +166,7 @@ func play_one_shot() -> void:
 		_playback = _player.get_stream_playback()
 	
 	# Fill as many frames as the buffer can hold
-	var to_push = mini(_playback.get_frames_available(), _shot_end)
+	var to_push = mini(mini(_playback.get_frames_available(), _shot_end), MAX_FILL_PER_FRAME)
 	for i in to_push:
 		var t = float(_frame_pos) / _stream.mix_rate
 		var sample = _get_sample(t)

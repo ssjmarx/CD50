@@ -4,4 +4,3 @@
 
 [node name="SplitOnDeath" type="Node"]
 script = ExtResource("1_yokry")
-fragment_path = "res://Scenes/Bodies/generic/asteroid.tscn"

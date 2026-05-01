@@ -95,7 +95,7 @@ func _process(delta: float) -> void:
 
 # Find the nearest grid node in the scene tree by distance
 func _find_nearest_grid() -> Node2D:
-	var grids = get_tree().get_nodes_in_group("grid")
+	var grids = get_group_nodes("grid")
 	var nearest: Node2D = null
 	var nearest_dist: float = INF
 	for grid in grids:

@@ -44,11 +44,27 @@ extends UniversalComponent2D
 
 # Runtime state
 var _expression: Expression
+var _spawn_queue: Array[int] = []
+var _spawn_timer: float = 0.0
+var _spawn_wave_num: int = 0
 
 # Parse spawn count expression and connect to wave signal
 func _ready() -> void:
 	_expression = Expression.new()
 	game.spawning_wave.connect(_on_spawning_wave)
+	set_process(false)
+
+# Process-driven spawn queue: spawn one entity per stagger interval
+func _process(delta: float) -> void:
+	if _spawn_queue.is_empty():
+		set_process(false)
+		return
+	_spawn_timer -= delta
+	while _spawn_timer <= 0.0 and not _spawn_queue.is_empty():
+		var index: int = _spawn_queue.pop_front()
+		var remaining: int = _spawn_queue.size()
+		_spawn_one(_spawn_wave_num, index, index + remaining + 1)
+		_spawn_timer += stagger_delay
 
 # Determine spawn count and stagger-spawn entities when a wave begins
 func _on_spawning_wave(signaller = game, wave_number: int = 0) -> void:
@@ -68,9 +84,12 @@ func _on_spawning_wave(signaller = game, wave_number: int = 0) -> void:
 	if use_safe_zone:
 		await _wait_for_safe_zone()
 	
+	_spawn_queue.clear()
 	for i in spawn_count:
-		var delay = i * stagger_delay
-		get_tree().create_timer(delay).timeout.connect(func(): _spawn_one(wave_number, i, spawn_count))
+		_spawn_queue.append(i)
+	_spawn_wave_num = wave_number
+	_spawn_timer = 0.0
+	set_process(true)
 
 # Instantiate and position a single enemy, attach components/properties/groups
 func _spawn_one(wave_num: int, index: int, total: int) -> void:
@@ -144,6 +163,7 @@ func _spawn_one(wave_num: int, index: int, total: int) -> void:
 	
 	for group in spawn_groups:
 		enemy.add_to_group(group)
+		GroupCache.mark_dirty(group)
 	
 	for group in spawn_collision_groups:
 		enemy.collision_groups.append(group)
@@ -159,7 +179,7 @@ func _wait_for_safe_zone() -> void:
 	while true:
 		var is_safe = true
 		for group in unsafe_groups:
-			for entity in get_tree().get_nodes_in_group(group):
+			for entity in get_group_nodes(group):
 				if global_position.distance_to(entity.global_position) < safety_radius:
 					is_safe = false
 					break

@@ -31,7 +31,7 @@ var _total_members: int = 0
 func _ready() -> void:
 	add_to_group(bus_group)
 	await get_tree().process_frame
-	_total_members = get_tree().get_nodes_in_group(invader_group).size()
+	_total_members = get_group_count(invader_group)
 
 # Tick the swarm forward at the current interval; handle pending step-downs
 func _physics_process(delta: float) -> void:
@@ -55,7 +55,7 @@ func _physics_process(delta: float) -> void:
 func _get_current_interval() -> float:
 	if not speed_ramp_enabled:
 		return base_tick_interval
-	var living = get_tree().get_nodes_in_group(invader_group).size()
+	var living = get_group_count(invader_group)
 	if _total_members == 0:
 		return base_tick_interval
 	var ratio = float(living) / float(_total_members)
@@ -75,7 +75,7 @@ func _execute_tick() -> void:
 
 # Check if any swarm member has reached the left or right boundary
 func _is_at_edge() -> bool:
-	for member in get_tree().get_nodes_in_group(invader_group):
+	for member in get_group_nodes(invader_group):
 		if _direction.x > 0 and member.global_position.x >= boundary_right:
 			return true
 		if _direction.x < 0 and member.global_position.x <= boundary_left:
@@ -84,7 +84,7 @@ func _is_at_edge() -> bool:
 
 # Check if any swarm member has reached the bottom boundary
 func _is_at_bottom() -> bool:
-	for member in get_tree().get_nodes_in_group(invader_group):
+	for member in get_group_nodes(invader_group):
 		if member.global_position.y >= boundary_bottom:
 			return true
 	return false

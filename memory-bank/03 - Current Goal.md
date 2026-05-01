@@ -1,8 +1,27 @@
 # Current Goal: Space Invaders & Tetris (Plan 07)
 
-**Status:** 🔧 In Progress — components built, game scenes not yet composed  
+**Status:** 🔧 In Progress — components built, Space Invaders in progress  
 **Active Plan:** `planning/07 - Space Invaders and Tetris.md`  
 **Started:** 2026-04-19
+
+---
+
+## Completed Interstitial Plans
+
+### ✅ Plan 08 — Code Quality Update (`planning/08 - code quality update.md`)
+**Completed:** 2026-04-30
+- Unified `_physics_process` → `_process` migration across all components for frame-rate-independent logic
+- Signal disconnection hygiene in components that connect to external nodes
+- Standardized `process_mode` and `process_priority` across the component tree
+- GDScript linting and style normalization
+
+### ✅ Plan 09 — Performance Update (`planning/09 - performance update.md`)
+**Completed:** 2026-04-30
+- **Phase 1:** GroupCache autoload — eliminated `get_nodes_in_group()` allocations across 15 call sites
+- **Phase 2:** Easy wins — PackedScene preload in split_on_death, change-only update in group_count_multiplier, single-pass die() in health
+- **Phase 3:** WaveSpawner batch spawning — process-driven queue replaces timer-per-entity
+- **Phase 4:** SoundSynth performance — voice limiting (MAX_VOICES=6), fill rate cap (MAX_FILL_PER_FRAME=256), CONTINUOUS deduplication registry
+- **Phase 5:** Verified — all games profiled, 150+ entity stress test passes
 
 ---
 
@@ -30,7 +49,7 @@
 - [x] `tetromino` body script + scenes (tetromino.tscn, tetromino_single.tscn)
 - [x] `brick_damaging.tscn` — brick variant that deals damage on contact
 
-### 🔲 Phase 4 — Compose Game Scenes (Next)
+### 🔧 Phase 4 — Compose Game Scenes (In Progress)
 - [ ] **Space Invaders** game scene — compose from grid_basic + swarm_controller + wave_spawner + shoot_ai_swarm + existing components
 - [ ] **Tetris** game scene — compose from grid_basic + tetromino_spawner + line_clear_monitor + falling_ai + existing components
 
@@ -72,7 +91,7 @@
 | Pongout | `remixes/pongout.tscn` | ✅ Working |
 | Breaksteroids | `remixes/breaksteroids.tscn` | ✅ Working |
 | Asterout | `remixes/asterout.tscn` | ⚠️ Needs remake |
-| Space Invaders | `remakes/` (not yet created) | 🔧 Components built |
+| Space Invaders | `remakes/` (not yet created) | 🔧 Components built, composing |
 | Tetris | `remakes/` (not yet created) | 🔧 Components built |
 
 ---

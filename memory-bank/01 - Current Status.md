@@ -1,10 +1,11 @@
 # Current Status: GD50 — Arcade Cabinet
 
-**Last Updated:** 2026-04-20  
+**Last Updated:** 2026-04-30  
 **Engine:** Godot 4.x (GDScript)  
 **Architecture:** Entity-Component (composition over inheritance)  
 **Playable Games:** Pong, Breakout, Asteroids, Pongsteroids, Dogfight, Pongout, Breaksteroids — ALL componentized, zero game scripts  
-**In Progress:** Space Invaders, Tetris (Plan 07 — grid foundation built)
+**In Progress:** Space Invaders, Tetris (Plan 07 — components built, game scenes being composed)  
+**Recent Completed:** Plan 08 (code quality), Plan 09 (performance optimization including SoundSynth voice limiting)
 
 ---
 
@@ -388,8 +389,9 @@ Scenes/Bodies/nonplayer/
 ### `Scripts/Flow/sound_on_hit.gd` — extends UniversalComponent
 - Plays a sound when the parent experiences a collision. Auto-detects Area2D vs UniversalBody parents.
 
-### `Scripts/Flow/sound_synth.gd` — extends UniversalComponent
-- Procedural audio synthesis component. Generates audio waveforms programmatically (SQUARE, TRIANGLE, SAWTOOTH, SINE) with configurable frequency, duration, envelope (ATTACK, DECAY, SWEEP_UP, SWEEP_DOWN), and volume. Supports exclusive mode (one instance of a sound at a time).
+### `Scripts/Flow/sound_synth.gd` — extends UniversalComponent2D
+- Procedural audio synthesis component. Generates audio waveforms programmatically (SQUARE, TRIANGLE, SAWTOOTH, SINE, NOISE) with configurable frequency, duration, effects (WARBLE, TREMOLO, SWEEP_DOWN, DECAY), and volume. Supports CONTINUOUS and ON_SIGNAL play modes with exclusive option.
+- **Performance features (Plan 09):** Voice limiting (`MAX_VOICES=6`), fill rate cap (`MAX_FILL_PER_FRAME=256`), and CONTINUOUS deduplication registry — modeled after arcade hardware polyphony caps. Only one synth per unique sound profile plays at a time; excess instances stay silent and automatically take over if the active synth dies.
 - The foundation of the audio system — all game sounds are generated procedurally, no audio files needed.
 
 ### `Scripts/Flow/music_ramping.gd` — extends UniversalComponent

@@ -1,6 +1,6 @@
 # Recent Progress: GD50 — Development History
 
-**Last Updated:** 2026-04-20
+**Last Updated:** 2026-04-30
 
 ---
 
@@ -544,6 +544,83 @@ This enables per-death tracking — e.g., VariableTuner can boost AI difficulty 
 
 ---
 
+## Update 10: Code Quality (Plan 08)
+
+**Planning Document:** `planning/08 - code quality update.md`
+
+### What Was Done
+
+**Completed:** 2026-04-30
+
+A code quality pass across the entire component library:
+
+- **`_physics_process` → `_process` migration:** Unified timing across all components. Frame-rate-independent logic (group polling, UI updates, audio generation) moved to `_process`. Only physics-dependent code (velocity, `move_and_collide`) remains in `_physics_process`.
+- **Signal disconnection hygiene:** Components that connect to external nodes now properly disconnect in `_exit_tree()` or `die()`, preventing stale signal references.
+- **`process_mode` and `process_priority` standardization:** Consistent processing order across the component tree — Brains process before Legs, Arms process after movement, etc.
+- **GDScript linting and style normalization:** Consistent naming, formatting, and documentation across all scripts.
+
+### Status
+- ✅ Complete — all games tested and verified after migration
+
+---
+
+## Update 11: Performance Optimization (Plan 09)
+
+**Planning Document:** `planning/09 - performance update.md`
+
+### What Was Done
+
+**Completed:** 2026-04-30
+
+A comprehensive performance optimization pass, driven by profiling during Space Invaders composition:
+
+**Phase 1 — GroupCache Autoload:**
+- Created `Scripts/Core/group_cache.gd` — lazy dirty-flag cache for group node lookups
+- Eliminated `get_nodes_in_group()` allocations across 15 call sites
+- All AI brains, swarm_controller, music_ramping, group_monitor now use cached lookups
+
+**Phase 2 — Easy Wins:**
+- `split_on_death.gd`: Replaced runtime `load()` with `@export var fragment_scene: PackedScene` (preload at scene import time)
+- `group_count_multiplier.gd`: Added change-only update (only writes to game when count actually changes)
+- `health.gd`: Merged two `get_children()` loops into single-pass `die()`
+
+**Phase 3 — WaveSpawner Batch Spawning:**
+- Replaced timer-per-entity with process-driven queue for GRID spawns
+- Eliminates ~200 SceneTree timers and lambda closures per grid spawn
+
+**Phase 4 — SoundSynth Performance (Arcade Audio Optimization):**
+
+Investigated and resolved a critical performance issue: spawning 55+ UFO entities (each with a CONTINUOUS SoundSynth) caused massive lag, while other body types handled 55+ without issue.
+
+Root cause: Each UFO carried a SoundSynth in CONTINUOUS mode, generating audio samples every frame. 55 synths × ~1000 samples/frame = ~55,000 `_get_sample()` calls per frame.
+
+Three-tier fix modeled after real arcade hardware (1-3 sound channels):
+
+| Optimization | What It Does | Impact |
+|-------------|-------------|--------|
+| Voice limiting (`MAX_VOICES=6`) | Caps simultaneous active synths | 55 → 6 active voices |
+| Fill rate cap (`MAX_FILL_PER_FRAME=256`) | Caps samples per frame per synth | Eliminated spawn stutter (~6553 → 1536 burst) |
+| CONTINUOUS deduplication registry | Only one synth per sound profile plays | 55 identical synths → 1 plays |
+
+The deduplication uses a static `Dictionary` mapping sound signatures to `WeakRef` references. When a registered synth dies, blocked synths detect the slot opening and one takes over seamlessly.
+
+**Phase 5 — Verification:**
+- All games profiled and verified
+- 150 UFOs spawn seamlessly (30×5 grid)
+- 2000+ entities in scene tree = engine physics ceiling (not a code issue)
+- Space Invaders (55 entities) runs smoothly
+
+### Impact Summary
+
+| Metric | Before | After |
+|--------|--------|-------|
+| Group allocations per frame (55 entities) | ~60 arrays | 0 (cached) |
+| Active synths at 55 UFOs | 55 | 1 (dedup) |
+| `_get_sample()` calls at spawn | ~60,000 | ~256 |
+| Stress test limit (smooth) | ~55 entities | ~150 entities |
+
+---
+
 ## Summary: What Exists vs What Was Planned
 
 | Feature | Planned | Status |
@@ -559,11 +636,11 @@ This enables per-death tracking — e.g., VariableTuner can boost AI difficulty 
 | Pongout | Plan 06 | ✅ Componentized — working |
 | Breaksteroids | Plan 06 | ✅ Componentized — working |
 | Asterout | Plan 06 | ⚠️ Exists but needs remake (RingSpawner collision bug) |
-| Space Invaders | Plan 07 | 🔧 Components built, game scene not yet composed |
+| Space Invaders | Plan 07 | 🔧 Components built, game scene in progress |
 | Tetris | Plan 07 | 🔧 Components built, game scene not yet composed |
 | Grid System | Plan 07 | ✅ grid_basic + grid_movement + grid_rotation |
 | Swarm System | Plan 07 | ✅ swarm_controller + swarm_ai + shoot_ai_swarm |
-| Procedural Audio System | — | ✅ SoundSynth + MusicRamping + SFXRamping + Beep |
+| Procedural Audio System | — | ✅ SoundSynth + MusicRamping + SFXRamping + Beep (performance-optimized) |
 | Warp/Asteroids Emergency Teleport | Plan 06→07 | ✅ warp_asteroids leg built |
 | Hub/Menu System | Plan 03 | ❌ Not started |
 | Meta/Narrative Layer | Brainstorming | ❌ Not started |

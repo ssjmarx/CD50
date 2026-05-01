@@ -1,0 +1,27 @@
+[gd_scene load_steps=5 format=3 uid="uid://cng8xxcfxlm3a"]
+
+[ext_resource type="Script" uid="uid://dk4n6dgf8uiht" path="res://Scripts/Bodies/bullet_simple.gd" id="1_v4pjh"]
+[ext_resource type="PackedScene" uid="uid://b3hvkyy38ihr1" path="res://Scenes/Components/screen_cleanup.tscn" id="2_xsr8r"]
+[ext_resource type="PackedScene" uid="uid://cg5rnfuldr2n0" path="res://Scenes/Arms/damage_on_hit.tscn" id="3_i1gtg"]
+[ext_resource type="PackedScene" uid="uid://86gfkqtgv2yc" path="res://Scenes/Components/die_on_hit.tscn" id="4_u7qyl"]
+
+[node name="BulletSimple" type="CharacterBody2D"]
+script = ExtResource("1_v4pjh")
+x_min = -20.0
+x_max = 660.0
+y_min = -20.0
+y_max = 380.0
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+
+[node name="HitBox" type="Area2D" parent="."]
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="HitBox"]
+
+[node name="ScreenCleanup" parent="." instance=ExtResource("2_xsr8r")]
+activation_time = 0.0
+
+[node name="DamageOnHit" parent="." instance=ExtResource("3_i1gtg")]
+target_groups = Array[String](["asteroids", "enemies", "players", "bricks"])
+
+[node name="DieOnHit" parent="." instance=ExtResource("4_u7qyl")]
