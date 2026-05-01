@@ -8,6 +8,7 @@ extends UniversalBody
 
 # Create rectangular collision shapes matching the radius
 func _ready() -> void:
+	super._ready()
 	var shape: RectangleShape2D = RectangleShape2D.new()
 	shape.size = Vector2(radius, radius)
 	

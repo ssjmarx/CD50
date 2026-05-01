@@ -1,4 +1,4 @@
-# AI brain that steers toward the closest target in a group. Emits to left_joystick for movement, not rotation.
+# AI brain that steers toward the closest target in a group. Emits to move for movement, not rotation.
 
 extends UniversalComponent
 
@@ -26,7 +26,7 @@ func _physics_process(delta: float) -> void:
 			closest_node = node
 		
 	if closest_node == null:
-		parent.left_joystick.emit(Vector2.ZERO)
+		parent.move.emit(Vector2.ZERO)
 		return
 	
 	if not _initialized:
@@ -37,7 +37,7 @@ func _physics_process(delta: float) -> void:
 	var noise: float = deg_to_rad(randf_range(-aim_inaccuracy, aim_inaccuracy))
 	
 	current_aim_angle = rotate_toward(current_aim_angle, target_angle + noise, deg_to_rad(turning_speed) * delta)
-	parent.left_joystick.emit(Vector2.from_angle(current_aim_angle))
+	parent.move.emit(Vector2.from_angle(current_aim_angle))
 
 # Change the target group at runtime
 func set_target_group(group: String) -> void:

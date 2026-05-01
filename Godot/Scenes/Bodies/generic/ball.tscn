@@ -1,4 +1,4 @@
-[gd_scene load_steps=7 format=3 uid="uid://mw70bjrifcpb"]
+[gd_scene load_steps=8 format=3 uid="uid://mw70bjrifcpb"]
 
 [ext_resource type="Script" uid="uid://bufxw3hl0oqy0" path="res://Scripts/Bodies/ball.gd" id="1_2wnlm"]
 [ext_resource type="PackedScene" uid="uid://csg0e2wxlx4qd" path="res://Scenes/Components/angled_deflector.tscn" id="3_1bs62"]
@@ -6,6 +6,7 @@
 [ext_resource type="PackedScene" uid="uid://b3hvkyy38ihr1" path="res://Scenes/Components/screen_cleanup.tscn" id="4_8tmdj"]
 [ext_resource type="PackedScene" uid="uid://dga83l4d2rwyv" path="res://Scenes/Flow/sound_synth.tscn" id="5_0nysl"]
 [ext_resource type="PackedScene" uid="uid://qtgpgjpw1e77" path="res://Scenes/Flow/sfx_ramping.tscn" id="5_31dkr"]
+[ext_resource type="PackedScene" path="res://Scenes/Components/bounce_on_hit.tscn" id="6_bounce"]
 
 [node name="Ball" type="CharacterBody2D" groups=["balls"]]
 script = ExtResource("1_2wnlm")
@@ -18,6 +19,8 @@ collision_groups = Array[String](["balls"])
 [node name="HitBox" type="Area2D" parent="."]
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="HitBox"]
+
+[node name="BounceOnHit" parent="." instance=ExtResource("6_bounce")]
 
 [node name="AngledDeflector" parent="." instance=ExtResource("3_1bs62")]
 

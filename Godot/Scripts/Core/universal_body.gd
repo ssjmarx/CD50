@@ -1,25 +1,30 @@
 # Universal base class for blackboard architecture. Routes signals between components, provides position clamping and axis locking.
 class_name UniversalBody extends CharacterBody2D
 
-# Signals from components (Brains listen, emit to body)
-signal left_joystick(direction: Vector2)
-signal right_joystick(direction: Vector2)
-signal mouse_position(position: Vector2)
-signal button_pressed(button: InputEvent)
-signal button_released(button: InputEvent)
-
-# Signals from router (Components listen after processing)
+# Signals from Brains (Components listen after processing)
+@warning_ignore("unused_signal")
 signal move(direction: Vector2)
+@warning_ignore("unused_signal")
 signal move_to(position: Vector2)
+@warning_ignore("unused_signal")
 signal action(button: InputEvent)
+@warning_ignore("unused_signal")
 signal end_action(button: InputEvent)
+@warning_ignore("unused_signal")
 signal shoot(button: InputEvent)
+@warning_ignore("unused_signal")
 signal end_shoot(button: InputEvent)
+@warning_ignore("unused_signal")
 signal thrust(button: InputEvent)
+@warning_ignore("unused_signal")
 signal end_thrust(button: InputEvent)
+@warning_ignore("unused_signal")
 signal aim(direction: Vector2)
+@warning_ignore("unused_signal")
 signal aim_at(position: Vector2)
+@warning_ignore("unused_signal")
 signal body_collided(collider: Node, normal: Vector2)
+
 
 # Entity dimensions for collision and clamping
 @export var width: int = 4
@@ -31,9 +36,19 @@ signal body_collided(collider: Node, normal: Vector2)
 @export var y_min: float = 0.0
 @export var y_max: float = 360.0
 
-# Movement axis locks (disable movement on locked axes)
-@export var lock_x: bool = false
-@export var lock_y: bool = false
+# Movement axis locks (enforced at end of physics frame, overrides all brains/legs)
+var _axis_lock_x_pos: float
+var _axis_lock_y_pos: float
+
+@export var lock_x: bool = false:
+	set(value):
+		if value and not lock_x: _axis_lock_x_pos = position.x
+		lock_x = value
+
+@export var lock_y: bool = false:
+	set(value):
+		if value and not lock_y: _axis_lock_y_pos = position.y
+		lock_y = value
 
 # Collision groups for CollisionMatrix configuration (first is primary layer)
 @export var collision_groups: Array[String] = []
@@ -43,12 +58,9 @@ func _ready() -> void:
 	process_priority = 100
 	process_physics_priority = 100
 	
-	# Connect input signals to router functions
-	left_joystick.connect(_on_left_joystick)
-	right_joystick.connect(_on_right_joystick)
-	mouse_position.connect(_on_mouse_position)
-	button_pressed.connect(_on_button_pressed)
-	button_released.connect(_on_button_released)
+	# Capture initial position for axis locks
+	_axis_lock_x_pos = position.x
+	_axis_lock_y_pos = position.y
 	
 	var shape: RectangleShape2D = RectangleShape2D.new()
 	shape.size = Vector2(width, height)
@@ -59,46 +71,14 @@ func _ready() -> void:
 func _physics_process(delta: float) -> void:
 	# Apply shared velocity to position (priority 100, runs after Legs)
 	move_parent_physics(velocity * delta)
-
-func _on_left_joystick(direction: Vector2) -> void:
-	# Apply axis locks before emitting
-	if lock_x: direction.x = 0
-	if lock_y: direction.y = 0
-	move.emit(direction)
-
-func _on_right_joystick(direction: Vector2) -> void:
-	# Right stick is for aiming, no axis locks
-	aim.emit(direction)
-
-func _on_mouse_position(mouse_pos: Vector2) -> void:
-	# Lock axes to current position if locked
-	if lock_x: mouse_pos.x = self.position.x
-	if lock_y: mouse_pos.y = self.position.y
-	# Emit both movement and aim signals
-	move_to.emit(mouse_pos)
-	aim_at.emit(mouse_pos)
-
-func _on_button_pressed(button: InputEvent) -> void:
-	# Generic action event
-	action.emit(button)
 	
-	# Map specific buttons to their events
-	if button.is_action("button_r"):
-		shoot.emit()
-	
-	if button.is_action("button_l"):
-		thrust.emit()
-
-func _on_button_released(button: InputEvent) -> void:
-	# Generic action release event
-	end_action.emit()
-	
-	# Map specific buttons to their release events
-	if button.is_action("button_r"):
-		end_shoot.emit()
-	
-	if button.is_action("button_l"):
-		end_thrust.emit()
+	# Enforce axis locks — final override, cannot be broken by any brain or leg
+	if lock_x:
+		position.x = _axis_lock_x_pos
+		velocity.x = 0
+	if lock_y:
+		position.y = _axis_lock_y_pos
+		velocity.y = 0
 
 # Move entity by displacement, clamp within bounds (instant, no physics)
 func move_parent(movement: Vector2) -> void:
@@ -114,7 +94,6 @@ func move_parent_toward(target: Vector2, max_distance: float) -> void:
 func move_parent_physics(movement: Vector2) -> KinematicCollision2D:
 	var collision = move_and_collide(movement)
 	if collision:
-		velocity = velocity.bounce(collision.get_normal())
 		body_collided.emit(collision.get_collider(), collision.get_normal())
 	return collision
 

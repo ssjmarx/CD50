@@ -41,7 +41,7 @@ func _physics_process(_delta: float) -> void:
 		if current_index >= baked_points.size() or current_index < 0:
 			match loop_mode:
 				LoopMode.NONE: 
-					parent.left_joystick.emit(Vector2.ZERO)
+					parent.move.emit(Vector2.ZERO)
 					set_physics_process(false)
 					return
 				LoopMode.RESTART: 
@@ -51,7 +51,7 @@ func _physics_process(_delta: float) -> void:
 					current_index += direction
 	
 	target_point = baked_points[current_index]
-	parent.left_joystick.emit(parent.global_position.direction_to(target_point))
+	parent.move.emit(parent.global_position.direction_to(target_point))
 
 # Build a random path from the parent's position through random waypoints to a screen edge
 func _generate_random_path() -> Curve2D:
