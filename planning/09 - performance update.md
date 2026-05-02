@@ -10,7 +10,7 @@
 
 ## Background
 
-A full performance audit of the GD50 codebase identified one critical pattern and five medium-priority issues. The critical issue — `get_nodes_in_group()` called every frame by up to 15 scripts simultaneously — will cause GC stutter and frame time spikes once Space Invaders (55+ entities) is composed. The medium issues are hygiene fixes that improve code quality alongside performance.
+A full performance audit of the CD50 codebase identified one critical pattern and five medium-priority issues. The critical issue — `get_nodes_in_group()` called every frame by up to 15 scripts simultaneously — will cause GC stutter and frame time spikes once Space Invaders (55+ entities) is composed. The medium issues are hygiene fixes that improve code quality alongside performance.
 
 The project's rendering configuration (640×360, GL Compatibility, pixel snapping, physics interpolation) is well-chosen and needs no changes. The signal-driven architecture (Brain → Body → Leg/Arm routing) is correct and should NOT be optimized — signal overhead is negligible at current and projected entity counts.
 

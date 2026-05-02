@@ -1,4 +1,4 @@
-# Recent Progress: GD50 — Development History
+# Recent Progress: CD50 — Development History
 
 **Last Updated:** 2026-04-30
 

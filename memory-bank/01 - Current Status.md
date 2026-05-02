@@ -1,4 +1,4 @@
-# Current Status: GD50 — Arcade Cabinet
+# Current Status: CD50 — Arcade Cabinet
 
 **Last Updated:** 2026-05-01  
 **Engine:** Godot 4.x (GDScript)  
@@ -11,7 +11,7 @@
 
 ## Project Overview
 
-GD50 is a modular arcade game collection built around a composable component architecture. Games are assembled from reusable components (Brains, Legs, Arms, Components, Rules, Flow) attached to generic `UniversalBody` (entity) and `UniversalGameScript` (game) base classes. The signal flow is: **Brains** read input → emit on **UniversalBody** input signals → UniversalBody routes to processed output signals → **Legs/Arms** listen to output signals and act. **Rules** components manage game logic (scores, groups, conditions). **Flow** components manage waves, spawning, and UI.
+CD50 is a modular arcade game collection built around a composable component architecture. Games are assembled from reusable components (Brains, Legs, Arms, Components, Rules, Flow) attached to generic `UniversalBody` (entity) and `UniversalGameScript` (game) base classes. The signal flow is: **Brains** read input → emit on **UniversalBody** input signals → UniversalBody routes to processed output signals → **Legs/Arms** listen to output signals and act. **Rules** components manage game logic (scores, groups, conditions). **Flow** components manage waves, spawning, and UI.
 
 **All games run as pure scene assemblies** — no game-specific scripts exist. Every game is a `UniversalGameScript` root node with attached components configured in the editor.
 
@@ -444,7 +444,7 @@ Games are organized into three categories:
 
 ```
 Scenes/Games/
-├── originals/     — New games unique to GD50
+├── originals/     — New games unique to CD50
 ├── remakes/       — Classic arcade recreations
 └── remixes/       — Mashups combining elements from multiple games
 ```

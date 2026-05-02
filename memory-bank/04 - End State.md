@@ -1,4 +1,4 @@
-# End State: GD50 — The Polybius Cabinet
+# End State: CD50 — The Polybius Cabinet
 
 **Last Updated:** 2026-04-30  
 **Source Material:** `planning/brainstorming/` folder

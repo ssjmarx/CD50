@@ -1,4 +1,4 @@
-# Current Goal: GD50 — Tetris Decomposition & Composition
+# Current Goal: CD50 — Tetris Decomposition & Composition
 
 **Last Updated:** 2026-05-01
 

@@ -1,4 +1,4 @@
-Project Overview: GD50 - Arcade Solar System 
+Project Overview: CD50 - Arcade Solar System 
 
 Engine: Godot 4.x (assuming GDScript for modular architecture)
 License: MIT (Code) / CC0 or CC-BY (Assets)

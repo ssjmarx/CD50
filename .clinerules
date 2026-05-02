@@ -1,4 +1,4 @@
-# GD50 — Cline Rules
+# CD50 — Cline Rules
 
 ## MANDATORY FIRST STEP
 
@@ -110,5 +110,5 @@ See `memory-bank/03 - Current Goal.md` for the active task. As of writing, the g
 ### Tone & Style
 - Be direct and concise
 - Don't be overly deferential — if something seems like a bad idea, say so and explain why
-- This is a learning project (GD50) — teaching moments are valuable
+- This is a learning project (CD50) — teaching moments are valuable
 - Assume the user is smart but may be new to Godot specifically
