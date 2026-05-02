@@ -1,4 +1,4 @@
-[gd_scene load_steps=12 format=3 uid="uid://btcp5x56nexxd"]
+[gd_scene load_steps=13 format=3 uid="uid://btcp5x56nexxd"]
 
 [ext_resource type="Script" uid="uid://c7pmihw887om8" path="res://Scripts/Bodies/ufo.gd" id="1_1yl3i"]
 [ext_resource type="PackedScene" uid="uid://duiftqhlo478k" path="res://Scenes/Brains/patrol_ai.tscn" id="2_lrogf"]
@@ -11,6 +11,7 @@
 [ext_resource type="PackedScene" uid="uid://bj81pr736k256" path="res://Scenes/Components/health.tscn" id="9_ctp1s"]
 [ext_resource type="PackedScene" uid="uid://145njn1uody4" path="res://Scenes/Components/death_effect.tscn" id="10_eop5m"]
 [ext_resource type="PackedScene" uid="uid://c5h0r2rnmwe4k" path="res://Scenes/Effects/death_particles.tscn" id="11_51k15"]
+[ext_resource type="PackedScene" uid="uid://ic3mj0x3ub4c" path="res://Scenes/Components/score_on_death.tscn" id="12_1yl3i"]
 
 [node name="UFO" type="CharacterBody2D" groups=["enemies"]]
 script = ExtResource("1_1yl3i")
@@ -58,3 +59,6 @@ target_group = "asteroids"
 
 [node name="AimAi2" parent="." instance=ExtResource("8_lh6uf")]
 target_group = "asteroids"
+
+[node name="ScoreOnDeath" parent="." instance=ExtResource("12_1yl3i")]
+base_score = 10

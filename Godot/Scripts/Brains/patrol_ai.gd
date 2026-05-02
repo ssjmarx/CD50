@@ -25,6 +25,10 @@ var _needs_path: bool = false
 func _ready() -> void:
 	if curve != null:
 		baked_points = curve.get_baked_points()
+		var offset = parent.global_position
+		var angle = parent.global_rotation
+		for i in range(baked_points.size()):
+			baked_points[i] = baked_points[i].rotated(angle) + offset
 	else:
 		_needs_path = true
 

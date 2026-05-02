@@ -54,13 +54,5 @@ volume = 0.1
 source_node = NodePath("..")
 source_signal = "thrust"
 
-[node name="SoundSynth2" parent="." node_paths=PackedStringArray("source_node") instance=ExtResource("13_m7nu6")]
-play_mode = 1
-effect = 3
-note = 69
-volume = 0.1
-source_node = NodePath("..")
-source_signal = "shoot"
-
 [node name="InterceptorAi" parent="." instance=ExtResource("13_ck0bw")]
 target_group = "players"

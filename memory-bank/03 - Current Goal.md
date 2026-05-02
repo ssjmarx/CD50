@@ -1,103 +1,95 @@
-# Current Goal: Space Invaders & Tetris (Plan 07)
+# Current Goal: GD50 — Tetris Decomposition & Composition
 
-**Status:** 🔧 In Progress — components built, Space Invaders in progress  
-**Active Plan:** `planning/07 - Space Invaders and Tetris.md`  
-**Started:** 2026-04-19
+**Last Updated:** 2026-05-01
 
 ---
 
-## Completed Interstitial Plans
+## Active Task
 
-### ✅ Plan 08 — Code Quality Update (`planning/08 - code quality update.md`)
-**Completed:** 2026-04-30
-- Unified `_physics_process` → `_process` migration across all components for frame-rate-independent logic
-- Signal disconnection hygiene in components that connect to external nodes
-- Standardized `process_mode` and `process_priority` across the component tree
-- GDScript linting and style normalization
-
-### ✅ Plan 09 — Performance Update (`planning/09 - performance update.md`)
-**Completed:** 2026-04-30
-- **Phase 1:** GroupCache autoload — eliminated `get_nodes_in_group()` allocations across 15 call sites
-- **Phase 2:** Easy wins — PackedScene preload in split_on_death, change-only update in group_count_multiplier, single-pass die() in health
-- **Phase 3:** WaveSpawner batch spawning — process-driven queue replaces timer-per-entity
-- **Phase 4:** SoundSynth performance — voice limiting (MAX_VOICES=6), fill rate cap (MAX_FILL_PER_FRAME=256), CONTINUOUS deduplication registry
-- **Phase 5:** Verified — all games profiled, 150+ entity stress test passes
+Decompose the "god component" `tetromino_formation.gd` and recompose Tetris to use the new gridless `grid_movement` paradigm, then compose the full Tetris game scene.
 
 ---
 
-## Plan 07 Progress
+## Background
 
-### ✅ Phase 1 — Grid Foundation (Complete)
-- [x] `grid_basic` (Flow) — grid coordinate system + active occupancy
-- [x] `grid_movement` (Leg) — discrete snap movement with hop_delay, ratchets, hard drop
-- [x] `grid_rotation` (Leg) — discrete rotation steps
-- [x] Debug test scene: `Scenes/Debug/grid_test.tscn`
+Space Invaders proved that the gridless `grid_movement` refactor works beautifully — invaders step by fixed pixel amounts, no `GridBasic` dependency needed. Now Tetris needs the same treatment.
 
-### ✅ Phase 2 — Space Invaders Components (Complete)
-- [x] `swarm_controller` (Flow) — swarm orchestration with signal bus
-- [x] `swarm_ai` (Brain) — antenna brain for swarm commands
-- [x] `shoot_ai_swarm` (Brain) — formation-aware edge shooting
+The current `tetromino_formation.gd` is a monolithic leg component that handles too many responsibilities:
+- Multi-cell shape management (offsets array)
+- Rotation of offsets
+- Landing detection
+- Lock delay
+- Cell registration in grid occupancy map
+- Visual sprite creation on lock
+- Interactable followers for remix scenarios
 
-### ✅ Phase 3 — Tetris Components (Complete)
-- [x] `falling_ai` (Brain) — gravity as input source (emits input_move DOWN on timer)
-- [x] `tetromino_formation` (Leg) — multi-cell shape management, lock delay, cell registration
-- [x] `tetromino_spawner` (Flow) — piece generation with bag/queue
-- [x] `line_clear_monitor` (Rule) — generic line-clear detection
-
-### ✅ Additional Components Built
-- [x] `warp_asteroids` (Leg) — emergency teleport with intangibility
-- [x] `tetromino` body script + scenes (tetromino.tscn, tetromino_single.tscn)
-- [x] `brick_damaging.tscn` — brick variant that deals damage on contact
-
-### 🔧 Phase 4 — Compose Game Scenes (In Progress)
-- [ ] **Space Invaders** game scene — compose from grid_basic + swarm_controller + wave_spawner + shoot_ai_swarm + existing components
-- [ ] **Tetris** game scene — compose from grid_basic + tetromino_spawner + line_clear_monitor + falling_ai + existing components
-
-### 🔲 Pending Enhancements
-- [ ] `wave_spawner` — add `grid_score_by_row` (same pattern as grid_health_by_row)
-- [ ] `universal_body` — add `autofire` toggle for DAS (Delayed Auto Shift)
-- [ ] `variable_tuner_global` — group-wide property changes (adjust fall speed on level up)
-
-### 🔲 Phase 5 — Test & Polish
-- [ ] Full gameplay loop test: Space Invaders
-- [ ] Full gameplay loop test: Tetris
-- [ ] Audio for both games (SoundSynth procedural sounds)
+This needs to be decomposed into focused, single-responsibility components that compose together.
 
 ---
 
-## Component Catalog: 75 Components
+## Steps
 
-| Category | Count |
-|----------|-------|
-| Core | 8 |
-| Bodies | 9 |
-| Brains | 8 |
-| Legs | 12 |
-| Arms | 3 |
-| Components | 14 |
-| Rules | 8 |
-| Flow | 11 |
-| Effects | 2 |
+### Step 1: Decompose `tetromino_formation.gd`
+Break the god component into separate concerns:
+- **Formation/offset management** — tracking which cells a multi-cell body occupies
+- **Rotation logic** — rotating the offset array
+- **Landing detection** — detecting when a piece can't move further down
+- **Lock delay** — timing before a landed piece locks in place
+- **Cell registration** — registering locked cells in grid_basic for line clearing
 
-## Game Catalog: 10 Games (7 working, 1 needs remake, 2 in progress)
+### Step 2: Recompose Tetrominos for Gridless GridMovement
+Adapt tetromino entities to use the refactored `grid_movement.gd` (step-based, no GridBasic dependency):
+- Tetromino pieces use GridMovement for lateral movement and gravity
+- FallingAI emits DOWN moves on a timer
+- GridRotation handles discrete 90° rotation
 
-| Game | Location | Status |
-|------|----------|--------|
-| Pong | `remakes/pong.tscn` | ✅ Working |
-| Breakout | `remakes/breakout.tscn` | ✅ Working |
-| Asteroids | `remakes/asteroids.tscn` | ✅ Working (polished) |
-| Pongsteroids | `remixes/pongsteroids.tscn` | ✅ Working |
-| Dogfight | `originals/dogfight.tscn` | ✅ Working |
-| Pongout | `remixes/pongout.tscn` | ✅ Working |
-| Breaksteroids | `remixes/breaksteroids.tscn` | ✅ Working |
-| Asterout | `remixes/asterout.tscn` | ⚠️ Needs remake |
-| Space Invaders | `remakes/` (not yet created) | 🔧 Components built, composing |
-| Tetris | `remakes/` (not yet created) | 🔧 Components built |
+### Step 3: Implement Tetris-Specific Components
+New components needed for the decomposed architecture:
+- Whatever focused components emerge from the decomposition
+- May need new landing/lock detection that works with the gridless paradigm
+
+### Step 4: Compose Tetris Game Scene
+Assemble `Scenes/Games/remakes/tetris.tscn` from:
+- UniversalGameScript root
+- TetrominoSpawner (bag/queue)
+- GridBasic (for line-clear detection only, not movement)
+- LineClearMonitor
+- FallingAI + GridMovement + GridRotation on tetromino bodies
+- Timer for gravity speed
+- LivesCounter or equivalent game-over condition
+- Interface for score/next piece display
 
 ---
 
-## Known Bugs to Fix
+## Dependencies & Risks
 
-- `patrol_ai.gd`: Start position bug — UFO may not begin at the correct path position
-- `ufo_shielded.tscn`: UFO drawing scale may need adjustment
-- `ring_spawner.gd`: Bricks parented to non-root bodies bypass CollisionMatrix — needs architectural fix or workaround
+- `grid_basic.gd` is still needed for **line clearing** (occupancy tracking, row detection) even though movement no longer depends on it
+- The decomposition must preserve remix compatibility — tetromino_formation's "interactable followers" feature needs to survive in some form
+- Tetris has stricter grid requirements than Space Invaders (pieces must align perfectly to cell boundaries)
+- Lock delay timing is critical for playability — too fast feels punishing, too slow feels floaty
+
+---
+
+## Related Files
+
+| File | Role |
+|------|------|
+| `Scripts/Legs/tetromino_formation.gd` | God component to decompose |
+| `Scripts/Legs/grid_movement.gd` | Gridless movement (already refactored for Space Invaders) |
+| `Scripts/Legs/grid_rotation.gd` | Discrete rotation (may need updates) |
+| `Scripts/Brains/falling_ai.gd` | Gravity brain (should work as-is) |
+| `Scripts/Flow/tetromino_spawner.gd` | Piece spawning (may need updates) |
+| `Scripts/Rules/line_clear_monitor.gd` | Line clearing (depends on grid_basic) |
+| `Scripts/Flow/grid_basic.gd` | Grid occupancy (still needed for line clearing) |
+| `Scripts/Bodies/tetromino.gd` | Body drawing code |
+| `planning/07 - Space Invaders and Tetris.md` | Original planning document |
+
+---
+
+## Success Criteria
+
+- Tetris is fully playable as a pure scene assembly (no game script)
+- `tetromino_formation.gd` is decomposed into focused single-responsibility components
+- All tetromino movement uses the gridless `grid_movement` paradigm
+- Line clearing works correctly via `grid_basic` + `line_clear_monitor`
+- The component architecture remains clean and remix-friendly

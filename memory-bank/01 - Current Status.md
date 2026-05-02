@@ -1,11 +1,11 @@
 # Current Status: GD50 — Arcade Cabinet
 
-**Last Updated:** 2026-04-30  
+**Last Updated:** 2026-05-01  
 **Engine:** Godot 4.x (GDScript)  
 **Architecture:** Entity-Component (composition over inheritance)  
-**Playable Games:** Pong, Breakout, Asteroids, Pongsteroids, Dogfight, Pongout, Breaksteroids — ALL componentized, zero game scripts  
-**In Progress:** Space Invaders, Tetris (Plan 07 — components built, game scenes being composed)  
-**Recent Completed:** Plan 08 (code quality), Plan 09 (performance optimization including SoundSynth voice limiting)
+**Playable Games:** Pong, Breakout, Asteroids, Pongsteroids, Dogfight, Pongout, Breaksteroids, Space Invaders — ALL componentized, zero game scripts  
+**In Progress:** Tetris (Plan 07 — requires tetromino_formation decomposition + gridless grid_movement paradigm)  
+**Recent Completed:** Space Invaders (full game + heartbeat audio + barriers), SoundSynth voice leak fix + gameplay_only gate
 
 ---
 
@@ -86,7 +86,10 @@ Scenes/Bodies/generic/
 ├── brick.tscn
 ├── brick_damaging.tscn          — Brick variant that deals damage on contact
 ├── bullet_simple.tscn
+├── bullet_simple_smallsound.tscn — Small bullet variant for Space Invaders
 ├── bullet_wrapping.tscn
+├── invader.tscn                 — Space Invaders alien (base archetype)
+├── mystery_ship.tscn            — Space Invaders mystery/UFO ship
 ├── paddle.tscn
 ├── tetromino.tscn               — Multi-block tetromino piece (4 cells)
 ├── tetromino_single.tscn        — Single tetromino cell/block
@@ -97,10 +100,12 @@ Scenes/Bodies/generic/
 
 Scenes/Bodies/player/
 ├── player_paddle.tscn
+├── player_paddle_cannon.tscn    — Space Invaders player cannon
 ├── player_triangle_ship.tscn
 └── player_triangle_ship_modern.tscn
 
 Scenes/Bodies/nonplayer/
+├── nonplayer_invader.tscn       — Space Invaders alien (enemy-rigged)
 ├── nonplayer_paddle.tscn
 ├── nonplayer_triangle_ship.tscn
 └── nonplayer_triangle_ship_modern.tscn
@@ -131,6 +136,18 @@ Scenes/Bodies/nonplayer/
 ### `Scripts/Bodies/paddle.gd` — extends UniversalBody
 - Pong-style paddle. Sets collision shape from exports. All movement, AI, and deflection handled by attached components.
 - Scenes: `generic/paddle.tscn`, `player/player_paddle.tscn`, `nonplayer/nonplayer_paddle.tscn`
+
+### `Scripts/Bodies/invader.gd` — extends UniversalBody
+- Space Invaders alien invader. Draws one of three invader types (SQUID, NAUTILUS, CRAB) with 2-frame animation. **Drawing code only** — all behavior handled by attached components (SwarmAi, ShootAiSwarm, GridMovement, Health, ScoreOnDeath).
+- Scenes: `generic/invader.tscn` (base), `nonplayer/nonplayer_invader.tscn` (pre-rigged with enemy AI + collision groups)
+
+### `Scripts/Bodies/paddle_cannon.gd` — extends UniversalBody
+- Space Invaders player cannon. Horizontal paddle shape with upward shooting. **Drawing code only** — all behavior handled by attached components (PlayerControl, DirectMovement, GunSimple, Health, DeathEffect).
+- Scene: `player/player_paddle_cannon.tscn`
+
+### `Scripts/Bodies/mystery_ship.gd` — extends UniversalBody
+- Space Invaders mystery/UFO ship. Draws a rectangular UFO shape. **Drawing code only** — behavior from PatrolAi, ScoreOnDeath, and screen cleanup components.
+- Scene: `generic/mystery_ship.tscn`
 
 ### `Scripts/Bodies/tetromino.gd` — extends UniversalBody
 - Tetromino piece for Tetris and Tetris-remix games. **Drawing code only** — visual representation of a multi-cell grid piece. Grid snap movement, rotation, formation tracking, and line clearing handled by attached components (GridMovement, GridRotation, TetrominoFormation, FallingAI).
@@ -213,10 +230,10 @@ Scenes/Bodies/nonplayer/
 ### `Scripts/Legs/rotation_target.gd` — extends Node
 - Smoothly rotates toward mouse position or joystick direction. Supports `independant_aim` mode.
 
-### `Scripts/Legs/grid_movement.gd` — extends Node
-- Discrete grid snap movement. Translates `move` and `move_to` signals into grid cell hops. Stores the most recent movement command between hops. On each hop tick: snaps to the target grid cell instantly (no interpolation). Enforces grid bounds, checks occupancy before moving (optional), supports movement ratchets (block specific directions), and hard drop mode.
-- Exports: `hop_delay`, `grid_name`, `block_on_occupied`, `prevent_movement_up/down/left/right`, `enable_hard_drop`
-- **Plan 07 component** — designed for Space Invaders invaders and Tetris pieces
+### `Scripts/Legs/grid_movement.gd` — extends UniversalComponent
+- Self-contained step-based movement. Moves parent by a fixed `step_size` when `move` signal fires. Uses Godot `test_move()` for physics-based occupancy checks (no external grid dependency) and `UniversalBody.move_parent()` for boundary clamping. Supports hop delay, input queueing, direction locks, and hard drop.
+- Exports: `step_size`, `hop_delay`, `allow_diagonal`, `block_on_collision`, `prevent_movement_up/down/left/right`, `enable_hard_drop`, `use_input_queue`, `max_queue_size`
+- **Plan 07 component** — used by Space Invaders invaders, planned for Tetris pieces
 
 ### `Scripts/Legs/grid_rotation.gd` — extends Node
 - Discrete rotation in configurable steps (default 90°, optional 45°). Ties facing direction to movement input and locks it to the grid. Purely handles rotation — does not move the body.
@@ -500,6 +517,19 @@ Scenes/Games/
 - Audio: MusicRamping (reactive music based on asteroid count)
 - Notable emergent property: randomized asteroid collision shapes create unpredictable deflections — plays like "space pinball"
 
+### `Scenes/Games/remakes/space_invaders.tscn` — UniversalGameScript root + components
+- **Space Invaders.** No game-specific script. Assembled entirely from UGS + components.
+- Root: `UniversalGameScript` with 4 collision groups (players, enemies, players_bullets, enemies_bullets)
+- Player cannon: PaddleCannon (PlayerControl + DirectMovement + GunSimple + Health + DeathEffect)
+- Invaders: 5×11 formation (3 WaveSpawners — SQUID row, NAUTILUS rows, CRAB rows) with SwarmAi + ShootAiSwarm + GridMovement + Health + ScoreOnDeath
+- SwarmController: Signal bus movement with speed ramping, boundary reversal + step-down
+- Mystery ship: Timer-spawned (20s loop) via WaveDirector + WaveSpawner, PatrolAi movement
+- Barriers: 4 grids of 1-HP bricks (use_health_color=false for white coloring), invaders crush them on contact via DamageOnHit
+- Flow: GroupMonitor (enemies) → WaveDirector → WaveSpawner loop; GroupMonitor (players) → respawn with safe zone
+- Audio: SoundSynth (ON_SIGNAL) connected to SwarmController.swarm_move for heartbeat bass riff, gameplay_only gate
+- Rules: LivesCounter + SwarmController bottom_action=LOSE_LIFE
+- UI: Interface (POINTS_MULTIPLIER mode)
+
 ### `Scenes/Games/remixes/asterout.tscn` — UniversalGameScript root + components
 - **Asterout.** ⚠️ EXISTS BUT NOT WORKING WELL — needs to be remade. Modern controls + UFO dogfighting with brick shields.
 - Current issues: RingSpawner bricks don't collide with player bullets (CollisionMatrix blindspot — bricks parented to UFO body instead of game root)
@@ -560,7 +590,7 @@ EFFECTS (death_particles, death_broken_triangle_ship) → self-destructing visua
 | Category | Count | Components |
 |----------|-------|------------|
 | Core | 8 | universal_body, universal_game_script, universal_component, universal_component_2d, collision_matrix, collision_group, property_override, common_enums |
-| Bodies | 9 | ball, paddle, asteroid, brick, bullet_simple, bullet_wrapping, tetromino, triangle_ship, ufo |
+| Bodies | 12 | ball, paddle, asteroid, brick, bullet_simple, bullet_wrapping, tetromino, triangle_ship, ufo, invader, paddle_cannon, mystery_ship |
 | Brains | 8 | player_control, interceptor_ai, aim_ai, shoot_ai, shoot_ai_swarm, patrol_ai, falling_ai, swarm_ai |
 | Legs | 12 | direct_movement, direct_acceleration, engine_simple, engine_complex, friction_linear, friction_static, rotation_direct, rotation_target, grid_movement, grid_rotation, tetromino_formation, warp_asteroids |
 | Arms | 3 | gun_simple, damage_on_hit, damage_on_joust |

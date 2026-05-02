@@ -16,12 +16,27 @@ func _ready() -> void:
 	if size == Size.SMALL:
 		self.width = width / 2
 		self.height = height / 2
-		$DirectMovement.speed = $DirectMovement.speed * 2
-		$AimAi.aim_inaccuracy = $AimAi.aim_inaccuracy / 2
-		$ShootAi.fire_rate = $ShootAi.fire_rate / 2.0
-		$SoundSynth.note = 72
-		$ShootAi2.fire_rate = $ShootAi2.fire_rate / 2.0
-		$AimAi2.aim_inaccuracy = $AimAi2.aim_inaccuracy / 2
+		var direct_movement = get_node_or_null("DirectMovement")
+		if direct_movement:
+			direct_movement.speed = direct_movement.speed * 2
+		var aim_ai = get_node_or_null("AimAi")
+		if aim_ai:
+			aim_ai.aim_inaccuracy = aim_ai.aim_inaccuracy / 2
+		var shoot_ai = get_node_or_null("ShootAi")
+		if shoot_ai:
+			shoot_ai.fire_rate = shoot_ai.fire_rate / 2.0
+		var sound_synth = get_node_or_null("SoundSynth")
+		if sound_synth:
+			sound_synth.note = 72
+		var shoot_ai2 = get_node_or_null("ShootAi2")
+		if shoot_ai2:
+			shoot_ai2.fire_rate = shoot_ai2.fire_rate / 2.0
+		var aim_ai2 = get_node_or_null("AimAi2")
+		if aim_ai2:
+			aim_ai2.aim_inaccuracy = aim_ai2.aim_inaccuracy / 2
+		var score_on_death = get_node_or_null("ScoreOnDeath")
+		if score_on_death:
+			score_on_death.base_score = 30
 	
 	super._ready()
 

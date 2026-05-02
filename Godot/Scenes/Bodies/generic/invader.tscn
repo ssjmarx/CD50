@@ -1,0 +1,82 @@
+[gd_scene load_steps=15 format=3 uid="uid://cd7wh7duwm6y7"]
+
+[ext_resource type="Script" uid="uid://b4p6q6483yxva" path="res://Scripts/Bodies/invader.gd" id="1_6gboa"]
+[ext_resource type="Texture2D" uid="uid://c2xhyo80temb" path="res://Assets/invaders/crab_1.png" id="2_6l2jk"]
+[ext_resource type="Texture2D" uid="uid://c81k12p6awrg0" path="res://Assets/invaders/crab_2.png" id="3_vy4hc"]
+[ext_resource type="PackedScene" uid="uid://bj81pr736k256" path="res://Scenes/Components/health.tscn" id="4_6l2jk"]
+[ext_resource type="Texture2D" uid="uid://vphhi48y10tu" path="res://Assets/invaders/nautilus_1.png" id="5_dbxxy"]
+[ext_resource type="Texture2D" uid="uid://bhfgytwlnflqg" path="res://Assets/invaders/nautilus_2.png" id="6_o8vup"]
+[ext_resource type="Texture2D" uid="uid://b5agok580qi1u" path="res://Assets/invaders/squid_1.png" id="7_hgqod"]
+[ext_resource type="Texture2D" uid="uid://ddgw6fthco84h" path="res://Assets/invaders/squid_2.png" id="8_5qi0w"]
+[ext_resource type="PackedScene" uid="uid://ic3mj0x3ub4c" path="res://Scenes/Components/score_on_death.tscn" id="9_5qi0w"]
+[ext_resource type="PackedScene" uid="uid://145njn1uody4" path="res://Scenes/Components/death_effect.tscn" id="10_adwoo"]
+[ext_resource type="PackedScene" uid="uid://c5h0r2rnmwe4k" path="res://Scenes/Effects/death_particles.tscn" id="11_cabma"]
+
+[sub_resource type="SpriteFrames" id="SpriteFrames_6l2jk"]
+animations = [{
+"frames": [{
+"duration": 1.0,
+"texture": ExtResource("2_6l2jk")
+}, {
+"duration": 1.0,
+"texture": ExtResource("3_vy4hc")
+}],
+"loop": true,
+"name": &"default",
+"speed": 0.9
+}]
+
+[sub_resource type="SpriteFrames" id="SpriteFrames_vy4hc"]
+animations = [{
+"frames": [{
+"duration": 1.0,
+"texture": ExtResource("5_dbxxy")
+}, {
+"duration": 1.0,
+"texture": ExtResource("6_o8vup")
+}],
+"loop": true,
+"name": &"default",
+"speed": 0.9
+}]
+
+[sub_resource type="SpriteFrames" id="SpriteFrames_adwoo"]
+animations = [{
+"frames": [{
+"duration": 1.0,
+"texture": ExtResource("7_hgqod")
+}, {
+"duration": 1.0,
+"texture": ExtResource("8_5qi0w")
+}],
+"loop": true,
+"name": &"default",
+"speed": 0.9
+}]
+
+[node name="Invader" type="CharacterBody2D"]
+script = ExtResource("1_6gboa")
+width = 16
+height = 16
+
+[node name="Health" parent="." instance=ExtResource("4_6l2jk")]
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+
+[node name="crab" type="AnimatedSprite2D" parent="."]
+visible = false
+sprite_frames = SubResource("SpriteFrames_6l2jk")
+frame_progress = 0.768778
+
+[node name="nautilus" type="AnimatedSprite2D" parent="."]
+visible = false
+sprite_frames = SubResource("SpriteFrames_vy4hc")
+
+[node name="squid" type="AnimatedSprite2D" parent="."]
+visible = false
+sprite_frames = SubResource("SpriteFrames_adwoo")
+
+[node name="ScoreOnDeath" parent="." instance=ExtResource("9_5qi0w")]
+
+[node name="DeathEffect" parent="." instance=ExtResource("10_adwoo")]
+effect_scenes = Array[PackedScene]([ExtResource("11_cabma")])

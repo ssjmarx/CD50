@@ -1,48 +1,50 @@
-[gd_scene load_steps=16 format=3 uid="uid://vt2aalri00kw"]
+[gd_scene load_steps=25 format=3 uid="uid://vt2aalri00kw"]
 
 [ext_resource type="Script" uid="uid://bghaddibpt6f1" path="res://addons/crt/crt.gd" id="1_vq5hb"]
 [ext_resource type="Script" uid="uid://bjdgpevhahi6d" path="res://Scripts/Core/universal_game_script.gd" id="1_vskpd"]
 [ext_resource type="Script" uid="uid://bfkr4fdx316o5" path="res://Scripts/Core/collision_group.gd" id="2_6vykp"]
 [ext_resource type="PackedScene" uid="uid://blcwsjhbx62t5" path="res://Scenes/Bodies/player/player_paddle_cannon.tscn" id="2_s60y6"]
 [ext_resource type="PackedScene" uid="uid://vlbel76nqh5w" path="res://Scenes/Rules/wave_spawner.tscn" id="4_wevyt"]
-[ext_resource type="PackedScene" uid="uid://dh545dmdhudol" path="res://Scenes/Bodies/generic/ufo.tscn" id="6_6vykp"]
+[ext_resource type="PackedScene" uid="uid://vn5qxka3iet4" path="res://Scenes/Bodies/nonplayer/nonplayer_invader.tscn" id="6_6vykp"]
 [ext_resource type="PackedScene" uid="uid://dwyyfxniivl1r" path="res://Scenes/Rules/wave_director.tscn" id="6_nhucj"]
 [ext_resource type="PackedScene" uid="uid://bq6cdrx340jp7" path="res://Scenes/Flow/interface.tscn" id="7_6gge3"]
+[ext_resource type="Script" uid="uid://cp0ni1lgml7c6" path="res://Scripts/Core/property_override.gd" id="7_yp3rw"]
+[ext_resource type="PackedScene" uid="uid://bycsf31pwnvgl" path="res://Scenes/Flow/swarm_controller.tscn" id="9_y7sge"]
+[ext_resource type="PackedScene" uid="uid://dhulxxtcsipl6" path="res://Scenes/Rules/group_monitor.tscn" id="10_jba1y"]
+[ext_resource type="PackedScene" uid="uid://tre5p2x1bb2k" path="res://Scenes/Rules/lives_counter.tscn" id="12_k2lq6"]
+[ext_resource type="PackedScene" uid="uid://craitf0mklbon" path="res://Scenes/Rules/timer.tscn" id="13_bum5r"]
+[ext_resource type="PackedScene" uid="uid://r0kpsqukc75t" path="res://Scenes/Bodies/generic/mystery_ship.tscn" id="13_dbhjy"]
+[ext_resource type="PackedScene" uid="uid://dga83l4d2rwyv" path="res://Scenes/Flow/sound_synth.tscn" id="15_74c7c"]
+[ext_resource type="PackedScene" uid="uid://cspp2scxj8eku" path="res://Scenes/Bodies/generic/barrier.tscn" id="16_jwgp7"]
 
-[sub_resource type="Resource" id="Resource_y7sge"]
+[sub_resource type="Resource" id="Resource_jwgp7"]
 script = ExtResource("2_6vykp")
 group_name = "players"
 targets = Array[String](["enemies_bullets"])
 metadata/_custom_type_script = "uid://bfkr4fdx316o5"
 
-[sub_resource type="Resource" id="Resource_6vykp"]
+[sub_resource type="Resource" id="Resource_nacot"]
 script = ExtResource("2_6vykp")
 group_name = "enemies"
 targets = Array[String](["players_bullets"])
 metadata/_custom_type_script = "uid://bfkr4fdx316o5"
 
-[sub_resource type="Resource" id="Resource_jba1y"]
+[sub_resource type="Resource" id="Resource_vcbdb"]
 script = ExtResource("2_6vykp")
 group_name = "players_bullets"
-targets = Array[String](["enemies", "asteroids", "bricks"])
+targets = Array[String](["enemies", "bricks"])
 metadata/_custom_type_script = "uid://bfkr4fdx316o5"
 
-[sub_resource type="Resource" id="Resource_yp3rw"]
+[sub_resource type="Resource" id="Resource_6ogln"]
 script = ExtResource("2_6vykp")
 group_name = "enemies_bullets"
-targets = Array[String](["players"])
+targets = Array[String](["players", "bricks"])
 metadata/_custom_type_script = "uid://bfkr4fdx316o5"
 
-[sub_resource type="Resource" id="Resource_k2lq6"]
-script = ExtResource("2_6vykp")
-group_name = "asteroids"
-targets = Array[String](["players_bullets"])
-metadata/_custom_type_script = "uid://bfkr4fdx316o5"
-
-[sub_resource type="Resource" id="Resource_bum5r"]
+[sub_resource type="Resource" id="Resource_jauks"]
 script = ExtResource("2_6vykp")
 group_name = "bricks"
-targets = Array[String](["players_bullets"])
+targets = Array[String](["enemies_bullets", "players_bullets", "enemies"])
 metadata/_custom_type_script = "uid://bfkr4fdx316o5"
 
 [sub_resource type="Environment" id="Environment_vskpd"]
@@ -51,14 +53,24 @@ glow_enabled = true
 glow_intensity = 3.0
 glow_bloom = 0.33
 
+[sub_resource type="Resource" id="Resource_dbhjy"]
+script = ExtResource("7_yp3rw")
+property_name = "type"
+value = 1
+metadata/_custom_type_script = "uid://cp0ni1lgml7c6"
+
+[sub_resource type="Resource" id="Resource_74c7c"]
+script = ExtResource("7_yp3rw")
+property_name = "type"
+value = 2
+metadata/_custom_type_script = "uid://cp0ni1lgml7c6"
+
 [node name="SpaceInvaders" type="Node2D"]
 script = ExtResource("1_vskpd")
-game_title = "Space Invaders"
-collision_groups = Array[ExtResource("2_6vykp")]([SubResource("Resource_y7sge"), SubResource("Resource_6vykp"), SubResource("Resource_jba1y"), SubResource("Resource_yp3rw"), SubResource("Resource_k2lq6"), SubResource("Resource_bum5r")])
+collision_groups = Array[ExtResource("2_6vykp")]([SubResource("Resource_jwgp7"), SubResource("Resource_nacot"), SubResource("Resource_vcbdb"), SubResource("Resource_6ogln"), SubResource("Resource_jauks")])
 
 [node name="PaddleCannon" parent="." instance=ExtResource("2_s60y6")]
 position = Vector2(320, 312)
-lock_y = true
 
 [node name="CanvasLayer" type="CanvasLayer" parent="."]
 script = ExtResource("1_vq5hb")
@@ -79,20 +91,6 @@ pixel_strength = -3.0
 [node name="WorldEnvironment" type="WorldEnvironment" parent="."]
 environment = SubResource("Environment_vskpd")
 
-[node name="WaveSpawner" parent="." node_paths=PackedStringArray("director") instance=ExtResource("4_wevyt")]
-position = Vector2(320, 64)
-spawn_scene = ExtResource("6_6vykp")
-spawn_pattern = 2
-stagger_delay = 0.01
-director = NodePath("../WaveDirector")
-spawn_groups = Array[String](["enemies"])
-spawn_collision_groups = Array[String](["enemies"])
-grid_height = 16
-grid_columns = 200
-grid_rows = 5
-grid_spacing = 8
-grid_health_by_row = false
-
 [node name="WaveDirector" parent="." instance=ExtResource("6_nhucj")]
 trigger_type = 3
 wave_delay = 0.0
@@ -100,3 +98,130 @@ wave_delay = 0.0
 [node name="Interface" parent="." instance=ExtResource("7_6gge3")]
 display_mode = 1
 display_lives = true
+
+[node name="SwarmController" parent="." instance=ExtResource("9_y7sge")]
+base_tick_interval = 0.9
+min_tick_interval = 0.0
+step_down_distance = 4
+boundary_left = 8.0
+boundary_right = 632.0
+boundary_bottom = 296.0
+bottom_action = 1
+wave_speed_decrease = 0.1
+
+[node name="GroupMonitor" parent="." instance=ExtResource("10_jba1y")]
+target_group = "enemies"
+
+[node name="WaveDirector4" parent="." instance=ExtResource("6_nhucj")]
+trigger_value = "enemies"
+
+[node name="WaveSpawner" parent="." node_paths=PackedStringArray("director", "extra_directors") instance=ExtResource("4_wevyt")]
+position = Vector2(320, 72)
+spawn_scene = ExtResource("6_6vykp")
+spawn_pattern = 2
+stagger_delay = 0.01
+director = NodePath("../WaveDirector")
+extra_directors = [NodePath("../WaveDirector4")]
+spawn_groups = Array[String](["enemies", "invaders"])
+spawn_collision_groups = Array[String](["enemies"])
+grid_height = 16
+grid_columns = 11
+grid_rows = 2
+grid_spacing = 8
+grid_health_by_row = false
+
+[node name="WaveSpawner2" parent="." node_paths=PackedStringArray("director", "extra_directors") instance=ExtResource("4_wevyt")]
+position = Vector2(320, 124)
+spawn_scene = ExtResource("6_6vykp")
+spawn_pattern = 2
+stagger_delay = 0.01
+director = NodePath("../WaveDirector")
+extra_directors = [NodePath("../WaveDirector4")]
+property_overrides = Array[ExtResource("7_yp3rw")]([SubResource("Resource_dbhjy")])
+spawn_groups = Array[String](["enemies", "invaders"])
+spawn_collision_groups = Array[String](["enemies"])
+grid_height = 16
+grid_columns = 11
+grid_rows = 2
+grid_spacing = 8
+grid_health_by_row = false
+
+[node name="WaveSpawner3" parent="." node_paths=PackedStringArray("director", "extra_directors") instance=ExtResource("4_wevyt")]
+position = Vector2(320, 32)
+spawn_scene = ExtResource("6_6vykp")
+spawn_pattern = 2
+stagger_delay = 0.01
+director = NodePath("../WaveDirector")
+extra_directors = [NodePath("../WaveDirector4")]
+property_overrides = Array[ExtResource("7_yp3rw")]([SubResource("Resource_74c7c")])
+spawn_groups = Array[String](["enemies", "invaders"])
+spawn_collision_groups = Array[String](["enemies"])
+grid_height = 16
+grid_columns = 11
+grid_rows = 1
+grid_spacing = 8
+grid_health_by_row = false
+
+[node name="LivesCounter" parent="." instance=ExtResource("12_k2lq6")]
+
+[node name="GroupMonitor2" parent="." instance=ExtResource("10_jba1y")]
+target_group = "players"
+lose_life_on_clear = true
+
+[node name="WaveDirector2" parent="." instance=ExtResource("6_nhucj")]
+trigger_value = "players"
+wave_delay = 1.0
+
+[node name="WaveSpawner4" parent="." node_paths=PackedStringArray("director") instance=ExtResource("4_wevyt")]
+position = Vector2(320, 312)
+spawn_scene = ExtResource("2_s60y6")
+spawn_pattern = 3
+spawn_count_equation = "1"
+director = NodePath("../WaveDirector2")
+use_safe_zone = true
+unsafe_groups = Array[String](["enemies_bullets"])
+safety_radius = 200.0
+grid_health_by_row = false
+
+[node name="WaveDirector3" parent="." instance=ExtResource("6_nhucj")]
+trigger_type = 1
+trigger_value = "ufo"
+wave_delay = 0.0
+
+[node name="WaveSpawner6" parent="." node_paths=PackedStringArray("director") instance=ExtResource("4_wevyt")]
+position = Vector2(-8, 16)
+spawn_scene = ExtResource("13_dbhjy")
+spawn_pattern = 3
+spawn_count_equation = "1"
+stagger_delay = 0.0
+director = NodePath("../WaveDirector3")
+grid_health_by_row = false
+
+[node name="Timer" parent="." instance=ExtResource("13_bum5r")]
+duration = 20.0
+loop_timer = true
+game_start = true
+timer_id = "ufo"
+
+[node name="SoundSynth" parent="." node_paths=PackedStringArray("source_node") instance=ExtResource("15_74c7c")]
+play_mode = 1
+note = 48
+volume = 0.1
+duration = 0.1
+source_node = NodePath("../SwarmController")
+source_signal = "swarm_move"
+positional = false
+exclusive = true
+gameplay_only = true
+
+[node name="Barrier" parent="." instance=ExtResource("16_jwgp7")]
+position = Vector2(80, 272)
+
+[node name="Barrier2" parent="." instance=ExtResource("16_jwgp7")]
+position = Vector2(240, 272)
+
+[node name="Barrier3" parent="." instance=ExtResource("16_jwgp7")]
+position = Vector2(400, 272)
+
+[node name="Barrier4" parent="." instance=ExtResource("16_jwgp7")]
+position = Vector2(560, 272)

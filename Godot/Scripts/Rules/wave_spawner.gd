@@ -11,6 +11,7 @@ extends UniversalComponent2D
 @export var spawn_spacing: float
 @export var stagger_delay: float = 0.1
 @export var director: Node
+@export var extra_directors: Array[Node] = []
 
 # Attached components and property overrides
 @export var spawn_components: Array[PackedScene] = []
@@ -72,7 +73,8 @@ func _on_spawning_wave(signaller = game, wave_number: int = 0) -> void:
 		return
 	
 	if director != null and signaller != director and signaller != game:
-		return
+		if signaller not in extra_directors:
+			return
 	
 	var spawn_count: int
 	if spawn_pattern == CommonEnums.SpawnPattern.GRID:

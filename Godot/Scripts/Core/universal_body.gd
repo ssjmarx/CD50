@@ -54,11 +54,11 @@ var _axis_lock_y_pos: float
 @export var collision_groups: Array[String] = []
 
 func _enter_tree() -> void:
-	for group in collision_groups:
+	for group in get_groups():
 		GroupCache.mark_dirty(group)
 
 func _exit_tree() -> void:
-	for group in collision_groups:
+	for group in get_groups():
 		GroupCache.mark_dirty(group)
 
 func _ready() -> void:

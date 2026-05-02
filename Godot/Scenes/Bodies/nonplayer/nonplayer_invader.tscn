@@ -1,0 +1,107 @@
+[gd_scene load_steps=21 format=3 uid="uid://vn5qxka3iet4"]
+
+[ext_resource type="Script" uid="uid://b4p6q6483yxva" path="res://Scripts/Bodies/invader.gd" id="1_0twqc"]
+[ext_resource type="Texture2D" uid="uid://vphhi48y10tu" path="res://Assets/invaders/nautilus_1.png" id="2_0d2sv"]
+[ext_resource type="Texture2D" uid="uid://bhfgytwlnflqg" path="res://Assets/invaders/nautilus_2.png" id="3_8twno"]
+[ext_resource type="PackedScene" uid="uid://bj81pr736k256" path="res://Scenes/Components/health.tscn" id="4_2gt0v"]
+[ext_resource type="PackedScene" uid="uid://bi56x5nejv4l0" path="res://Scenes/Brains/shoot_ai_swarm.tscn" id="5_lrf7a"]
+[ext_resource type="PackedScene" uid="uid://btpqd0s0vatc8" path="res://Scenes/Brains/swarm_ai.tscn" id="6_hbcye"]
+[ext_resource type="PackedScene" uid="uid://bn32q5kmricio" path="res://Scenes/Legs/grid_movement.tscn" id="7_hbcye"]
+[ext_resource type="PackedScene" uid="uid://ic3mj0x3ub4c" path="res://Scenes/Components/score_on_death.tscn" id="8_3ud85"]
+[ext_resource type="PackedScene" uid="uid://b5mvtda2xfqqo" path="res://Scenes/Bodies/generic/bullet_simple_smallsound.tscn" id="8_gffci"]
+[ext_resource type="PackedScene" uid="uid://bapmn3uxv7pqb" path="res://Scenes/Arms/gun_simple.tscn" id="9_6m6w3"]
+[ext_resource type="Texture2D" uid="uid://c2xhyo80temb" path="res://Assets/invaders/crab_1.png" id="9_scxxo"]
+[ext_resource type="Texture2D" uid="uid://c81k12p6awrg0" path="res://Assets/invaders/crab_2.png" id="10_53lqh"]
+[ext_resource type="Texture2D" uid="uid://b5agok580qi1u" path="res://Assets/invaders/squid_1.png" id="13_gffci"]
+[ext_resource type="Texture2D" uid="uid://ddgw6fthco84h" path="res://Assets/invaders/squid_2.png" id="14_2xtlk"]
+[ext_resource type="PackedScene" uid="uid://cg5rnfuldr2n0" path="res://Scenes/Arms/damage_on_hit.tscn" id="15_2xtlk"]
+[ext_resource type="PackedScene" uid="uid://145njn1uody4" path="res://Scenes/Components/death_effect.tscn" id="16_1urs3"]
+[ext_resource type="PackedScene" uid="uid://c5h0r2rnmwe4k" path="res://Scenes/Effects/death_particles.tscn" id="17_gq5kr"]
+
+[sub_resource type="SpriteFrames" id="SpriteFrames_8t0pi"]
+animations = [{
+"frames": [{
+"duration": 1.0,
+"texture": ExtResource("9_scxxo")
+}, {
+"duration": 1.0,
+"texture": ExtResource("10_53lqh")
+}],
+"loop": true,
+"name": &"default",
+"speed": 0.9
+}]
+
+[sub_resource type="SpriteFrames" id="SpriteFrames_hhx1i"]
+animations = [{
+"frames": [{
+"duration": 1.0,
+"texture": ExtResource("2_0d2sv")
+}, {
+"duration": 1.0,
+"texture": ExtResource("3_8twno")
+}],
+"loop": true,
+"name": &"default",
+"speed": 0.9
+}]
+
+[sub_resource type="SpriteFrames" id="SpriteFrames_50fqu"]
+animations = [{
+"frames": [{
+"duration": 1.0,
+"texture": ExtResource("13_gffci")
+}, {
+"duration": 1.0,
+"texture": ExtResource("14_2xtlk")
+}],
+"loop": true,
+"name": &"default",
+"speed": 0.9
+}]
+
+[node name="Invader" type="CharacterBody2D"]
+script = ExtResource("1_0twqc")
+width = 16
+height = 16
+
+[node name="Health" parent="." instance=ExtResource("4_2gt0v")]
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+
+[node name="ShootAiSwarm" parent="." instance=ExtResource("5_lrf7a")]
+min_interval = 3.0
+max_interval = 9.0
+
+[node name="SwarmAi" parent="." instance=ExtResource("6_hbcye")]
+bus_group = "swarm_bus"
+
+[node name="GridMovement" parent="." instance=ExtResource("7_hbcye")]
+step_size = 8.0
+
+[node name="ScoreOnDeath" parent="." instance=ExtResource("8_3ud85")]
+
+[node name="GunSimple" parent="." instance=ExtResource("9_6m6w3")]
+ammo = ExtResource("8_gffci")
+max_bullets = 1
+initial_velocity = 200
+joy_input = true
+bullet_group = "enemies_bullets"
+
+[node name="crab" type="AnimatedSprite2D" parent="."]
+visible = false
+sprite_frames = SubResource("SpriteFrames_8t0pi")
+
+[node name="nautilus" type="AnimatedSprite2D" parent="."]
+visible = false
+sprite_frames = SubResource("SpriteFrames_hhx1i")
+
+[node name="squid" type="AnimatedSprite2D" parent="."]
+visible = false
+sprite_frames = SubResource("SpriteFrames_50fqu")
+
+[node name="DamageOnHit" parent="." instance=ExtResource("15_2xtlk")]
+target_groups = Array[String](["bricks"])
+
+[node name="DeathEffect" parent="." instance=ExtResource("16_1urs3")]
+effect_scenes = Array[PackedScene]([ExtResource("17_gq5kr")])

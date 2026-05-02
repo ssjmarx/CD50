@@ -1,4 +1,4 @@
-[gd_scene load_steps=9 format=3 uid="uid://blcwsjhbx62t5"]
+[gd_scene load_steps=11 format=3 uid="uid://blcwsjhbx62t5"]
 
 [ext_resource type="Script" uid="uid://66jbbstfhxx4" path="res://Scripts/Bodies/paddle_cannon.gd" id="1_urv2v"]
 [ext_resource type="PackedScene" uid="uid://bj81pr736k256" path="res://Scenes/Components/health.tscn" id="2_6m6pr"]
@@ -6,6 +6,8 @@
 [ext_resource type="PackedScene" uid="uid://b3lugns3ik8vj" path="res://Scenes/Bodies/generic/bullet_simple.tscn" id="4_bqvjx"]
 [ext_resource type="PackedScene" uid="uid://eketockdsssi" path="res://Scenes/Legs/direct_movement.tscn" id="5_bp5om"]
 [ext_resource type="PackedScene" uid="uid://6tweepbhleep" path="res://Scenes/Brains/player_control.tscn" id="6_y86ox"]
+[ext_resource type="PackedScene" uid="uid://145njn1uody4" path="res://Scenes/Components/death_effect.tscn" id="7_83dsw"]
+[ext_resource type="PackedScene" uid="uid://c5h0r2rnmwe4k" path="res://Scenes/Effects/death_particles.tscn" id="7_y86ox"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_868uc"]
 size = Vector2(8, 8)
@@ -16,6 +18,7 @@ metadata/__load_path__ = "res://Assets/Audio/zapThreeToneDown.ogg"
 [node name="PaddleCannon" type="CharacterBody2D" groups=["players"]]
 rotation = -1.5707964
 script = ExtResource("1_urv2v")
+lock_y = true
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="."]
 shape = SubResource("RectangleShape2D_868uc")
@@ -30,5 +33,9 @@ muzzle_offset = 10
 bullet_group = "players_bullets"
 
 [node name="DirectMovement" parent="." instance=ExtResource("5_bp5om")]
+speed = 200
 
 [node name="PlayerControl" parent="." instance=ExtResource("6_y86ox")]
+
+[node name="DeathEffect" parent="." instance=ExtResource("7_83dsw")]
+effect_scenes = Array[PackedScene]([ExtResource("7_y86ox")])

@@ -35,6 +35,6 @@ source_signal = "body_collided"
 [node name="SoundSynth" parent="SfxRamping" instance=ExtResource("5_0nysl")]
 play_mode = 1
 wave_shape = 3
-effect = 4
 volume = 0.4
+duration = 0.2
 exclusive = true

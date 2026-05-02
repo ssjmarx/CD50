@@ -39,6 +39,7 @@ func _ready() -> void:
 		
 		for group: String in spawn_groups:
 			body.add_to_group(group)
+			GroupCache.mark_dirty(group)
 		
 		game.add_child.call_deferred(body)
 		_bricks.append({node = body, angle = angle})

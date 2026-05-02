@@ -1,27 +1,35 @@
-# Swarm shooting AI. Fires with increasing probability over time, but only when the entity is on the specified edge of the formation.
+# Swarm shooting AI. Fires after a random cooldown (with random initial offset so
+# invaders don't all fire at once), but only when on the specified formation edge.
 
 extends UniversalComponent
 
 # Formation and firing configuration
 @export var formation_group: String = "invaders"
-@export var max_shot_interval: float = 3.0
+@export var min_interval: float = 2.0
+@export var max_interval: float = 5.0
 @export var fire_direction: Vector2 = Vector2.DOWN
 @export var edge: String = "bottom"
 @export var column_tolerance: float = 16.0
 @export var row_tolerance: float = 16.0
 
 var _time_since_shot: float = 0.0
+var _cooldown: float = 0.0
 
-# Accumulate time and fire probabilistically when on the formation edge
-func _process(delta: float) -> void:
+# Start each invader at a random point in its cooldown cycle
+func _ready() -> void:
+	_cooldown = randf_range(min_interval, max_interval)
+	_time_since_shot = randf() * _cooldown
+
+# Accumulate time and fire when cooldown expires and on the formation edge
+func _physics_process(delta: float) -> void:
 	_time_since_shot += delta
 	
-	var probability: float = _time_since_shot / max_shot_interval
-	
-	if randf() <= probability:
+	if _time_since_shot >= _cooldown:
 		if _is_on_edge():
+			parent.aim.emit(fire_direction)
 			parent.shoot.emit()
-			_time_since_shot = 0.0
+		_time_since_shot = 0.0
+		_cooldown = randf_range(min_interval, max_interval)
 
 # Check if this entity is the outermost member on the specified edge within its column/row
 func _is_on_edge() -> bool:

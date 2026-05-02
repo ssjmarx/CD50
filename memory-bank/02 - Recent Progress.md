@@ -621,13 +621,106 @@ The deduplication uses a static `Dictionary` mapping sound signatures to `WeakRe
 
 ---
 
+## Update 12: Grid Movement Refactor — Space Invaders
+
+**Date:** 2026-05-01
+
+### Problem
+The grid system was overcomplicated for Space Invaders. `GridBasic` provided occupancy tracking, coordinate conversion, and bounds checking — but Space Invaders only needed discrete step movement. The `GridBasic` in the `space_invaders.tscn` scene had mismatched cell sizes (20px default vs 24px actual formation spacing), causing invaders to snap to wrong positions on their first move. The `GridMovement` component depended on finding a `GridBasic` in the scene tree, creating tight coupling and fragility.
+
+### What Changed
+
+**`grid_movement.gd` rewritten** — now a self-contained step-based movement leg:
+- Removed all dependency on `GridBasic` (no `_find_nearest_grid()`, no `grid_to_world()`, no `world_to_grid()`)
+- Added `step_size` export — moves parent by exact pixel amount per step (e.g., 4.0 for Space Invaders crawl, 16.0 for board games)
+- Uses Godot's `test_move()` for physics-based occupancy checks — leverages the existing CollisionMatrix
+- Uses `UniversalBody.move_parent()` for boundary clamping — leverages existing `x_min/x_max/y_min/y_max` exports
+- Direction locks, input queue, and hard drop retained from original design
+- Emits `moved` signal after successful steps
+
+**`space_invaders.tscn` updated:**
+- Removed `GridBasic` node entirely
+- No other changes needed — SwarmController, SwarmAi, WaveSpawner all work as before
+
+**`nonplayer_invader.tscn` updated:**
+- Set `GridMovement.step_size = 4.0` for smooth Space Invaders crawl
+
+### Signal Flow (Simplified)
+```
+SwarmController → swarm_move(direction)
+  → SwarmAi → parent.move.emit(direction)
+    → GridMovement._on_move()
+      → _try_step(): test_move() for occupancy → move_parent() for boundary clamp
+```
+
+### Files Changed
+| File | Change |
+|------|--------|
+| `Scripts/Legs/grid_movement.gd` | Complete rewrite — step-based, no grid dependency |
+| `Scenes/Games/remakes/space_invaders.tscn` | Removed GridBasic node |
+| `Scenes/Bodies/nonplayer/nonplayer_invader.tscn` | Set step_size = 4.0 |
+
+### Status
+- Grid movement refactor: ✅ Complete
+- Space Invaders scene: ✅ Complete (see Update 13)
+- Tetris refactor to new grid_movement: 🔲 Not started (next goal)
+- `grid_basic.gd` still exists for Tetris components that reference it (to be addressed in Tetris refactor)
+
+---
+
+## Update 13: Space Invaders Complete
+
+**Date:** 2026-05-01
+
+### What Was Built
+
+Space Invaders is now fully playable — assembled entirely from existing components with zero new game-specific code.
+
+**Game scene** (`Games/remakes/space_invaders.tscn`):
+- 5×11 invader formation (SQUID, NAUTILUS, CRAB rows) with SwarmAi + ShootAiSwarm + GridMovement
+- Player cannon (PlayerControl + DirectMovement + GunSimple)
+- Mystery ship on 20s timer loop (PatrolAi movement)
+- 4 barrier grids of 1-HP bricks (use_health_color=false for white)
+- Invaders crush barriers on contact via DamageOnHit
+- SwarmController heartbeat bass riff via SoundSynth (ON_SIGNAL)
+- Wave progression, lives, safe-zone respawn
+
+**Bugs Fixed During Composition:**
+
+| Bug | File | Fix |
+|-----|------|-----|
+| Voice counter leak in rapid-fire ON_SIGNAL | `sound_synth.gd` | Added `_voice_active` guard in `play_one_shot()` — only claim voice if not already active |
+| SoundSynth plays during ATTRACT/GAME_OVER | `sound_synth.gd` | Added `gameplay_only` export — gates playback on `game.current_state == PLAYING` |
+| Bricks show Breakout HP colors in barriers | `brick.gd` | Added `use_health_color` export — when false, always draws white |
+
+**New Body Scenes:**
+
+| Scene | Purpose |
+|-------|---------|
+| `generic/invader.tscn` | Base invader archetype |
+| `generic/mystery_ship.tscn` | Mystery/UFO ship |
+| `generic/bullet_simple_smallsound.tscn` | Small bullet for Space Invaders |
+| `nonplayer/nonplayer_invader.tscn` | Enemy-rigged invader |
+| `player/player_paddle_cannon.tscn` | Player cannon |
+
+**Arcade Accuracy Analysis:**
+A detailed comparison between this implementation and the 1978 original was performed. Key intentional differences:
+- Widescreen layout (640×360 vs 224×256 portrait) — step sizes tuned to match ~3:30 formation descent time
+- Wave progression (original has no waves) — intentional for the game collection format
+- Per-invader bullet limit vs global cap — compensated by wider dodge space
+- Desynchronized animation — preferred over original's lockstep for visual variety
+- Custom scoring (multiplier for backline kills) — designed for cross-game score parity
+- Formation has fewer sweeps but bigger drops — increases endgame difficulty (intentional)
+
+---
+
 ## Summary: What Exists vs What Was Planned
 
 | Feature | Planned | Status |
 |---------|---------|--------|
 | Solar System Hub | Overview doc | ❌ Not built |
 | Entity Component System | Overview doc | ✅ Fully operational |
-| Game-Level Component System | Plan 03/04 | ✅ All 8 games componentized |
+| Game-Level Component System | Plan 03/04 | ✅ All 9 games componentized |
 | Pong | Plan 01/04 | ✅ Componentized — no game script |
 | Breakout | Plan 01/05 | ✅ Componentized — no game script |
 | Asteroids | Plan 02/05 | ✅ Componentized + polished (death effects, UFO, reactive music) |
@@ -636,9 +729,9 @@ The deduplication uses a static `Dictionary` mapping sound signatures to `WeakRe
 | Pongout | Plan 06 | ✅ Componentized — working |
 | Breaksteroids | Plan 06 | ✅ Componentized — working |
 | Asterout | Plan 06 | ⚠️ Exists but needs remake (RingSpawner collision bug) |
-| Space Invaders | Plan 07 | 🔧 Components built, game scene in progress |
-| Tetris | Plan 07 | 🔧 Components built, game scene not yet composed |
-| Grid System | Plan 07 | ✅ grid_basic + grid_movement + grid_rotation |
+| Space Invaders | Plan 07 | ✅ Complete — full game, barriers, heartbeat audio |
+| Tetris | Plan 07 | 🔧 Components built, needs tetromino_formation decomposition + recomposition |
+| Grid System | Plan 07 | ✅ grid_basic + grid_movement (gridless refactor) + grid_rotation |
 | Swarm System | Plan 07 | ✅ swarm_controller + swarm_ai + shoot_ai_swarm |
 | Procedural Audio System | — | ✅ SoundSynth + MusicRamping + SFXRamping + Beep (performance-optimized) |
 | Warp/Asteroids Emergency Teleport | Plan 06→07 | ✅ warp_asteroids leg built |

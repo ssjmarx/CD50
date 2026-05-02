@@ -57,11 +57,3 @@ volume = 0.1
 source_node = NodePath("..")
 source_signal = "thrust"
 exclusive = true
-
-[node name="SoundSynth2" parent="." node_paths=PackedStringArray("source_node") instance=ExtResource("14_smvxb")]
-play_mode = 1
-effect = 3
-note = 69
-volume = 0.1
-source_node = NodePath("..")
-source_signal = "shoot"

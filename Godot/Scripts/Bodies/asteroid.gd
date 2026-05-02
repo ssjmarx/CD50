@@ -28,6 +28,7 @@ var radius: float:
 # Generate polygon, join asteroids group, and defer collision setup
 func _ready() -> void:
 	add_to_group("asteroids")
+	GroupCache.mark_dirty("asteroids")
 	points = _generate_jagged_points()
 	_setup_collision_polygons.call_deferred(points)
 

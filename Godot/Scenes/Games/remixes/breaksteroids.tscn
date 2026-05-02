@@ -240,16 +240,18 @@ wave_delay = 0.0
 position = Vector2(320, 64)
 spawn_scene = ExtResource("17_gyoqu")
 spawn_pattern = 2
+spawn_count_equation = ""
+stagger_delay = 0.01
 director = NodePath("../WaveDirector")
 property_overrides = Array[ExtResource("14_8smyd")]([SubResource("Resource_vydbq")])
 grid_width = 32
 grid_height = 16
-grid_columns = 6
-grid_rows = 1
+grid_columns = 3
+grid_rows = 3
 grid_spacing = 16
 grid_health_by_row = false
 initial_velocity = Vector2(50, 0)
-random_flip_h = true
+use_random_angle = true
 
 [node name="GroupMonitor" parent="." instance=ExtResource("15_hgt1m")]
 target_group = "asteroids"

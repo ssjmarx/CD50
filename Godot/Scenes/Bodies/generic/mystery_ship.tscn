@@ -1,0 +1,51 @@
+[gd_scene load_steps=11 format=3 uid="uid://r0kpsqukc75t"]
+
+[ext_resource type="Script" uid="uid://c7pmihw887om8" path="res://Scripts/Bodies/ufo.gd" id="1_o7aen"]
+[ext_resource type="PackedScene" uid="uid://duiftqhlo478k" path="res://Scenes/Brains/patrol_ai.tscn" id="2_hufco"]
+[ext_resource type="Curve2D" uid="uid://byhhxurpjaktb" path="res://Scenes/Bodies/generic/ufo_straightline.tres" id="3_mnxme"]
+[ext_resource type="PackedScene" uid="uid://b3hvkyy38ihr1" path="res://Scenes/Components/screen_cleanup.tscn" id="4_rewip"]
+[ext_resource type="PackedScene" uid="uid://eketockdsssi" path="res://Scenes/Legs/direct_movement.tscn" id="5_l227f"]
+[ext_resource type="PackedScene" uid="uid://ic3mj0x3ub4c" path="res://Scenes/Components/score_on_death.tscn" id="10_fo21g"]
+[ext_resource type="PackedScene" uid="uid://bj81pr736k256" path="res://Scenes/Components/health.tscn" id="10_fqleb"]
+[ext_resource type="PackedScene" uid="uid://145njn1uody4" path="res://Scenes/Components/death_effect.tscn" id="11_v2ikb"]
+[ext_resource type="PackedScene" uid="uid://c5h0r2rnmwe4k" path="res://Scenes/Effects/death_particles.tscn" id="12_ovwok"]
+[ext_resource type="PackedScene" uid="uid://dga83l4d2rwyv" path="res://Scenes/Flow/sound_synth.tscn" id="13_mk1sg"]
+
+[node name="UFO" type="CharacterBody2D" groups=["enemies"]]
+script = ExtResource("1_o7aen")
+color = Color(1, 0, 0, 1)
+size = 1
+width = 16
+height = 16
+x_min = -100.0
+x_max = 740.0
+y_min = -100.0
+y_max = 460.0
+collision_groups = Array[String](["enemies"])
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+
+[node name="PatrolAi" parent="." instance=ExtResource("2_hufco")]
+curve = ExtResource("3_mnxme")
+
+[node name="ScreenCleanup" parent="." instance=ExtResource("4_rewip")]
+margin = 8
+
+[node name="DirectMovement" parent="." instance=ExtResource("5_l227f")]
+speed = 75
+
+[node name="Health" parent="." instance=ExtResource("10_fqleb")]
+
+[node name="DeathEffect" parent="." instance=ExtResource("11_v2ikb")]
+effect_scenes = Array[PackedScene]([ExtResource("12_ovwok")])
+
+[node name="SoundSynth" parent="." instance=ExtResource("13_mk1sg")]
+effect = 1
+volume = 0.1
+exclusive = true
+
+[node name="Path2D" type="Path2D" parent="."]
+curve = ExtResource("3_mnxme")
+
+[node name="ScoreOnDeath" parent="." instance=ExtResource("10_fo21g")]
+base_score = 10

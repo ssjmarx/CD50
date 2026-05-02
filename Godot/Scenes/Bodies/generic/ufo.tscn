@@ -1,4 +1,4 @@
-[gd_scene load_steps=13 format=3 uid="uid://dh545dmdhudol"]
+[gd_scene load_steps=14 format=3 uid="uid://dh545dmdhudol"]
 
 [ext_resource type="Script" uid="uid://c7pmihw887om8" path="res://Scripts/Bodies/ufo.gd" id="1_5nqnc"]
 [ext_resource type="PackedScene" uid="uid://duiftqhlo478k" path="res://Scenes/Brains/patrol_ai.tscn" id="2_wpuss"]
@@ -12,6 +12,7 @@
 [ext_resource type="PackedScene" uid="uid://145njn1uody4" path="res://Scenes/Components/death_effect.tscn" id="10_c3yyw"]
 [ext_resource type="PackedScene" uid="uid://c5h0r2rnmwe4k" path="res://Scenes/Effects/death_particles.tscn" id="11_dt6ik"]
 [ext_resource type="PackedScene" uid="uid://dga83l4d2rwyv" path="res://Scenes/Flow/sound_synth.tscn" id="12_aewtr"]
+[ext_resource type="PackedScene" uid="uid://ic3mj0x3ub4c" path="res://Scenes/Components/score_on_death.tscn" id="13_lx6du"]
 
 [node name="UFO" type="CharacterBody2D" groups=["enemies"]]
 script = ExtResource("1_5nqnc")
@@ -65,10 +66,5 @@ target_group = "asteroids"
 [node name="AimAi2" parent="." instance=ExtResource("8_i51fb")]
 target_group = "asteroids"
 
-[node name="SoundSynth2" parent="." node_paths=PackedStringArray("source_node") instance=ExtResource("12_aewtr")]
-play_mode = 1
-effect = 3
-note = 69
-volume = 0.1
-source_node = NodePath("..")
-source_signal = "shoot"
+[node name="ScoreOnDeath" parent="." instance=ExtResource("13_lx6du")]
+base_score = 10

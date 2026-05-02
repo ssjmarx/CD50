@@ -21,6 +21,7 @@ extends UniversalComponent2D
 # Player configuration
 @export var positional: bool = true
 @export var exclusive: bool = false
+@export var gameplay_only: bool = false
 
 # Enums
 enum PlayMode { CONTINUOUS, ON_SIGNAL }
@@ -39,7 +40,7 @@ enum Semitone {
 }
 
 # Voice limiting (arcade hardware had 1-3 sound channels)
-const MAX_VOICES: int = 6
+const MAX_VOICES: int = 16
 const MAX_FILL_PER_FRAME: int = 256
 static var _active_voices: int = 0
 static var _continuous_registry: Dictionary = {}  # signature -> WeakRef to self
@@ -113,6 +114,14 @@ func _exit_tree() -> void:
 func _process(_delta: float) -> void:
 	match play_mode:
 		PlayMode.CONTINUOUS:
+			if gameplay_only and game != null and game.current_state != CommonEnums.State.PLAYING:
+				if _player.playing:
+					_player.stop()
+				return
+			# If stopped (was gated), restart when back to PLAYING
+			if not _player.playing and _voice_active:
+				_player.play()
+				_playback = _player.get_stream_playback()
 			# If not active, check if the slot opened up
 			if not _voice_active:
 				var ref = _continuous_registry.get(_signature)
@@ -156,11 +165,18 @@ func play_one_shot() -> void:
 		return
 	if _active_voices >= MAX_VOICES:
 		return
-	_active_voices += 1
-	_voice_active = true
+	if gameplay_only and game != null and game.current_state != CommonEnums.State.PLAYING:
+		return
+	
+	# Only claim a new voice slot if we don't already have one
+	if not _voice_active:
+		_active_voices += 1
+		_voice_active = true
+	
 	_frame_pos = 0
 	_shot_end = int(duration * _stream.mix_rate)
 	_phase = 0.0
+	
 	if not _player.playing:
 		_player.play()
 		_playback = _player.get_stream_playback()
