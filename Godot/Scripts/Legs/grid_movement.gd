@@ -6,6 +6,7 @@ extends UniversalComponent
 
 # Step configuration
 @export var step_size: float = 16.0
+@export var cell_size: float = 20.0  # Occupancy check size (match tile_size for Tetris)
 @export var hop_delay: float = 0.0
 @export var allow_diagonal: bool = false
 
@@ -21,6 +22,10 @@ extends UniversalComponent
 # Hard drop on shoot signal
 @export var enable_hard_drop: bool = false
 
+# DAS (Delayed Auto Shift) — transforms held input into auto-repeated steps
+@export var das_delay: float = 0.0       # Seconds before auto-repeat starts (0 = no DAS)
+@export var das_repeat: float = 0.05     # Seconds between repeated steps during DAS
+
 # Input queue configuration
 @export var use_input_queue: bool = false
 @export var max_queue_size: int = 4
@@ -30,6 +35,11 @@ var _input_queue: Array[Vector2] = []
 var _last_input: Vector2 = Vector2.ZERO
 var _stored_direction: Vector2 = Vector2.ZERO
 var _hop_timer: float = 0.0
+
+# DAS runtime state
+var _das_held_direction: Vector2 = Vector2.ZERO
+var _das_timer: float = 0.0
+var _das_active: bool = false
 
 # Emitted after a successful step
 signal moved
@@ -49,6 +59,8 @@ func _on_move(direction: Vector2) -> void:
 		_last_input = direction
 		if hop_delay <= 0.0 and not _input_queue.is_empty():
 			_execute_queue_hop()
+	elif das_delay > 0.0:
+		_handle_das_input(direction)
 	else:
 		_stored_direction = direction
 		if hop_delay <= 0.0:
@@ -61,8 +73,9 @@ func _execute_queue_hop() -> void:
 		if _try_step(step_dir):
 			return
 
-# Tick the hop timer and execute moves when the interval elapses
+# Tick the hop timer and DAS timer, execute moves when intervals elapse
 func _process(delta: float) -> void:
+	# Hop delay timer
 	if hop_delay > 0.0:
 		_hop_timer += delta
 		if _hop_timer >= hop_delay:
@@ -71,6 +84,35 @@ func _process(delta: float) -> void:
 			elif _stored_direction != Vector2.ZERO:
 				_execute_hop()
 			_hop_timer = 0.0
+	
+	# DAS auto-repeat timer
+	if das_delay > 0.0 and _das_held_direction != Vector2.ZERO:
+		_das_timer += delta
+		if _das_active:
+			if _das_timer >= das_repeat:
+				_das_timer = 0.0
+				_try_step(_direction_to_step(_das_held_direction))
+		elif _das_timer >= das_delay:
+			_das_active = true
+			_das_timer = 0.0
+			_try_step(_direction_to_step(_das_held_direction))
+
+# --- DAS Input ---
+
+# Handle DAS-aware input: immediate step on new direction, track for auto-repeat
+func _handle_das_input(direction: Vector2) -> void:
+	if direction == Vector2.ZERO:
+		_das_held_direction = Vector2.ZERO
+		_das_timer = 0.0
+		_das_active = false
+		return
+	
+	if direction != _das_held_direction:
+		_das_held_direction = direction
+		_das_timer = 0.0
+		_das_active = false
+		# Immediate step on new direction press
+		_try_step(_direction_to_step(direction))
 
 # --- Hop Execution ---
 
@@ -93,8 +135,7 @@ func _try_step(step_dir: Vector2) -> bool:
 	
 	var displacement = step_dir * step_size
 	
-	# Check physics occupancy via test_move
-	if block_on_collision and parent.test_move(parent.global_transform, displacement):
+	if not _can_move_to(displacement):
 		return false
 	
 	parent.move_parent(displacement)
@@ -113,16 +154,41 @@ func _on_shoot() -> void:
 	
 	while true:
 		var next_disp = total_displacement + drop_dir * step_size
-		if parent.test_move(parent.global_transform, next_disp):
+		
+		if not _can_move_to(next_disp):
 			break
-		# Check if the next position would exceed bounds
-		var target_y = parent.position.y + next_disp.y
-		if target_y < parent.y_min or target_y > parent.y_max:
-			break
+		
 		total_displacement = next_disp
 	
 	if total_displacement != Vector2.ZERO:
 		parent.move_parent(total_displacement)
+
+# --- Movement Validation ---
+
+# Unified movement check. For multi-cell bodies, checks each offset cell individually
+# for bounds + physics occupancy (per-cell intersect_point). For single-cell bodies,
+# falls back to test_move (existing behavior, zero impact on non-Tetris games).
+func _can_move_to(displacement: Vector2) -> bool:
+	# Multi-cell body: per-cell bounds + per-cell occupancy
+	if "current_offsets" in parent and parent.current_offsets.size() > 0:
+		var space_state = parent.get_world_2d().direct_space_state
+		for offset in parent.current_offsets:
+			var cell_pos: Vector2 = parent.global_position + displacement + Vector2(offset.x * step_size, offset.y * step_size)
+			# Bounds check
+			if cell_pos.x < parent.x_min or cell_pos.x > parent.x_max:
+				return false
+			if cell_pos.y < parent.y_min or cell_pos.y > parent.y_max:
+				return false
+			# Physics occupancy check (per-cell shape query)
+			if block_on_collision:
+				if _is_cell_occupied(space_state, cell_pos):
+					return false
+		return true
+	
+	# Single-cell body: test_move + move_parent clamping (unchanged)
+	if block_on_collision and parent.test_move(parent.global_transform, displacement):
+		return false
+	return true
 
 # --- Utility ---
 
@@ -135,6 +201,18 @@ func _direction_to_step(dir: Vector2) -> Vector2:
 	elif abs(dir.y) > abs(dir.x):
 		return Vector2(0.0, 1.0 if dir.y > 0 else -1.0)
 	return Vector2.ZERO
+
+# Check if a cell position is occupied by another physics body using a shape query.
+# Uses a rectangle of cell_size x cell_size instead of a point for robust wall detection.
+func _is_cell_occupied(space_state: PhysicsDirectSpaceState2D, cell_pos: Vector2) -> bool:
+	var shape := RectangleShape2D.new()
+	shape.size = Vector2(cell_size, cell_size)
+	var query := PhysicsShapeQueryParameters2D.new()
+	query.shape = shape
+	query.transform = Transform2D(0, cell_pos)
+	query.collision_mask = parent.collision_mask
+	query.exclude = [parent.get_rid()]
+	return space_state.intersect_shape(query).size() > 0
 
 # Check if a step direction is blocked by direction lock exports
 func _is_direction_blocked(step_dir: Vector2) -> bool:

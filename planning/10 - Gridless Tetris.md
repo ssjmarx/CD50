@@ -24,8 +24,8 @@ Current `tetromino_formation.gd` (278 lines) handles 7 responsibilities:
 
 | Responsibility | Current Location | New Home |
 |---|---|---|
-| Auto-fall timer | `_process` fall_timer | **`falling_ai.gd`** (exists — works as-is) |
-| Lateral movement | `_on_move` + `_try_step` | **`grid_movement.gd`** (exists — add DAS) |
+| Auto-fall timer | `_process` fall_timer | **NEW `grid_gravity.gd`** (Leg — direct movement, no signal chain) |
+| Lateral movement | `_on_move` + `_try_step` | **`grid_movement.gd`** (exists — add DAS + multi-cell bounds) |
 | Hard drop | `_on_shoot` | **`grid_movement.gd`** (exists — `enable_hard_drop`) |
 | Rotation + wall kicks | `_try_rotate` | **NEW `grid_rotation_advanced.gd`** |
 | Floor detection + lock delay | `_is_on_floor` + `_is_locking` | **NEW `lock_detector.gd`** |
@@ -41,16 +41,18 @@ INPUT:
   player_control  → body.move(LEFT/RIGHT)     every frame while held
   player_control  → body.thrust()              on button press
   player_control  → body.shoot()               on button press
-  falling_ai      → body.move(DOWN)            on timer
 
 PROCESSING:
-  grid_movement          ← body.move           step by 20px, DAS auto-repeat, test_move check
+  grid_movement          ← body.move           step by 20px, DAS auto-repeat, multi-cell bounds check
   grid_movement          ← body.shoot          hard drop (enable_hard_drop)
+  grid_gravity           (self-timed)          direct parent.move_parent(DOWN), no signal chain
   grid_rotation_advanced ← body.thrust         rotate offsets + wall kicks
 
 LOCK CYCLE:
-  lock_detector  → piece_locked signal         → tetromino_spawner (spawn singles + next piece)
-  lock_detector  → piece_settled signal        → line_clear_monitor (scan rows)
+  grid_gravity     → grounded signal           → lock_detector (start lock delay)
+  grid_gravity     → fell signal               → lock_detector (reset lock timer)
+  lock_detector    → piece_locked signal        → tetromino_spawner (spawn singles + next piece)
+  lock_detector    → piece_settled signal       → line_clear_monitor (scan rows)
 
 LINE CLEAR:
   line_clear_monitor  → lines_cleared signal   → scoring, level up, collapse remaining cells
@@ -60,7 +62,7 @@ LINE CLEAR:
 
 ## Component Changes
 
-### 1. `grid_movement.gd` — Add DAS (Enhancement)
+### 1. `grid_movement.gd` — Add DAS + Multi-Cell Bounds (Enhancement)
 
 **Why DAS belongs here, not in player_control:** `player_control.gd` emits `move(direction)` every physics frame from held input axes — it answers "is the button held right now?" DAS answers "the button has been held for X seconds, start auto-repeating the step at Y interval." DAS modifies how movement input is *processed*, which is a movement behavior. Keeping it in the movement leg avoids signal routing complexity.
 
@@ -80,9 +82,76 @@ LINE CLEAR:
 
 **Implementation note:** The DAS timer logic runs in `_process` alongside the existing `hop_delay` timer. These are separate timing systems — `hop_delay` gates how often *any* move executes, DAS gates how often a *held* move auto-repeats.
 
+**Multi-cell bounds checking (enhancement):**
+
+`_try_step()` currently only checks if the pivot point is in bounds (via `parent.move_parent()` clamping to `x_min/x_max/y_min/y_max`). For multi-cell bodies like tetrominos, the pivot can be in bounds while cells extend past the walls.
+
+**New behavior:** Before executing a step, if the parent has a `current_offsets` property (i.e., it's a multi-cell body), check ALL cell positions against bounds:
+
+```
+# In _try_step(), after direction lock check and before physics test_move:
+if parent.has_method("update_offsets"):  # multi-cell body
+    for offset in parent.current_offsets:
+        var cell_pos = parent.global_position + displacement + Vector2(offset.x * step_size, offset.y * step_size)
+        if cell_pos.x < parent.x_min or cell_pos.x > parent.x_max:
+            return false
+        if cell_pos.y < parent.y_min or cell_pos.y > parent.y_max:
+            return false
+```
+
+If no `current_offsets` exist (single-cell bodies like Space Invaders invaders), the existing pivot-only bounds check in `move_parent()` handles it. This is additive — zero impact on existing games.
+
 ---
 
-### 2. `grid_rotation_advanced.gd` — NEW (Leg)
+### 2. `grid_gravity.gd` — NEW (Leg)
+
+Gravity as a **direct movement force** — not routed through the Brain→Body→Leg signal chain. Moves the parent body downward on a timer by calling `parent.move_parent()` directly.
+
+**Why not `falling_ai`:** `falling_ai` is a Brain that emits `parent.move.emit(DOWN)`, routing gravity through the same signal channel as player input. This causes problems:
+- DAS timers and input queues in `grid_movement` can't distinguish gravity from player input
+- Gravity steps fight with player horizontal movement for processing priority
+- The signal chain adds latency and unpredictability to fall timing
+
+Gravity isn't input — it's a world force. It should bypass the signal chain entirely.
+
+**Responsibilities:**
+1. Timer-based downward movement: every `fall_interval` seconds, attempt to move one step down
+2. Check if movement is possible (physics occupancy via `test_move()` for all offsets + bounds check)
+3. If yes → call `parent.move_parent()` directly, reset timer
+4. If no → emit `grounded` signal (for lock_detector to start its lock delay countdown)
+5. Support `paused` export for freezing gravity during line clear animations or game pause
+
+**Exports:**
+```
+@export var fall_interval: float = 1.0     # seconds between gravity steps
+@export var step_size: float = 20.0         # must match grid_movement.step_size and body tile_size
+@export var paused: bool = false            # freeze gravity
+```
+
+**Signals:**
+```
+signal grounded    # emitted when gravity can't move the body down (floor or obstacle)
+signal fell        # emitted after each successful gravity step (resets lock_detector timer)
+```
+
+**Runtime state:**
+```
+var _timer: float = 0.0
+```
+
+**Implementation:**
+- `_process(delta)`: accumulate timer, attempt step when interval elapses
+- Step check: if parent has `current_offsets`, check all offset cells for occupancy + bounds (same pattern as `grid_rotation_advanced._can_place_with_kick()`). If single-cell, use `parent.test_move()`.
+- On successful step: `parent.move_parent(Vector2.DOWN * step_size)`, emit `fell`
+- On blocked step: emit `grounded`, reset timer
+
+**Relationship to lock_detector:** `lock_detector` listens to `grid_gravity.grounded` to start its lock delay countdown, and `grid_gravity.fell` to reset the lock delay. This replaces lock_detector's previous design of polling `parent.test_move()` itself — the gravity leg *is* the floor detector.
+
+**`falling_ai.gd` status:** Remains in the codebase for non-Tetris use cases (simple "move DOWN on timer" brain behavior), but is no longer used by Tetris.
+
+---
+
+### 3. `grid_rotation_advanced.gd` — NEW (Leg)
 
 Offset-based rotation for multi-cell bodies with wall kick support. Unlike `grid_rotation.gd` (which only rotates `parent.rotation` visually), this rotates the **collision shape offsets** — actual structural rotation.
 
@@ -122,14 +191,14 @@ Offset-based rotation for multi-cell bodies with wall kick support. Unlike `grid
 
 ---
 
-### 3. `lock_detector.gd` — NEW (Component)
+### 4. `lock_detector.gd` — NEW (Component)
 
 Detects when a multi-cell body can't fall further, manages lock delay, and emits settlement signals. Does NOT handle spawning or splitting — that's `tetromino_spawner`'s job.
 
 **Responsibilities:**
-1. Each frame: check if body can move one step in the fall direction using `parent.test_move()`
-2. If blocked → start lock delay timer (if not already locking)
-3. If body moves laterally (listen to `grid_movement.moved` signal) → reset lock timer (lock delay resets on any successful move)
+1. Listen to `grid_gravity.grounded` signal → start lock delay timer
+2. Listen to `grid_gravity.fell` signal → cancel lock (piece moved down successfully)
+3. If body moves laterally (listen to `grid_movement.moved` signal) → reset lock timer
 4. If body rotates successfully (listen to `grid_rotation_advanced.rotated` signal) → reset lock timer
 5. If lock timer expires → execute lock:
    - Emit `piece_locked` signal with the current cell positions (world positions of each offset)
@@ -139,8 +208,6 @@ Detects when a multi-cell body can't fall further, manages lock delay, and emits
 **Exports:**
 ```
 @export var lock_delay: float = 0.5
-@export var fall_direction: Vector2 = Vector2.DOWN
-@export var step_size: float = 20.0
 ```
 
 **Signals:**
@@ -153,19 +220,21 @@ signal lock_cancelled                                     # if piece somehow esc
 ```
 var _is_locking: bool = false
 var _lock_timer: float = 0.0
+var _gravity_leg: Node     # reference to grid_gravity for grounded/fell signals
 var _movement_leg: Node    # reference to grid_movement for moved signal
 var _rotation_leg: Node    # reference to grid_rotation_advanced for rotated signal
 ```
 
 **Implementation notes:**
 - The `cell_positions` array in `piece_locked` is computed from `parent.global_position` + each offset in `parent.current_offsets × step_size`
+- The lock detector does NOT poll `test_move()` itself — it relies on `grid_gravity` to be the floor detector
 - The lock detector does NOT remove brains or legs — that's the spawner's responsibility
 - The lock detector does NOT spawn singles — that's the spawner's responsibility
-- This keeps the lock detector focused on one thing: "can this piece fall? if not, start the lock countdown"
+- This keeps the lock detector focused on one thing: "gravity says we're grounded, start the lock countdown"
 
 ---
 
-### 4. `line_clear_monitor.gd` — REWRITE (Rule)
+### 5. `line_clear_monitor.gd` — REWRITE (Rule)
 
 Physics-based line detection using world-space queries. Zero grid data structure dependency.
 
@@ -228,7 +297,7 @@ for row in range(rows):
 
 ---
 
-### 5. `tetromino_spawner.gd` — MAJOR UPDATE (Flow)
+### 6. `tetromino_spawner.gd` — MAJOR UPDATE (Flow)
 
 The spawner becomes the central coordinator for the lock-spawn cycle. It handles piece locking (splitting into singles), next piece spawning, preview display, and defeat detection. No `grid_basic` dependency.
 
@@ -239,7 +308,7 @@ The spawner becomes the central coordinator for the lock-spawn cycle. It handles
 3. **Attach components to singles:** Configure an arbitrary list of component scenes to attach to each spawned single (e.g., health, score_on_death, etc.)
 4. **Override properties on singles:** Configure an arbitrary list of property overrides on each spawned single (same pattern as `wave_spawner.property_overrides`)
 5. **Spawn next piece:** Instantiate the next tetromino at the spawner's location
-6. **Attach components to new piece:** Configure an arbitrary list of component scenes to attach to the new piece (e.g., falling_ai, grid_movement, grid_rotation_advanced, lock_detector, player_control)
+6. **Attach components to new piece:** Configure an arbitrary list of component scenes to attach to the new piece (e.g., grid_gravity, grid_movement, grid_rotation_advanced, lock_detector, player_control)
 7. **Override properties on new piece:** Configure an arbitrary list of property overrides on the new piece
 8. **Preview display:** Spawn the next piece on the board at a configurable preview position (as a real entity — enables preview of space invaders, bombs, or any custom piece type)
 9. **Bag system:** Accept an arbitrary array of PackedScenes as the bag (no more hard-coded bag7)
@@ -294,7 +363,7 @@ lock_detector.piece_locked(cell_positions)
 ```
 _spawn_next():
   1. Move preview piece to spawner location (or instantiate new if no preview)
-  2. Attach active_piece_components (player_control, falling_ai, grid_movement, grid_rotation_advanced, lock_detector)
+  2. Attach active_piece_components (player_control, grid_gravity, grid_movement, grid_rotation_advanced, lock_detector)
   3. Apply active_piece_overrides
   4. Connect to lock_detector.piece_locked
   5. Spawn new preview piece at preview_origin
@@ -316,7 +385,7 @@ _spawn_next():
 
 ---
 
-### 6. `tetromino.gd` — MINOR UPDATE (Body)
+### 7. `tetromino.gd` — MINOR UPDATE (Body)
 
 Changes:
 - `tetromino_single` variant: When used as a single cell, the body should draw one square at the origin with no offsets. Add a `single_cell: bool = false` export. When true, ignore shape/offsets, draw one tile_size square centered at origin, build one collision shape at origin.
@@ -328,7 +397,7 @@ Changes:
 
 ---
 
-### 7. `grid_basic.gd` — DELETE
+### 8. `grid_basic.gd` — DELETE
 
 Remove script and scene after all dependent components are updated and Tetris is working.
 
@@ -340,11 +409,11 @@ Remove script and scene after all dependent components are updated and Tetris is
 
 ---
 
-### 8. `tetromino_formation.gd` — DELETE
+### 9. `tetromino_formation.gd` — DELETE
 
 Deleted after decomposition is complete. All responsibilities distributed to:
-- `falling_ai.gd` (exists)
-- `grid_movement.gd` (enhanced with DAS)
+- `grid_gravity.gd` (new — direct gravity, no signal chain)
+- `grid_movement.gd` (enhanced with DAS + multi-cell bounds)
 - `grid_rotation_advanced.gd` (new)
 - `lock_detector.gd` (new)
 - `tetromino_spawner.gd` (updated)
@@ -359,7 +428,7 @@ UniversalGameScript (tetris)
 ├── TetrominoSpawner (Flow) — at playfield top-center, manages lock/spawn cycle
 ├── LineClearMonitor (Rule) — physics-based row scanning on piece_settled
 ├── Timer (Rule) — level timer
-├── VariableTuner (Rule) — adjust falling_ai.fall_interval on level_changed
+├── VariableTuner (Rule) — adjust grid_gravity.fall_interval on level_changed
 ├── PointsMonitor (Rule) — score threshold
 ├── Interface (Flow) — score, level
 ├── SoundSynth (Flow) — line clear sound, piece lock sound
@@ -371,10 +440,10 @@ UniversalGameScript (tetris)
 │
 ├── [Active Tetromino] (spawned by TetrominoSpawner)
 │   ├── PlayerControl (Brain) — left/right/thrust/shoot input
-│   ├── FallingAi (Brain) — move(DOWN) on timer
-│   ├── GridMovement (Leg) — step_size=20, DAS, hard_drop, prevent_up=true
+│   ├── GridGravity (Leg) — direct downward movement on timer, bypasses signal chain
+│   ├── GridMovement (Leg) — step_size=20, DAS, hard_drop, prevent_up=true, multi-cell bounds
 │   ├── GridRotationAdvanced (Leg) — offset rotation with kicks
-│   └── LockDetector (Component) — floor detection + lock delay
+│   └── LockDetector (Component) — listens to grid_gravity.grounded, lock delay timer
 │
 └── [Settled Cells] (spawned by TetrominoSpawner on lock)
     └── tetromino_single bodies in "settled" group
@@ -395,14 +464,15 @@ UniversalGameScript (tetris)
 
 | Step | Component | Action | Risk | Test |
 |---|---|---|---|---|
-| 1 | `grid_movement.gd` | Add DAS exports + timer logic | Low — additive change, default off | Verify existing Space Invaders still works |
-| 2 | `grid_rotation_advanced.gd` | Create new leg | Medium — new component, validation logic | Test: tetromino body, rotate with kicks, verify collision shapes rebuild |
-| 3 | `lock_detector.gd` | Create new component | Medium — timing logic, signal connections | Test: tetromino falls, stops at floor, locks after delay |
-| 4 | `line_clear_monitor.gd` | Rewrite for physics | High — core game logic, collapse is tricky | Test: fill a row manually, verify it clears and collapses |
-| 5 | `tetromino.gd` | Add single_cell export | Low — additive | Test: single cell draws and collides correctly |
-| 6 | `tetromino_spawner.gd` | Major update | High — most complex change, coordinates lock/spawn cycle | Test: full spawn-lock-spawn cycle |
-| 7 | `tetris.tscn` | Compose game scene | Medium — scene assembly, export configuration | Test: full gameplay loop |
-| 8 | Delete old components | Delete `grid_basic` + `tetromino_formation` | Low — cleanup after verification | Verify no references remain |
+| 1 | `grid_movement.gd` | Add DAS + multi-cell bounds check | Low — additive change, default off | Verify existing Space Invaders still works |
+| 2 | `grid_gravity.gd` | Create new leg | Medium — new component, replaces falling_ai for Tetris | Test: tetromino falls on timer, stops at floor |
+| 3 | `grid_rotation_advanced.gd` | Create new leg | Medium — new component, validation logic | Test: tetromino body, rotate with kicks, verify collision shapes rebuild |
+| 4 | `lock_detector.gd` | Create new component | Medium — timing logic, listens to grid_gravity signals | Test: tetromino falls, stops at floor, locks after delay |
+| 5 | `line_clear_monitor.gd` | Rewrite for physics | High — core game logic, collapse is tricky | Test: fill a row manually, verify it clears and collapses |
+| 6 | `tetromino.gd` | Add single_cell export | Low — additive | Test: single cell draws and collides correctly |
+| 7 | `tetromino_spawner.gd` | Major update | High — most complex change, coordinates lock/spawn cycle | Test: full spawn-lock-spawn cycle |
+| 8 | `tetris.tscn` | Compose game scene | Medium — scene assembly, export configuration | Test: full gameplay loop |
+| 9 | Delete old components | Delete `grid_basic` + `tetromino_formation` | Low — cleanup after verification | Verify no references remain |
 
 ---
 
@@ -414,7 +484,7 @@ UniversalGameScript (tetris)
 | **Bomb pieces** | Put a custom "bomb" scene in the bag. On lock, bomb explodes nearby settled cells. |
 | **Non-grid movement** | Remove grid_movement, attach direct_movement + engine_simple. Tetrominos fly freely with Asteroids controls. |
 | **Shootable settled cells** | Add Health + DieOnHit to settled_cell_components. Shoot settled cells to destroy them. |
-| **Gravity flip** | Set falling_ai.direction = UP, lock_detector.fall_direction = UP, line_clear_monitor scans top-to-bottom. |
+| **Gravity flip** | Set grid_gravity direction = UP, lock_detector listens to grounded signal, line_clear_monitor scans top-to-bottom. |
 | **Centipede-style** | Attach LockDetector to a chain of segments. Each segment locks independently. |
 | **Tetrominos as obstacles** | Spawn tetrominos via wave_spawner in any game. They settle via LockDetector and become terrain. |
 
@@ -424,12 +494,14 @@ UniversalGameScript (tetris)
 
 | File | Action | Category |
 |---|---|---|
-| `Scripts/Legs/grid_movement.gd` | Enhancement (add DAS) | Legs |
+| `Scripts/Legs/grid_movement.gd` | Enhancement (add DAS + multi-cell bounds) | Legs |
+| `Scripts/Legs/grid_gravity.gd` | Create new | Legs |
 | `Scripts/Legs/grid_rotation_advanced.gd` | Create new | Legs |
 | `Scripts/Components/lock_detector.gd` | Create new | Components |
 | `Scripts/Rules/line_clear_monitor.gd` | Rewrite | Rules |
 | `Scripts/Flow/tetromino_spawner.gd` | Major update | Flow |
 | `Scripts/Bodies/tetromino.gd` | Minor update (add single_cell) | Bodies |
+| `Scenes/Legs/grid_gravity.tscn` | Create new | Scenes |
 | `Scenes/Legs/grid_rotation_advanced.tscn` | Create new | Scenes |
 | `Scenes/Components/lock_detector.tscn` | Create new | Scenes |
 | `Scenes/Bodies/generic/tetromino_single.tscn` | Update (single_cell=true) | Scenes |
@@ -450,6 +522,8 @@ UniversalGameScript (tetris)
 | Player control routing | **Attach to piece** — player_control on each spawned piece, removed on lock |
 | Bespoke spawner vs wave_spawner | **Keep tetromino_spawner** — spawning complexity justifies a dedicated component |
 | DAS location | **grid_movement** — not redundant with player_control (player_control emits raw held state, DAS transforms held→auto-repeat) |
+| Gravity routing | **grid_gravity Leg** — direct `move_parent()`, not routed through Brain→Body→Leg signal chain. Gravity is a world force, not input. |
+| Multi-cell bounds | **Enhance grid_movement** — offset-aware bounds check in `_try_step()`, additive change, no new component needed |
 
 ---
 

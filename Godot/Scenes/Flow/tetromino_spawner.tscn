@@ -4,3 +4,4 @@
 
 [node name="TetrominoSpawner" type="Node2D"]
 script = ExtResource("1_di0bt")
+fall_speedup_per_level = 0.035

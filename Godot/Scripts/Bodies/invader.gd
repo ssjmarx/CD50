@@ -1,9 +1,9 @@
 extends UniversalBody
 
 @export var color = Color.WHITE
-@export var type = Type.NAUTILUS
+@export var shape = Shape.NAUTILUS
 
-enum Type {
+enum Shape {
 	NAUTILUS,
 	CRAB,
 	SQUID
@@ -13,12 +13,12 @@ enum Type {
 func _ready() -> void:
 	super._ready()
 	
-	match type:
-		Type.NAUTILUS:
+	match shape:
+		Shape.NAUTILUS:
 			$nautilus.show()
-		Type.CRAB:
+		Shape.CRAB:
 			$crab.show()
-		Type.SQUID:
+		Shape.SQUID:
 			$squid.show()
 			$ScoreOnDeath.score_type = CommonEnums.ScoreType.MULTIPLIER
 	
@@ -27,10 +27,10 @@ func _ready() -> void:
 func _play_with_offset() -> void:
 	await get_tree().create_timer(randf_range(0.0, 0.5)).timeout 
 	
-	match type:
-		Type.NAUTILUS:
+	match shape:
+		Shape.NAUTILUS:
 			$nautilus.play()
-		Type.CRAB:
+		Shape.CRAB:
 			$crab.play()
-		Type.SQUID:
+		Shape.SQUID:
 			$squid.play()

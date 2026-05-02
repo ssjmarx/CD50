@@ -1,0 +1,34 @@
+[gd_scene load_steps=6 format=3 uid="uid://cdm27pfujkscc"]
+
+[ext_resource type="Script" uid="uid://vi07llk3m5n4" path="res://Scripts/Bodies/tetromino.gd" id="1_4bays"]
+[ext_resource type="PackedScene" uid="uid://b0wnvwkw1cht0" path="res://Scenes/Legs/grid_gravity.tscn" id="2_smfbk"]
+[ext_resource type="PackedScene" uid="uid://bn32q5kmricio" path="res://Scenes/Legs/grid_movement.tscn" id="3_vfa76"]
+[ext_resource type="PackedScene" uid="uid://dixi6480rl8mn" path="res://Scenes/Legs/grid_rotation_advanced.tscn" id="4_actx2"]
+[ext_resource type="PackedScene" uid="uid://ddrjfhgq2iqyt" path="res://Scenes/Components/lock_detector.tscn" id="5_vfa76"]
+
+[node name="Tetromino" type="CharacterBody2D" groups=["tetrominos"]]
+script = ExtResource("1_4bays")
+tile_size = 18.0
+width = 18
+height = 18
+collision_groups = Array[String](["tetrominos"])
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+
+[node name="GridGravity" parent="." instance=ExtResource("2_smfbk")]
+step_size = 18.0
+cell_size = 17.9
+
+[node name="GridMovement" parent="." instance=ExtResource("3_vfa76")]
+step_size = 18.0
+cell_size = 17.9
+prevent_movement_up = true
+enable_hard_drop = true
+use_input_queue = true
+
+[node name="GridRotationAdvanced" parent="." instance=ExtResource("4_actx2")]
+step_size = 18.0
+
+[node name="LockDetector" parent="." instance=ExtResource("5_vfa76")]
+step_size = 18.0
+cell_size = 17.9

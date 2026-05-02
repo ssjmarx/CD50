@@ -2,9 +2,10 @@
 
 [ext_resource type="Script" uid="uid://vi07llk3m5n4" path="res://Scripts/Bodies/tetromino.gd" id="1_bg046"]
 
-[node name="Tetromino" type="CharacterBody2D"]
+[node name="Tetromino" type="CharacterBody2D" groups=["tetrominos"]]
 script = ExtResource("1_bg046")
-randomize_shape = true
-collision_groups = Array[String](["bricks"])
+tile_size = 18.0
+single_cell = true
+collision_groups = Array[String](["tetrominos", "settled_pieces"])
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="."]

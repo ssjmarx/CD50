@@ -1,0 +1,7 @@
+[gd_scene load_steps=2 format=3 uid="uid://b0wnvwkw1cht0"]
+
+[ext_resource type="Script" uid="uid://11wavetcmblu" path="res://Scripts/Legs/grid_gravity.gd" id="1_gravity"]
+
+[node name="GridGravity" type="Node"]
+script = ExtResource("1_gravity")
+cell_size = 19.9

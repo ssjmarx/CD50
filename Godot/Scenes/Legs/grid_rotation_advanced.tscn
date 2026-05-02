@@ -1,0 +1,6 @@
+[gd_scene load_steps=2 format=3 uid="uid://dixi6480rl8mn"]
+
+[ext_resource type="Script" uid="uid://bwdr4pkcsf06c" path="res://Scripts/Legs/grid_rotation_advanced.gd" id="1"]
+
+[node name="GridRotationAdvanced" type="Node"]
+script = ExtResource("1")

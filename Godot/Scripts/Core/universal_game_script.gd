@@ -59,6 +59,8 @@ signal spawning_wave(director, wave_number: int)
 signal spawning_wave_complete(director, wave_number: int)
 @warning_ignore("unused_signal")
 signal group_member_removed(group_name: String)
+@warning_ignore("unused_signal")
+signal piece_settled
 
 # Signals TO other components, they listen and react
 signal on_game_start

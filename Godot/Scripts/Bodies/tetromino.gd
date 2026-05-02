@@ -9,6 +9,7 @@ enum Shape { I, O, T, S, Z, L, J }
 @export var color: Color = Color.CYAN
 @export var tile_size: float = 20.0
 @export var randomize_shape = false
+@export var single_cell: bool = false  # When true, draw one square at origin, ignore shape/offsets
 
 # Grid offsets for each shape type (relative to pivot tile)
 const SHAPE_OFFSETS: Dictionary = {
@@ -25,12 +26,17 @@ var current_offsets: Array[Vector2i] = []
 
 # Disable physics, load shape offsets, and build collision
 func _ready() -> void:
-	if randomize_shape:
+	if not single_cell and randomize_shape:
 		shape = Shape.values().pick_random()
 	
 	velocity = Vector2.ZERO
 	set_physics_process(false)
-	current_offsets.assign(SHAPE_OFFSETS[shape])
+	
+	if single_cell:
+		current_offsets = [Vector2i(0, 0)]
+	else:
+		current_offsets.assign(SHAPE_OFFSETS[shape])
+	
 	_build_collision()
 	super._ready()
 
@@ -48,8 +54,7 @@ func update_offsets(new_offsets: Array[Vector2i]) -> void:
 
 # Create one CollisionShape2D per tile positioned at each grid offset
 func _build_collision() -> void:
-	var offsets: Array = SHAPE_OFFSETS[shape]
-	for offset in offsets:
+	for offset in current_offsets:
 		var shape_node: CollisionShape2D = CollisionShape2D.new()
 		var rect: RectangleShape2D = RectangleShape2D.new()
 		rect.size = Vector2(tile_size, tile_size)

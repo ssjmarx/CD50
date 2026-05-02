@@ -53,13 +53,13 @@ glow_bloom = 0.33
 
 [sub_resource type="Resource" id="Resource_dbhjy"]
 script = ExtResource("7_yp3rw")
-property_name = "type"
+property_name = "shape"
 value = 1
 metadata/_custom_type_script = "uid://cp0ni1lgml7c6"
 
 [sub_resource type="Resource" id="Resource_74c7c"]
 script = ExtResource("7_yp3rw")
-property_name = "type"
+property_name = "shape"
 value = 2
 metadata/_custom_type_script = "uid://cp0ni1lgml7c6"
 

@@ -1,12 +1,23 @@
-# Line clear monitor for Tetris. Detects full rows when a piece locks,
-# emits score/level signals, then clears and collapses rows with a delay.
+# Line clear monitor. Physics-based line detection using world-space queries.
+# Zero grid data structure dependency — scans collision shapes directly.
 
-extends UniversalComponent
+extends UniversalComponent2D
 
-# Scoring and timing configuration
+# Playfield geometry
+@export var playfield_origin: Vector2 = Vector2.ZERO     # top-left corner in world space
+@export var cell_size: Vector2 = Vector2(20, 20)          # must match tetromino tile_size
+@export var rows: int = 20
+@export var columns: int = 10
+
+# Detection configuration
+@export var target_group: String = "settled_pieces"               # which group counts as "filled"
+@export var listen_signal: String = "piece_settled"         # signal name to listen for on game
+@export var margin: float = 2.0                             # position tolerance for queries
+
+# Scoring and timing
+@export var clear_delay: float = 0.3                        # pause for clear animation
 @export var lines_per_level: int = 10
 @export var score_table: Array[int] = [0, 100, 300, 500, 800]
-@export var clear_delay: float = 0.3
 
 # Emitted when rows are cleared with count and row indices
 signal lines_cleared(count: int, row_indices: Array[int])
@@ -16,21 +27,17 @@ signal level_changed(new_level: int)
 signal score_gained(points: int)
 
 # Runtime state
-var _grid: Node2D
-var _spawner: Node
 var _total_lines_cleared: int = 0
 var _level: int = 1
 var _is_clearing: bool = false
 
-# Find grid and spawner, connect to the spawner's lock signal
+# Connect to the configured signal on the game node
 func _ready() -> void:
-	_grid = get_tree().get_first_node_in_group("grid")
-	_spawner = get_tree().get_first_node_in_group("tetromino_spawner")
-	if _spawner:
-		_spawner.piece_did_lock.connect(_on_piece_locked)
+	if game and game.has_signal(listen_signal):
+		game.connect(listen_signal, _on_piece_settled)
 
-# Trigger a clear check when a piece locks (skip if already clearing)
-func _on_piece_locked() -> void:
+# Trigger a clear check when a piece settles (skip if already clearing)
+func _on_piece_settled() -> void:
 	if _is_clearing:
 		return
 	_check_and_clear()
@@ -50,8 +57,10 @@ func _check_and_clear() -> void:
 	var count = full_rows.size()
 	lines_cleared.emit(count, full_rows)
 	
-	var points = score_table[mini(count, score_table.size() - 1)] * _level
+	var points = score_table[mini(count, score_table.size() - 1)] * game.current_multiplier
 	score_gained.emit(points)
+	if game:
+		game.add_score(points)
 	
 	# Track level progression
 	_total_lines_cleared += count
@@ -69,61 +78,99 @@ func _check_and_clear() -> void:
 	
 	_is_clearing = false
 
-# --- Row Detection ---
+# --- Row Detection (Physics-Based) ---
 
-# Scan the grid and return an array of fully-occupied row indices
+# Scan playfield rows using physics point queries
 func _find_full_rows() -> Array[int]:
 	var full: Array[int] = []
-	var rows = _grid.get_row_count()
-	var cols = _grid.get_col_count()
+	var space_state = get_world_2d().direct_space_state
 	
 	for row in range(rows):
+		var y_pos = playfield_origin.y + row * cell_size.y + cell_size.y / 2.0
 		var is_full = true
-		for col in range(cols):
-			if not _grid.is_occupied(row, col):
+		
+		for col in range(columns):
+			var x_pos = playfield_origin.x + col * cell_size.x + cell_size.x / 2.0
+			if not _is_cell_filled(space_state, Vector2(x_pos, y_pos)):
 				is_full = false
 				break
+		
 		if is_full:
 			full.append(row)
 	
 	return full
 
+# Check if a cell position is occupied by a body in the target group
+func _is_cell_filled(space_state: PhysicsDirectSpaceState2D, pos: Vector2) -> bool:
+	var query = PhysicsPointQueryParameters2D.new()
+	query.position = pos
+	# Use a small area query to handle slight misalignments
+	query.collide_with_areas = false
+	query.collide_with_bodies = true
+	
+	var results = space_state.intersect_point(query)
+	
+	for result in results:
+		var body = result["collider"]
+		if body and body.is_in_group(target_group):
+			return true
+	
+	return false
+
 # --- Row Mutation ---
 
-# Free bodies and unregister cells in the given rows
-func _clear_rows(rows: Array[int]) -> void:
-	for row in rows:
-		var cols = _grid.get_col_count()
-		for col in range(cols):
-			var body = _grid.get_body_at(row, col)
-			if body and is_instance_valid(body):
-				body.queue_free()
-			_grid.unregister_cell(row, col)
+# Free all bodies in the target group that occupy the given rows
+func _clear_rows(row_indices: Array[int]) -> void:
+	var space_state = get_world_2d().direct_space_state
+	
+	for row in row_indices:
+		var y_pos = playfield_origin.y + row * cell_size.y + cell_size.y / 2.0
+		
+		for col in range(columns):
+			var x_pos = playfield_origin.x + col * cell_size.x + cell_size.x / 2.0
+			_free_body_at(space_state, Vector2(x_pos, y_pos))
 
-# Shift all rows above each cleared row downward by one
+# Find and free a body in the target group at the given position
+func _free_body_at(space_state: PhysicsDirectSpaceState2D, pos: Vector2) -> void:
+	var query = PhysicsPointQueryParameters2D.new()
+	query.position = pos
+	query.collide_with_areas = false
+	query.collide_with_bodies = true
+	
+	var results = space_state.intersect_point(query)
+	
+	for result in results:
+		var body = result["collider"]
+		if body and body.is_in_group(target_group) and is_instance_valid(body):
+			body.queue_free()
+			return  # Only one body per cell
+
+# Shift all remaining settled bodies downward by the number of cleared rows below them.
+# This correctly handles both contiguous and non-contiguous line clears in a single pass.
 func _collapse_rows(cleared_rows: Array[int]) -> void:
-	# Sort descending (bottom to top) for correct shifting
-	var sorted = cleared_rows.duplicate()
-	sorted.sort()
-	sorted.reverse()
+	var bodies = get_tree().get_nodes_in_group(target_group)
 	
-	for cleared_row in sorted:
-		_shift_rows_above_down(cleared_row)
+	for body in bodies:
+		if not is_instance_valid(body) or body.is_queued_for_deletion():
+			continue
+		
+		var body_row = _world_to_row(body.global_position.y)
+		if body_row < 0:
+			continue
+		
+		# Skip bodies sitting at cleared rows (being freed)
+		if body_row in cleared_rows:
+			continue
+		
+		# Count how many cleared rows are BELOW this body
+		var shift_count := 0
+		for cleared_row in cleared_rows:
+			if cleared_row > body_row:
+				shift_count += 1
+		
+		if shift_count > 0:
+			body.global_position.y += shift_count * cell_size.y
 
-# Move grid data and body positions from [from_row-1 .. 0] down one row
-func _shift_rows_above_down(from_row: int) -> void:
-	var cols = _grid.get_col_count()
-	var top_row = 0
-	
-	for row in range(from_row - 1, top_row - 1, -1):
-		for col in range(cols):
-			if _grid.is_occupied(row, col):
-				var body = _grid.get_body_at(row, col)
-				
-				# Update grid occupancy data
-				_grid.unregister_cell(row, col)
-				_grid.register_cell(row + 1, col, body)
-				
-				# Move the visual body to the new grid position
-				if body and is_instance_valid(body):
-					body.global_position = _grid.grid_to_world(row + 1, col)
+# Convert a world y-position to a row index
+func _world_to_row(y_pos: float) -> int:
+	return int((y_pos - playfield_origin.y) / cell_size.y)
