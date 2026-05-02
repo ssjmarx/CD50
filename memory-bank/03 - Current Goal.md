@@ -1,95 +1,61 @@
-# Current Goal: CD50 — Tetris Decomposition & Composition
+# Current Goal: CD50 — Gridless Tetris
 
-**Last Updated:** 2026-05-01
+**Last Updated:** 2026-05-02
 
 ---
 
 ## Active Task
 
-Decompose the "god component" `tetromino_formation.gd` and recompose Tetris to use the new gridless `grid_movement` paradigm, then compose the full Tetris game scene.
+Decompose `tetromino_formation.gd` into focused single-responsibility components, delete `grid_basic.gd`, and compose a fully playable Tetris game using the gridless physics-based paradigm. Full plan: `planning/10 - Gridless Tetris.md`.
 
 ---
 
-## Background
+## Key Decisions
 
-Space Invaders proved that the gridless `grid_movement` refactor works beautifully — invaders step by fixed pixel amounts, no `GridBasic` dependency needed. Now Tetris needs the same treatment.
-
-The current `tetromino_formation.gd` is a monolithic leg component that handles too many responsibilities:
-- Multi-cell shape management (offsets array)
-- Rotation of offsets
-- Landing detection
-- Lock delay
-- Cell registration in grid occupancy map
-- Visual sprite creation on lock
-- Interactable followers for remix scenarios
-
-This needs to be decomposed into focused, single-responsibility components that compose together.
+- **Split on lock:** Multi-cell pieces split into individual cell bodies when they lock
+- **Physics-based line clearing:** `line_clear_monitor` scans world-space collision shapes, no grid data structure
+- **Keep `tetromino_spawner`:** Spawning complexity (split, attach components, preview, bag) justifies a dedicated component
+- **DAS in `grid_movement`:** Not redundant with `player_control` — player_control emits raw held state, DAS transforms held→auto-repeat
+- **Simple kick table:** (0,0), (-1,0), (1,0), (0,-1), (-2,0), (2,0)
+- **Player control attached to piece:** Standard pattern, removed on lock
 
 ---
 
-## Steps
+## Build Order
 
-### Step 1: Decompose `tetromino_formation.gd`
-Break the god component into separate concerns:
-- **Formation/offset management** — tracking which cells a multi-cell body occupies
-- **Rotation logic** — rotating the offset array
-- **Landing detection** — detecting when a piece can't move further down
-- **Lock delay** — timing before a landed piece locks in place
-- **Cell registration** — registering locked cells in grid_basic for line clearing
-
-### Step 2: Recompose Tetrominos for Gridless GridMovement
-Adapt tetromino entities to use the refactored `grid_movement.gd` (step-based, no GridBasic dependency):
-- Tetromino pieces use GridMovement for lateral movement and gravity
-- FallingAI emits DOWN moves on a timer
-- GridRotation handles discrete 90° rotation
-
-### Step 3: Implement Tetris-Specific Components
-New components needed for the decomposed architecture:
-- Whatever focused components emerge from the decomposition
-- May need new landing/lock detection that works with the gridless paradigm
-
-### Step 4: Compose Tetris Game Scene
-Assemble `Scenes/Games/remakes/tetris.tscn` from:
-- UniversalGameScript root
-- TetrominoSpawner (bag/queue)
-- GridBasic (for line-clear detection only, not movement)
-- LineClearMonitor
-- FallingAI + GridMovement + GridRotation on tetromino bodies
-- Timer for gravity speed
-- LivesCounter or equivalent game-over condition
-- Interface for score/next piece display
+| Step | Component | Action |
+|---|---|---|
+| 1 | `grid_movement.gd` | Add DAS exports (additive, default off) |
+| 2 | `grid_rotation_advanced.gd` | Create new — offset rotation with wall kicks |
+| 3 | `lock_detector.gd` | Create new — floor detection + lock delay |
+| 4 | `line_clear_monitor.gd` | Rewrite — physics-based row scanning |
+| 5 | `tetromino.gd` | Add `single_cell` export |
+| 6 | `tetromino_spawner.gd` | Major update — lock/spawn cycle, bag system, preview, split |
+| 7 | `tetris.tscn` | Compose game scene |
+| 8 | Delete old | Remove `grid_basic` + `tetromino_formation` |
 
 ---
 
-## Dependencies & Risks
+## Files Changed
 
-- `grid_basic.gd` is still needed for **line clearing** (occupancy tracking, row detection) even though movement no longer depends on it
-- The decomposition must preserve remix compatibility — tetromino_formation's "interactable followers" feature needs to survive in some form
-- Tetris has stricter grid requirements than Space Invaders (pieces must align perfectly to cell boundaries)
-- Lock delay timing is critical for playability — too fast feels punishing, too slow feels floaty
-
----
-
-## Related Files
-
-| File | Role |
-|------|------|
-| `Scripts/Legs/tetromino_formation.gd` | God component to decompose |
-| `Scripts/Legs/grid_movement.gd` | Gridless movement (already refactored for Space Invaders) |
-| `Scripts/Legs/grid_rotation.gd` | Discrete rotation (may need updates) |
-| `Scripts/Brains/falling_ai.gd` | Gravity brain (should work as-is) |
-| `Scripts/Flow/tetromino_spawner.gd` | Piece spawning (may need updates) |
-| `Scripts/Rules/line_clear_monitor.gd` | Line clearing (depends on grid_basic) |
-| `Scripts/Flow/grid_basic.gd` | Grid occupancy (still needed for line clearing) |
-| `Scripts/Bodies/tetromino.gd` | Body drawing code |
-| `planning/07 - Space Invaders and Tetris.md` | Original planning document |
+| File | Action |
+|---|---|
+| `Scripts/Legs/grid_movement.gd` | Enhancement (add DAS) |
+| `Scripts/Legs/grid_rotation_advanced.gd` | Create new |
+| `Scripts/Components/lock_detector.gd` | Create new |
+| `Scripts/Rules/line_clear_monitor.gd` | Rewrite |
+| `Scripts/Flow/tetromino_spawner.gd` | Major update |
+| `Scripts/Bodies/tetromino.gd` | Minor update |
+| `Scenes/Games/remakes/tetris.tscn` | Create new |
+| `Scripts/Flow/grid_basic.gd` | Delete |
+| `Scripts/Legs/tetromino_formation.gd` | Delete |
 
 ---
 
 ## Success Criteria
 
 - Tetris is fully playable as a pure scene assembly (no game script)
-- `tetromino_formation.gd` is decomposed into focused single-responsibility components
-- All tetromino movement uses the gridless `grid_movement` paradigm
-- Line clearing works correctly via `grid_basic` + `line_clear_monitor`
-- The component architecture remains clean and remix-friendly
+- `tetromino_formation.gd` is decomposed into 3+ focused components
+- `grid_basic.gd` is deleted — all grid movement is gridless
+- Line clearing works via physics queries
+- Remix potential: tetrominos can fill gaps in Space Invaders formations, arbitrary components attachable to pieces and settled cells
