@@ -1,7 +1,7 @@
 [gd_scene load_steps=3 format=3 uid="uid://cspp2scxj8eku"]
 
 [ext_resource type="Script" uid="uid://yr038lmwpic2" path="res://Scripts/Bodies/barrier.gd" id="1_a1cln"]
-[ext_resource type="PackedScene" uid="uid://vlxiy3uptf6y" path="res://Scenes/Bodies/generic/brick.tscn" id="1_tljj3"]
+[ext_resource type="PackedScene" uid="uid://dsjhy6xh0bjb4" path="res://Scenes/Bodies/generic/brick_noscore.tscn" id="1_tljj3"]
 
 [node name="Barrier" type="Node2D"]
 script = ExtResource("1_a1cln")

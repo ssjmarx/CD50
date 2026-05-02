@@ -1,4 +1,4 @@
-[gd_scene load_steps=21 format=3 uid="uid://vn5qxka3iet4"]
+[gd_scene load_steps=20 format=3 uid="uid://vn5qxka3iet4"]
 
 [ext_resource type="Script" uid="uid://b4p6q6483yxva" path="res://Scripts/Bodies/invader.gd" id="1_0twqc"]
 [ext_resource type="Texture2D" uid="uid://vphhi48y10tu" path="res://Assets/invaders/nautilus_1.png" id="2_0d2sv"]
@@ -14,7 +14,6 @@
 [ext_resource type="Texture2D" uid="uid://c81k12p6awrg0" path="res://Assets/invaders/crab_2.png" id="10_53lqh"]
 [ext_resource type="Texture2D" uid="uid://b5agok580qi1u" path="res://Assets/invaders/squid_1.png" id="13_gffci"]
 [ext_resource type="Texture2D" uid="uid://ddgw6fthco84h" path="res://Assets/invaders/squid_2.png" id="14_2xtlk"]
-[ext_resource type="PackedScene" uid="uid://cg5rnfuldr2n0" path="res://Scenes/Arms/damage_on_hit.tscn" id="15_2xtlk"]
 [ext_resource type="PackedScene" uid="uid://145njn1uody4" path="res://Scenes/Components/death_effect.tscn" id="16_1urs3"]
 [ext_resource type="PackedScene" uid="uid://c5h0r2rnmwe4k" path="res://Scenes/Effects/death_particles.tscn" id="17_gq5kr"]
 
@@ -99,9 +98,6 @@ sprite_frames = SubResource("SpriteFrames_hhx1i")
 [node name="squid" type="AnimatedSprite2D" parent="."]
 visible = false
 sprite_frames = SubResource("SpriteFrames_50fqu")
-
-[node name="DamageOnHit" parent="." instance=ExtResource("15_2xtlk")]
-target_groups = Array[String](["bricks"])
 
 [node name="DeathEffect" parent="." instance=ExtResource("16_1urs3")]
 effect_scenes = Array[PackedScene]([ExtResource("17_gq5kr")])

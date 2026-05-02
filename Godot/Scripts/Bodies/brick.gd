@@ -20,7 +20,6 @@ func _draw() -> void:
 		health_color = Color.WHITE
 		
 	draw_rect(Rect2(-width / 2.0, -height / 2.0, width, height), health_color)
-	$ScoreOnDeath.base_score = hp
 
 # Trigger a redraw whenever the Health component changes
 func _on_health_health_changed(_current_health: Variant) -> void:

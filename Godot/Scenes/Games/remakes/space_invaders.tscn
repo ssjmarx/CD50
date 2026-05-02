@@ -20,13 +20,11 @@
 [sub_resource type="Resource" id="Resource_jwgp7"]
 script = ExtResource("2_6vykp")
 group_name = "players"
-targets = Array[String](["enemies_bullets"])
 metadata/_custom_type_script = "uid://bfkr4fdx316o5"
 
 [sub_resource type="Resource" id="Resource_nacot"]
 script = ExtResource("2_6vykp")
 group_name = "enemies"
-targets = Array[String](["players_bullets"])
 metadata/_custom_type_script = "uid://bfkr4fdx316o5"
 
 [sub_resource type="Resource" id="Resource_vcbdb"]
@@ -44,7 +42,7 @@ metadata/_custom_type_script = "uid://bfkr4fdx316o5"
 [sub_resource type="Resource" id="Resource_jauks"]
 script = ExtResource("2_6vykp")
 group_name = "bricks"
-targets = Array[String](["enemies_bullets", "players_bullets", "enemies"])
+targets = Array[String](["enemies"])
 metadata/_custom_type_script = "uid://bfkr4fdx316o5"
 
 [sub_resource type="Environment" id="Environment_vskpd"]
@@ -100,7 +98,6 @@ display_mode = 1
 display_lives = true
 
 [node name="SwarmController" parent="." instance=ExtResource("9_y7sge")]
-base_tick_interval = 0.9
 min_tick_interval = 0.0
 step_down_distance = 4
 boundary_left = 8.0
@@ -216,12 +213,16 @@ gameplay_only = true
 
 [node name="Barrier" parent="." instance=ExtResource("16_jwgp7")]
 position = Vector2(80, 272)
+scale = Vector2(0.667, 0.667)
 
 [node name="Barrier2" parent="." instance=ExtResource("16_jwgp7")]
 position = Vector2(240, 272)
+scale = Vector2(0.667, 0.667)
 
 [node name="Barrier3" parent="." instance=ExtResource("16_jwgp7")]
 position = Vector2(400, 272)
+scale = Vector2(0.667, 0.667)
 
 [node name="Barrier4" parent="." instance=ExtResource("16_jwgp7")]
 position = Vector2(560, 272)
+scale = Vector2(0.667, 0.667)

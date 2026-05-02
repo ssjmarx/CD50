@@ -1,0 +1,18 @@
+[gd_scene load_steps=4 format=3 uid="uid://xbdvaopdsrr3"]
+
+[ext_resource type="Script" uid="uid://byidqfe4arhb0" path="res://Scripts/Bodies/brick.gd" id="1_eiubv"]
+[ext_resource type="PackedScene" uid="uid://86gfkqtgv2yc" path="res://Scenes/Components/die_on_hit.tscn" id="4_ot6r2"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_iythh"]
+size = Vector2(4, 4)
+
+[node name="Brick" type="CharacterBody2D" groups=["bricks"]]
+script = ExtResource("1_eiubv")
+width = 3
+height = 3
+collision_groups = Array[String](["bricks"])
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+shape = SubResource("RectangleShape2D_iythh")
+
+[node name="DieOnHit" parent="." instance=ExtResource("4_ot6r2")]
