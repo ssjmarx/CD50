@@ -33,13 +33,11 @@ metadata/_custom_type_script = "uid://bfkr4fdx316o5"
 [sub_resource type="Resource" id="Resource_5j7oo"]
 script = ExtResource("2_egt1g")
 group_name = "walls"
-targets = Array[String](["balls"])
 metadata/_custom_type_script = "uid://bfkr4fdx316o5"
 
 [sub_resource type="Resource" id="Resource_dpifu"]
 script = ExtResource("2_egt1g")
 group_name = "paddles"
-targets = Array[String](["balls"])
 metadata/_custom_type_script = "uid://bfkr4fdx316o5"
 
 [sub_resource type="Resource" id="Resource_68rfy"]
@@ -51,13 +49,12 @@ metadata/_custom_type_script = "uid://bfkr4fdx316o5"
 [sub_resource type="Resource" id="Resource_8p135"]
 script = ExtResource("2_egt1g")
 group_name = "asteroids"
-targets = Array[String](["balls", "asteroids"])
+targets = Array[String](["asteroids"])
 metadata/_custom_type_script = "uid://bfkr4fdx316o5"
 
 [sub_resource type="Resource" id="Resource_ydxa1"]
 script = ExtResource("2_egt1g")
 group_name = "enemies"
-targets = Array[String](["balls"])
 metadata/_custom_type_script = "uid://bfkr4fdx316o5"
 
 [sub_resource type="Resource" id="Resource_dkt3g"]
@@ -133,6 +130,7 @@ metadata/_custom_type_script = "uid://cp0ni1lgml7c6"
 
 [node name="Pongsteroids" type="Node2D"]
 script = ExtResource("1_woixt")
+game_title = "Pongsteroids"
 collision_groups = Array[ExtResource("2_egt1g")]([SubResource("Resource_pkkn6"), SubResource("Resource_5j7oo"), SubResource("Resource_dpifu"), SubResource("Resource_68rfy"), SubResource("Resource_8p135"), SubResource("Resource_ydxa1"), SubResource("Resource_dkt3g")])
 
 [node name="Player" parent="." groups=["paddles"] instance=ExtResource("3_paddle")]

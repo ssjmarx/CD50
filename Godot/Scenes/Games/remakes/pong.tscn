@@ -27,13 +27,11 @@ metadata/_custom_type_script = "uid://bfkr4fdx316o5"
 [sub_resource type="Resource" id="Resource_gthws"]
 script = ExtResource("2_5wgpo")
 group_name = "walls"
-targets = Array[String](["balls"])
 metadata/_custom_type_script = "uid://bfkr4fdx316o5"
 
 [sub_resource type="Resource" id="Resource_647tp"]
 script = ExtResource("2_5wgpo")
 group_name = "paddles"
-targets = Array[String](["balls"])
 metadata/_custom_type_script = "uid://bfkr4fdx316o5"
 
 [sub_resource type="Resource" id="Resource_5gtcf"]

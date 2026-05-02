@@ -30,19 +30,16 @@ metadata/_custom_type_script = "uid://bfkr4fdx316o5"
 [sub_resource type="Resource" id="Resource_bgs3l"]
 script = ExtResource("2_ejb7n")
 group_name = "paddles"
-targets = Array[String](["balls"])
 metadata/_custom_type_script = "uid://bfkr4fdx316o5"
 
 [sub_resource type="Resource" id="Resource_o68j4"]
 script = ExtResource("2_ejb7n")
 group_name = "walls"
-targets = Array[String](["balls"])
 metadata/_custom_type_script = "uid://bfkr4fdx316o5"
 
 [sub_resource type="Resource" id="Resource_o4uqv"]
 script = ExtResource("2_ejb7n")
 group_name = "bricks"
-targets = Array[String](["balls"])
 metadata/_custom_type_script = "uid://bfkr4fdx316o5"
 
 [sub_resource type="Resource" id="Resource_ejb7n"]

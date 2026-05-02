@@ -19,13 +19,13 @@
 [sub_resource type="Resource" id="Resource_1b6ap"]
 script = ExtResource("2_25ekh")
 group_name = "players"
-targets = Array[String](["enemies_bullets", "asteroids", "enemies"])
+targets = Array[String](["enemies"])
 metadata/_custom_type_script = "uid://bfkr4fdx316o5"
 
 [sub_resource type="Resource" id="Resource_25ekh"]
 script = ExtResource("2_25ekh")
 group_name = "enemies"
-targets = Array[String](["players_bullets", "asteroids", "players"])
+targets = Array[String](["players"])
 metadata/_custom_type_script = "uid://bfkr4fdx316o5"
 
 [sub_resource type="Resource" id="Resource_yp1qk"]
@@ -43,7 +43,7 @@ metadata/_custom_type_script = "uid://bfkr4fdx316o5"
 [sub_resource type="Resource" id="Resource_s3uvk"]
 script = ExtResource("2_25ekh")
 group_name = "asteroids"
-targets = Array[String](["players", "players_bullets", "enemies", "enemies_bullets", "asteroids"])
+targets = Array[String](["players", "enemies"])
 metadata/_custom_type_script = "uid://bfkr4fdx316o5"
 
 [sub_resource type="Environment" id="Environment_1b6ap"]
