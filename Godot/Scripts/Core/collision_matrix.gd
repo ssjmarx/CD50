@@ -1,4 +1,5 @@
 # Auto-configures collision layers/masks from group definitions. Supports UniversalBody and CollisionMarker.
+
 class_name CollisionMatrix extends RefCounted
 
 var _game_script: Node # Parent game coordinator

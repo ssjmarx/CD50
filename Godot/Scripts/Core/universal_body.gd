@@ -1,4 +1,5 @@
 # Universal base class for blackboard architecture. Routes signals between components, provides position clamping and axis locking.
+
 class_name UniversalBody extends CharacterBody2D
 
 # Signals from Brains (Components listen after processing)

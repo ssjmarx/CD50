@@ -1,4 +1,5 @@
 # Master class for game coordinators. State machine, signal routing, score tracking, collision matrix setup.
+
 class_name UniversalGameScript extends Node2D
 
 @export var game_title: String

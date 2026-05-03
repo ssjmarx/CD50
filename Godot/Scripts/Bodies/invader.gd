@@ -1,3 +1,5 @@
+# Space Invader-style enemy with three different sprite-based forms.
+
 extends UniversalBody
 
 @export var color = Color.WHITE

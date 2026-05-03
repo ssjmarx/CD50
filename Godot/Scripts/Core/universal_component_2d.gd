@@ -1,3 +1,5 @@
+# universal base class for components thatt require 2d positioning.
+
 class_name UniversalComponent2D extends Node2D
 
 @onready var parent: Node = get_parent()

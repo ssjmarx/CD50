@@ -1,3 +1,5 @@
+# universal base class for components that do not require 2d positioning.
+
 class_name UniversalComponent extends Node
 
 @onready var parent: Node = get_parent()

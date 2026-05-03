@@ -1,5 +1,6 @@
 # Lazy dirty-flag cache for group node lookups. Avoids repeated get_nodes_in_group() allocations.
 # Mark groups dirty when nodes enter/exit the tree or add_to_group() is called.
+
 extends Node
 
 var _cache: Dictionary = {}     # {group_name: Array[Node]}
