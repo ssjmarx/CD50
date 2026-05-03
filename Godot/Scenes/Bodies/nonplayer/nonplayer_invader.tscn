@@ -77,6 +77,10 @@ bus_group = "swarm_bus"
 
 [node name="GridMovement" parent="." instance=ExtResource("7_hbcye")]
 step_size = 8.0
+block_on_collision = false
+prevent_movement_up = false
+enable_hard_drop = false
+use_input_queue = false
 
 [node name="ScoreOnDeath" parent="." instance=ExtResource("8_3ud85")]
 

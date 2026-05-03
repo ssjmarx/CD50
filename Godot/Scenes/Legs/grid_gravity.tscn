@@ -4,4 +4,3 @@
 
 [node name="GridGravity" type="Node"]
 script = ExtResource("1_gravity")
-cell_size = 19.9

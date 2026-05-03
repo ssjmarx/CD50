@@ -4,4 +4,3 @@
 
 [node name="LineClearMonitor" type="Node2D"]
 script = ExtResource("1_bjjbd")
-score_table = Array[int]([0, 40, 100, 300, 1200])

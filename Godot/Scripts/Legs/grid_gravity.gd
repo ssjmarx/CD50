@@ -6,8 +6,8 @@ extends UniversalComponent
 
 # Configuration
 @export var fall_interval: float = 1.0     # Seconds between gravity steps
-@export var step_size: float = 20.0        # Must match grid_movement.step_size and body tile_size
-@export var cell_size: float = 20.0        # Occupancy check size (match tile_size for Tetris)
+@export var step_size: float = 18.0        # Must match grid_movement.step_size and body tile_size
+@export var cell_size: float = 17.9        # Physics check size (slightly < tile_size to avoid false positives)
 @export var paused: bool = false           # Freeze gravity (during line clear, game pause, etc.)
 
 # Signals

@@ -1,4 +1,4 @@
-[gd_scene load_steps=14 format=3 uid="uid://bpj70hfifidra"]
+[gd_scene load_steps=15 format=3 uid="uid://bpj70hfifidra"]
 
 [ext_resource type="Script" uid="uid://bjdgpevhahi6d" path="res://Scripts/Core/universal_game_script.gd" id="1_d0qe2"]
 [ext_resource type="Script" uid="uid://bfkr4fdx316o5" path="res://Scripts/Core/collision_group.gd" id="2_n304l"]
@@ -9,6 +9,7 @@
 [ext_resource type="PackedScene" uid="uid://bq6cdrx340jp7" path="res://Scenes/Flow/interface.tscn" id="9_3p83b"]
 [ext_resource type="PackedScene" uid="uid://6tweepbhleep" path="res://Scenes/Brains/player_control.tscn" id="9_87oc6"]
 [ext_resource type="PackedScene" uid="uid://b418fukpc5m41" path="res://Scenes/Components/collision_marker.tscn" id="11_w5ai1"]
+[ext_resource type="PackedScene" path="res://Scenes/Components/hold_relay.tscn" id="12_hold"]
 
 [sub_resource type="Resource" id="Resource_ubbxl"]
 script = ExtResource("2_n304l")
@@ -51,6 +52,10 @@ offset_bottom = 322.0
 [node name="LineClearMonitor" parent="." instance=ExtResource("7_yqjmt")]
 playfield_origin = Vector2(229, 0)
 cell_size = Vector2(18, 18)
+score_table = Array[int]([0, 100, 300, 500, 800])
+enable_combo = true
+enable_back_to_back = true
+enable_t_spin_scoring = true
 
 [node name="TetrominoSpawner" parent="." instance=ExtResource("3_ubbxl")]
 position = Vector2(320, 27)
@@ -58,8 +63,10 @@ bag = Array[PackedScene]([ExtResource("4_v8b0n")])
 cell_size = Vector2(18, 18)
 settled_cell_scene = ExtResource("4_cqxkq")
 settled_group = "settled_pieces"
-active_piece_components = Array[PackedScene]([ExtResource("9_87oc6")])
+active_piece_components = Array[PackedScene]([ExtResource("9_87oc6"), ExtResource("12_hold")])
 preview_origin = Vector2(484, 64)
+enable_hold = true
+hold_origin = Vector2(484, 220)
 
 [node name="StaticBody2D" type="StaticBody2D" parent="."]
 position = Vector2(410, 180)

@@ -5,7 +5,7 @@ extends UniversalComponent2D
 
 # Playfield geometry
 @export var playfield_origin: Vector2 = Vector2.ZERO     # top-left corner in world space
-@export var cell_size: Vector2 = Vector2(20, 20)          # must match tetromino tile_size
+@export var cell_size: Vector2 = Vector2(18, 18)          # must match tetromino tile_size
 @export var rows: int = 20
 @export var columns: int = 10
 
@@ -18,6 +18,25 @@ extends UniversalComponent2D
 @export var clear_delay: float = 0.3                        # pause for clear animation
 @export var lines_per_level: int = 10
 @export var score_table: Array[int] = [0, 100, 300, 500, 800]
+@export var level_multiplier_increment: int = 1             # added to game.current_multiplier each level
+
+# Enhanced scoring toggles
+@export var enable_combo: bool = false
+@export var enable_back_to_back: bool = false
+@export var enable_t_spin_scoring: bool = false
+
+# T-spin scoring tables (indexed by lines cleared: 0, 1, 2, 3)
+@export var t_spin_score_table: Array[int] = [400, 800, 1200, 1600]
+@export var t_spin_mini_score_table: Array[int] = [100, 300, 600, 900]
+
+# Combo bonus per consecutive clear
+@export var combo_bonus: int = 50
+
+# Back-to-back multiplier (applied to difficult clears: Tetris, T-spin)
+@export var b2b_multiplier: float = 1.5
+
+# Score type for routing (empty = add_score, "p1" = add_p1_score, "p2" = add_p2_score)
+@export var score_type: String = ""
 
 # Emitted when rows are cleared with count and row indices
 signal lines_cleared(count: int, row_indices: Array[int])
@@ -30,11 +49,22 @@ signal score_gained(points: int)
 var _total_lines_cleared: int = 0
 var _level: int = 1
 var _is_clearing: bool = false
+var _combo_count: int = -1          # -1 = no active combo; incremented each consecutive clear
+var _is_b2b_eligible: bool = false  # True after a "difficult" clear (Tetris or T-spin)
+var _last_t_spin: bool = false
+var _last_t_spin_mini: bool = false
 
 # Connect to the configured signal on the game node
 func _ready() -> void:
 	if game and game.has_signal(listen_signal):
 		game.connect(listen_signal, _on_piece_settled)
+	if game and game.has_signal("t_spin_detected") and enable_t_spin_scoring:
+		game.t_spin_detected.connect(_on_t_spin_detected)
+
+# Store T-spin result from detector, used during next scoring
+func _on_t_spin_detected(is_t_spin: bool, is_mini: bool) -> void:
+	_last_t_spin = is_t_spin
+	_last_t_spin_mini = is_mini
 
 # Trigger a clear check when a piece settles (skip if already clearing)
 func _on_piece_settled() -> void:
@@ -48,27 +78,56 @@ func _on_piece_settled() -> void:
 func _check_and_clear() -> void:
 	var full_rows = _find_full_rows()
 	
+	# No lines cleared — reset combo, reset T-spin state
 	if full_rows.is_empty():
+		_combo_count = -1
+		_last_t_spin = false
+		_last_t_spin_mini = false
 		return
 	
 	_is_clearing = true
 	
-	# Emit scoring signals
 	var count = full_rows.size()
 	lines_cleared.emit(count, full_rows)
 	
-	var points = score_table[mini(count, score_table.size() - 1)] * game.current_multiplier
-	score_gained.emit(points)
-	if game:
-		game.add_score(points)
+	# --- Calculate score ---
+	var points: int = _calculate_score(count)
 	
-	# Track level progression
+	# Apply B2B multiplier
+	if enable_back_to_back and _is_b2b_eligible and _is_difficult_clear(count):
+		points = int(points * b2b_multiplier)
+	
+	# Add combo bonus
+	if enable_combo and _combo_count > 0:
+		points += _combo_count * combo_bonus
+	
+	# Emit and add score
+	score_gained.emit(points)
+	_apply_score(points)
+	
+	# --- Update state ---
+	# Combo: increment on every consecutive clear
+	if enable_combo:
+		_combo_count += 1
+	
+	# B2B eligibility: set if this was a difficult clear
+	if enable_back_to_back:
+		_is_b2b_eligible = _is_difficult_clear(count)
+	
+	# Track level progression — increment UGS multiplier on level up
 	_total_lines_cleared += count
 	@warning_ignore("integer_division")
 	var new_level = 1 + (_total_lines_cleared / lines_per_level)
 	if new_level != _level:
+		var levels_gained = new_level - _level
 		_level = new_level
+		if game:
+			game.current_multiplier += level_multiplier_increment * levels_gained
 		level_changed.emit(_level)
+	
+	# Reset T-spin state after scoring
+	_last_t_spin = false
+	_last_t_spin_mini = false
 	
 	# Pause for clear animation
 	await get_tree().create_timer(clear_delay).timeout
@@ -77,6 +136,40 @@ func _check_and_clear() -> void:
 	_collapse_rows(full_rows)
 	
 	_is_clearing = false
+
+# Calculate base score for a line clear, considering T-spin
+func _calculate_score(lines: int) -> int:
+	var idx = mini(lines, score_table.size() - 1)
+	
+	# T-spin scoring takes priority
+	if enable_t_spin_scoring and _last_t_spin:
+		var t_idx = mini(lines, t_spin_score_table.size() - 1)
+		if _last_t_spin_mini:
+			return t_spin_mini_score_table[mini(lines, t_spin_mini_score_table.size() - 1)]
+		else:
+			return t_spin_score_table[t_idx]
+	
+	return score_table[idx]
+
+# A "difficult" clear qualifies for back-to-back bonus (Tetris or any T-spin)
+func _is_difficult_clear(lines: int) -> bool:
+	if lines >= 4:
+		return true
+	if enable_t_spin_scoring and _last_t_spin:
+		return true
+	return false
+
+# Route score to the correct UGS method based on score_type
+func _apply_score(points: int) -> void:
+	if not game:
+		return
+	match score_type:
+		"p1":
+			game.add_p1_score(points)
+		"p2":
+			game.add_p2_score(points)
+		_:
+			game.add_score(points)
 
 # --- Row Detection (Physics-Based) ---
 

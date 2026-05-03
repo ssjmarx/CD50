@@ -4,4 +4,4 @@
 
 [node name="GridMovement" type="Node"]
 script = ExtResource("1_xxiyx")
-cell_size = 19.9
+use_input_queue = true

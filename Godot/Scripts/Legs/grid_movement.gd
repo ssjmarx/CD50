@@ -5,8 +5,8 @@
 extends UniversalComponent
 
 # Step configuration
-@export var step_size: float = 16.0
-@export var cell_size: float = 20.0  # Occupancy check size (match tile_size for Tetris)
+@export var step_size: float = 18.0
+@export var cell_size: float = 17.9  # Physics check size (slightly < tile_size to avoid false positives)
 @export var hop_delay: float = 0.0
 @export var allow_diagonal: bool = false
 
@@ -14,13 +14,13 @@ extends UniversalComponent
 @export var block_on_collision: bool = true
 
 # Direction locks
-@export var prevent_movement_up: bool = false
+@export var prevent_movement_up: bool = true
 @export var prevent_movement_down: bool = false
 @export var prevent_movement_left: bool = false
 @export var prevent_movement_right: bool = false
 
 # Hard drop on shoot signal
-@export var enable_hard_drop: bool = false
+@export var enable_hard_drop: bool = true
 
 # DAS (Delayed Auto Shift) — transforms held input into auto-repeated steps
 @export var das_delay: float = 0.0       # Seconds before auto-repeat starts (0 = no DAS)
@@ -47,7 +47,8 @@ signal moved
 # Connect signals
 func _ready() -> void:
 	parent.move.connect(_on_move)
-	parent.shoot.connect(_on_shoot)
+	if enable_hard_drop:
+		parent.shoot.connect(_on_shoot)
 
 # Handle move input: queue or store direction, execute immediately if no hop delay
 func _on_move(direction: Vector2) -> void:
@@ -151,8 +152,10 @@ func _on_shoot() -> void:
 	
 	var drop_dir = Vector2.DOWN
 	var total_displacement = Vector2.ZERO
+	var max_drops = 40
 	
-	while true:
+	while max_drops > 0:
+		max_drops -= 1
 		var next_disp = total_displacement + drop_dir * step_size
 		
 		if not _can_move_to(next_disp):
@@ -185,7 +188,12 @@ func _can_move_to(displacement: Vector2) -> bool:
 					return false
 		return true
 	
-	# Single-cell body: test_move + move_parent clamping (unchanged)
+	# Single-cell body: bounds check + test_move
+	var target_pos = parent.global_position + displacement
+	if target_pos.x < parent.x_min or target_pos.x > parent.x_max:
+		return false
+	if target_pos.y < parent.y_min or target_pos.y > parent.y_max:
+		return false
 	if block_on_collision and parent.test_move(parent.global_transform, displacement):
 		return false
 	return true

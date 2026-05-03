@@ -10,7 +10,7 @@ extends UniversalComponent
 @export var clockwise: bool = true
 
 # Must match grid_movement.step_size and body tile_size
-@export var step_size: float = 20.0
+@export var step_size: float = 18.0
 
 # Ordered kick attempts (in grid cells, converted to pixels via step_size)
 @export var kick_offsets: Array[Vector2i] = [

@@ -9,7 +9,7 @@ extends UniversalComponent2D
 @export var randomizer_mode: String = "bag7"  # "bag7" or "random"
 
 # Settled cell configuration
-@export var cell_size: Vector2 = Vector2(20, 20)
+@export var cell_size: Vector2 = Vector2(18, 18)
 @export var settled_cell_scene: PackedScene              # scene for individual settled cells
 @export var settled_cell_components: Array[PackedScene] = []
 @export var settled_cell_overrides: Array[PropertyOverride] = []
@@ -22,14 +22,27 @@ extends UniversalComponent2D
 # Preview
 @export var preview_origin: Vector2 = Vector2(500, 40)
 
-# Level-based gravity speed
-@export var base_fall_interval: float = 1.0       # Starting fall speed (seconds per step)
-@export var min_fall_interval: float = 0.05        # Fastest possible fall speed
-@export var fall_speedup_per_level: float = 0.1    # Seconds subtracted per level
+# Hold piece
+@export var enable_hold: bool = false
+@export var hold_origin: Vector2 = Vector2(500, 180)
+
+# Level-based gravity speed table. Index 0 = Level 1, index N-1 = Level N.
+# Any level beyond the table uses the last value as the floor.
+# Modern Guideline: [1.000, 0.793, 0.618, 0.473, 0.355, 0.262, 0.190, 0.135,
+#                    0.097, 0.068, 0.047, 0.032, 0.022, 0.015, 0.010]
+# NES Tetris:       [0.800, 0.717, 0.633, 0.550, 0.467, 0.383, 0.300, 0.217,
+#                    0.133, 0.100, 0.083, 0.083, 0.083, 0.067, 0.050, 0.050,
+#                    0.050, 0.033, 0.017]
+# Original:         [1.0]
+@export var speed_table: Array[float] = [1.000, 0.793, 0.618, 0.473, 0.355,
+	0.262, 0.190, 0.135, 0.097, 0.068, 0.047, 0.032, 0.022, 0.015, 0.010]
 
 # Runtime state
 var _active_piece: Node = null
 var _preview_piece: Node = null
+var _held_piece: Node = null          # Frozen piece shown in hold box
+var _can_hold: bool = true            # Reset on each fresh spawn
+var _held_bag_index: int = -1         # Bag index of the held piece
 var _bag_queue: Array[int] = []  # indices into _expanded_bag
 var _next_index: int = -1
 var _expanded_bag: Array[Dictionary] = []  # { "scene": PackedScene, "overrides": Dictionary }
@@ -44,8 +57,10 @@ signal piece_did_lock
 # Initialize randomizer, preview, and connect game start
 func _ready() -> void:
 	game.on_game_start.connect(_on_game_start)
-	_current_fall_interval = base_fall_interval
+	_current_fall_interval = _get_speed_for_level(1)
 	_connect_level_monitor()
+	if enable_hold:
+		game.hold_requested.connect(_on_hold_requested)
 	
 	if bag.is_empty():
 		return
@@ -92,9 +107,10 @@ func _spawn_next() -> void:
 	piece.global_position = global_position
 	_unfreeze_piece(piece)
 	
-	# Attach active piece components (brains, legs, lock detector)
+	# Attach active piece components (brains, hold relay)
 	for scene in active_piece_components:
 		var comp = scene.instantiate()
+		comp.set_meta("_spawner_attached", true)
 		piece.add_child(comp)
 	
 	# Apply property overrides
@@ -105,6 +121,9 @@ func _spawn_next() -> void:
 	var lock_det = _find_lock_detector(piece)
 	if lock_det:
 		lock_det.piece_locked.connect(_on_piece_locked.bind(piece))
+	
+	# Reset hold eligibility on fresh spawn
+	_can_hold = true
 	
 	# Apply current level's gravity speed to the newly spawned piece
 	_apply_gravity_to_piece(piece)
@@ -183,6 +202,109 @@ func _spawn_preview() -> void:
 	
 	next_piece_changed.emit(entry.scene)
 
+# --- Hold Piece ---
+
+# Called when the player requests a hold. Swaps active piece with held piece.
+func _on_hold_requested() -> void:
+	if not enable_hold or not _can_hold:
+		return
+	if not _active_piece or not is_instance_valid(_active_piece):
+		return
+	
+	# Stop the active piece's lock detector (prevent double-lock)
+	var lock_det = _find_lock_detector(_active_piece)
+	if lock_det:
+		lock_det.set_process(false)
+	
+	# Disconnect the piece_locked signal to prevent cleanup
+	if lock_det and lock_det.is_connected("piece_locked", _on_piece_locked):
+		lock_det.piece_locked.disconnect(_on_piece_locked)
+	
+	_can_hold = false
+	
+	# Strip active components (player_control, hold_relay) to prevent duplicates on swap
+	_strip_active_components(_active_piece)
+	
+	# Freeze the active piece (disable all child processing)
+	_freeze_piece(_active_piece)
+	
+	if _held_piece and is_instance_valid(_held_piece):
+		# Swap: put held piece into active, active into held
+		var old_held = _held_piece
+		var old_held_index = _held_bag_index
+		
+		# Store current active as held
+		_held_piece = _active_piece
+		_held_bag_index = _get_current_bag_index(_active_piece)
+		_position_hold_piece()
+		
+		# Use old held as next piece
+		_active_piece = null
+		_swap_in_held_piece(old_held, old_held_index)
+	else:
+		# No held piece yet: hold active, spawn new from queue
+		_held_piece = _active_piece
+		_held_bag_index = _get_current_bag_index(_active_piece)
+		_position_hold_piece()
+		_active_piece = null
+		
+		# Spawn next from queue
+		_next_index = _get_next_index()
+		_spawn_preview()
+		await get_tree().create_timer(0.05).timeout
+		if game.current_state == CommonEnums.State.PLAYING:
+			_spawn_next()
+
+# Position the held piece at the hold display origin
+func _position_hold_piece() -> void:
+	if _held_piece and is_instance_valid(_held_piece):
+		_held_piece.global_position = hold_origin
+
+# Take a held/frozen piece and make it the active piece
+func _swap_in_held_piece(piece: Node, _bag_index: int) -> void:
+	if not is_instance_valid(piece):
+		return
+	
+	# Check defeat — is spawn position occupied?
+	if _is_spawn_blocked():
+		game.defeat.emit()
+		return
+	
+	_active_piece = piece
+	piece.global_position = global_position
+	_unfreeze_piece(piece)
+	
+	# Re-attach active piece components
+	for scene in active_piece_components:
+		var comp = scene.instantiate()
+		comp.set_meta("_spawner_attached", true)
+		piece.add_child(comp)
+	
+	# Apply property overrides
+	for override in active_piece_overrides:
+		_apply_override(piece, override)
+	
+	# Connect to lock detector
+	var lock_det = _find_lock_detector(piece)
+	if lock_det:
+		lock_det.piece_locked.connect(_on_piece_locked.bind(piece))
+	
+	_apply_gravity_to_piece(piece)
+
+# Determine which bag index a piece corresponds to (by matching shape/color)
+func _get_current_bag_index(piece: Node) -> int:
+	if not is_instance_valid(piece):
+		return 0
+	for i in range(_expanded_bag.size()):
+		var entry = _expanded_bag[i]
+		if entry.scene.resource_path == piece.get_scene_file_path():
+			return i
+		# Match by shape property if available
+		if "shape" in piece and entry.overrides.has("shape"):
+			if piece.shape == entry.overrides["shape"]:
+				return i
+	return 0
+
 # --- Preview Freeze ---
 
 # Disable all processing on child nodes (brains, legs, gravity, rotation, etc.)
@@ -193,6 +315,7 @@ func _freeze_piece(piece: Node) -> void:
 	for child in piece.get_children():
 		child.set_process(false)
 		child.set_physics_process(false)
+		child.set_process_unhandled_input(false)
 
 # Re-enable all processing on child nodes (used when preview becomes active)
 func _unfreeze_piece(piece: Node) -> void:
@@ -201,6 +324,20 @@ func _unfreeze_piece(piece: Node) -> void:
 	for child in piece.get_children():
 		child.set_process(true)
 		child.set_physics_process(true)
+		child.set_process_unhandled_input(true)
+
+# Remove spawner-attached components from a piece (used before holding).
+# This prevents duplicate components when the piece is swapped back later.
+func _strip_active_components(piece: Node) -> void:
+	if not is_instance_valid(piece):
+		return
+	var to_remove: Array[Node] = []
+	for child in piece.get_children():
+		if child.has_meta("_spawner_attached"):
+			to_remove.append(child)
+	for child in to_remove:
+		piece.remove_child(child)
+		child.queue_free()
 
 # --- Defeat Detection ---
 
@@ -288,11 +425,17 @@ func _connect_level_monitor() -> void:
 # Recalculate fall speed when level changes, and update active piece immediately
 func _on_level_changed(new_level: int) -> void:
 	_current_level = new_level
-	_current_fall_interval = maxf(min_fall_interval,
-		base_fall_interval - (new_level - 1) * fall_speedup_per_level)
+	_current_fall_interval = _get_speed_for_level(new_level)
 	
 	if _active_piece and is_instance_valid(_active_piece):
 		_apply_gravity_to_piece(_active_piece)
+
+# Look up fall interval from speed_table. Levels beyond the table use the last entry.
+func _get_speed_for_level(level: int) -> float:
+	if speed_table.is_empty():
+		return 1.0
+	var idx = mini(level - 1, speed_table.size() - 1)
+	return speed_table[maxi(0, idx)]
 
 # Find the grid_gravity child on a piece and set its fall_interval
 func _apply_gravity_to_piece(piece: Node) -> void:

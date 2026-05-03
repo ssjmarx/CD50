@@ -1,4 +1,4 @@
-# Lock detector component. Detects when a multi-cell body can't fall further,
+ # Lock detector component. Detects when a multi-cell body can't fall further,
 # manages lock delay, and emits settlement signals. Does NOT handle spawning
 # or splitting — that's tetromino_spawner's job.
 
@@ -7,8 +7,16 @@ extends UniversalComponent
 # Lock timing
 @export var lock_delay: float = 0.5
 @export var fall_direction: Vector2 = Vector2.DOWN
-@export var step_size: float = 20.0
-@export var cell_size: float = 20.0  # Occupancy check size (match tile_size for Tetris)
+@export var step_size: float = 18.0
+@export var cell_size: float = 17.9  # Physics check size (slightly < tile_size to avoid false positives)
+
+# Maximum lock timer resets from moves/rotations while grounded.
+# 0 = no limit (classic behavior). 15 = Guideline standard.
+@export var max_lock_resets: int = 15
+
+# Emitted immediately before piece_locked, while the multi-cell body still exists.
+# Use for T-spin detection and other pre-lock checks.
+signal piece_pre_lock(cell_positions: Array[Vector2])
 
 # Emitted when the piece locks — provides world positions of each cell
 signal piece_locked(cell_positions: Array[Vector2])
@@ -19,6 +27,7 @@ signal lock_cancelled
 # Runtime state
 var _is_locking: bool = false
 var _lock_timer: float = 0.0
+var _lock_reset_count: int = 0
 var _movement_leg: Node = null
 var _rotation_leg: Node = null
 
@@ -43,6 +52,7 @@ func _process(delta: float) -> void:
 		if not _is_on_floor():
 			_is_locking = false
 			_lock_timer = 0.0
+			_lock_reset_count = 0
 			lock_cancelled.emit()
 			return
 		
@@ -54,6 +64,7 @@ func _process(delta: float) -> void:
 		if _is_on_floor():
 			_is_locking = true
 			_lock_timer = 0.0
+			_lock_reset_count = 0
 
 # Check if body cannot move one step in the fall direction
 func _is_on_floor() -> bool:
@@ -102,16 +113,26 @@ func _execute_lock() -> void:
 		# Single cell body — just use parent position
 		cell_positions.append(parent.global_position)
 	
+	# Emit pre-lock signal first (T-spin detector listens here)
+	piece_pre_lock.emit(cell_positions)
 	piece_locked.emit(cell_positions)
 
 # Reset lock timer when the piece moves laterally
 func _on_piece_moved() -> void:
 	if _is_locking:
+		_lock_reset_count += 1
+		if max_lock_resets > 0 and _lock_reset_count > max_lock_resets:
+			_execute_lock()
+			return
 		_lock_timer = 0.0
 
 # Reset lock timer when the piece rotates
 func _on_piece_rotated() -> void:
 	if _is_locking:
+		_lock_reset_count += 1
+		if max_lock_resets > 0 and _lock_reset_count > max_lock_resets:
+			_execute_lock()
+			return
 		_lock_timer = 0.0
 
 # Check if a cell position is occupied by another physics body using a shape query.

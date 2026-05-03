@@ -61,6 +61,10 @@ signal spawning_wave_complete(director, wave_number: int)
 signal group_member_removed(group_name: String)
 @warning_ignore("unused_signal")
 signal piece_settled
+@warning_ignore("unused_signal")
+signal hold_requested
+@warning_ignore("unused_signal")
+signal t_spin_detected(is_t_spin: bool, is_mini: bool)
 
 # Signals TO other components, they listen and react
 signal on_game_start
