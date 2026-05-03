@@ -1,4 +1,4 @@
-# Line clear monitor. Physics-based line detection using world-space queries.
+ # Line clear monitor. Physics-based line detection using world-space queries.
 # Zero grid data structure dependency — scans collision shapes directly.
 
 extends UniversalComponent2D
@@ -44,6 +44,8 @@ signal lines_cleared(count: int, row_indices: Array[int])
 signal level_changed(new_level: int)
 # Emitted with the score awarded for a clear
 signal score_gained(points: int)
+# Emitted when a back-to-back bonus is applied on a difficult clear
+signal back_to_back
 
 # Runtime state
 var _total_lines_cleared: int = 0
@@ -96,6 +98,7 @@ func _check_and_clear() -> void:
 	# Apply B2B multiplier
 	if enable_back_to_back and _is_b2b_eligible and _is_difficult_clear(count):
 		points = int(points * b2b_multiplier)
+		back_to_back.emit()
 	
 	# Add combo bonus
 	if enable_combo and _combo_count > 0:
