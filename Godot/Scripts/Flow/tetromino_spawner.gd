@@ -53,6 +53,12 @@ var _current_fall_interval: float
 signal next_piece_changed(piece_scene: PackedScene)
 # Emitted when the active piece locks (general notification)
 signal piece_did_lock
+# Emitted when the active piece moves laterally (juice relay)
+signal piece_moved
+# Emitted when the active piece rotates (juice relay)
+signal piece_rotated
+# Emitted when the active piece hard drops (juice relay)
+signal piece_hard_dropped
 
 # Initialize randomizer, preview, and connect game start
 func _ready() -> void:
@@ -103,8 +109,9 @@ func _spawn_next() -> void:
 	_preview_piece = null
 	_active_piece = piece
 	
-	# Move to spawn position and unfreeze
+	# Move to spawn position, reset rotation, and unfreeze
 	piece.global_position = global_position
+	piece.rotation = 0
 	_unfreeze_piece(piece)
 	
 	# Attach active piece components (brains, hold relay)
@@ -121,6 +128,9 @@ func _spawn_next() -> void:
 	var lock_det = _find_lock_detector(piece)
 	if lock_det:
 		lock_det.piece_locked.connect(_on_piece_locked.bind(piece))
+	
+	# Connect to movement/rotation/shoot signals for juice relay
+	_connect_piece_signals(piece)
 	
 	# Reset hold eligibility on fresh spawn
 	_can_hold = true
@@ -195,6 +205,7 @@ func _spawn_preview() -> void:
 	_preview_piece = entry.scene.instantiate()
 	_apply_entry_overrides(_preview_piece, entry.overrides)
 	_preview_piece.global_position = preview_origin
+	_preview_piece.rotation = PI / 2  # Rotate preview 90° clockwise
 	game.add_child.call_deferred(_preview_piece)
 	
 	# Freeze the preview — disable all child processing (brains, legs, components)
@@ -259,6 +270,11 @@ func _on_hold_requested() -> void:
 func _position_hold_piece() -> void:
 	if _held_piece and is_instance_valid(_held_piece):
 		_held_piece.global_position = hold_origin
+		_held_piece.rotation = PI / 2  # Rotate hold piece 90° clockwise
+		# Clear ghost offsets so the ghost doesn't project from hold position back onto the field
+		if "ghost_offsets" in _held_piece:
+			_held_piece.ghost_offsets.clear()
+			_held_piece.queue_redraw()
 
 # Take a held/frozen piece and make it the active piece
 func _swap_in_held_piece(piece: Node, _bag_index: int) -> void:
@@ -272,6 +288,7 @@ func _swap_in_held_piece(piece: Node, _bag_index: int) -> void:
 	
 	_active_piece = piece
 	piece.global_position = global_position
+	piece.rotation = 0
 	_unfreeze_piece(piece)
 	
 	# Re-attach active piece components
@@ -288,6 +305,9 @@ func _swap_in_held_piece(piece: Node, _bag_index: int) -> void:
 	var lock_det = _find_lock_detector(piece)
 	if lock_det:
 		lock_det.piece_locked.connect(_on_piece_locked.bind(piece))
+	
+	# Connect to movement/rotation/hard_drop signals for juice relay
+	_connect_piece_signals(piece)
 	
 	_apply_gravity_to_piece(piece)
 
@@ -443,6 +463,18 @@ func _apply_gravity_to_piece(piece: Node) -> void:
 		if "fall_interval" in child:
 			child.fall_interval = _current_fall_interval
 			return
+
+# --- Piece Signal Relay ---
+
+# Connect to movement/rotation/hard_drop signals on the active piece for juice relay
+func _connect_piece_signals(piece: Node) -> void:
+	for child in piece.get_children():
+		if child.has_signal("moved"):
+			child.moved.connect(func(): piece_moved.emit())
+		if child.has_signal("rotated"):
+			child.rotated.connect(func(): piece_rotated.emit())
+		if child.has_signal("hard_dropped"):
+			child.hard_dropped.connect(func(): piece_hard_dropped.emit())
 
 # --- Utility ---
 

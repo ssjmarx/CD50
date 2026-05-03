@@ -4,7 +4,6 @@
 
 [node name="Tetromino" type="CharacterBody2D" groups=["tetrominos"]]
 script = ExtResource("1_5dr6t")
-tile_size = 18.0
 randomize_shape = true
 collision_groups = Array[String](["tetrominos"])
 

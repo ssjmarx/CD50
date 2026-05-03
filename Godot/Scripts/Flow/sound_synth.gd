@@ -2,7 +2,9 @@
 # triangle, noise) with optional effects (warble, tremolo, sweep, decay).
 # Supports continuous playback or signal-triggered one-shots.
 # Voice limiting mimics arcade hardware polyphony caps.
+# Editor preview: check the "Preview Sound" toggle in the inspector to hear it.
 
+@tool
 extends UniversalComponent2D
 
 # Playback mode and wave configuration
@@ -40,6 +42,7 @@ enum Semitone {
 }
 
 # Voice limiting (arcade hardware had 1-3 sound channels)
+const MIX_RATE: int = 22050
 const MAX_VOICES: int = 16
 const MAX_FILL_PER_FRAME: int = 256
 static var _active_voices: int = 0
@@ -55,10 +58,79 @@ var _frame_pos: int = 0
 var _shot_end: int = 0
 var _phase: float = 0.0
 
+# Editor preview state
+var _preview_player: AudioStreamPlayer = null
+
+# --- Property List for Editor Preview ---
+
+func _get_property_list() -> Array[Dictionary]:
+	var props: Array[Dictionary] = []
+	props.append({
+		"name": "preview_sound",
+		"type": TYPE_BOOL,
+		"usage": PROPERTY_USAGE_EDITOR,
+		"hint_string": "Preview Sound"
+	})
+	return props
+
+func _set(property: StringName, value: Variant) -> bool:
+	if property == "preview_sound" and value == true:
+		_editor_preview()
+		return true
+	return false
+
+func _get(property: StringName) -> Variant:
+	if property == "preview_sound":
+		return false  # Always unchecked
+	return null
+
+# Play a preview of this sound in the editor
+func _editor_preview() -> void:
+	# Clean up any existing preview
+	if _preview_player and is_instance_valid(_preview_player):
+		_preview_player.queue_free()
+		_preview_player = null
+	
+	var stream = AudioStreamGenerator.new()
+	stream.mix_rate = MIX_RATE
+	_preview_player = AudioStreamPlayer.new()
+	_preview_player.stream = stream
+	_preview_player.volume_db = linear_to_db(volume)
+	add_child(_preview_player)
+	_preview_player.play()
+	var playback = _preview_player.get_stream_playback()
+	
+	# Generate the full waveform and fill the buffer
+	var total_frames = int(duration * MIX_RATE)
+	_shot_end = total_frames
+	_frame_pos = 0
+	_phase = 0.0
+	
+	# Fill as much as the buffer allows, then continue in _process
+	var to_push = mini(mini(playback.get_frames_available(), total_frames), MAX_FILL_PER_FRAME)
+	for i in to_push:
+		var t = float(_frame_pos) / MIX_RATE
+		var sample = _get_sample(t)
+		playback.push_frame(Vector2(sample, sample))
+		_frame_pos += 1
+	
+	if _frame_pos < total_frames:
+		set_process(true)
+	else:
+		# Schedule cleanup after playback finishes
+		get_tree().create_timer(duration + 0.05).timeout.connect(func():
+			if _preview_player and is_instance_valid(_preview_player):
+				_preview_player.queue_free()
+				_preview_player = null
+		)
+
 # Create the audio stream, player, and connect signal source if in ON_SIGNAL mode
 func _ready() -> void:
+	if Engine.is_editor_hint():
+		return
+	
 	_stream = AudioStreamGenerator.new()
-	_stream.mix_rate = 22050
+	_stream.mix_rate = MIX_RATE
 	
 	if positional:
 		_player = AudioStreamPlayer2D.new()
@@ -112,6 +184,11 @@ func _exit_tree() -> void:
 
 # Fill the audio buffer each frame; continuous or one-shot mode
 func _process(_delta: float) -> void:
+	# Editor preview: continue filling multi-frame previews
+	if Engine.is_editor_hint():
+		_process_editor_preview()
+		return
+	
 	match play_mode:
 		PlayMode.CONTINUOUS:
 			if gameplay_only and game != null and game.current_state != CommonEnums.State.PLAYING:
@@ -155,7 +232,7 @@ func _process(_delta: float) -> void:
 
 # Signal handler: play one-shot if filter matches (or no filter set)
 func _on_signal(arg1 = "", _arg2 = null) -> void:
-	if filter_value != "" and arg1 != filter_value:
+	if filter_value != "" and str(arg1) != filter_value:
 		return
 	play_one_shot()
 
@@ -213,7 +290,7 @@ func _get_sample(t: float) -> float:
 			freq *= max(0.1, 1.0 - t * 2.0)
 	
 	# Accumulate phase for continuous waveform
-	_phase += freq / _stream.mix_rate
+	_phase += freq / MIX_RATE
 	
 	var sample: float
 	
@@ -242,3 +319,33 @@ func _get_sample(t: float) -> float:
 			sample *= max(0.0, 1.0 - progress)
 	
 	return sample
+
+# Continue filling editor preview buffer over multiple frames
+func _process_editor_preview() -> void:
+	if not _preview_player or not is_instance_valid(_preview_player) or not _preview_player.playing:
+		if _preview_player and is_instance_valid(_preview_player):
+			_preview_player.queue_free()
+			_preview_player = null
+		set_process(false)
+		return
+	
+	var playback = _preview_player.get_stream_playback()
+	var to_fill = mini(playback.get_frames_available(), MAX_FILL_PER_FRAME)
+	var remaining = _shot_end - _frame_pos
+	var to_push = mini(to_fill, remaining)
+	
+	for i in to_push:
+		var t = float(_frame_pos) / MIX_RATE
+		var sample = _get_sample(t)
+		playback.push_frame(Vector2(sample, sample))
+		_frame_pos += 1
+	
+	if _frame_pos >= _shot_end:
+		# All frames pushed — schedule cleanup and stop processing
+		var wait = duration + 0.05
+		get_tree().create_timer(wait).timeout.connect(func():
+			if _preview_player and is_instance_valid(_preview_player):
+				_preview_player.queue_free()
+				_preview_player = null
+		)
+		set_process(false)

@@ -9,6 +9,11 @@ extends UniversalComponent
 # Physics check size (slightly < tile_size to avoid false positives)
 @export var cell_size: float = 17.9
 
+# Collision mask for settled pieces only. In standard tetris configs:
+# tetrominos=bit0(1), settled_pieces=bit1(2), walls=bit2(4).
+# Only settled pieces should block corners — walls cause false positives.
+@export var settled_collision_mask: int = 2
+
 # Track whether the last action was a rotation (required for T-spin)
 var _last_was_rotation: bool = false
 
@@ -55,7 +60,7 @@ func _check_t_spin() -> void:
 		game.t_spin_detected.emit(false, false)
 		return
 	
-	# Count occupied corners
+	# Count occupied corners (only settled pieces, not walls)
 	var corner_data = _evaluate_corners()
 	var total_occupied: int = corner_data["front"] + corner_data["back"]
 	
@@ -156,20 +161,19 @@ func _get_front_corners(beak_dir: Vector2i) -> Array[Vector2i]:
 		_:
 			return []
 
-# Check if a world position is occupied by a physics body
+# Check if a world position is occupied by a settled piece (not walls or other tetrominos)
 func _is_position_occupied(space_state: PhysicsDirectSpaceState2D, world_pos: Vector2) -> bool:
 	var shape := RectangleShape2D.new()
 	shape.size = Vector2(cell_size, cell_size)
 	var query := PhysicsShapeQueryParameters2D.new()
 	query.shape = shape
 	query.transform = Transform2D(0, world_pos)
-	query.collision_mask = parent.collision_mask
+	query.collision_mask = settled_collision_mask  # Only check settled pieces
 	query.exclude = [parent.get_rid()]
 	return space_state.intersect_shape(query).size() > 0
 
-# Check if a world position is outside the playfield bounds
-func _is_out_of_bounds(world_pos: Vector2) -> bool:
-	if not "x_min" in parent or not "y_min" in parent:
-		return false
-	return world_pos.x < parent.x_min or world_pos.x > parent.x_max or \
-		world_pos.y < parent.y_min or world_pos.y > parent.y_max
+# Out-of-bounds positions are NOT counted as occupied for T-spin detection.
+# Per SRS guidelines, only actual settled blocks should block corners.
+# Walls and positions above the playfield should not trigger T-spins.
+func _is_out_of_bounds(_world_pos: Vector2) -> bool:
+	return false

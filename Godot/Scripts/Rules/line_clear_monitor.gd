@@ -12,10 +12,12 @@ extends UniversalComponent2D
 # Detection configuration
 @export var target_group: String = "settled_pieces"               # which group counts as "filled"
 @export var listen_signal: String = "piece_settled"         # signal name to listen for on game
-@export var margin: float = 2.0                             # position tolerance for queries
 
 # Scoring and timing
 @export var clear_delay: float = 0.3                        # pause for clear animation
+@export var enable_line_flash: bool = true                  # flash cleared rows white before clearing
+@export var enable_smooth_collapse: bool = true             # smooth collapse animation
+@export var collapse_duration: float = 0.1                  # seconds for collapse tween
 @export var lines_per_level: int = 10
 @export var score_table: Array[int] = [0, 100, 300, 500, 800]
 @export var level_multiplier_increment: int = 1             # added to game.current_multiplier each level
@@ -132,7 +134,11 @@ func _check_and_clear() -> void:
 	_last_t_spin = false
 	_last_t_spin_mini = false
 	
-	# Pause for clear animation
+	# Flash cleared rows white during the clear delay
+	if enable_line_flash:
+		_flash_rows(full_rows)
+	
+	# Pause for clear animation (includes flash time)
 	await get_tree().create_timer(clear_delay).timeout
 	
 	_clear_rows(full_rows)
@@ -241,10 +247,58 @@ func _free_body_at(space_state: PhysicsDirectSpaceState2D, pos: Vector2) -> void
 			body.queue_free()
 			return  # Only one body per cell
 
+# Flash the bodies in cleared rows white 2-3 times during the clear delay
+func _flash_rows(row_indices: Array[int]) -> void:
+	var bodies = _get_bodies_in_rows(row_indices)
+	if bodies.is_empty():
+		return
+	
+	var flash_count = 3
+	var flash_interval = clear_delay / (flash_count * 2)
+	
+	for i in flash_count:
+		# Flash white
+		for body in bodies:
+			if is_instance_valid(body):
+				body.modulate = Color.WHITE
+		await get_tree().create_timer(flash_interval).timeout
+		# Flash back to visible color
+		for body in bodies:
+			if is_instance_valid(body):
+				body.modulate = Color(1, 1, 1, 0.5)
+		await get_tree().create_timer(flash_interval).timeout
+	
+	# Restore full opacity
+	for body in bodies:
+		if is_instance_valid(body):
+			body.modulate = Color.WHITE
+
+# Find all bodies in the target group that occupy the given rows
+func _get_bodies_in_rows(row_indices: Array[int]) -> Array[Node2D]:
+	var result: Array[Node2D] = []
+	var space_state = get_world_2d().direct_space_state
+	
+	for row in row_indices:
+		var y_pos = playfield_origin.y + row * cell_size.y + cell_size.y / 2.0
+		for col in range(columns):
+			var x_pos = playfield_origin.x + col * cell_size.x + cell_size.x / 2.0
+			var query = PhysicsPointQueryParameters2D.new()
+			query.position = Vector2(x_pos, y_pos)
+			query.collide_with_areas = false
+			query.collide_with_bodies = true
+			var hits = space_state.intersect_point(query)
+			for hit in hits:
+				var body = hit["collider"]
+				if body and body.is_in_group(target_group) and body not in result:
+					result.append(body)
+	
+	return result
+
 # Shift all remaining settled bodies downward by the number of cleared rows below them.
-# This correctly handles both contiguous and non-contiguous line clears in a single pass.
+# Uses smooth tweening when enable_smooth_collapse is true.
 func _collapse_rows(cleared_rows: Array[int]) -> void:
 	var bodies = get_tree().get_nodes_in_group(target_group)
+	var tweens: Array[Tween] = []
 	
 	for body in bodies:
 		if not is_instance_valid(body) or body.is_queued_for_deletion():
@@ -265,7 +319,17 @@ func _collapse_rows(cleared_rows: Array[int]) -> void:
 				shift_count += 1
 		
 		if shift_count > 0:
-			body.global_position.y += shift_count * cell_size.y
+			var target_y = body.global_position.y + shift_count * cell_size.y
+			if enable_smooth_collapse:
+				var t = create_tween()
+				t.tween_property(body, "global_position:y", target_y, collapse_duration).set_ease(Tween.EASE_IN)
+				tweens.append(t)
+			else:
+				body.global_position.y = target_y
+	
+	# Wait for all collapse tweens to finish
+	if tweens.size() > 0:
+		await tweens[0].finished
 
 # Convert a world y-position to a row index
 func _world_to_row(y_pos: float) -> int:

@@ -18,6 +18,8 @@ metadata/__load_path__ = "res://Assets/Audio/zapThreeToneDown.ogg"
 [node name="PaddleCannon" type="CharacterBody2D" groups=["players"]]
 rotation = -1.5707964
 script = ExtResource("1_urv2v")
+width = 20
+height = 6
 lock_y = true
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="."]

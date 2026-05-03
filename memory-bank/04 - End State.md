@@ -12,10 +12,10 @@ CD50 is a componentized arcade game collection demonstrating that classic arcade
 
 ## Final State
 
-- **10 playable games** — Pong, Breakout, Asteroids, Pongsteroids, Dogfight, Pongout, Breaksteroids, Space Invaders, Tetris, Modern Tetris
+- **9 playable games** — Pong, Breakout, Asteroids, Pongsteroids, Dogfight, Pongout, Breaksteroids, Space Invaders, Tetris (Modern)
 - **83 components** across 9 categories (Core, Bodies, Brains, Legs, Arms, Components, Rules, Flow, Effects)
 - **Zero game scripts** — every game is a `UniversalGameScript` root with attached components
-- **Full Tetris suite** — classic Tetris (Plan 10) + Modern Tetris Guideline features (Plan 11): ghost piece, hold piece, T-spin detection, combo/B2B/level scoring, lock delay move limit
+- **Full Tetris suite** — Physics-based grid (Plan 10), Modern Tetris Guideline features (Plan 11): ghost piece, hold piece, T-spin detection, combo/B2B/level scoring, lock delay move limit. Juice and polish (Plan 12): 10 procedural sounds, score tick-up, line flash, smooth collapse, brick-style cells.
 - **All features toggleable** — Modern Tetris features are additive components with sensible defaults; existing games unchanged
 
 ---

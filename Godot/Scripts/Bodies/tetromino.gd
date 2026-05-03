@@ -10,6 +10,8 @@ enum Shape { I, O, T, S, Z, L, J }
 @export var tile_size: float = 18.0
 @export var randomize_shape = false
 @export var single_cell: bool = false  # When true, draw one square at origin, ignore shape/offsets
+@export var brick_style: bool = true   # Draw cells as 3D cubes with highlight/shadow edges
+@export var color_variation: float = 0.1  # Per-cell random hue/sat variation (0 = none)
 
 # Grid offsets for each shape type (relative to pivot tile)
 const SHAPE_OFFSETS: Dictionary = {
@@ -24,6 +26,9 @@ const SHAPE_OFFSETS: Dictionary = {
 
 var current_offsets: Array[Vector2i] = []
 
+# Per-cell random color offsets for brick variation
+var _cell_color_seeds: Array[float] = []
+
 # Ghost piece offsets — set by ghost_piece component. Empty = no ghost.
 var ghost_offsets: Array[Vector2i] = []
 
@@ -34,6 +39,9 @@ func _ready() -> void:
 	
 	velocity = Vector2.ZERO
 	set_physics_process(false)
+	
+	# Generate per-cell color variation seeds
+	_regenerate_color_seeds(4)
 	
 	if single_cell:
 		current_offsets = [Vector2i(0, 0)]
@@ -46,9 +54,17 @@ func _ready() -> void:
 # Draw a filled square for each tile offset, plus ghost outline
 func _draw() -> void:
 	# Draw filled cells
-	for offset in current_offsets:
+	for i in current_offsets.size():
+		var offset = current_offsets[i]
 		var pos: Vector2 = Vector2(offset.x * tile_size, offset.y * tile_size)
-		draw_rect(Rect2(pos - Vector2(tile_size / 2.0, tile_size / 2.0), Vector2(tile_size, tile_size)), color)
+		var half := Vector2(tile_size / 2.0, tile_size / 2.0)
+		var rect := Rect2(pos - half, Vector2(tile_size, tile_size))
+		var cell_color = _get_cell_color(i)
+		
+		if brick_style:
+			_draw_brick(pos, half, cell_color)
+		else:
+			draw_rect(rect, cell_color)
 	
 	# Draw ghost outline (unfilled, semi-transparent)
 	if ghost_offsets.size() > 0:
@@ -57,7 +73,45 @@ func _draw() -> void:
 			var pos: Vector2 = Vector2(offset.x * tile_size, offset.y * tile_size)
 			var half := Vector2(tile_size / 2.0, tile_size / 2.0)
 			var rect := Rect2(pos - half, Vector2(tile_size, tile_size))
-			draw_rect(rect, ghost_color, false, 1.0)
+			draw_rect(rect, ghost_color, false, 2.0)
+
+# Generate random color seeds for each cell
+func _regenerate_color_seeds(count: int) -> void:
+	_cell_color_seeds.clear()
+	for i in count:
+		_cell_color_seeds.append(randf())
+
+# Get the varied color for a specific cell
+func _get_cell_color(index: int) -> Color:
+	if not brick_style or color_variation <= 0.0:
+		return color
+	var seed_val = _cell_color_seeds[index % _cell_color_seeds.size()] if _cell_color_seeds.size() > 0 else 0.5
+	var h = color.h + (seed_val - 0.5) * color_variation
+	var s = color.s
+	var v = color.v + (seed_val - 0.5) * color_variation * 0.5
+	return Color.from_hsv(h, s, v)
+
+# Draw a 3D brick-style cell with highlight and shadow edges
+func _draw_brick(pos: Vector2, half: Vector2, cell_color: Color) -> void:
+	var rect := Rect2(pos - half, Vector2(tile_size, tile_size))
+	
+	# Main fill
+	draw_rect(rect, cell_color)
+	
+	# Highlight (top + left edges)
+	var highlight = Color(cell_color.r + 0.2, cell_color.g + 0.2, cell_color.b + 0.2)
+	var edge_width = maxf(2.0, tile_size * 0.12)
+	# Top edge
+	draw_rect(Rect2(pos - half, Vector2(tile_size, edge_width)), highlight)
+	# Left edge
+	draw_rect(Rect2(pos - half, Vector2(edge_width, tile_size)), highlight)
+	
+	# Shadow (bottom + right edges)
+	var shadow = Color(cell_color.r - 0.25, cell_color.g - 0.25, cell_color.b - 0.25)
+	# Bottom edge
+	draw_rect(Rect2(pos.x - half.x, pos.y + half.y - edge_width, tile_size, edge_width), shadow)
+	# Right edge
+	draw_rect(Rect2(pos.x + half.x - edge_width, pos.y - half.y, edge_width, tile_size), shadow)
 
 # Update the tile offsets (e.g., after rotation) and rebuild collision + redraw
 func update_offsets(new_offsets: Array[Vector2i]) -> void:

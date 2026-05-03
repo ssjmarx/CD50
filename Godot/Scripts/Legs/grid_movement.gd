@@ -44,6 +44,9 @@ var _das_active: bool = false
 # Emitted after a successful step
 signal moved
 
+# Emitted when a hard drop actually moves the piece
+signal hard_dropped
+
 # Connect signals
 func _ready() -> void:
 	parent.move.connect(_on_move)
@@ -165,6 +168,7 @@ func _on_shoot() -> void:
 	
 	if total_displacement != Vector2.ZERO:
 		parent.move_parent(total_displacement)
+		hard_dropped.emit()
 
 # --- Movement Validation ---
 

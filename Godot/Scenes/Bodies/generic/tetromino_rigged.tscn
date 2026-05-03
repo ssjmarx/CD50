@@ -10,6 +10,7 @@
 
 [node name="Tetromino" type="CharacterBody2D" groups=["tetrominos"]]
 script = ExtResource("1_4bays")
+color = Color(0, 0, 1, 1)
 width = 18
 height = 18
 collision_groups = Array[String](["tetrominos"])

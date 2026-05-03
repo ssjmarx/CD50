@@ -3,9 +3,9 @@
 **Last Updated:** 2026-05-02  
 **Engine:** Godot 4.x (GDScript)  
 **Architecture:** Entity-Component (composition over inheritance)  
-**Playable Games:** Pong, Breakout, Asteroids, Pongsteroids, Dogfight, Pongout, Breaksteroids, Space Invaders, Tetris, Modern Tetris — ALL componentized, zero game scripts  
-**In Progress:** None — Modern Tetris (Plan 11) complete  
-**Recent Completed:** Modern Tetris (Plan 11 — ghost piece, hold piece, T-spin detection, combo/B2B/level scoring, lock delay move limit)
+**Playable Games:** Pong, Breakout, Asteroids, Pongsteroids, Dogfight, Pongout, Breaksteroids, Space Invaders, Tetris (Modern) — ALL componentized, zero game scripts  
+**In Progress:** None  
+**Recent Completed:** Tetris fully complete (Plans 10–12): grid-based physics, Modern Tetris Guideline features, juice/polish, grid alignment fix, sound gating, ghost/hold bug fixes
 
 ---
 
