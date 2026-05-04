@@ -3,9 +3,9 @@
 **Last Updated:** 2026-05-03  
 **Engine:** Godot 4.x (GDScript)  
 **Architecture:** Entity-Component (composition over inheritance)  
-**Playable Games:** Pong, Breakout, Asteroids, Pongsteroids, Dogfight, Pongout, Breaksteroids, Space Invaders, Tetris (Modern) — ALL componentized, zero game scripts  
-**In Progress:** None  
-**Recent Completed:** Tetris fully complete (Plans 10–12): grid-based physics, Modern Tetris Guideline features, juice/polish, grid alignment fix, sound gating, ghost/hold bug fixes
+**Playable Games:** Pong, Breakout, Asteroids, Pongsteroids, Dogfight, Space Invaders, Tetris (Modern) — ALL componentized, zero game scripts
+**In Progress:** Plan 13 — Arcade Orchestrator (transitions and preloading remaining)  
+**Recent Completed:** Plan 13 Phases 0–3 largely complete: input refactoring, orchestrator state machine, boot/game-over screens, lives system, shuffle playlist, score carry + time bonus + arcade multiplier, 7 tuned game entries, UGS Mode enum (STANDALONE/ARCADE)
 
 ---
 
@@ -27,10 +27,13 @@ CD50 is a modular arcade game collection built around a composable component arc
 
 ### `Scripts/Core/universal_game_script.gd` — `UniversalGameScript extends Node2D`
 - Master class for game coordinators. Generic container with **zero game-specific logic**. State machine (ATTRACT/PLAYING/PAUSED/GAME_OVER), P1/P2 + generic score tracking, collision matrix setup. All game behavior comes from attached Rule/Flow/Component nodes.
+- **Mode enum:** `STANDALONE` (self-contained with input handling) vs `ARCADE` (orchestrator-controlled, suppresses Interface, no direct input)
+- **Arcade bonus:** `arcade_bonus` float — set by orchestrator via `set_arcade_bonus()`, added to `current_multiplier` during scoring
 - **Auto-emit property setters:** `current_score`, `current_multiplier` — emit signals on change
 - **Signals FROM components:** `victory`, `defeat`, `group_cleared`, `group_member_removed`, `lives_changed`, `lives_depleted`, `timer_tick`, `timer_expired`, `spawning_wave`, `spawning_wave_complete`, `piece_settled`, `hold_requested`, `t_spin_detected(is_t_spin, is_mini)`
 - **Signals TO components/UI:** `on_game_start`, `on_game_end`, `on_game_over`, `on_points_changed`, `on_multiplier_changed`, `state_changed`, `on_p1_score`, `on_p2_score`
 - Self-connects `victory` → `p1_win()` and `defeat` → `p1_lose()` in `_ready()`
+- **Input:** `_input()` handles `start`/`pause` actions in STANDALONE mode only; ARCADE mode relies on orchestrator
 - Static helper: `find_ancestor(node)` walks tree to find the UGS
 
 ### `Scripts/Core/universal_component.gd` — `UniversalComponent extends Node`
@@ -111,7 +114,8 @@ Scenes/Bodies/nonplayer/
 | Rules | 9 | goal, points_monitor, variable_tuner, variable_tuner_global, group_monitor, group_count_multiplier, lives_counter, timer, line_clear_monitor |
 | Flow | 11 | interface, sound_on_hit, sound_synth, music_ramping, sfx_ramping, beep, grid_basic, swarm_controller, tetromino_spawner, wave_director*, wave_spawner* |
 | Effects | 2 | death_particles, death_broken_triangle_ship |
-| **Total** | **87** | |
+| Hub | 2 | arcade_orchestrator, arcade_game_entry |
+| **Total** | **89** | |
 
 *\* wave_director and wave_spawner scripts live in `Scripts/Rules/` but are categorized as Flow by function.*
 

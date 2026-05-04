@@ -1,43 +1,36 @@
 # Current Goal
 
 **Last Updated:** 2026-05-03  
-**Status:** Active — Plan 13 (Arcade Orchestrator)
+**Status:** Active — Plan 13 (Arcade Orchestrator) — finishing remaining items
 
 ---
 
-## Active Plan: 13 — Arcade Orchestrator and Related Components
+## Active Plan: 13 — Arcade Orchestrator
 
 Building the architecture for an itch.io arcade demo: a meta-level orchestrator that loads existing games in sequence, runs them with fast rules, tracks lives and score across the run, and provides a complete boot → play → game over → replay loop.
 
-### Phases
+### Completion Status
 
-- **Phase 0 — Input Refactoring** (Prerequisite): Move all input handling to Godot's Input Map. Add `start`, `coin`, `pause` actions. Refactor `player_control.gd` and `ugs._unhandled_input` to be fully Input Map-driven.
-- **Phase 1 — Shell**: Boot screen, orchestrator state machine, load one game (Pong), detect game end, read score. UGS Mode enum (STANDALONE/ARCADE).
-- **Phase 2 — The Run**: Lives system, game sequence, preloading, scrolling transitions, score carry + streak multiplier, game over screen.
-- **Phase 3 — Fast Rules**: Arcade-specific property overrides per game (15-45s per game), tuning pass.
+| Phase | Description | Status |
+|-------|-------------|--------|
+| Phase 0 | Input Refactoring | ✅ COMPLETE |
+| Phase 1 | Shell (boot, orchestrator, one game in/out) | ✅ COMPLETE |
+| Phase 2 | The Run (lives, sequence, score, game over) | ~90% — transitions and preloading remaining |
+| Phase 3 | Fast Rules (per-game overrides, tuning) | ✅ COMPLETE |
 
-### Key Architecture Decisions
+### Remaining Work
 
-- **UGS Mode enum** — `STANDALONE` (existing behavior) vs `ARCADE` (suppresses Interface calls, no direct input, orchestrator-controlled)
-- **New directory** — `Scripts/Hub/` and `Scenes/Hub/` for meta-level scripts and scenes
-- **ArcadeGameEntry** — Reuses existing `PropertyOverride` resource for fast-rule configuration
-- **Win/loss detection** — Orchestrator listens to UGS `victory`/`defeat` signals directly
-- **Input routing** — All input flows through Input Map actions, no more `_unhandled_input`
+1. **Scrolling transitions** — Currently games load/free instantly. Plan calls for: next game instanced below viewport, tween current game up/off while new game scrolls in (0.4s cubic ease), then free old game.
+2. **Preloading** — `ResourceLoader.load_threaded_request()` for next entry's scene during gameplay, `load_threaded_get()` on transition. Fallback: "LOADING" text and poll.
 
-### New Scripts/Scenes to Create
+### What's Already Built
 
-- `Scripts/Hub/arcade_orchestrator.gd`
-- `Scripts/Hub/arcade_game_entry.gd` (resource)
-- `Scripts/Hub/arcade_playlist.gd` (resource)
-- `Scripts/Hub/input_router.gd` (or inline in UGS)
-- `Scenes/Hub/arcade_orchestrator.tscn`
-- `Scenes/Hub/boot_screen.tscn`
-
-### Scripts to Modify
-
-- `universal_game_script.gd` — Mode enum, suppress Interface in ARCADE, remove `_unhandled_input`
-- `player_control.gd` — Remove `_unhandled_input`, use `Input.is_action_just_pressed()` in `_physics_process`
-- `project.godot` — Add `start`, `coin`, `pause` Input Map actions
+- **ArcadeOrchestrator** (`Scripts/Hub/arcade_orchestrator.gd`) — Full state machine (BOOT → PLAYING → RESULT → GAME_OVER), shuffle bag, lives, score carry, time bonus, per-game multiplier
+- **ArcadeGameEntry** (`Scripts/Hub/arcade_game_entry.gd`) — Resource: PackedScene + PropertyOverride array
+- **UGS Mode enum** — STANDALONE vs ARCADE, Interface suppression, arcade bonus passthrough
+- **7 tuned game entries** — Pong, Asteroids, Tetris, Breakout, Space Invaders, Pongsteroids, Dogfight
+- **Boot screen + Game Over screen** — Functional with start/coin input
+- **Input refactoring** — `start`, `coin`, `pause` in Input Map; `player_control.gd` and UGS fully refactored
 
 ---
 
