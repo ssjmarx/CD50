@@ -5,16 +5,17 @@
 extends Node2D
 
 enum OrchestratorState { BOOT, PLAYING, RESULT, GAME_OVER }
+enum PlaylistMode { IN_ORDER, SHUFFLE }
 
 @export var playlist: Array[ArcadeGameEntry] = []
 @export var starting_lives: int = 3
+@export var playlist_mode: PlaylistMode = PlaylistMode.IN_ORDER
 
 # Signals for Interface component
 signal on_points_changed(new_score: int)
 signal on_multiplier_changed(new_multiplier: float)
 signal lives_changed(new_lives: int)
 signal state_changed(new_state: CommonEnums.State)
-signal arcade_bonus_changed(bonus: float)
 
 var _state: OrchestratorState = OrchestratorState.BOOT
 var _lives: int
@@ -23,6 +24,7 @@ var _current_index: int = 0
 var _current_game_instance: Node2D = null
 var _last_game_won: bool = false
 var _result_timer: float = 0.0
+var _shuffle_bag: Array[int] = []
 
 # Per-game tracking
 var _game_count: int = 0          # games completed this run (drives per-game bonus)
@@ -69,16 +71,23 @@ func _start_next_game() -> void:
 	if playlist.is_empty():
 		push_error("ArcadeOrchestrator: playlist is empty")
 		return
+		
+	var entry: ArcadeGameEntry
+	
+	if playlist_mode == PlaylistMode.SHUFFLE:
+		if _shuffle_bag.is_empty():
+			_refill_shuffle_bag()
+		entry = playlist[_shuffle_bag.pop_front()]
+	else:
+		# Existing in-order logic
+		if _current_index >= playlist.size():
+			_current_index = 0
+		entry = playlist[_current_index]
 	
 	_state = OrchestratorState.PLAYING
 	_boot_screen.visible = false
 	_game_over_screen.visible = false
 	
-	# Wrap index
-	if _current_index >= playlist.size():
-		_current_index = 0
-	
-	var entry: ArcadeGameEntry = playlist[_current_index]
 	_load_and_start_game(entry)
 	
 	# Emit PLAYING AFTER game is loaded so Interface can discover timers in the tree
@@ -172,7 +181,8 @@ func _on_game_over_signal(final_score: int) -> void:
 		_lives -= 1
 		lives_changed.emit(_lives)
 	
-	_current_index += 1
+	if playlist_mode == PlaylistMode.IN_ORDER:
+		_current_index += 1
 	
 	# Transition to RESULT state
 	_state = OrchestratorState.RESULT
@@ -207,6 +217,7 @@ func _restart_run() -> void:
 	_lives = starting_lives
 	_running_score = 0
 	_current_index = 0
+	_shuffle_bag.clear()   # forces reshuffle on next game
 	_game_count = 0
 	_game_multiplier = 1.0
 	lives_changed.emit(_lives)
@@ -254,3 +265,10 @@ func _apply_overrides(game_instance: Node, overrides: Array[PropertyOverride]) -
 			target_node.set(prop_override.property_name, prop_override.value)
 		else:
 			push_warning("ArcadeOrchestrator: override node '%s' not found in game scene" % prop_override.node_path)
+
+func _refill_shuffle_bag() -> void:
+	_shuffle_bag.clear()
+	_shuffle_bag.resize(playlist.size())
+	for i in playlist.size():
+		_shuffle_bag[i] = i
+	_shuffle_bag.shuffle()

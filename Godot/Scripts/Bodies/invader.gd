@@ -22,7 +22,6 @@ func _ready() -> void:
 			$crab.show()
 		Shape.SQUID:
 			$squid.show()
-			$ScoreOnDeath.score_type = CommonEnums.ScoreType.MULTIPLIER
 	
 	_play_with_offset()
 

@@ -138,6 +138,8 @@ func end_game() -> void:
 
 # Show win UI and transition to GAME_OVER
 func p1_win() -> void:
+	if current_state == states.GAME_OVER:
+		return
 	current_state = states.GAME_OVER
 	on_game_over.emit(current_score)
 	if mode == Mode.STANDALONE:
@@ -147,6 +149,8 @@ func p1_win() -> void:
 
 # Show lose UI and transition to GAME_OVER
 func p1_lose() -> void:
+	if current_state == states.GAME_OVER:
+		return
 	current_state = states.GAME_OVER
 	on_game_over.emit(current_score)
 	if mode == Mode.STANDALONE:

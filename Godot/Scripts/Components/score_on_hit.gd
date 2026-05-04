@@ -4,7 +4,7 @@ extends UniversalComponent
 
 # Score configuration
 @export var target_group: String
-@export var score_amount: int = 1
+@export var score_amount: float = 1.0
 @export var score_type: CommonEnums.ScoreType = CommonEnums.ScoreType.POINTS
 @export var listen_signal: String = "body_collided"
 

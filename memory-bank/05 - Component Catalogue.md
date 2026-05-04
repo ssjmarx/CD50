@@ -1,7 +1,8 @@
 # Component Catalogue
 
 **Last Updated:** 2026-05-03  
-**Total Scripts:** 87 across 9 categories
+**Total Scripts:** 86 across 10 categories  
+**Total Scene Variants:** 2 (no unique script)
 
 Each entry includes the script name, class declaration, and a one-line description extracted from the script's top comment.
 
@@ -61,7 +62,7 @@ Brains read input (player or AI) and emit signals on the parent body.
 
 ---
 
-## Legs (14)
+## Legs (13)
 
 Legs listen to processed output signals and handle movement/rotation.
 
@@ -79,12 +80,11 @@ Legs listen to processed output signals and handle movement/rotation.
 | `grid_rotation.gd` | `extends UniversalComponent` | Grid rotation leg. Snaps facing direction to discrete rotation steps based on movement input or action button. |
 | `grid_gravity.gd` | `extends UniversalComponent` | Grid gravity leg. Timer-based downward movement as a direct force. Bypasses Brain→Body→Leg signal chain. |
 | `grid_rotation_advanced.gd` | `extends UniversalComponent` | Advanced grid rotation leg. Rotates multi-cell body offsets with wall kick support. Uses physics queries for validation. |
-| `tetromino_formation.gd` | `extends UniversalComponent` | Tetromino formation leg. Handles grid-based movement, DAS auto-repeat, rotation with wall kicks, lock delay, and hard drop for Tetris pieces. |
 | `warp_asteroids.gd` | `extends UniversalComponent` | Emergency teleport with temporary intangibility for Asteroids-style games. Warps to random position, hides briefly, then reappears. |
 
 ---
 
-## Arms (3)
+## Arms (3 scripts + 1 scene variant)
 
 Arms handle weapons and combat interactions.
 
@@ -93,6 +93,12 @@ Arms handle weapons and combat interactions.
 | `gun_simple.gd` | `extends UniversalComponent` | Simple gun. Spawns bullet scenes on shoot signal with configurable rate of fire. |
 | `damage_on_hit.gd` | `extends UniversalComponent` | Deals damage to a target's health component when parent collides with it. |
 | `damage_on_joust.gd` | `extends UniversalComponent` | Deals damage based on relative velocity on collision. Higher speed = more damage (joust mechanic). |
+
+**Scene variants:**
+
+| Scene | Script Used | Summary |
+|-------|-------------|---------|
+| `gun_nosound.tscn` | `gun_simple.gd` | Silent variant of gun_simple. No sound components attached. |
 
 ---
 
@@ -124,7 +130,7 @@ General-purpose gameplay modifier components.
 
 ---
 
-## Rules (9)
+## Rules (11)
 
 Game logic and condition components.
 
@@ -139,10 +145,12 @@ Game logic and condition components.
 | `lives_counter.gd` | `extends UniversalComponent` | Manages player lives for games with lives systems (Asteroids, Breakout). |
 | `timer.gd` | `extends UniversalComponent` | Game timer with count-up or count-down modes. Emits tick events at configurable intervals. |
 | `line_clear_monitor.gd` | `extends UniversalComponent2D` | Line clear monitor. Physics-based line detection using world-space queries. Zero grid data structure dependency. |
+| `wave_director.gd` | `extends UniversalComponent2D` | Wave director. Connects to a game trigger signal and emits a wave-spawning signal after a configurable delay, with optional wave count limits. |
+| `wave_spawner.gd` | `extends UniversalComponent2D` | Wave spawner. Instantiates entities in patterns (screen edges, center, grid, position) with optional stagger timing, safe zones, and component/property attachment. |
 
 ---
 
-## Flow (11)
+## Flow (7)
 
 Wave management, spawning, UI, and audio components.
 
@@ -153,14 +161,25 @@ Wave management, spawning, UI, and audio components.
 | `sound_synth.gd` | *(not shown — unique)* | Synthesized audio generator. Produces real-time waveforms (sine, square, sawtooth, triangle, noise) with optional effects. Supports continuous playback or signal-triggered one-shots. |
 | `music_ramping.gd` | `extends UniversalComponent2D` | Music ramping. Accelerates a two-voice synth beat as the count of a target group decreases, creating tension. |
 | `sfx_ramping.gd` | `extends UniversalComponent` | Maps a property value from a source node to a semitone range and plays a synth note. Useful for dynamic pitch-shifting based on game state. |
-| `beep.gd` | `extends UniversalComponent` | Simple square wave beep generator using AudioStreamGenerator. Produces a short tone at a given frequency and duration. |
-| `grid_basic.gd` | `extends UniversalComponent2D` | Basic grid component. Provides a 2D occupancy array with coordinate conversion, cell queries, row/column operations, and visual grid drawing. |
 | `swarm_controller.gd` | `extends UniversalComponent2D` | Swarm controller. Drives Space Invaders-style group movement with tick-based horizontal stepping, edge detection, step-down shifts, and speed ramping. |
 | `tetromino_spawner.gd` | `extends UniversalComponent2D` | Tetromino spawner. Manages the lock-spawn cycle for Tetris-style games. Handles piece locking, next piece spawning, preview display, bag system, and defeat detection. |
-| `wave_director.gd`* | `extends UniversalComponent2D` | Wave director. Connects to a game trigger signal and emits a wave-spawning signal after a configurable delay, with optional wave count limits. |
-| `wave_spawner.gd`* | `extends UniversalComponent2D` | Wave spawner. Instantiates entities in patterns (screen edges, center, grid, position) with optional stagger timing, safe zones, and component/property attachment. |
 
-*\* wave_director and wave_spawner scripts live in `Scripts/Rules/` but are categorized as Flow by function.*
+---
+
+## Hub (2 scripts + 1 scene variant)
+
+Meta-level scripts for the arcade orchestrator system.
+
+| Script | Extends | Summary |
+|--------|---------|---------|
+| `arcade_orchestrator.gd` | `extends Node2D` | State machine that manages the arcade run: BOOT → PLAYING → RESULT → GAME_OVER → RESTART. Loads games from ArcadeGameEntry resources, tracks lives/score, detects game end, applies property overrides. |
+| `arcade_game_entry.gd` | `ArcadeGameEntry extends Resource` | Defines a single game entry in the arcade playlist. Contains the game scene and property overrides for arcade fast rules. |
+
+**Scene variants:**
+
+| Scene | Script Used | Summary |
+|-------|-------------|---------|
+| `boot_screen.tscn` | *(scene only — no script)* | Placeholder for arcade mode entry screen. "INSERT COIN / PRESS START" UI with black background. Detailed in Plan 13. |
 
 ---
 

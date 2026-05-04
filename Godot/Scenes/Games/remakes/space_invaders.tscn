@@ -127,7 +127,7 @@ grid_columns = 11
 grid_rows = 2
 grid_spacing = 8
 grid_health_values = Array[int]([])
-grid_score_values = Array[int]([])
+grid_score_values = Array[int]([2, 2])
 
 [node name="WaveSpawner2" parent="." node_paths=PackedStringArray("director", "extra_directors") instance=ExtResource("4_wevyt")]
 position = Vector2(320, 124)
@@ -161,7 +161,7 @@ grid_columns = 11
 grid_rows = 1
 grid_spacing = 8
 grid_health_values = Array[int]([])
-grid_score_values = Array[int]([])
+grid_score_values = Array[int]([3])
 
 [node name="LivesCounter" parent="." instance=ExtResource("12_k2lq6")]
 

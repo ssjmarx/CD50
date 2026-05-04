@@ -64,9 +64,12 @@ offset_bottom = 322.0
 
 [node name="LineClearMonitor" parent="." instance=ExtResource("7_yqjmt")]
 playfield_origin = Vector2(239, 0)
+score_table = Array[int]([0, 10, 30, 50, 80])
 enable_combo = true
 enable_back_to_back = true
 enable_t_spin_scoring = true
+t_spin_score_table = Array[int]([40, 80, 120, 160])
+t_spin_mini_score_table = Array[int]([10, 30, 60, 90])
 
 [node name="TetrominoSpawner" parent="." instance=ExtResource("3_ubbxl")]
 position = Vector2(338, 27)

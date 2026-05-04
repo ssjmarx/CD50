@@ -1,0 +1,53 @@
+[gd_resource type="Resource" script_class="ArcadeGameEntry" load_steps=10 format=3 uid="uid://bcphcp71aw3nt"]
+
+[ext_resource type="PackedScene" uid="uid://ckxvsijl3fwv1" path="res://Scenes/Games/originals/dogfight.tscn" id="1_x1ds1"]
+[ext_resource type="Script" uid="uid://cp0ni1lgml7c6" path="res://Scripts/Core/property_override.gd" id="2_3va1t"]
+[ext_resource type="Script" uid="uid://bdsbfe65crnbu" path="res://Scripts/Hub/arcade_game_entry.gd" id="3_vbtym"]
+
+[sub_resource type="Resource" id="Resource_x1ds1"]
+script = ExtResource("2_3va1t")
+node_path = NodePath("LivesCounter")
+property_name = "max_lives"
+value = 1
+metadata/_custom_type_script = "uid://cp0ni1lgml7c6"
+
+[sub_resource type="Resource" id="Resource_3va1t"]
+script = ExtResource("2_3va1t")
+node_path = NodePath("Timer")
+property_name = "duration"
+value = 1.0
+metadata/_custom_type_script = "uid://cp0ni1lgml7c6"
+
+[sub_resource type="Resource" id="Resource_vbtym"]
+script = ExtResource("2_3va1t")
+node_path = NodePath("WaveDirector2")
+property_name = "trigger_type"
+value = 3
+metadata/_custom_type_script = "uid://cp0ni1lgml7c6"
+
+[sub_resource type="Resource" id="Resource_832ah"]
+script = ExtResource("2_3va1t")
+node_path = NodePath("WaveDirector2")
+property_name = "current_wave"
+value = 3
+metadata/_custom_type_script = "uid://cp0ni1lgml7c6"
+
+[sub_resource type="Resource" id="Resource_vjm4a"]
+script = ExtResource("2_3va1t")
+node_path = NodePath("WaveDirector2")
+property_name = "trigger_value"
+value = ""
+metadata/_custom_type_script = "uid://cp0ni1lgml7c6"
+
+[sub_resource type="Resource" id="Resource_cjr50"]
+script = ExtResource("2_3va1t")
+node_path = NodePath("GroupMonitor2")
+property_name = "victory_on_clear"
+value = true
+metadata/_custom_type_script = "uid://cp0ni1lgml7c6"
+
+[resource]
+script = ExtResource("3_vbtym")
+game_scene = ExtResource("1_x1ds1")
+overrides = Array[ExtResource("2_3va1t")]([SubResource("Resource_x1ds1"), SubResource("Resource_3va1t"), SubResource("Resource_vbtym"), SubResource("Resource_832ah"), SubResource("Resource_vjm4a"), SubResource("Resource_cjr50")])
+metadata/_custom_type_script = "uid://bdsbfe65crnbu"

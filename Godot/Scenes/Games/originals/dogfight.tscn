@@ -117,6 +117,7 @@ director = NodePath("../WaveDirector2")
 
 [node name="WaveDirector(asteroids)" parent="." instance=ExtResource("12_fk46a")]
 trigger_type = 1
+wave_delay = 0.0
 
 [node name="WaveSpawner(asteroids)" parent="." node_paths=PackedStringArray("director") instance=ExtResource("13_nvkvc")]
 spawn_scene = ExtResource("15_kkt1o")
