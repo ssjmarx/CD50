@@ -1,6 +1,6 @@
 # Current Status: CD50 — Arcade Cabinet
 
-**Last Updated:** 2026-05-02  
+**Last Updated:** 2026-05-03  
 **Engine:** Godot 4.x (GDScript)  
 **Architecture:** Entity-Component (composition over inheritance)  
 **Playable Games:** Pong, Breakout, Asteroids, Pongsteroids, Dogfight, Pongout, Breaksteroids, Space Invaders, Tetris (Modern) — ALL componentized, zero game scripts  
@@ -42,6 +42,9 @@ CD50 is a modular arcade game collection built around a composable component arc
 
 ### `Scripts/Core/collision_matrix.gd` — `CollisionMatrix extends RefCounted`
 - Auto-configures collision layers/masks from group definitions. Supports both `UniversalBody` and non-body nodes via `CollisionMarker` children.
+
+### `Scripts/Core/group_cache.gd` — `extends Node`
+- Lazy dirty-flag cache for group node lookups. Avoids repeated `get_nodes_in_group()` allocations. Marks groups dirty when nodes enter/exit the tree or `add_to_group()` is called.
 
 ### `Scripts/Core/collision_group.gd` — `CollisionGroup extends Resource`
 - Custom resource defining a collision group name and its target groups.
@@ -99,16 +102,16 @@ Scenes/Bodies/nonplayer/
 
 | Category | Count | Components |
 |----------|-------|------------|
-| Core | 8 | universal_body, universal_game_script, universal_component, universal_component_2d, collision_matrix, collision_group, property_override, common_enums |
-| Bodies | 12 | ball, paddle, asteroid, brick, bullet_simple, bullet_wrapping, tetromino, triangle_ship, ufo, invader, paddle_cannon, mystery_ship |
+| Core | 9 | universal_body, universal_game_script, universal_component, universal_component_2d, collision_matrix, collision_group, group_cache, property_override, common_enums |
+| Bodies | 12 | ball, paddle, asteroid, brick, barrier, bullet_simple, bullet_wrapping, tetromino, triangle_ship, ufo, invader, paddle_cannon |
 | Brains | 8 | player_control, interceptor_ai, aim_ai, shoot_ai, shoot_ai_swarm, patrol_ai, falling_ai, swarm_ai |
-| Legs | 13 | direct_movement, direct_acceleration, engine_simple, engine_complex, friction_linear, friction_static, rotation_direct, rotation_target, grid_movement, grid_rotation, grid_gravity, grid_rotation_advanced, warp_asteroids |
+| Legs | 14 | direct_movement, direct_acceleration, engine_simple, engine_complex, friction_linear, friction_static, rotation_direct, rotation_target, grid_movement, grid_rotation, grid_gravity, grid_rotation_advanced, tetromino_formation, warp_asteroids |
 | Arms | 3 | gun_simple, damage_on_hit, damage_on_joust |
-| Components | 18 | angled_deflector, collision_marker, death_effect, die_on_hit, die_on_timer, ghost_piece, health, hold_relay, lock_detector, pong_acceleration, ring_spawner, score_on_death, score_on_hit, screen_cleanup, screen_wrap, split_on_death, t_spin_detector, vector_engine_exhaust |
-| Rules | 8 | goal, points_monitor, variable_tuner, group_monitor, group_count_multiplier, lives_counter, timer, line_clear_monitor |
+| Components | 19 | angled_deflector, bounce_on_hit, collision_marker, death_effect, die_on_hit, die_on_timer, ghost_piece, health, hold_relay, lock_detector, pong_acceleration, ring_spawner, score_on_death, score_on_hit, screen_cleanup, screen_wrap, split_on_death, t_spin_detector, vector_engine_exhaust |
+| Rules | 9 | goal, points_monitor, variable_tuner, variable_tuner_global, group_monitor, group_count_multiplier, lives_counter, timer, line_clear_monitor |
 | Flow | 11 | interface, sound_on_hit, sound_synth, music_ramping, sfx_ramping, beep, grid_basic, swarm_controller, tetromino_spawner, wave_director*, wave_spawner* |
 | Effects | 2 | death_particles, death_broken_triangle_ship |
-| **Total** | **83** | |
+| **Total** | **87** | |
 
 *\* wave_director and wave_spawner scripts live in `Scripts/Rules/` but are categorized as Flow by function.*
 

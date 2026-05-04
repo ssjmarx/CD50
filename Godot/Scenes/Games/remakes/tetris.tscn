@@ -1,4 +1,4 @@
-[gd_scene load_steps=19 format=3 uid="uid://bpj70hfifidra"]
+[gd_scene load_steps=20 format=3 uid="uid://bpj70hfifidra"]
 
 [ext_resource type="Script" uid="uid://bjdgpevhahi6d" path="res://Scripts/Core/universal_game_script.gd" id="1_d0qe2"]
 [ext_resource type="Script" uid="uid://bfkr4fdx316o5" path="res://Scripts/Core/collision_group.gd" id="2_n304l"]
@@ -11,6 +11,7 @@
 [ext_resource type="PackedScene" uid="uid://b418fukpc5m41" path="res://Scenes/Components/collision_marker.tscn" id="11_w5ai1"]
 [ext_resource type="PackedScene" path="res://Scenes/Components/hold_relay.tscn" id="12_hold"]
 [ext_resource type="FontFile" uid="uid://imm2iompf7sv" path="res://Assets/Fonts/Kenney Pixel.ttf" id="12_ixwad"]
+[ext_resource type="PackedScene" uid="uid://craitf0mklbon" path="res://Scenes/Rules/timer.tscn" id="13_1s8f2"]
 [ext_resource type="PackedScene" uid="uid://dga83l4d2rwyv" path="res://Scenes/Flow/sound_synth.tscn" id="13_snd"]
 
 [sub_resource type="Resource" id="Resource_ubbxl"]
@@ -262,5 +263,9 @@ offset_bottom = 197.0
 theme_override_font_sizes/font_size = 12
 text = "HOLD"
 label_settings = SubResource("LabelSettings_1s8f2")
+
+[node name="Timer" parent="." instance=ExtResource("13_1s8f2")]
+duration = 20.0
+game_start = true
 
 [editable path="Interface"]

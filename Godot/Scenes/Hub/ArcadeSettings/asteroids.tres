@@ -1,0 +1,60 @@
+[gd_resource type="Resource" script_class="ArcadeGameEntry" load_steps=11 format=3 uid="uid://wtj1l710dfsc"]
+
+[ext_resource type="PackedScene" uid="uid://bjs0gtnsur7e6" path="res://Scenes/Games/remakes/asteroids.tscn" id="1_vybgi"]
+[ext_resource type="Script" uid="uid://cp0ni1lgml7c6" path="res://Scripts/Core/property_override.gd" id="2_okycj"]
+[ext_resource type="Script" uid="uid://bdsbfe65crnbu" path="res://Scripts/Hub/arcade_game_entry.gd" id="3_j5aq8"]
+
+[sub_resource type="Resource" id="Resource_vybgi"]
+script = ExtResource("2_okycj")
+node_path = NodePath("LivesCounter")
+property_name = "max_lives"
+value = 1
+metadata/_custom_type_script = "uid://cp0ni1lgml7c6"
+
+[sub_resource type="Resource" id="Resource_okycj"]
+script = ExtResource("2_okycj")
+node_path = NodePath("GroupMonitor")
+property_name = "victory_on_clear"
+value = true
+metadata/_custom_type_script = "uid://cp0ni1lgml7c6"
+
+[sub_resource type="Resource" id="Resource_j5aq8"]
+script = ExtResource("2_okycj")
+node_path = NodePath("WaveSpawner(GameStart)")
+property_name = "spawn_count_equation"
+value = "7"
+metadata/_custom_type_script = "uid://cp0ni1lgml7c6"
+
+[sub_resource type="Resource" id="Resource_yxgaa"]
+script = ExtResource("2_okycj")
+node_path = NodePath("Timer(SmallUfos)")
+property_name = "duration"
+value = 15.0
+metadata/_custom_type_script = "uid://cp0ni1lgml7c6"
+
+[sub_resource type="Resource" id="Resource_i2h47"]
+script = ExtResource("2_okycj")
+node_path = NodePath("Timer(SmallUfos)")
+property_name = "loop_timer"
+value = false
+metadata/_custom_type_script = "uid://cp0ni1lgml7c6"
+
+[sub_resource type="Resource" id="Resource_otv15"]
+script = ExtResource("2_okycj")
+node_path = NodePath("Timer(LargeUfos)")
+property_name = "duration"
+value = 10.0
+metadata/_custom_type_script = "uid://cp0ni1lgml7c6"
+
+[sub_resource type="Resource" id="Resource_b8v7l"]
+script = ExtResource("2_okycj")
+node_path = NodePath("Timer(LargeUfos)")
+property_name = "loop_timer"
+value = false
+metadata/_custom_type_script = "uid://cp0ni1lgml7c6"
+
+[resource]
+script = ExtResource("3_j5aq8")
+game_scene = ExtResource("1_vybgi")
+overrides = Array[ExtResource("2_okycj")]([SubResource("Resource_vybgi"), SubResource("Resource_okycj"), SubResource("Resource_j5aq8"), SubResource("Resource_yxgaa"), SubResource("Resource_i2h47"), SubResource("Resource_otv15"), SubResource("Resource_b8v7l")])
+metadata/_custom_type_script = "uid://bdsbfe65crnbu"

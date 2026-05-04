@@ -1,0 +1,32 @@
+[gd_resource type="Resource" script_class="ArcadeGameEntry" load_steps=7 format=3 uid="uid://bnsuj1p7iiehg"]
+
+[ext_resource type="PackedScene" uid="uid://vt2aalri00kw" path="res://Scenes/Games/remakes/space_invaders.tscn" id="1_hl2w6"]
+[ext_resource type="Script" uid="uid://cp0ni1lgml7c6" path="res://Scripts/Core/property_override.gd" id="2_83x8x"]
+[ext_resource type="Script" uid="uid://bdsbfe65crnbu" path="res://Scripts/Hub/arcade_game_entry.gd" id="3_pp72w"]
+
+[sub_resource type="Resource" id="Resource_hl2w6"]
+script = ExtResource("2_83x8x")
+node_path = NodePath("LivesCounter")
+property_name = "max_lives"
+value = 1
+metadata/_custom_type_script = "uid://cp0ni1lgml7c6"
+
+[sub_resource type="Resource" id="Resource_83x8x"]
+script = ExtResource("2_83x8x")
+node_path = NodePath("GroupMonitor")
+property_name = "victory_on_clear"
+value = true
+metadata/_custom_type_script = "uid://cp0ni1lgml7c6"
+
+[sub_resource type="Resource" id="Resource_pp72w"]
+script = ExtResource("2_83x8x")
+node_path = NodePath("Timer")
+property_name = "loop_timer"
+value = false
+metadata/_custom_type_script = "uid://cp0ni1lgml7c6"
+
+[resource]
+script = ExtResource("3_pp72w")
+game_scene = ExtResource("1_hl2w6")
+overrides = Array[ExtResource("2_83x8x")]([SubResource("Resource_hl2w6"), SubResource("Resource_83x8x"), SubResource("Resource_pp72w")])
+metadata/_custom_type_script = "uid://bdsbfe65crnbu"

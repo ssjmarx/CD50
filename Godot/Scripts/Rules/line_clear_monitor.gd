@@ -37,8 +37,8 @@ extends UniversalComponent2D
 # Back-to-back multiplier (applied to difficult clears: Tetris, T-spin)
 @export var b2b_multiplier: float = 1.5
 
-# Score type for routing (empty = add_score, "p1" = add_p1_score, "p2" = add_p2_score)
-@export var score_type: String = ""
+# Score type for routing — uses standard enum like all other scoring components
+@export var score_type: CommonEnums.ScoreType = CommonEnums.ScoreType.POINTS
 
 # Emitted when rows are cleared with count and row indices
 signal lines_cleared(count: int, row_indices: Array[int])
@@ -173,12 +173,14 @@ func _apply_score(points: int) -> void:
 	if not game:
 		return
 	match score_type:
-		"p1":
+		CommonEnums.ScoreType.P1_SCORE:
 			game.add_p1_score(points)
-		"p2":
+		CommonEnums.ScoreType.P2_SCORE:
 			game.add_p2_score(points)
-		_:
+		CommonEnums.ScoreType.POINTS:
 			game.add_score(points)
+		CommonEnums.ScoreType.MULTIPLIER:
+			game.add_multiplier(float(points))
 
 # --- Row Detection (Physics-Based) ---
 

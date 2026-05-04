@@ -8,6 +8,8 @@ extends UniversalComponent
 @export var loop_timer: bool = false
 @export var game_start: bool = false
 @export var timer_id: String = ""
+@export var emit_result_on_expire: bool = false  # Set true to emit result on expiry
+@export var result: CommonEnums.Result  # Which result to emit (VICTORY or DEFEAT)
 
 var _timer: Timer
 var _current_time: float
@@ -58,6 +60,7 @@ func _on_tick() -> void:
 			_current_time = duration
 			stop_timer()
 			game.timer_expired.emit(timer_id)
+			_emit_result()
 			if loop_timer:
 				reset_timer()
 				start_timer()
@@ -67,8 +70,17 @@ func _on_tick() -> void:
 			_current_time = 0
 			stop_timer()
 			game.timer_expired.emit(timer_id)
+			_emit_result()
 			if loop_timer:
 				reset_timer()
 				start_timer()
 	
 	game.timer_tick.emit(_current_time)
+
+# Emit victory or defeat on expiry based on configured result
+func _emit_result() -> void:
+	if not emit_result_on_expire:
+		return
+	match result:
+		CommonEnums.Result.VICTORY: parent.victory.emit()
+		CommonEnums.Result.DEFEAT: parent.defeat.emit()

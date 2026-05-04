@@ -26,6 +26,9 @@ extends UniversalComponent2D
 @export var enable_hold: bool = false
 @export var hold_origin: Vector2 = Vector2(500, 180)
 
+# Starting level — can be overridden via PropertyOverride for arcade modes
+@export var starting_level: int = 1
+
 # Level-based gravity speed table. Index 0 = Level 1, index N-1 = Level N.
 # Any level beyond the table uses the last value as the floor.
 # Modern Guideline: [1.000, 0.793, 0.618, 0.473, 0.355, 0.262, 0.190, 0.135,
@@ -63,7 +66,8 @@ signal piece_hard_dropped
 # Initialize randomizer, preview, and connect game start
 func _ready() -> void:
 	game.on_game_start.connect(_on_game_start)
-	_current_fall_interval = _get_speed_for_level(1)
+	_current_level = starting_level
+	_current_fall_interval = _get_speed_for_level(starting_level)
 	_connect_level_monitor()
 	if enable_hold:
 		game.hold_requested.connect(_on_hold_requested)
@@ -79,7 +83,8 @@ func _ready() -> void:
 	if randomizer_mode == "bag7":
 		_refill_bag()
 	_next_index = _get_next_index()
-	_spawn_preview()
+	# Don't spawn preview here — add_child fails during _ready().
+	# _spawn_next() will create the preview on first call.
 
 # Spawn the first piece when the game starts
 func _on_game_start() -> void:
@@ -206,10 +211,10 @@ func _spawn_preview() -> void:
 	_apply_entry_overrides(_preview_piece, entry.overrides)
 	_preview_piece.global_position = preview_origin
 	_preview_piece.rotation = PI / 2  # Rotate preview 90° clockwise
-	game.add_child.call_deferred(_preview_piece)
+	game.add_child(_preview_piece)
 	
 	# Freeze the preview — disable all child processing (brains, legs, components)
-	_freeze_piece.call_deferred(_preview_piece)
+	_freeze_piece(_preview_piece)
 	
 	next_piece_changed.emit(entry.scene)
 

@@ -1,0 +1,25 @@
+[gd_resource type="Resource" script_class="ArcadeGameEntry" load_steps=6 format=3 uid="uid://cirxnwcy2g34q"]
+
+[ext_resource type="PackedScene" uid="uid://bpj70hfifidra" path="res://Scenes/Games/remakes/tetris.tscn" id="1_ecjqk"]
+[ext_resource type="Script" uid="uid://cp0ni1lgml7c6" path="res://Scripts/Core/property_override.gd" id="1_l06m0"]
+[ext_resource type="Script" uid="uid://bdsbfe65crnbu" path="res://Scripts/Hub/arcade_game_entry.gd" id="2_ecjqk"]
+
+[sub_resource type="Resource" id="Resource_ecjqk"]
+script = ExtResource("1_l06m0")
+node_path = NodePath("TetrominoSpawner")
+property_name = "starting_level"
+value = 5
+metadata/_custom_type_script = "uid://cp0ni1lgml7c6"
+
+[sub_resource type="Resource" id="Resource_780gg"]
+script = ExtResource("1_l06m0")
+node_path = NodePath("Timer")
+property_name = "emit_result_on_expire"
+value = true
+metadata/_custom_type_script = "uid://cp0ni1lgml7c6"
+
+[resource]
+script = ExtResource("2_ecjqk")
+game_scene = ExtResource("1_ecjqk")
+overrides = Array[ExtResource("1_l06m0")]([SubResource("Resource_ecjqk"), SubResource("Resource_780gg")])
+metadata/_custom_type_script = "uid://bdsbfe65crnbu"

@@ -1,0 +1,118 @@
+[gd_scene load_steps=14 format=3 uid="uid://boo0jvdtkr4xv"]
+
+[ext_resource type="Script" uid="uid://dt4uemfscl0x6" path="res://Scripts/Hub/arcade_orchestrator.gd" id="1_script"]
+[ext_resource type="FontFile" uid="uid://imm2iompf7sv" path="res://Assets/Fonts/Kenney Pixel.ttf" id="2_font"]
+[ext_resource type="Script" uid="uid://bdsbfe65crnbu" path="res://Scripts/Hub/arcade_game_entry.gd" id="2_u78ae"]
+[ext_resource type="Resource" uid="uid://x1w7jhywtp3r" path="res://Scenes/Hub/ArcadeSettings/breakout.tres" id="3_enkk5"]
+[ext_resource type="Resource" uid="uid://bcl4p542u027h" path="res://Scenes/Hub/ArcadeSettings/pong.tres" id="3_s1wbx"]
+[ext_resource type="Resource" uid="uid://wtj1l710dfsc" path="res://Scenes/Hub/ArcadeSettings/asteroids.tres" id="4_2j8et"]
+[ext_resource type="PackedScene" uid="uid://bq6cdrx340jp7" path="res://Scenes/Flow/interface.tscn" id="5_interface"]
+[ext_resource type="Resource" uid="uid://cirxnwcy2g34q" path="res://Scenes/Hub/ArcadeSettings/tetris.tres" id="5_p7kvk"]
+[ext_resource type="FontFile" uid="uid://71u6h0td0205" path="res://Assets/Fonts/Kenney Future Narrow.ttf" id="6_2j8et"]
+[ext_resource type="Resource" uid="uid://bnsuj1p7iiehg" path="res://Scenes/Hub/ArcadeSettings/space_invaders.tres" id="7_5jrs3"]
+
+[sub_resource type="LabelSettings" id="LabelSettings_title"]
+font = ExtResource("6_2j8et")
+font_size = 64
+
+[sub_resource type="LabelSettings" id="LabelSettings_gameover"]
+font = ExtResource("2_font")
+font_size = 48
+
+[sub_resource type="LabelSettings" id="LabelSettings_gameover_small"]
+font = ExtResource("2_font")
+font_size = 20
+
+[node name="ArcadeOrchestrator" type="Node2D"]
+script = ExtResource("1_script")
+playlist = Array[ExtResource("2_u78ae")]([ExtResource("7_5jrs3"), ExtResource("3_s1wbx"), ExtResource("4_2j8et"), ExtResource("5_p7kvk"), ExtResource("3_enkk5")])
+
+[node name="GameContainer" type="Node2D" parent="."]
+
+[node name="Interface" parent="." instance=ExtResource("5_interface")]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_right = 0.0
+offset_bottom = 0.0
+grow_horizontal = 2
+grow_vertical = 2
+display_mode = 1
+display_lives = true
+
+[node name="BootScreen" type="Control" parent="."]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+
+[node name="Background" type="ColorRect" parent="BootScreen"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0, 0, 0, 1)
+
+[node name="TitleLabel" type="Label" parent="BootScreen"]
+layout_mode = 0
+offset_left = 80.0
+offset_top = 64.0
+offset_right = 576.0
+offset_bottom = 160.0
+text = "CD50 ARCADE"
+label_settings = SubResource("LabelSettings_title")
+horizontal_alignment = 1
+
+[node name="GameOverScreen" type="Control" parent="."]
+visible = false
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+
+[node name="Background" type="ColorRect" parent="GameOverScreen"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0, 0, 0, 1)
+
+[node name="GameOverLabel" type="Label" parent="GameOverScreen"]
+layout_mode = 0
+offset_left = 192.0
+offset_top = 100.0
+offset_right = 448.0
+offset_bottom = 148.0
+text = "GAME OVER"
+label_settings = SubResource("LabelSettings_gameover")
+horizontal_alignment = 1
+
+[node name="FinalScoreLabel" type="Label" parent="GameOverScreen"]
+layout_mode = 0
+offset_left = 192.0
+offset_top = 160.0
+offset_right = 448.0
+offset_bottom = 184.0
+text = "FINAL SCORE: 0"
+label_settings = SubResource("LabelSettings_gameover_small")
+horizontal_alignment = 1
+
+[node name="PlayAgainLabel" type="Label" parent="GameOverScreen"]
+layout_mode = 0
+offset_left = 192.0
+offset_top = 220.0
+offset_right = 448.0
+offset_bottom = 244.0
+text = "PRESS START TO PLAY AGAIN"
+label_settings = SubResource("LabelSettings_gameover_small")
+horizontal_alignment = 1

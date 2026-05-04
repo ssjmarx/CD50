@@ -27,13 +27,11 @@ extends UniversalComponent2D
 # Grid configuration
 @export var grid_width: int = 16
 @export var grid_height: int = 8
-@export var grid_columns: int = 32
-@export var grid_rows: int = 6
+@export var grid_columns: int = 14
+@export var grid_rows: int = 8
 @export var grid_spacing: int = 3
-@export var grid_health_by_row: bool = true
-@export var grid_health_max: int = 6
-@export var grid_score_by_row: bool = false
-@export var grid_score_max: int = 6
+@export var grid_health_values: Array[int] = [7, 5, 3, 1, 1, 1, 1, 1]
+@export var grid_score_values: Array[int] = [7, 7, 5, 5, 3, 3, 1, 1]
 
 # Initial velocity configuration
 @export var initial_velocity: Vector2 = Vector2.ZERO
@@ -125,11 +123,11 @@ func _spawn_one(wave_num: int, index: int, total: int) -> void:
 				origin_y + row * step_y + grid_height / 2.0
 			)
 
-			if grid_health_by_row:
-				enemy.get_node("Health").max_health = max(1, grid_health_max - row)
+			if not grid_health_values.is_empty() and row < grid_health_values.size():
+				enemy.get_node("Health").max_health = grid_health_values[row]
 
-			if grid_score_by_row:
-				enemy.get_node("ScoreOnDeath").base_score = max(1, grid_score_max - row)
+			if not grid_score_values.is_empty() and row < grid_score_values.size():
+				enemy.get_node("ScoreOnDeath").base_score = grid_score_values[row]
 
 		CommonEnums.SpawnPattern.POSITION:
 			enemy.position = global_position

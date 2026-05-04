@@ -1,0 +1,49 @@
+[gd_scene load_steps=10 format=3 uid="uid://c74nhjbvdo3ff"]
+
+[ext_resource type="Script" uid="uid://bufxw3hl0oqy0" path="res://Scripts/Bodies/ball.gd" id="1_6rbnc"]
+[ext_resource type="PackedScene" uid="uid://dvb6v6cqiiuag" path="res://Scenes/Components/pong_acceleration.tscn" id="2_ryu0r"]
+[ext_resource type="PackedScene" path="res://Scenes/Components/bounce_on_hit.tscn" id="3_mpkbi"]
+[ext_resource type="PackedScene" uid="uid://csg0e2wxlx4qd" path="res://Scenes/Components/angled_deflector.tscn" id="4_5fx64"]
+[ext_resource type="PackedScene" uid="uid://b3hvkyy38ihr1" path="res://Scenes/Components/screen_cleanup.tscn" id="5_4ipsr"]
+[ext_resource type="PackedScene" uid="uid://qtgpgjpw1e77" path="res://Scenes/Flow/sfx_ramping.tscn" id="6_m70nx"]
+[ext_resource type="PackedScene" uid="uid://dga83l4d2rwyv" path="res://Scenes/Flow/sound_synth.tscn" id="7_atb6f"]
+[ext_resource type="PackedScene" uid="uid://cg5rnfuldr2n0" path="res://Scenes/Arms/damage_on_hit.tscn" id="8_mpkbi"]
+[ext_resource type="PackedScene" uid="uid://c8ynf452mj3if" path="res://Scenes/Components/score_on_hit.tscn" id="9_5fx64"]
+
+[node name="Ball" type="CharacterBody2D" groups=["balls"]]
+script = ExtResource("1_6rbnc")
+collision_groups = Array[String](["balls"])
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+
+[node name="PongAcceleration" parent="." instance=ExtResource("2_ryu0r")]
+
+[node name="HitBox" type="Area2D" parent="."]
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="HitBox"]
+
+[node name="BounceOnHit" parent="." instance=ExtResource("3_mpkbi")]
+
+[node name="AngledDeflector" parent="." instance=ExtResource("4_5fx64")]
+
+[node name="ScreenCleanup" parent="." instance=ExtResource("5_4ipsr")]
+
+[node name="SfxRamping" parent="." node_paths=PackedStringArray("source_node") instance=ExtResource("6_m70nx")]
+source_node = NodePath("..")
+source_property = "velocity"
+use_vector_length = true
+source_signal = "body_collided"
+
+[node name="SoundSynth" parent="SfxRamping" instance=ExtResource("7_atb6f")]
+play_mode = 1
+wave_shape = 3
+volume = 0.4
+duration = 0.2
+exclusive = true
+
+[node name="DamageOnHit" parent="." instance=ExtResource("8_mpkbi")]
+target_groups = Array[String](["bricks"])
+
+[node name="ScoreOnHit" parent="." instance=ExtResource("9_5fx64")]
+target_group = "bricks"
+score_type = 3

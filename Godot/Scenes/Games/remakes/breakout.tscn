@@ -1,9 +1,8 @@
-[gd_scene load_steps=32 format=3 uid="uid://c4ttsm1qowkgo"]
+[gd_scene load_steps=31 format=3 uid="uid://c4ttsm1qowkgo"]
 
 [ext_resource type="Script" uid="uid://bjdgpevhahi6d" path="res://Scripts/Core/universal_game_script.gd" id="1_lmwk8"]
 [ext_resource type="PackedScene" uid="uid://b4mr1t8pdtmf3" path="res://Scenes/Bodies/generic/paddle.tscn" id="2_7epd8"]
 [ext_resource type="Script" uid="uid://bfkr4fdx316o5" path="res://Scripts/Core/collision_group.gd" id="2_vu4sl"]
-[ext_resource type="PackedScene" uid="uid://mw70bjrifcpb" path="res://Scenes/Bodies/generic/ball.tscn" id="3_uvgxs"]
 [ext_resource type="PackedScene" uid="uid://eketockdsssi" path="res://Scenes/Legs/direct_movement.tscn" id="4_2njjq"]
 [ext_resource type="Script" uid="uid://bghaddibpt6f1" path="res://addons/crt/crt.gd" id="4_fkkyb"]
 [ext_resource type="PackedScene" uid="uid://6tweepbhleep" path="res://Scenes/Brains/player_control.tscn" id="5_oqfas"]
@@ -14,36 +13,50 @@
 [ext_resource type="PackedScene" uid="uid://bq6cdrx340jp7" path="res://Scenes/Flow/interface.tscn" id="11_r1nhx"]
 [ext_resource type="PackedScene" uid="uid://dwyyfxniivl1r" path="res://Scenes/Rules/wave_director.tscn" id="12_6wwyy"]
 [ext_resource type="PackedScene" uid="uid://vlbel76nqh5w" path="res://Scenes/Rules/wave_spawner.tscn" id="13_ckqoe"]
-[ext_resource type="PackedScene" uid="uid://cg5rnfuldr2n0" path="res://Scenes/Arms/damage_on_hit.tscn" id="16_oqfas"]
 [ext_resource type="PackedScene" uid="uid://vlxiy3uptf6y" path="res://Scenes/Bodies/generic/brick.tscn" id="17_61uu3"]
+[ext_resource type="PackedScene" uid="uid://c74nhjbvdo3ff" path="res://Scenes/Bodies/generic/ball_combo.tscn" id="17_kxgnb"]
 [ext_resource type="Script" uid="uid://cp0ni1lgml7c6" path="res://Scripts/Core/property_override.gd" id="17_th3ku"]
+[ext_resource type="PackedScene" uid="uid://craitf0mklbon" path="res://Scenes/Rules/timer.tscn" id="19_8fcjv"]
 [ext_resource type="PackedScene" uid="uid://clhg61503vle8" path="res://Scenes/Rules/variable_tuner.tscn" id="19_oqfas"]
 
-[sub_resource type="Resource" id="Resource_r1nhx"]
+[sub_resource type="Resource" id="Resource_5p75n"]
 script = ExtResource("2_vu4sl")
 group_name = "balls"
-targets = Array[String](["paddles", "bricks", "walls", "floors"])
+targets = Array[String](["paddles", "walls", "bricks", "floors"])
 metadata/_custom_type_script = "uid://bfkr4fdx316o5"
 
-[sub_resource type="Resource" id="Resource_vu4sl"]
+[sub_resource type="Resource" id="Resource_kxgnb"]
 script = ExtResource("2_vu4sl")
 group_name = "paddles"
 metadata/_custom_type_script = "uid://bfkr4fdx316o5"
 
-[sub_resource type="Resource" id="Resource_6wwyy"]
-script = ExtResource("2_vu4sl")
-group_name = "bricks"
-metadata/_custom_type_script = "uid://bfkr4fdx316o5"
-
-[sub_resource type="Resource" id="Resource_ckqoe"]
+[sub_resource type="Resource" id="Resource_e4qot"]
 script = ExtResource("2_vu4sl")
 group_name = "walls"
 metadata/_custom_type_script = "uid://bfkr4fdx316o5"
 
-[sub_resource type="Resource" id="Resource_o41md"]
+[sub_resource type="Resource" id="Resource_8fcjv"]
+script = ExtResource("2_vu4sl")
+group_name = "bricks"
+metadata/_custom_type_script = "uid://bfkr4fdx316o5"
+
+[sub_resource type="Resource" id="Resource_ksd8j"]
 script = ExtResource("2_vu4sl")
 group_name = "floors"
 metadata/_custom_type_script = "uid://bfkr4fdx316o5"
+
+[sub_resource type="Resource" id="Resource_ardit"]
+script = ExtResource("2_vu4sl")
+group_name = "paddle_zone"
+targets = Array[String](["balls"])
+metadata/_custom_type_script = "uid://bfkr4fdx316o5"
+
+[sub_resource type="Resource" id="Resource_pxig7"]
+script = ExtResource("17_th3ku")
+node_path = NodePath("AngledDeflector")
+property_name = "deflection_bias"
+value = Vector2(1, 5)
+metadata/_custom_type_script = "uid://cp0ni1lgml7c6"
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_per38"]
 size = Vector2(656, 8)
@@ -60,48 +73,38 @@ glow_enabled = true
 glow_intensity = 3.0
 glow_bloom = 0.33
 
-[sub_resource type="Resource" id="Resource_jyu46"]
-script = ExtResource("17_th3ku")
-node_path = NodePath("DamageOnHit")
-property_name = "target_groups"
-value = ["bricks"]
-metadata/_custom_type_script = "uid://cp0ni1lgml7c6"
-
-[sub_resource type="Resource" id="Resource_oqfas"]
-script = ExtResource("17_th3ku")
-node_path = NodePath("AngledDeflector")
-property_name = "deflection_bias"
-value = Vector2(1, 5)
-metadata/_custom_type_script = "uid://cp0ni1lgml7c6"
-
-[sub_resource type="Resource" id="Resource_th3ku"]
-script = ExtResource("17_th3ku")
-node_path = NodePath("ScoreOnHit")
-property_name = "target_group"
-value = "bricks"
-metadata/_custom_type_script = "uid://cp0ni1lgml7c6"
-
-[sub_resource type="Resource" id="Resource_jp3pm"]
-script = ExtResource("17_th3ku")
-node_path = NodePath("ScoreOnHit")
-property_name = "score_type"
-value = 3
-metadata/_custom_type_script = "uid://cp0ni1lgml7c6"
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_kxgnb"]
+size = Vector2(18, 360)
 
 [node name="Breakout" type="Node2D"]
 script = ExtResource("1_lmwk8")
 game_title = "Breakout"
-collision_groups = Array[ExtResource("2_vu4sl")]([SubResource("Resource_r1nhx"), SubResource("Resource_vu4sl"), SubResource("Resource_6wwyy"), SubResource("Resource_ckqoe"), SubResource("Resource_o41md")])
+collision_groups = Array[ExtResource("2_vu4sl")]([SubResource("Resource_5p75n"), SubResource("Resource_kxgnb"), SubResource("Resource_e4qot"), SubResource("Resource_8fcjv"), SubResource("Resource_ksd8j"), SubResource("Resource_ardit")])
 
 [node name="Paddle" parent="." groups=["paddles"] instance=ExtResource("2_7epd8")]
 position = Vector2(304, 312)
 width = 64
 height = 4
+x_min = 160.0
+x_max = 480.0
 lock_y = true
 
 [node name="DirectMovement" parent="Paddle" instance=ExtResource("4_2njjq")]
 
 [node name="PlayerControl" parent="Paddle" instance=ExtResource("5_oqfas")]
+
+[node name="ScoreOnHit" parent="Paddle" instance=ExtResource("6_th3ku")]
+target_group = "balls"
+score_type = 3
+
+[node name="WaveSpawner" parent="Paddle" node_paths=PackedStringArray("director") instance=ExtResource("13_ckqoe")]
+position = Vector2(0, -18)
+spawn_scene = ExtResource("17_kxgnb")
+spawn_pattern = 3
+spawn_count_equation = "1"
+director = NodePath("../../WaveDirector2")
+property_overrides = Array[ExtResource("17_th3ku")]([SubResource("Resource_pxig7")])
+initial_velocity = Vector2(0, -100)
 
 [node name="Walls" type="StaticBody2D" parent="."]
 position = Vector2(-8, -8)
@@ -129,6 +132,15 @@ shape = SubResource("RectangleShape2D_7ju07")
 
 [node name="CollisionMarker" parent="Floor" instance=ExtResource("6_fkkyb")]
 collision_groups = Array[String](["floors"])
+
+[node name="Area2D" type="Area2D" parent="."]
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Area2D"]
+position = Vector2(320, 312)
+shape = SubResource("RectangleShape2D_7ju07")
+
+[node name="CollisionMarker" parent="Area2D" instance=ExtResource("6_fkkyb")]
+collision_groups = Array[String](["paddle_zone"])
 
 [node name="CRT" type="CanvasLayer" parent="."]
 script = ExtResource("4_fkkyb")
@@ -161,66 +173,103 @@ offset_top = 320.0
 offset_right = 488.0
 offset_bottom = 352.0
 
-[node name="WaveDirector(balls)" parent="." instance=ExtResource("12_6wwyy")]
+[node name="LivesNumber" parent="Interface/Lives" index="0"]
+visible = true
+
+[node name="Points" parent="Interface" index="7"]
+offset_left = 100.0
+offset_right = 172.0
+rotation = -1.5707964
+
+[node name="PointsNumber" parent="Interface/Points" index="0"]
+visible = true
+
+[node name="Multiplier" parent="Interface" index="8"]
+rotation = -1.5707964
+
+[node name="MultiplierNumber" parent="Interface/Multiplier" index="0"]
+visible = true
+
+[node name="Timer" parent="." instance=ExtResource("19_8fcjv")]
+duration = 20.0
+game_start = true
+
+[node name="WaveDirector" parent="." instance=ExtResource("12_6wwyy")]
 trigger_type = 3
 wave_delay = 0.0
 
-[node name="WaveSpawner(balls)" parent="." node_paths=PackedStringArray("director") instance=ExtResource("13_ckqoe")]
-position = Vector2(320, 304)
-spawn_scene = ExtResource("3_uvgxs")
+[node name="WaveSpawner" parent="." node_paths=PackedStringArray("director") instance=ExtResource("13_ckqoe")]
+position = Vector2(304, 294)
+spawn_scene = ExtResource("17_kxgnb")
 spawn_pattern = 3
 spawn_count_equation = "1"
-director = NodePath("../WaveDirector(balls)")
-spawn_components = Array[PackedScene]([ExtResource("16_oqfas"), ExtResource("6_th3ku")])
-property_overrides = Array[ExtResource("17_th3ku")]([SubResource("Resource_jyu46"), SubResource("Resource_oqfas"), SubResource("Resource_th3ku"), SubResource("Resource_jp3pm")])
-initial_velocity = Vector2(0, 100)
-use_random_angle = true
-random_angle_min = -2.356
-random_angle_max = -0.785
+director = NodePath("../WaveDirector")
+property_overrides = Array[ExtResource("17_th3ku")]([SubResource("Resource_pxig7")])
+initial_velocity = Vector2(0, -100)
 
-[node name="GroupMonitor(balls)" parent="." instance=ExtResource("10_vu4sl")]
-target_group = "balls"
-lose_life_on_clear = true
-
-[node name="WaveDirector(bricks)" parent="." instance=ExtResource("12_6wwyy")]
-trigger_type = 3
-wave_delay = 0.0
-
-[node name="WaveSpawner(bricks)" parent="." node_paths=PackedStringArray("director") instance=ExtResource("13_ckqoe")]
+[node name="WaveSpawner2" parent="." node_paths=PackedStringArray("director", "extra_directors") instance=ExtResource("13_ckqoe")]
 position = Vector2(320, 64)
 spawn_scene = ExtResource("17_61uu3")
 spawn_pattern = 2
-stagger_delay = 0.0
-director = NodePath("../WaveDirector(bricks)")
-grid_health_max = 5
-
-[node name="GroupMonitor(bricks)" parent="." instance=ExtResource("10_vu4sl")]
-target_group = "bricks"
-victory_on_clear = true
+stagger_delay = 0.001
+director = NodePath("../WaveDirector")
+extra_directors = [NodePath("../WaveDirector3")]
+grid_spacing = 4
+grid_health_values = Array[int]([])
 
 [node name="VariableTuner" parent="." node_paths=PackedStringArray("source_node") instance=ExtResource("19_oqfas")]
-source_node = NodePath("..")
-source_signal = "lives_changed"
+source_node = NodePath("../Area2D")
+source_signal = "body_entered"
 target_property = "current_multiplier"
 adjustment_amount = 1.0
 adjustment_mode = 2
 
-[node name="WaveDirector(balls)2" parent="." instance=ExtResource("12_6wwyy")]
-trigger_value = "balls"
-wave_delay = 1.0
+[node name="StaticBody2D" type="StaticBody2D" parent="."]
+position = Vector2(488, 180)
 
-[node name="WaveSpawner(balls)2" parent="." node_paths=PackedStringArray("director") instance=ExtResource("13_ckqoe")]
-position = Vector2(320, 304)
-spawn_scene = ExtResource("3_uvgxs")
-spawn_pattern = 3
-spawn_count_equation = "1"
-director = NodePath("../WaveDirector(balls)2")
-spawn_components = Array[PackedScene]([ExtResource("16_oqfas"), ExtResource("6_th3ku")])
-property_overrides = Array[ExtResource("17_th3ku")]([SubResource("Resource_jyu46"), SubResource("Resource_oqfas"), SubResource("Resource_th3ku"), SubResource("Resource_jp3pm")])
-initial_velocity = Vector2(0, 100)
-use_random_angle = true
-random_angle_min = -2.356
-random_angle_max = -0.785
+[node name="CollisionShape2D2" type="CollisionShape2D" parent="StaticBody2D"]
+shape = SubResource("RectangleShape2D_kxgnb")
+
+[node name="CollisionMarker" parent="StaticBody2D" instance=ExtResource("6_fkkyb")]
+collision_groups = Array[String](["walls"])
+
+[node name="ColorRect" type="ColorRect" parent="StaticBody2D"]
+offset_left = -9.0
+offset_top = -180.0
+offset_right = 9.0
+offset_bottom = 180.0
+localize_numeral_system = false
+color = Color(0.74509805, 0.74509805, 0.74509805, 1)
+
+[node name="StaticBody2D2" type="StaticBody2D" parent="."]
+position = Vector2(152, 180)
+
+[node name="CollisionShape2D2" type="CollisionShape2D" parent="StaticBody2D2"]
+shape = SubResource("RectangleShape2D_kxgnb")
+
+[node name="CollisionMarker" parent="StaticBody2D2" instance=ExtResource("6_fkkyb")]
+collision_groups = Array[String](["walls"])
+
+[node name="ColorRect" type="ColorRect" parent="StaticBody2D2"]
+offset_left = -10.0
+offset_top = -180.0
+offset_right = 9.0
+offset_bottom = 180.0
+localize_numeral_system = false
+color = Color(0.74509805, 0.74509805, 0.74509805, 1)
+
+[node name="GroupMonitor" parent="." instance=ExtResource("10_vu4sl")]
+target_group = "balls"
+lose_life_on_clear = true
+
+[node name="WaveDirector2" parent="." instance=ExtResource("12_6wwyy")]
+trigger_value = "balls"
+
+[node name="GroupMonitor2" parent="." instance=ExtResource("10_vu4sl")]
+target_group = "bricks"
+
+[node name="WaveDirector3" parent="." instance=ExtResource("12_6wwyy")]
+trigger_value = "bricks"
 
 [editable path="Paddle"]
 [editable path="Interface"]

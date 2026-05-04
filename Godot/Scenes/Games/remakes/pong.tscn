@@ -80,7 +80,7 @@ lock_x = true
 target_group = "balls"
 
 [node name="VariableTuner" parent="Opponent/InterceptorAi" node_paths=PackedStringArray("source_node") instance=ExtResource("7_hvtep")]
-source_node = NodePath("../../../P1 Goal")
+source_node = NodePath("../../../P1Goal")
 source_signal = "body_entered"
 target_property = "turning_speed"
 adjustment_amount = 30.0
@@ -106,28 +106,28 @@ shape = SubResource("RectangleShape2D_f0ijk")
 [node name="CollisionMarker" parent="StaticBody2D2" instance=ExtResource("6_qu73x")]
 collision_groups = Array[String](["walls"])
 
-[node name="P1 Goal" type="Area2D" parent="."]
+[node name="P1Goal" type="Area2D" parent="."]
 position = Vector2(648, 0)
 
-[node name="CollisionShape2D" type="CollisionShape2D" parent="P1 Goal"]
+[node name="CollisionShape2D" type="CollisionShape2D" parent="P1Goal"]
 position = Vector2(-4, 180)
 shape = SubResource("RectangleShape2D_vlhw5")
 
-[node name="CollisionMarker" parent="P1 Goal" instance=ExtResource("6_qu73x")]
+[node name="CollisionMarker" parent="P1Goal" instance=ExtResource("6_qu73x")]
 collision_groups = Array[String](["goals"])
 
-[node name="Goal" parent="P1 Goal" instance=ExtResource("9_ortq3")]
+[node name="Goal" parent="P1Goal" instance=ExtResource("9_ortq3")]
 
-[node name="P2 Goal" type="Area2D" parent="."]
+[node name="P2Goal" type="Area2D" parent="."]
 
-[node name="CollisionShape2D" type="CollisionShape2D" parent="P2 Goal"]
+[node name="CollisionShape2D" type="CollisionShape2D" parent="P2Goal"]
 position = Vector2(-4, 180)
 shape = SubResource("RectangleShape2D_vlhw5")
 
-[node name="CollisionMarker" parent="P2 Goal" instance=ExtResource("6_qu73x")]
+[node name="CollisionMarker" parent="P2Goal" instance=ExtResource("6_qu73x")]
 collision_groups = Array[String](["goals"])
 
-[node name="Goal" parent="P2 Goal" instance=ExtResource("9_ortq3")]
+[node name="Goal" parent="P2Goal" instance=ExtResource("9_ortq3")]
 score_type = 1
 
 [node name="CanvasLayer" type="CanvasLayer" parent="."]

@@ -13,7 +13,8 @@ enum Element {
 	LIVES,
 	POINTS,
 	MULTIPLIER,
-	CONTROL_TEXT
+	CONTROL_TEXT,
+	GAME_TIMER
 }
 
 # Game state machine values for UniversalGameScript

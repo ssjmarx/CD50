@@ -8,23 +8,89 @@ signal move(direction: Vector2)
 @warning_ignore("unused_signal")
 signal move_to(position: Vector2)
 @warning_ignore("unused_signal")
-signal action(button: InputEvent)
-@warning_ignore("unused_signal")
-signal end_action(button: InputEvent)
-@warning_ignore("unused_signal")
-signal shoot(button: InputEvent)
-@warning_ignore("unused_signal")
-signal end_shoot(button: InputEvent)
-@warning_ignore("unused_signal")
-signal thrust(button: InputEvent)
-@warning_ignore("unused_signal")
-signal end_thrust(button: InputEvent)
-@warning_ignore("unused_signal")
 signal aim(direction: Vector2)
 @warning_ignore("unused_signal")
 signal aim_at(position: Vector2)
 @warning_ignore("unused_signal")
 signal body_collided(collider: Node, normal: Vector2)
+
+# Named buttons (semantic)
+@warning_ignore("unused_signal")
+signal shoot
+@warning_ignore("unused_signal")
+signal end_shoot
+@warning_ignore("unused_signal")
+signal thrust
+@warning_ignore("unused_signal")
+signal end_thrust
+
+# Generic buttons (by Input Map name)
+@warning_ignore("unused_signal")
+signal button_1
+@warning_ignore("unused_signal")
+signal end_button_1
+@warning_ignore("unused_signal")
+signal button_2
+@warning_ignore("unused_signal")
+signal end_button_2
+@warning_ignore("unused_signal")
+signal button_3
+@warning_ignore("unused_signal")
+signal end_button_3
+@warning_ignore("unused_signal")
+signal button_4
+@warning_ignore("unused_signal")
+signal end_button_4
+@warning_ignore("unused_signal")
+signal button_5
+@warning_ignore("unused_signal")
+signal end_button_5
+@warning_ignore("unused_signal")
+signal button_6
+@warning_ignore("unused_signal")
+signal end_button_6
+
+# Number keys
+@warning_ignore("unused_signal")
+signal number_1
+@warning_ignore("unused_signal")
+signal end_number_1
+@warning_ignore("unused_signal")
+signal number_2
+@warning_ignore("unused_signal")
+signal end_number_2
+@warning_ignore("unused_signal")
+signal number_3
+@warning_ignore("unused_signal")
+signal end_number_3
+@warning_ignore("unused_signal")
+signal number_4
+@warning_ignore("unused_signal")
+signal end_number_4
+@warning_ignore("unused_signal")
+signal number_5
+@warning_ignore("unused_signal")
+signal end_number_5
+@warning_ignore("unused_signal")
+signal number_6
+@warning_ignore("unused_signal")
+signal end_number_6
+@warning_ignore("unused_signal")
+signal number_7
+@warning_ignore("unused_signal")
+signal end_number_7
+@warning_ignore("unused_signal")
+signal number_8
+@warning_ignore("unused_signal")
+signal end_number_8
+@warning_ignore("unused_signal")
+signal number_9
+@warning_ignore("unused_signal")
+signal end_number_9
+@warning_ignore("unused_signal")
+signal number_0
+@warning_ignore("unused_signal")
+signal end_number_0
 
 
 # Entity dimensions for collision and clamping

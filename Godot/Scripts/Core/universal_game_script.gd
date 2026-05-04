@@ -1,9 +1,13 @@
 # Master class for game coordinators. State machine, signal routing, score tracking, collision matrix setup.
+# Supports STANDALONE mode (self-contained with input handling) and ARCADE mode (orchestrator-controlled).
 
 class_name UniversalGameScript extends Node2D
 
+enum Mode { STANDALONE, ARCADE }
+
 @export var game_title: String
 @export var collision_groups: Array[CollisionGroup]
+@export var mode: Mode = Mode.STANDALONE
 
 var states = CommonEnums.State
 var collision_matrix: CollisionMatrix
@@ -13,7 +17,7 @@ var p2_score: int = 0
 var _collision_dict: Dictionary
 var _current_state: CommonEnums.State = states.ATTRACT
 var _current_score: int = 0
-var _current_multiplier: int = 1
+var _current_multiplier: float = 1.0
 
 # Public state property with automatic signal emission on change
 var current_state: CommonEnums.State:
@@ -33,13 +37,16 @@ var current_score: int:
 			_current_score = value
 			on_points_changed.emit(_current_score)
 
-var current_multiplier: int:
+var current_multiplier: float:
 	get:
 		return _current_multiplier
 	set(value):
 		if _current_multiplier != value:
 			_current_multiplier = value
 			on_multiplier_changed.emit(_current_multiplier)
+
+# Arcade bonus multiplier — set by ArcadeOrchestrator via signal
+var arcade_bonus: float = 0.0
 
 # Signals FROM other components, they call parent.{signal}.emit()
 signal victory
@@ -72,13 +79,23 @@ signal on_game_start
 signal on_game_end
 signal on_game_over(final_score: int)
 signal on_points_changed(new_score: int)
-signal on_multiplier_changed(new_multiplier: int)
+signal on_multiplier_changed(new_multiplier: float)
 signal state_changed(new_state: CommonEnums.State)
 signal on_p1_score(p1_score: int)
 signal on_p2_score(p2_score: int)
 
 # Initialize collision matrix and auto-configure all bodies
 func _ready() -> void:
+	# Keep this node alive during pause so it can detect start input
+	process_mode = Node.PROCESS_MODE_ALWAYS
+	
+	# Ensure children respect pause despite our ALWAYS mode
+	for child in get_children():
+		child.process_mode = Node.PROCESS_MODE_PAUSABLE
+	
+	# Freeze game in ATTRACT mode until started
+	get_tree().paused = true
+	
 	if not collision_groups.is_empty():
 		_collision_dict.clear()
 		for cg in collision_groups:
@@ -87,25 +104,31 @@ func _ready() -> void:
 		collision_matrix = CollisionMatrix.new()
 		collision_matrix.initialize(self)
 		collision_matrix.setup(_collision_dict)
-
 	
 	victory.connect(p1_win)
 	defeat.connect(p1_lose)
 
-# Handle state transitions via keyboard input
-func _unhandled_input(event: InputEvent) -> void:
-	if current_state == states.ATTRACT and event is InputEventKey and event.pressed:
-		start_game()
+# STANDALONE mode: route start/pause input to appropriate methods
+func _input(event: InputEvent) -> void:
+	if mode != Mode.STANDALONE:
 		return
 	
-	if current_state == states.GAME_OVER and event is InputEventKey and event.pressed:
-		if event.keycode == KEY_ENTER:
-			get_tree().reload_current_scene()
-		elif event.keycode == KEY_ESCAPE:
-			get_tree().quit()
+	if event.is_action_pressed("start"):
+		if current_state == states.ATTRACT:
+			get_viewport().set_input_as_handled()
+			start_game()
+		elif current_state == states.GAME_OVER:
+			get_viewport().set_input_as_handled()
+			_on_restart_pressed()
+	
+	if event.is_action_pressed("pause"):
+		if current_state == states.GAME_OVER:
+			get_viewport().set_input_as_handled()
+			_on_quit_pressed()
 
 # Transition to PLAYING state and initialize game
 func start_game() -> void:
+	get_tree().paused = false
 	current_state = states.PLAYING
 	on_game_start.emit()
 
@@ -116,18 +139,35 @@ func end_game() -> void:
 # Show win UI and transition to GAME_OVER
 func p1_win() -> void:
 	current_state = states.GAME_OVER
-	on_game_over.emit()
-	$Interface.show_element(CommonEnums.Element.WIN_TEXT)
-	$Interface.show_element(CommonEnums.Element.CONTINUE_TEXT)
+	on_game_over.emit(current_score)
+	if mode == Mode.STANDALONE:
+		$Interface.show_element(CommonEnums.Element.WIN_TEXT)
+		$Interface.show_element(CommonEnums.Element.CONTINUE_TEXT)
 	print("Game: ", game_title, " Score: ", current_score)
 
 # Show lose UI and transition to GAME_OVER
 func p1_lose() -> void:
 	current_state = states.GAME_OVER
-	on_game_over.emit()
-	$Interface.show_element(CommonEnums.Element.LOSE_TEXT)
-	$Interface.show_element(CommonEnums.Element.CONTINUE_TEXT)
+	on_game_over.emit(current_score)
+	if mode == Mode.STANDALONE:
+		$Interface.show_element(CommonEnums.Element.LOSE_TEXT)
+		$Interface.show_element(CommonEnums.Element.CONTINUE_TEXT)
 	print("Game: ", game_title, " Score: ", current_score)
+
+# Called externally (by orchestrator or input router) when start is pressed in ATTRACT
+func _on_start_pressed() -> void:
+	if current_state == states.ATTRACT:
+		start_game()
+
+# Called externally when restart is requested in GAME_OVER
+func _on_restart_pressed() -> void:
+	if current_state == states.GAME_OVER:
+		get_tree().reload_current_scene()
+
+# Called externally when quit is requested in GAME_OVER
+func _on_quit_pressed() -> void:
+	if current_state == states.GAME_OVER:
+		get_tree().quit()
 
 # Pause the game
 func pause_game() -> void:
@@ -139,10 +179,14 @@ func unpause_game() -> void:
 
 # Add points to score and emit update
 func add_score(amount: int) -> void:
-	current_score += amount * current_multiplier
+	var effective_mult = current_multiplier + arcade_bonus
+	var result = int(amount * effective_mult)
+	#print("[UGS] add_score: %d × %.1f (mult %.1f + arcade %.1f) = %d → total %d" % [
+	#	amount, effective_mult, current_multiplier, arcade_bonus, result, current_score + result])
+	current_score = current_score + result
 	
 # Add multiplier and emit update
-func add_multiplier(amount: int) -> void:
+func add_multiplier(amount: float) -> void:
 	current_multiplier += amount
 
 # Configure collision matrix with group relationships
@@ -159,13 +203,25 @@ func get_state() -> CommonEnums.State:
 
 # Add to player 1 score with current multiplier and emit update
 func add_p1_score(amount) -> void:
-	p1_score += amount * current_multiplier
+	var effective_mult = current_multiplier + arcade_bonus
+	var result = int(amount * effective_mult)
+	#print("[UGS] add_p1_score: %d × %.1f (mult %.1f + arcade %.1f) = %d → total %d" % [
+	#	amount, effective_mult, current_multiplier, arcade_bonus, result, p1_score + result])
+	p1_score = p1_score + result
 	on_p1_score.emit(p1_score)
-
+	
 # Add to player 2 score with current multiplier and emit update
 func add_p2_score(amount) -> void:
-	p2_score += amount * current_multiplier
+	var effective_mult = current_multiplier + arcade_bonus
+	var result = int(amount * effective_mult)
+	#print("[UGS] add_p2_score: %d × %.1f (mult %.1f + arcade %.1f) = %d → total %d" % [
+	#	amount, effective_mult, current_multiplier, arcade_bonus, result, p2_score + result])
+	p2_score = p2_score + result
 	on_p2_score.emit(p2_score)
+
+# Receive arcade bonus from ArcadeOrchestrator
+func set_arcade_bonus(bonus: float) -> void:
+	arcade_bonus = bonus
 
 # Walk up the tree to find the nearest UniversalGameScript ancestor
 static func find_ancestor(node: Node) -> UniversalGameScript:

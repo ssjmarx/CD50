@@ -1,6 +1,32 @@
 # Recent Progress
 
-**Last Updated:** 2026-05-02
+**Last Updated:** 2026-05-03
+
+---
+
+## Plan 13 — Arcade Orchestrator (IN PROGRESS)
+
+Formal planning document created for the itch.io arcade demo architecture. Covers Phases 0–3.
+
+### Planning Artifacts Created
+- `planning/13 - Arcade Orchestrator.md` — Full formal plan
+- `memory-bank/05 - Component Catalogue.md` — Complete script inventory with summaries (87 scripts)
+
+### Plan Overview
+- **Phase 0 — Input Refactoring**: Move all input to Godot Input Map (`start`, `coin`, `pause` actions), refactor `player_control.gd` and `ugs._unhandled_input`
+- **Phase 1 — Shell**: Boot screen, orchestrator state machine, load one game, detect game end, UGS Mode enum (STANDALONE/ARCADE)
+- **Phase 2 — The Run**: Lives, game sequence, preloading, scrolling transitions, score carry + multiplier, game over screen
+- **Phase 3 — Fast Rules**: Per-game property overrides for 15-45s arcade pacing
+
+### New Architecture
+- `Scripts/Hub/` and `Scenes/Hub/` — New directories for meta-level scripts/scenes
+- `arcade_orchestrator.gd` — State machine: BOOT → PLAYING → RESULT → GAME_OVER
+- `arcade_game_entry.gd` — Resource: PackedScene + overrides + win_result
+- `arcade_playlist.gd` — Resource: ordered game entries + lives + shuffle
+- UGS `Mode.STANDALONE` vs `Mode.ARCADE` — ARCADE suppresses Interface calls, no direct input
+
+### Status Audit Corrections (01 - Current Status.md)
+Fixed component catalog discrepancies found during planning: 83 → 87 total. Added `group_cache.gd` (Core), `barrier.gd` (Bodies), `tetromino_formation.gd` (Legs), `bounce_on_hit.gd` (Components), `variable_tuner_global.gd` (Rules).
 
 ---
 

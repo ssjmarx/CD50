@@ -9,12 +9,12 @@ extends UniversalComponent
 @export var clockwise: bool = true 
 @export var on_action: bool = false
 
-# Connect to movement or action signals based on configuration
+# Connect to movement or thrust signals based on configuration
 func _ready() -> void:
 	if auto_face:
 		parent.move.connect(_on_move)
 	if on_action:
-		parent.action.connect(_on_action)
+		parent.thrust.connect(_rotate_step)
 
 # Snap rotation to nearest step in the direction of movement
 func _on_move(direction: Vector2) -> void:
@@ -23,8 +23,7 @@ func _on_move(direction: Vector2) -> void:
 	var angle = direction.angle()
 	parent.rotation = snappedf(angle, deg_to_rad(rotation_step))
 
-# Rotate one step on action button press
-func _on_action(button: InputEvent) -> void:
-	if button.is_action("button_l"):
-		var step = deg_to_rad(rotation_step)
-		parent.rotation += step if clockwise else -step
+# Rotate one step on thrust
+func _rotate_step() -> void:
+	var step = deg_to_rad(rotation_step)
+	parent.rotation += step if clockwise else -step
