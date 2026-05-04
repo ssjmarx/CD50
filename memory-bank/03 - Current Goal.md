@@ -1,40 +1,62 @@
 # Current Goal
 
 **Last Updated:** 2026-05-03  
-**Status:** Active — Plan 13 (Arcade Orchestrator) — finishing remaining items
+**Status:** Active — Plan 14 (Snake + Light Cycles)
 
 ---
 
-## Active Plan: 13 — Arcade Orchestrator
+## Active Plan: 14 — Snake and Light Cycles
 
-Building the architecture for an itch.io arcade demo: a meta-level orchestrator that loads existing games in sequence, runs them with fast rules, tracks lives and score across the run, and provides a complete boot → play → game over → replay loop.
-
-### Completion Status
+Two games sharing `trail_spawner` as the core component. Full plan in `planning/14 - Snake and Light Cycles.md`.
 
 | Phase | Description | Status |
 |-------|-------------|--------|
-| Phase 0 | Input Refactoring | ✅ COMPLETE |
-| Phase 1 | Shell (boot, orchestrator, one game in/out) | ✅ COMPLETE |
-| Phase 2 | The Run (lives, sequence, score, game over) | ~90% — transitions and preloading remaining |
-| Phase 3 | Fast Rules (per-game overrides, tuning) | ✅ COMPLETE |
+| 14 | Light Cycles + Snake | Not started |
 
-### Remaining Work
-
-1. **Scrolling transitions** — Currently games load/free instantly. Plan calls for: next game instanced below viewport, tween current game up/off while new game scrolls in (0.4s cubic ease), then free old game.
-2. **Preloading** — `ResourceLoader.load_threaded_request()` for next entry's scene during gameplay, `load_threaded_get()` on transition. Fallback: "LOADING" text and poll.
-
-### What's Already Built
-
-- **ArcadeOrchestrator** (`Scripts/Hub/arcade_orchestrator.gd`) — Full state machine (BOOT → PLAYING → RESULT → GAME_OVER), shuffle bag, lives, score carry, time bonus, per-game multiplier
-- **ArcadeGameEntry** (`Scripts/Hub/arcade_game_entry.gd`) — Resource: PackedScene + PropertyOverride array
-- **UGS Mode enum** — STANDALONE vs ARCADE, Interface suppression, arcade bonus passthrough
-- **7 tuned game entries** — Pong, Asteroids, Tetris, Breakout, Space Invaders, Pongsteroids, Dogfight
-- **Boot screen + Game Over screen** — Functional with start/coin input
-- **Input refactoring** — `start`, `coin`, `pause` in Input Map; `player_control.gd` and UGS fully refactored
+### Key New Components
+- **`trail_spawner`** — Spawns static collision walls behind moving bodies (shared core: LC = permanent, Snake = growing body)
+- **`cycle_ai`** — Raycast wall avoidance brain
+- **`food_spawner`** — Spawns collectible at random open position (Snake)
 
 ---
 
-## Future Phases (Post-Plan 13)
+## Next: Plan 15 — Qix and Xonix
+
+Territory claiming games sharing `territory_grid` + `line_drawer` + `area_filler`. Full plan in `planning/15 - Qix and Xonix.md`.
+
+| Phase | Description | Status |
+|-------|-------------|--------|
+| 15 | Qix + Xonix | Pending (after Plan 14) |
+
+### Key New Components
+- **`territory_grid`** — 640×360 pixel bitmap with flood fill
+- **`line_drawer`** — Drawing state machine, pixel path recording, reconnection detection
+- **`area_filler`** — Flood fill with Qix avoidance
+- **`qix_ai`** — Random walk in unclaimed territory
+- **`sparx_ai`** — Border tracing brain
+- **`mine_ai`** — Border expansion brain (Xonix only)
+
+---
+
+## Future: Plan 16 — Cambrian Explosion (Remixes)
+
+Mass remix phase combining components from Plans 14–15 with the existing library to reach 20 games.
+
+### Path to 20
+
+7 existing + 4 remakes (Snake, LC, Qix, Xonix) + remixes from Plan 16 = **20 games**
+
+---
+
+## On Hold: Plan 13 — Arcade Orchestrator
+
+Phases 0–1 complete, Phase 2 mostly complete, Phase 3 complete. Remaining:
+- Scrolling transitions between games
+- Preloading (`ResourceLoader.load_threaded_request`)
+
+---
+
+## Future Phases (Post-Plan 14)
 
 - Phase 4 — Polybius face + voice + dialogue
 - Phase 5 — Scoreboard with local high scores
