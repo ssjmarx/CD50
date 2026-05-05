@@ -1,0 +1,44 @@
+[gd_scene load_steps=9 format=3 uid="uid://b2sekay4f1s2g"]
+
+[ext_resource type="Script" uid="uid://cktlaprj0p2q0" path="res://Scripts/Bodies/asteroid.gd" id="1_e1kps"]
+[ext_resource type="PackedScene" uid="uid://bj81pr736k256" path="res://Scenes/Components/health.tscn" id="2_00mr7"]
+[ext_resource type="PackedScene" uid="uid://dcm8q38gaufrw" path="res://Scenes/Components/split_on_death.tscn" id="3_kw7tf"]
+[ext_resource type="PackedScene" uid="uid://cqh5t1y5b71wr" path="res://Scenes/Components/screen_wrap.tscn" id="4_atrkc"]
+[ext_resource type="PackedScene" uid="uid://cg5rnfuldr2n0" path="res://Scenes/Arms/damage_on_hit.tscn" id="6_xa140"]
+[ext_resource type="PackedScene" uid="uid://145njn1uody4" path="res://Scenes/Components/death_effect.tscn" id="7_oiob7"]
+[ext_resource type="PackedScene" uid="uid://c5h0r2rnmwe4k" path="res://Scenes/Effects/death_particles.tscn" id="8_gqyqo"]
+[ext_resource type="PackedScene" uid="uid://dga83l4d2rwyv" path="res://Scenes/Flow/sound_synth.tscn" id="9_vf73w"]
+
+[node name="Asteroid" type="CharacterBody2D" groups=["asteroids"]]
+script = ExtResource("1_e1kps")
+collision_groups = Array[String](["asteroids"])
+
+[node name="CollisionPolygon2D" type="CollisionPolygon2D" parent="."]
+
+[node name="HitBox" type="Area2D" parent="."]
+
+[node name="CollisionPolygon2D" type="CollisionPolygon2D" parent="HitBox"]
+
+[node name="HurtBox" type="Area2D" parent="."]
+
+[node name="CollisionPolygon2D" type="CollisionPolygon2D" parent="HurtBox"]
+
+[node name="Health" parent="." instance=ExtResource("2_00mr7")]
+
+[node name="SplitOnDeath" parent="." instance=ExtResource("3_kw7tf")]
+fragment_path = "res://Scenes/Bodies/generic/asteroid_noscore.tscn"
+
+[node name="ScreenWrap" parent="." instance=ExtResource("4_atrkc")]
+
+[node name="DamageOnHit" parent="." instance=ExtResource("6_xa140")]
+
+[node name="DeathEffect" parent="." instance=ExtResource("7_oiob7")]
+effect_scenes = Array[PackedScene]([ExtResource("8_gqyqo")])
+
+[node name="SoundSynth" parent="." node_paths=PackedStringArray("source_node") instance=ExtResource("9_vf73w")]
+play_mode = 1
+effect = 3
+note = 48
+duration = 1.0
+source_node = NodePath("..")
+source_signal = "body_collided"

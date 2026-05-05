@@ -44,7 +44,7 @@ Mass remix phase combining components from Plans 14–15 with the existing libra
 
 ### Path to 20
 
-7 existing + 4 remakes (Snake, LC, Qix, Xonix) + remixes from Plan 16 = **20 games**
+8 existing + 4 remakes (Snake, LC, Qix, Xonix) + remixes from Plan 16 = **20 games**
 
 ---
 

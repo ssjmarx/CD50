@@ -1,6 +1,6 @@
 # End State: CD50 — Arcade Cabinet
 
-**Last Updated:** 2026-05-03
+**Last Updated:** 2026-05-04
 
 ---
 
@@ -12,7 +12,7 @@ CD50 is a componentized arcade game collection demonstrating that classic arcade
 
 ## Final State
 
-- **7 playable games** — Pong, Breakout, Asteroids, Pongsteroids, Dogfight, Space Invaders, Tetris (Modern)
+- **8 playable games** — Pong, Breakout, Asteroids, Pongsteroids, Dogfight, Space Invaders, Tetris (Modern), Breaksteroids
 - **89 components** across 10 categories (Core, Bodies, Brains, Legs, Arms, Components, Rules, Flow, Effects, Hub)
 - **Zero game scripts** — every game is a `UniversalGameScript` root with attached components
 - **Full Tetris suite** — Physics-based grid (Plan 10), Modern Tetris Guideline features (Plan 11): ghost piece, hold piece, T-spin detection, combo/B2B/level scoring, lock delay move limit. Juice and polish (Plan 12): 10 procedural sounds, score tick-up, line flash, smooth collapse, brick-style cells.

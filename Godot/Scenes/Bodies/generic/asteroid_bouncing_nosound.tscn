@@ -1,0 +1,38 @@
+[gd_scene load_steps=9 format=3 uid="uid://bgn51pqbv1ts"]
+
+[ext_resource type="Script" uid="uid://cktlaprj0p2q0" path="res://Scripts/Bodies/asteroid.gd" id="1_7iwdv"]
+[ext_resource type="PackedScene" uid="uid://bj81pr736k256" path="res://Scenes/Components/health.tscn" id="2_g4yr3"]
+[ext_resource type="PackedScene" uid="uid://dcm8q38gaufrw" path="res://Scenes/Components/split_on_death.tscn" id="3_kmrce"]
+[ext_resource type="PackedScene" uid="uid://ic3mj0x3ub4c" path="res://Scenes/Components/score_on_death.tscn" id="5_njcs0"]
+[ext_resource type="PackedScene" uid="uid://145njn1uody4" path="res://Scenes/Components/death_effect.tscn" id="7_7e4wn"]
+[ext_resource type="PackedScene" uid="uid://c5h0r2rnmwe4k" path="res://Scenes/Effects/death_particles.tscn" id="8_keoks"]
+[ext_resource type="PackedScene" path="res://Scenes/Components/bounce_on_hit.tscn" id="9_mkygg"]
+[ext_resource type="PackedScene" uid="uid://b3hvkyy38ihr1" path="res://Scenes/Components/screen_cleanup.tscn" id="9_xop50"]
+
+[node name="Asteroid" type="CharacterBody2D" groups=["asteroids"]]
+script = ExtResource("1_7iwdv")
+collision_groups = Array[String](["asteroids"])
+
+[node name="CollisionPolygon2D" type="CollisionPolygon2D" parent="."]
+
+[node name="HitBox" type="Area2D" parent="."]
+
+[node name="CollisionPolygon2D" type="CollisionPolygon2D" parent="HitBox"]
+
+[node name="HurtBox" type="Area2D" parent="."]
+
+[node name="CollisionPolygon2D" type="CollisionPolygon2D" parent="HurtBox"]
+
+[node name="Health" parent="." instance=ExtResource("2_g4yr3")]
+
+[node name="SplitOnDeath" parent="." instance=ExtResource("3_kmrce")]
+fragment_path = "res://Scenes/Bodies/generic/asteroid_bouncing_nosound.tscn"
+
+[node name="ScoreOnDeath" parent="." instance=ExtResource("5_njcs0")]
+
+[node name="DeathEffect" parent="." instance=ExtResource("7_7e4wn")]
+effect_scenes = Array[PackedScene]([ExtResource("8_keoks")])
+
+[node name="BounceOnHit" parent="." instance=ExtResource("9_mkygg")]
+
+[node name="ScreenCleanup" parent="." instance=ExtResource("9_xop50")]

@@ -1,11 +1,11 @@
 # Current Status: CD50 — Arcade Cabinet
 
-**Last Updated:** 2026-05-03  
+**Last Updated:** 2026-05-04  
 **Engine:** Godot 4.x (GDScript)  
 **Architecture:** Entity-Component (composition over inheritance)  
-**Playable Games:** Pong, Breakout, Asteroids, Pongsteroids, Dogfight, Space Invaders, Tetris (Modern) — ALL componentized, zero game scripts
-**In Progress:** Plan 13 — Arcade Orchestrator (transitions and preloading remaining)  
-**Recent Completed:** Plan 13 Phases 0–3 largely complete: input refactoring, orchestrator state machine, boot/game-over screens, lives system, shuffle playlist, score carry + time bonus + arcade multiplier, 7 tuned game entries, UGS Mode enum (STANDALONE/ARCADE)
+**Playable Games:** Pong, Breakout, Asteroids, Pongsteroids, Dogfight, Space Invaders, Tetris (Modern), Breaksteroids — ALL componentized, zero game scripts
+**In Progress:** Plan 14 — Snake and Light Cycles
+**Recent Completed:** Breaksteroids remix rebuilt; bounce physics improved in UniversalBody (separation nudge + remainder re-application)
 
 ---
 
@@ -21,7 +21,7 @@ CD50 is a modular arcade game collection built around a composable component arc
 
 ### `Scripts/Core/universal_body.gd` — `UniversalBody extends CharacterBody2D`
 - Base class for all physical entities. Routes input signals from Brains to processed output signals (axis locks applied). Provides position clamping and physics-based movement with automatic velocity bouncing.
-- **`_physics_process()`** calls `move_parent_physics()` by default — uses `move_and_collide()` for collision detection, auto-bounces velocity on collision, and emits `body_collided`.
+- **`_physics_process()`** calls `move_parent_physics()` by default — uses `move_and_collide()` for collision detection, emits `body_collided`, applies separation nudge along normal, and re-applies bounced remainder for crisp reflections.
 - Listens to (internally connected): `left_joystick`, `right_joystick`, `mouse_position`, `button_pressed`, `button_released`
 - Emits (routed outputs): `move`, `move_to`, `action`, `end_action`, `shoot`, `end_shoot`, `thrust`, `end_thrust`, `aim`, `aim_at`, `body_collided(collider, normal)`
 
@@ -79,15 +79,15 @@ Scenes/Bodies/
 
 ```
 Scenes/Bodies/generic/
-├── asteroid.tscn
-├── ball.tscn
-├── brick.tscn, brick_damaging.tscn
-├── bullet_simple.tscn, bullet_simple_smallsound.tscn, bullet_wrapping.tscn
+├── asteroid.tscn, asteroid_bouncing.tscn, asteroid_bouncing_nosound.tscn, asteroid_noscore.tscn
+├── ball.tscn, ball_combo.tscn
+├── brick.tscn, brick_damaging.tscn, brick_noscore.tscn, brick_barrier.tscn
+├── bullet_simple.tscn, bullet_simple_smallsound.tscn, bullet_simple_nosound.tscn, bullet_wrapping.tscn
 ├── invader.tscn, mystery_ship.tscn
-├── paddle.tscn
-├── tetromino.tscn, tetromino_single.tscn
+├── paddle.tscn, paddle_cannon.tscn
+├── tetromino.tscn, tetromino_single.tscn, tetromino_rigged.tscn
 ├── triangle_ship.tscn, triangle_ship_modern.tscn
-├── ufo.tscn, ufo_shielded.tscn
+├── ufo.tscn, ufo_shielded.tscn, ufo_straightline.tscn, ufo_nosound.tscn
 
 Scenes/Bodies/player/
 ├── player_paddle.tscn, player_paddle_cannon.tscn

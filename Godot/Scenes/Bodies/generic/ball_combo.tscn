@@ -42,7 +42,7 @@ duration = 0.2
 exclusive = true
 
 [node name="DamageOnHit" parent="." instance=ExtResource("8_mpkbi")]
-target_groups = Array[String](["bricks"])
+target_groups = Array[String](["bricks", "asteroids"])
 
 [node name="ScoreOnHit" parent="." instance=ExtResource("9_5fx64")]
 target_group = "bricks"

@@ -25,6 +25,7 @@ var _current_game_instance: Node2D = null
 var _last_game_won: bool = false
 var _result_timer: float = 0.0
 var _shuffle_bag: Array[int] = []
+var _current_interface: Control = null
 
 # Per-game tracking
 var _game_count: int = 0          # games completed this run (drives per-game bonus)
@@ -121,13 +122,11 @@ func _load_and_start_game(entry: ArcadeGameEntry) -> void:
 		# Apply property overrides BEFORE adding to tree so @onready captures them
 		_apply_overrides(_current_game_instance, entry.overrides)
 		
-		# Hide the child game's Interface (AO uses its own)
-		var child_interface = ugs.get_node_or_null("Interface")
-		if child_interface:
-			child_interface.visible = false
-		
 		# Add to tree — _ready() runs here with overrides already applied
 		_game_container.add_child(_current_game_instance)
+		
+		# Take over the child game's Interface for arcade display
+		_takeover_interface(ugs)
 		
 		# Reset per-game state
 		_game_multiplier = 1.0
@@ -199,7 +198,7 @@ func _on_game_multiplier_changed(new_multiplier: float) -> void:
 	on_multiplier_changed.emit(_game_multiplier + _game_count)
 
 func _on_game_lives_changed(new_lives: int) -> void:
-	lives_changed.emit(new_lives)
+	lives_changed.emit(_lives)
 
 func _show_game_over() -> void:
 	_state = OrchestratorState.GAME_OVER
@@ -207,6 +206,7 @@ func _show_game_over() -> void:
 	if _current_game_instance:
 		_current_game_instance.queue_free()
 		_current_game_instance = null
+	_current_interface = null
 	_game_over_screen.visible = true
 	# Update final score label
 	var final_score_label: Label = _game_over_screen.get_node_or_null("FinalScoreLabel")
@@ -214,6 +214,7 @@ func _show_game_over() -> void:
 		final_score_label.text = "FINAL SCORE: %d" % _running_score
 
 func _restart_run() -> void:
+	_current_interface = null
 	_lives = starting_lives
 	_running_score = 0
 	_current_index = 0
@@ -272,3 +273,40 @@ func _refill_shuffle_bag() -> void:
 	for i in playlist.size():
 		_shuffle_bag[i] = i
 	_shuffle_bag.shuffle()
+
+# --- Interface Takeover ---
+
+func _takeover_interface(ugs: UniversalGameScript) -> void:
+	var iface = ugs.get_node_or_null("Interface")
+	if not iface:
+		push_warning("ArcadeOrchestrator: no Interface found in game scene")
+		return
+	
+	_current_interface = iface
+	
+	# Force arcade display mode
+	iface.display_mode = CommonEnums.DisplayMode.POINTS_MULTIPLIER
+	iface.display_lives = true
+	
+	# Disconnect from UGS (AO overrides these 4 signals)
+	if ugs.on_points_changed.is_connected(iface.set_points):
+		ugs.on_points_changed.disconnect(iface.set_points)
+	if ugs.on_multiplier_changed.is_connected(iface.set_multiplier):
+		ugs.on_multiplier_changed.disconnect(iface.set_multiplier)
+	if ugs.lives_changed.is_connected(iface.set_lives):
+		ugs.lives_changed.disconnect(iface.set_lives)
+	if ugs.state_changed.is_connected(iface._on_state_changed):
+		ugs.state_changed.disconnect(iface._on_state_changed)
+	
+	# Connect to AO signals instead
+	on_points_changed.connect(iface.set_points)
+	on_multiplier_changed.connect(iface.set_multiplier)
+	lives_changed.connect(iface.set_lives)
+	state_changed.connect(iface._on_state_changed)
+	
+	# Set initial values (disable animation for instant snap)
+	iface.animate_score = false
+	iface.set_points(_running_score)
+	iface.set_multiplier(1.0 + _game_count)
+	iface.set_lives(_lives)
+	iface.animate_score = true

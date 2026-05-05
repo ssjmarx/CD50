@@ -17,7 +17,7 @@
 [ext_resource type="PackedScene" uid="uid://dwyyfxniivl1r" path="res://Scenes/Rules/wave_director.tscn" id="15_8p135"]
 [ext_resource type="PackedScene" uid="uid://vlbel76nqh5w" path="res://Scenes/Rules/wave_spawner.tscn" id="16_ydxa1"]
 [ext_resource type="Script" uid="uid://cp0ni1lgml7c6" path="res://Scripts/Core/property_override.gd" id="18_pxxt0"]
-[ext_resource type="PackedScene" uid="uid://d2cvj1qyemnu4" path="res://Scenes/Bodies/generic/asteroid.tscn" id="20_5j7oo"]
+[ext_resource type="PackedScene" uid="uid://b2sekay4f1s2g" path="res://Scenes/Bodies/generic/asteroid_noscore.tscn" id="20_01box"]
 [ext_resource type="PackedScene" uid="uid://cg5rnfuldr2n0" path="res://Scenes/Arms/damage_on_hit.tscn" id="20_68rfy"]
 [ext_resource type="PackedScene" uid="uid://csg0e2wxlx4qd" path="res://Scenes/Components/angled_deflector.tscn" id="21_68rfy"]
 [ext_resource type="PackedScene" uid="uid://craitf0mklbon" path="res://Scenes/Rules/timer.tscn" id="21_dpifu"]
@@ -277,14 +277,14 @@ wave_delay = 0.0
 trigger_type = 1
 
 [node name="WaveSpawner(game start)" parent="." node_paths=PackedStringArray("director") instance=ExtResource("16_ydxa1")]
-spawn_scene = ExtResource("20_5j7oo")
+spawn_scene = ExtResource("20_01box")
 spawn_count_equation = "4"
 director = NodePath("../WaveDirector(game start)")
 initial_velocity = Vector2(50, 0)
 use_random_angle = true
 
 [node name="WaveSpawner(asteroids)" parent="." node_paths=PackedStringArray("director") instance=ExtResource("16_ydxa1")]
-spawn_scene = ExtResource("20_5j7oo")
+spawn_scene = ExtResource("20_01box")
 spawn_count_equation = "1"
 director = NodePath("../WaveDirector(asteroids)")
 spawn_components = Array[PackedScene]([ExtResource("21_68rfy")])

@@ -1,6 +1,45 @@
 # Recent Progress
 
-**Last Updated:** 2026-05-03
+**Last Updated:** 2026-05-04
+
+---
+
+## Breaksteroids Remix & Bounce Physics (COMPLETE)
+
+Rebuilt Breaksteroids (Breakout + Asteroids hybrid) as a new remix game. Fixed bounce physics issues in UniversalBody that affected all bouncing entities.
+
+### Breaksteroids Game
+- **Breakout + Asteroids hybrid:** Player paddle + ball in a bounded arena with bouncing asteroids as additional obstacles
+- **Scene:** `Scenes/Games/remixes/breaksteroids.tscn` — pure component assembly, zero game scripts
+- **Asteroid variant:** `asteroid_bouncing_nosound.tscn` — bouncing asteroid without ScreenWrap (uses BounceOnHit + walls for bounded playfield)
+- **Ball variant:** `ball_combo.tscn` — ball with BounceOnHit, AngledDeflector, PongAcceleration, DamageOnHit (targets bricks + asteroids), ScoreOnHit
+- **Layout:** Interior walls create corridors; 4×4 grid of asteroids spawned in center; ball spawns from paddle
+- **Collision groups:** balls, paddles, walls, asteroids, floors, paddle_zone, asteroidfloor
+- **Wave system:** WaveDirector triggers on game start and on ball/asteroid group clear; WaveSpawner2 spawns asteroids with random-angle initial velocity
+- **Scoring:** VariableTuner on paddle_zone entry sets multiplier; ScoreOnHit on paddle; PointsMonitor tracks score
+- **Audio:** MusicRamping tied to asteroid count for tension
+
+### Bounce Physics Fix (UniversalBody)
+- **Problem:** Bouncing felt "sticky" — velocity lost on every collision, bodies could re-collide with same surface
+- **Root cause:** `move_and_collide()` stops at contact point; the remaining movement (`get_remainder()`) was discarded; body sat flush against surface causing re-triggers
+- **Fix in `move_parent_physics()`:**
+  1. After collision, nudge body 0.5px along collision normal (separation to prevent re-collision)
+  2. Re-apply `get_remainder().bounce(normal)` in the same frame (preserves full movement through bounce)
+- **Impact:** Improves all games using BounceOnHit (Pong, Breakout, Pongsteroids, Breaksteroids)
+
+### New Body Scenes
+- `asteroid_bouncing.tscn` — asteroid with BounceOnHit, ScreenWrap, Health, SplitOnDeath, ScoreOnDeath, DeathEffect, SoundSynth
+- `asteroid_bouncing_nosound.tscn` — same without SoundSynth (used in Breaksteroids)
+- `ball_combo.tscn` — ball with BounceOnHit + AngledDeflector + PongAcceleration + DamageOnHit + ScoreOnHit + ScreenCleanup + SfxRamping + SoundSynth
+
+### Scripts Modified
+
+| Script | Changes |
+|--------|---------|
+| `universal_body.gd` | `move_parent_physics()`: added separation nudge (`position += normal * 0.5`) and remainder re-application (`collision.get_remainder().bounce(normal)`) |
+
+### Games Now: 8
+Pong, Breakout, Asteroids, Pongsteroids, Dogfight, Space Invaders, Tetris, Breaksteroids
 
 ---
 
@@ -52,8 +91,9 @@ Building the itch.io arcade demo architecture. Phases 0–1 complete, Phase 2 mo
 
 ### Games Removed
 
-- **Pongout** and **Breaksteroids** removed from codebase — didn't turn out interesting enough
-- Active game count: **7** (Pong, Breakout, Asteroids, Pongsteroids, Dogfight, Space Invaders, Tetris)
+- **Pongout** removed from codebase — didn't turn out interesting enough
+- **Breaksteroids** was previously removed but has been rebuilt (see Breaksteroids section above)
+- Active game count: **8** (Pong, Breakout, Asteroids, Pongsteroids, Dogfight, Space Invaders, Tetris, Breaksteroids)
 
 ### New Scripts Created
 

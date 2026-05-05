@@ -170,7 +170,14 @@ func move_parent_physics(movement: Vector2) -> KinematicCollision2D:
 	var collision = move_and_collide(movement)
 	if collision:
 		body_collided.emit(collision.get_collider(), collision.get_normal())
+		# Nudge away from surface to prevent re-collision
+		position += collision.get_normal() * 0.5
+		# Re-apply remainder in bounced direction (BounceOnHit already flipped velocity)
+		var remainder = collision.get_remainder().bounce(collision.get_normal())
+		if remainder.length() > 0.01:
+			move_and_collide(remainder)
 	return collision
+
 
 # Move entity toward target with physics collision detection
 func move_parent_physics_toward(target: Vector2, max_distance: float) -> KinematicCollision2D:

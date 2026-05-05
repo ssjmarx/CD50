@@ -27,10 +27,10 @@ func _on_parent_died(_parent: Node) -> void:
 		if parent.size <= 0:
 			return
 	
-	var score_on_death = parent.get_node("ScoreOnDeath")
+	var score_on_death = null
 	var new_score = null
-
-	if score_on_death:
+	if parent.has_node("ScoreOnDeath"):
+		score_on_death = parent.get_node("ScoreOnDeath")
 		match score_adjustment_mode:
 			CommonEnums.AdjustmentMode.ADD:
 				new_score = score_on_death.base_score + score_adjustment
