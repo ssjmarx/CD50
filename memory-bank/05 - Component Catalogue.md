@@ -1,6 +1,6 @@
 # Component Catalogue
 
-**Last Updated:** 2026-05-03  
+**Last Updated:** 2026-05-05  
 **Total Scripts:** 86 across 10 categories  
 **Total Scene Variants:** 2 (no unique script)
 
@@ -172,14 +172,14 @@ Meta-level scripts for the arcade orchestrator system.
 
 | Script | Extends | Summary |
 |--------|---------|---------|
-| `arcade_orchestrator.gd` | `extends Node2D` | State machine that manages the arcade run: BOOT → PLAYING → RESULT → GAME_OVER → RESTART. Loads games from ArcadeGameEntry resources, tracks lives/score, detects game end, applies property overrides. |
+| `arcade_orchestrator.gd` | `extends Node2D` | State machine: BOOT → PLAYING → RESULT → GAME_OVER → TRANSITIONING → RESTART. Loads games, tracks lives/score/multiplier. Interface Takeover: hijacks child Interface from each game, connects to AO signals. Scrolling transitions between all screens via `position:y` tween. `PROCESS_MODE_ALWAYS` so tweens survive UGS tree pause. |
 | `arcade_game_entry.gd` | `ArcadeGameEntry extends Resource` | Defines a single game entry in the arcade playlist. Contains the game scene and property overrides for arcade fast rules. |
 
 **Scene variants:**
 
 | Scene | Script Used | Summary |
 |-------|-------------|---------|
-| `boot_screen.tscn` | *(scene only — no script)* | Placeholder for arcade mode entry screen. "INSERT COIN / PRESS START" UI with black background. Detailed in Plan 13. |
+| `boot_screen.tscn` | *(scene only — no script)* | Arcade boot screen. "CD50 ARCADE" title, black background. Position-based layout for scroll tweening. |
 
 ---
 

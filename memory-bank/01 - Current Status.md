@@ -1,11 +1,11 @@
 # Current Status: CD50 — Arcade Cabinet
 
-**Last Updated:** 2026-05-04  
-**Engine:** Godot 4.x (GDScript)  
+**Last Updated:** 2026-05-06  
+**Engine:** Godot 4.5 (GDScript)  
 **Architecture:** Entity-Component (composition over inheritance)  
 **Playable Games:** Pong, Breakout, Asteroids, Pongsteroids, Dogfight, Space Invaders, Tetris (Modern), Breaksteroids — ALL componentized, zero game scripts
-**In Progress:** Plan 14 — Snake and Light Cycles
-**Recent Completed:** Breaksteroids remix rebuilt; bounce physics improved in UniversalBody (separation nudge + remainder re-application)
+**In Progress:** Shipping itch.io demo + Steam Coming Soon (see `memory-bank/06 - Deadlines.md`)
+**Recent Completed:** Plan 13 (Arcade Orchestrator) — Interface Takeover + Scrolling Transitions + full arcade run system
 
 ---
 
@@ -27,7 +27,7 @@ CD50 is a modular arcade game collection built around a composable component arc
 
 ### `Scripts/Core/universal_game_script.gd` — `UniversalGameScript extends Node2D`
 - Master class for game coordinators. Generic container with **zero game-specific logic**. State machine (ATTRACT/PLAYING/PAUSED/GAME_OVER), P1/P2 + generic score tracking, collision matrix setup. All game behavior comes from attached Rule/Flow/Component nodes.
-- **Mode enum:** `STANDALONE` (self-contained with input handling) vs `ARCADE` (orchestrator-controlled, suppresses Interface, no direct input)
+- **Mode enum:** `STANDALONE` (self-contained with input handling) vs `ARCADE` (orchestrator-controlled, no direct input)
 - **Arcade bonus:** `arcade_bonus` float — set by orchestrator via `set_arcade_bonus()`, added to `current_multiplier` during scoring
 - **Auto-emit property setters:** `current_score`, `current_multiplier` — emit signals on change
 - **Signals FROM components:** `victory`, `defeat`, `group_cleared`, `group_member_removed`, `lives_changed`, `lives_depleted`, `timer_tick`, `timer_expired`, `spawning_wave`, `spawning_wave_complete`, `piece_settled`, `hold_requested`, `t_spin_detected(is_t_spin, is_mini)`
@@ -115,6 +115,7 @@ Scenes/Bodies/nonplayer/
 | Flow | 11 | interface, sound_on_hit, sound_synth, music_ramping, sfx_ramping, beep, grid_basic, swarm_controller, tetromino_spawner, wave_director*, wave_spawner* |
 | Effects | 2 | death_particles, death_broken_triangle_ship |
 | Hub | 2 | arcade_orchestrator, arcade_game_entry |
+| *Interface takeover + scrolling transitions are AO-only features — no changes to interface.gd or game scenes* |
 | **Total** | **89** | |
 
 *\* wave_director and wave_spawner scripts live in `Scripts/Rules/` but are categorized as Flow by function.*

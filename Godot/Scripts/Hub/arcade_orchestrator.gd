@@ -1,21 +1,25 @@
 # Arcade Orchestrator. State machine that manages the arcade run: BOOT → PLAYING → RESULT → GAME_OVER → RESTART.
 # Loads games from ArcadeGameEntry resources, tracks lives/score, detects game end, applies property overrides.
 # Emits Interface-compatible signals so a child Interface component can display score, lives, and multiplier.
+# Uses scrolling transitions between all screens (boot, games, game over).
 
 extends Node2D
 
-enum OrchestratorState { BOOT, PLAYING, RESULT, GAME_OVER }
+enum OrchestratorState { BOOT, PLAYING, RESULT, GAME_OVER, TRANSITIONING }
 enum PlaylistMode { IN_ORDER, SHUFFLE }
 
 @export var playlist: Array[ArcadeGameEntry] = []
 @export var starting_lives: int = 3
 @export var playlist_mode: PlaylistMode = PlaylistMode.IN_ORDER
+@export var transition_duration: float = 0.4
 
 # Signals for Interface component
 signal on_points_changed(new_score: int)
 signal on_multiplier_changed(new_multiplier: float)
 signal lives_changed(new_lives: int)
 signal state_changed(new_state: CommonEnums.State)
+
+const VIEWPORT_HEIGHT: float = 360.0
 
 var _state: OrchestratorState = OrchestratorState.BOOT
 var _lives: int
@@ -26,6 +30,7 @@ var _last_game_won: bool = false
 var _result_timer: float = 0.0
 var _shuffle_bag: Array[int] = []
 var _current_interface: Control = null
+var _transition_tween: Tween = null
 
 # Per-game tracking
 var _game_count: int = 0          # games completed this run (drives per-game bonus)
@@ -37,10 +42,17 @@ var _game_start_time: float = 0.0 # when current game started (seconds since epo
 @onready var _game_over_screen: Control = $GameOverScreen
 
 func _ready() -> void:
+	process_mode = Node.PROCESS_MODE_ALWAYS
 	_lives = starting_lives
+	# GameOverScreen starts off-screen below viewport
+	_game_over_screen.position.y = VIEWPORT_HEIGHT
 	_show_boot_screen()
 
 func _input(event: InputEvent) -> void:
+	# Ignore all input during transitions
+	if _state == OrchestratorState.TRANSITIONING:
+		return
+
 	match _state:
 		OrchestratorState.BOOT:
 			if event.is_action_pressed("start") or event.is_action_pressed("coin"):
@@ -66,7 +78,6 @@ func _show_boot_screen() -> void:
 	_state = OrchestratorState.BOOT
 	state_changed.emit(CommonEnums.State.ATTRACT)
 	_boot_screen.visible = true
-	_game_over_screen.visible = false
 
 func _start_next_game() -> void:
 	if playlist.is_empty():
@@ -80,33 +91,95 @@ func _start_next_game() -> void:
 			_refill_shuffle_bag()
 		entry = playlist[_shuffle_bag.pop_front()]
 	else:
-		# Existing in-order logic
 		if _current_index >= playlist.size():
 			_current_index = 0
 		entry = playlist[_current_index]
 	
-	_state = OrchestratorState.PLAYING
-	_boot_screen.visible = false
-	_game_over_screen.visible = false
+	_state = OrchestratorState.TRANSITIONING
 	
-	_load_and_start_game(entry)
+	# Setup new game instance (instantiate, configure, add to tree — but don't start)
+	var new_instance = _setup_game_instance(entry)
 	
-	# Emit PLAYING AFTER game is loaded so Interface can discover timers in the tree
-	state_changed.emit(CommonEnums.State.PLAYING)
+	# Determine what's sliding out (old game or boot screen)
+	var outgoing: CanvasItem
+	if _current_game_instance:
+		outgoing = _current_game_instance
+	else:
+		outgoing = _boot_screen
+	
+	# Start scrolling transition: old slides up, new slides in from below
+	_scroll_transition(outgoing, new_instance, _on_transition_to_game.bind(new_instance))
 
-func _load_and_start_game(entry: ArcadeGameEntry) -> void:
-	# Free previous game if any
+func _on_transition_to_game(new_instance: Node2D) -> void:
+	# Free old game if any
 	if _current_game_instance:
 		_current_game_instance.queue_free()
 		_current_game_instance = null
+	_current_interface = null
 	
+	# Boot screen is now off-screen, hide it to clean up
+	_boot_screen.visible = false
+	
+	# Finalize: start the game
+	_finalize_game_start(new_instance)
+
+func _show_game_over() -> void:
+	_state = OrchestratorState.TRANSITIONING
+	
+	# Update final score label before slide
+	var final_score_label: Label = _game_over_screen.get_node_or_null("FinalScoreLabel")
+	if final_score_label:
+		final_score_label.text = "FINAL SCORE: %d" % _running_score
+	
+	# Scroll: current game slides up, GameOverScreen slides in from below
+	_scroll_transition(_current_game_instance, _game_over_screen, _on_transition_to_game_over)
+
+func _on_transition_to_game_over() -> void:
+	# Free the game instance
+	if _current_game_instance:
+		_current_game_instance.queue_free()
+		_current_game_instance = null
+	_current_interface = null
+	
+	_state = OrchestratorState.GAME_OVER
+	state_changed.emit(CommonEnums.State.GAME_OVER)
+
+func _restart_run() -> void:
+	_state = OrchestratorState.TRANSITIONING
+	
+	# Reset all run state
+	_lives = starting_lives
+	_running_score = 0
+	_current_index = 0
+	_shuffle_bag.clear()
+	_game_count = 0
+	_game_multiplier = 1.0
+	lives_changed.emit(_lives)
+	on_points_changed.emit(0)
+	on_multiplier_changed.emit(1.0)
+	var ugs = _get_current_ugs()
+	if ugs:
+		ugs.set_arcade_bonus(0.0)
+	
+	# Scroll: GameOverScreen slides up, BootScreen slides in from below
+	_boot_screen.position.y = VIEWPORT_HEIGHT
+	_boot_screen.visible = true
+	_scroll_transition(_game_over_screen, _boot_screen, _on_transition_to_boot)
+
+func _on_transition_to_boot() -> void:
+	_state = OrchestratorState.BOOT
+	state_changed.emit(CommonEnums.State.ATTRACT)
+
+# --- Game Setup & Start (split from old _load_and_start_game) ---
+
+func _setup_game_instance(entry: ArcadeGameEntry) -> Node2D:
 	# Instance the game scene
-	_current_game_instance = entry.game_scene.instantiate()
+	var instance: Node2D = entry.game_scene.instantiate()
 	
 	# Get the UGS and configure for arcade mode BEFORE adding to tree
-	var ugs: UniversalGameScript = _current_game_instance as UniversalGameScript
+	var ugs: UniversalGameScript = instance as UniversalGameScript
 	if not ugs:
-		ugs = _find_ugs(_current_game_instance)
+		ugs = _find_ugs(instance)
 	
 	if ugs:
 		ugs.mode = UniversalGameScript.Mode.ARCADE
@@ -120,30 +193,47 @@ func _load_and_start_game(entry: ArcadeGameEntry) -> void:
 		ugs.lives_changed.connect(_on_game_lives_changed)
 		
 		# Apply property overrides BEFORE adding to tree so @onready captures them
-		_apply_overrides(_current_game_instance, entry.overrides)
-		
-		# Add to tree — _ready() runs here with overrides already applied
-		_game_container.add_child(_current_game_instance)
-		
-		# Take over the child game's Interface for arcade display
+		_apply_overrides(instance, entry.overrides)
+	
+	# Position below viewport for slide-in
+	instance.position.y = VIEWPORT_HEIGHT
+	
+	# Add to tree — _ready() runs here with overrides already applied
+	_game_container.add_child(instance)
+	
+	# Take over Interface after it's in the tree and _ready has run
+	if ugs:
 		_takeover_interface(ugs)
-		
-		# Reset per-game state
-		_game_multiplier = 1.0
-		_game_start_time = Time.get_ticks_msec() / 1000.0
-		
+	
+	return instance
+
+func _finalize_game_start(instance: Node2D) -> void:
+	_current_game_instance = instance
+	# Ensure clean position
+	_current_game_instance.position.y = 0.0
+	
+	# Reset per-game state
+	_game_multiplier = 1.0
+	_game_start_time = Time.get_ticks_msec() / 1000.0
+	
+	var ugs = _get_ugs_from(instance)
+	if ugs:
 		# Show combined multiplier (game's + per-game bonus)
 		on_multiplier_changed.emit(_game_multiplier + _game_count)
 		
 		# Notify UGS of arcade bonus so scoring is affected
 		ugs.set_arcade_bonus(float(_game_count))
 		
-		# Start the game
+		# Start the game (unpauses tree, sets PLAYING state)
 		ugs.start_game()
-	else:
-		push_error("ArcadeOrchestrator: could not find UniversalGameScript in game scene")
-		_current_game_instance.queue_free()
-		_current_game_instance = null
+	
+	_state = OrchestratorState.PLAYING
+	
+	# Emit PLAYING AFTER game is started so Interface can discover timers in the tree
+	state_changed.emit(CommonEnums.State.PLAYING)
+	
+	if playlist_mode == PlaylistMode.IN_ORDER:
+		_current_index += 1
 
 func _on_game_victory() -> void:
 	_last_game_won = true
@@ -167,21 +257,14 @@ func _on_game_over_signal(final_score: int) -> void:
 		var elapsed: float = Time.get_ticks_msec() / 1000.0 - _game_start_time
 		var base_bonus = _calc_time_bonus(elapsed)
 		time_bonus = base_bonus * _game_count
-		#print("[AO] time_bonus: base=%d × game_count=%d = %d (elapsed %.1fs)" % [
-		#	base_bonus, _game_count, time_bonus, elapsed])
 	
 	# Apply time bonus and game score to running total
 	_running_score += final_score + time_bonus
-	#print("[AO] game_over: final_score=%d + time_bonus=%d → running_total=%d (won=%s, game_count=%d)" % [
-	#	final_score, time_bonus, _running_score, _last_game_won, _game_count])
 	on_points_changed.emit(_running_score)
 	
 	if not _last_game_won:
 		_lives -= 1
 		lives_changed.emit(_lives)
-	
-	if playlist_mode == PlaylistMode.IN_ORDER:
-		_current_index += 1
 	
 	# Transition to RESULT state
 	_state = OrchestratorState.RESULT
@@ -189,7 +272,6 @@ func _on_game_over_signal(final_score: int) -> void:
 
 func _on_game_points_changed(new_score: int) -> void:
 	# Game emits its own score changes — update running total live
-	# We recalculate: running_score = accumulated + current game score
 	on_points_changed.emit(_running_score + new_score)
 
 func _on_game_multiplier_changed(new_multiplier: float) -> void:
@@ -200,79 +282,24 @@ func _on_game_multiplier_changed(new_multiplier: float) -> void:
 func _on_game_lives_changed(new_lives: int) -> void:
 	lives_changed.emit(_lives)
 
-func _show_game_over() -> void:
-	_state = OrchestratorState.GAME_OVER
-	state_changed.emit(CommonEnums.State.GAME_OVER)
-	if _current_game_instance:
-		_current_game_instance.queue_free()
-		_current_game_instance = null
-	_current_interface = null
-	_game_over_screen.visible = true
-	# Update final score label
-	var final_score_label: Label = _game_over_screen.get_node_or_null("FinalScoreLabel")
-	if final_score_label:
-		final_score_label.text = "FINAL SCORE: %d" % _running_score
+# --- Scrolling Transition ---
 
-func _restart_run() -> void:
-	_current_interface = null
-	_lives = starting_lives
-	_running_score = 0
-	_current_index = 0
-	_shuffle_bag.clear()   # forces reshuffle on next game
-	_game_count = 0
-	_game_multiplier = 1.0
-	lives_changed.emit(_lives)
-	on_points_changed.emit(0)
-	on_multiplier_changed.emit(1.0)
-	var ugs = _get_current_ugs()
-	if ugs:
-		ugs.set_arcade_bonus(0.0)
-	_show_boot_screen()
-
-# --- Helpers ---
-
-func _get_current_ugs() -> UniversalGameScript:
-	if not _current_game_instance:
-		return null
-	var ugs = _current_game_instance as UniversalGameScript
-	if not ugs:
-		ugs = _find_ugs(_current_game_instance)
-	return ugs
-
-func _find_ugs(node: Node) -> UniversalGameScript:
-	if node is UniversalGameScript:
-		return node
-	for child in node.get_children():
-		var result = _find_ugs(child)
-		if result:
-			return result
-	return null
-
-func _calc_time_bonus(elapsed: float) -> int:
-	# 1000 points at ≤20s, linearly to 0 at ≥60s
-	if elapsed <= 20.0:
-		return 1000
-	elif elapsed >= 60.0:
-		return 0
-	else:
-		return int((1.0 - (elapsed - 20.0) / 40.0) * 1000.0)
-
-func _apply_overrides(game_instance: Node, overrides: Array[PropertyOverride]) -> void:
-	for prop_override: PropertyOverride in overrides:
-		if prop_override.node_path.is_empty():
-			continue
-		var target_node = game_instance.get_node_or_null(prop_override.node_path)
-		if target_node:
-			target_node.set(prop_override.property_name, prop_override.value)
-		else:
-			push_warning("ArcadeOrchestrator: override node '%s' not found in game scene" % prop_override.node_path)
-
-func _refill_shuffle_bag() -> void:
-	_shuffle_bag.clear()
-	_shuffle_bag.resize(playlist.size())
-	for i in playlist.size():
-		_shuffle_bag[i] = i
-	_shuffle_bag.shuffle()
+func _scroll_transition(outgoing: CanvasItem, incoming: CanvasItem, on_complete: Callable) -> void:
+	# Kill any existing tween
+	if _transition_tween and _transition_tween.is_valid():
+		_transition_tween.kill()
+	
+	# Ensure incoming is visible and positioned below viewport
+	incoming.visible = true
+	incoming.position.y = VIEWPORT_HEIGHT
+	
+	# Create parallel tween: old slides up, new slides in
+	_transition_tween = create_tween()
+	_transition_tween.set_parallel(true)
+	_transition_tween.tween_property(outgoing, "position:y", -VIEWPORT_HEIGHT, transition_duration).set_ease(Tween.EASE_IN_OUT).set_trans(Tween.TRANS_CUBIC)
+	_transition_tween.tween_property(incoming, "position:y", 0.0, transition_duration).set_ease(Tween.EASE_IN_OUT).set_trans(Tween.TRANS_CUBIC)
+	_transition_tween.set_parallel(false)
+	_transition_tween.tween_callback(on_complete)
 
 # --- Interface Takeover ---
 
@@ -310,3 +337,55 @@ func _takeover_interface(ugs: UniversalGameScript) -> void:
 	iface.set_multiplier(1.0 + _game_count)
 	iface.set_lives(_lives)
 	iface.animate_score = true
+	
+	# Show play UI immediately so Interface is visible during slide-in
+	iface.hide_element(iface.elements.ATTRACT_TEXT)
+	iface._show_play_ui()
+
+# --- Helpers ---
+
+func _get_current_ugs() -> UniversalGameScript:
+	return _get_ugs_from(_current_game_instance)
+
+func _get_ugs_from(instance: Node2D) -> UniversalGameScript:
+	if not instance:
+		return null
+	var ugs = instance as UniversalGameScript
+	if not ugs:
+		ugs = _find_ugs(instance)
+	return ugs
+
+func _find_ugs(node: Node) -> UniversalGameScript:
+	if node is UniversalGameScript:
+		return node
+	for child in node.get_children():
+		var result = _find_ugs(child)
+		if result:
+			return result
+	return null
+
+func _calc_time_bonus(elapsed: float) -> int:
+	# 1000 points at ≤20s, linearly to 0 at ≥60s
+	if elapsed <= 20.0:
+		return 1000
+	elif elapsed >= 60.0:
+		return 0
+	else:
+		return int((1.0 - (elapsed - 20.0) / 40.0) * 1000.0)
+
+func _apply_overrides(game_instance: Node, overrides: Array[PropertyOverride]) -> void:
+	for prop_override: PropertyOverride in overrides:
+		if prop_override.node_path.is_empty():
+			continue
+		var target_node = game_instance.get_node_or_null(prop_override.node_path)
+		if target_node:
+			target_node.set(prop_override.property_name, prop_override.value)
+		else:
+			push_warning("ArcadeOrchestrator: override node '%s' not found in game scene" % prop_override.node_path)
+
+func _refill_shuffle_bag() -> void:
+	_shuffle_bag.clear()
+	_shuffle_bag.resize(playlist.size())
+	for i in playlist.size():
+		_shuffle_bag[i] = i
+	_shuffle_bag.shuffle()

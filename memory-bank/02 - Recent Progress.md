@@ -1,6 +1,26 @@
 # Recent Progress
 
-**Last Updated:** 2026-05-04
+**Last Updated:** 2026-05-06
+
+---
+
+## Priority Pivot: Shipping Over Building (May 6, 2026)
+
+The project pivoted from building new games to shipping what exists. Deadlines have been set from May through October 2026 targeting an itch.io demo, Steam Coming Soon page, and October Next Fest.
+
+### What Changed
+- **Deleted plans:** Snake + Light Cycles (old Plan 14), Qix + Xonix (old Plan 15) — removed from pipeline
+- **Renumbered:** Arcade Juice & Attract Mode is now Plan 14 (was Plan 16)
+- **New plans:** Plan 15 (Arcade Orchestrator Juice), Plan 16 (Cambrian Remix Explosion)
+- **Moved up:** itch.io export (was "Phase 7 — Ship" in old planning) is now the active priority
+- **New file:** `memory-bank/06 - Deadlines.md` — full May–October commercial schedule
+
+### Immediate Focus
+- This week: Steamworks setup + itch.io pipeline
+- Late May: Plans 14–15 (arcade juice) + export to itch
+- June–July: Plan 16 (Cambrian Remix) + modifier system + scoring
+- August: Steamworks integration
+- October: Next Fest launch
 
 ---
 
@@ -43,9 +63,9 @@ Pong, Breakout, Asteroids, Pongsteroids, Dogfight, Space Invaders, Tetris, Break
 
 ---
 
-## Plan 13 — Arcade Orchestrator (IN PROGRESS)
+## Plan 13 — Arcade Orchestrator (COMPLETE)
 
-Building the itch.io arcade demo architecture. Phases 0–1 complete, Phase 2 mostly complete, Phase 3 entries created and tuned.
+Full itch.io arcade cabinet architecture. All phases complete — Interface Takeover, Scrolling Transitions, fast rule tuning, lives/scoring/multiplier system.
 
 ### Phase 0 — Input Refactoring (COMPLETE)
 
@@ -73,7 +93,9 @@ Building the itch.io arcade demo architecture. Phases 0–1 complete, Phase 2 mo
 - **Per-game multiplier bonus:** `_game_count` increments on victory, pushed to UGS as `arcade_bonus` so in-game scoring is affected
 - **Time bonus:** Victory-only, 1000pts at ≤20s linearly to 0 at ≥60s, scaled by game count
 - **Game Over screen:** "GAME OVER", final score, "PRESS START TO PLAY AGAIN", full restart on input
-- **NOT DONE:** Scrolling transitions (games load/free instantly), preloading (`ResourceLoader.load_threaded_request`)
+- **Scrolling transitions:** All four scenarios implemented (boot→game, game→game, game→gameover, gameover→boot). 0.4s cubic ease via `position:y` tween. AO uses `PROCESS_MODE_ALWAYS` so tweens run during UGS tree pause.
+- **Interface Takeover:** Removed AO's own Interface node. Each game's child Interface is hijacked — disconnected from UGS signals, connected to AO signals. AO is sole source of truth for displayed score/multiplier/lives. Timer signals stay connected to UGS for tree walking.
+- **Preloading:** Assessed and deferred — `PackedScene` refs are already in memory. `load_threaded_request()` doesn't help on itch.io (no `SharedArrayBuffer`). Multi-pack `.pck` split is the real optimization but premature for 8 lightweight games.
 
 ### Phase 3 — Fast Rules (ENTRIES CREATED & TUNED)
 
@@ -87,7 +109,30 @@ Building the itch.io arcade demo architecture. Phases 0–1 complete, Phase 2 mo
   - `dogfight.tres` — WaveDirector max_waves=1
 - Override application via `_apply_overrides()` with graceful warning fallback
 - All entries have been tuned for 15–45s arcade pacing
-- **NOT DONE:** Separate `arcade_default_playlist.tres` resource (playlist is inline in orchestrator scene)
+- **Optional deferred:** Separate `arcade_default_playlist.tres` resource (playlist is inline in orchestrator scene)
+
+### Interface Takeover Architecture
+
+- **Signal chain:** `UGS.on_points_changed → AO._on_game_points_changed → AO.on_points_changed.emit(arcade_total) → Interface.set_points(arcade_total)`
+- **Interface never hears from UGS directly** — AO is the sole source of truth
+- **Timer discovery still works** because Interface.parent is UGS (set in `@onready`), and timer_tick stays connected to UGS
+- **Cleanup:** when game is freed, its Interface is freed too — Godot auto-disconnects freed nodes from signals
+- **No changes to:** `interface.gd`, game scenes, `ArcadeGameEntry` resources
+
+### Scrolling Transition Details
+
+- **`TRANSITIONING` state** added to `OrchestratorState` enum — all input ignored during transitions
+- **`process_mode = PROCESS_MODE_ALWAYS`** on AO — tweens keep running when UGS `_ready()` pauses the scene tree
+- **`_scroll_transition(outgoing, incoming, callback)`** — parallel tween: old `y:0→-360`, new `y:360→0`, cubic ease-in-out
+- **`_setup_game_instance()` + `_finalize_game_start()`** — split from old `_load_and_start_game()`. Setup adds to tree (triggering UGS `_ready()`) without starting. Finalize resets position and calls `start_game()`.
+- **BootScreen/GameOverScreen** changed from `anchors_preset = 15` to `layout_mode = 0` with fixed 640×360 offsets so `position.y` can be tweened
+
+### Scripts Modified
+
+| Script | Changes |
+|--------|---------|
+| `arcade_orchestrator.gd` | Major rewrite: Interface Takeover (`_takeover_interface`), Scrolling Transitions (`_scroll_transition`, `TRANSITIONING` state), split game loading (`_setup_game_instance` + `_finalize_game_start`), `PROCESS_MODE_ALWAYS`, `_get_ugs_from` helper |
+| `arcade_orchestrator.tscn` | Removed AO's own Interface node. BootScreen/GameOverScreen changed to position-based layout. Removed `visible = false` from GameOverScreen (positioned off-screen instead). |
 
 ### Games Removed
 

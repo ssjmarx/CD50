@@ -1,65 +1,92 @@
 # Current Goal
 
-**Last Updated:** 2026-05-03  
-**Status:** Active — Plan 14 (Snake + Light Cycles)
+**Last Updated:** 2026-05-06  
+**Status:** Active — Shipping itch.io Demo + Steam Coming Soon
 
 ---
 
-## Active Plan: 14 — Snake and Light Cycles
+## Active Priority: Ship the Demo (May 2026)
 
-Two games sharing `trail_spawner` as the core component. Full plan in `planning/14 - Snake and Light Cycles.md`.
+The project has pivoted from building new games to shipping what we have. The immediate goal is to get an itch.io demo and a Steam "Coming Soon" page live by end of May 2026.
 
-| Phase | Description | Status |
-|-------|-------------|--------|
-| 14 | Light Cycles + Snake | Not started |
+**Full deadline schedule:** `memory-bank/06 - Deadlines.md`
 
-### Key New Components
-- **`trail_spawner`** — Spawns static collision walls behind moving bodies (shared core: LC = permanent, Snake = growing body)
-- **`cycle_ai`** — Raycast wall avoidance brain
-- **`food_spawner`** — Spawns collectible at random open position (Snake)
+### This Week (May 6–11)
+- Steamworks: pay fee, create App ID, tax/bank info, Coming Soon page
+- itch.io: create game page, decide web vs native, test Butler pipeline
 
----
-
-## Next: Plan 15 — Qix and Xonix
-
-Territory claiming games sharing `territory_grid` + `line_drawer` + `area_filler`. Full plan in `planning/15 - Qix and Xonix.md`.
-
-| Phase | Description | Status |
-|-------|-------------|--------|
-| 15 | Qix + Xonix | Pending (after Plan 14) |
-
-### Key New Components
-- **`territory_grid`** — 640×360 pixel bitmap with flood fill
-- **`line_drawer`** — Drawing state machine, pixel path recording, reconnection detection
-- **`area_filler`** — Flood fill with Qix avoidance
-- **`qix_ai`** — Random walk in unclaimed territory
-- **`sparx_ai`** — Border tracing brain
-- **`mine_ai`** — Border expansion brain (Xonix only)
+### Mid–Late May (May 12–31)
+- Finalize arcade mode content and export
+- Upload to itch via Butler
+- Add Steam wishlist CTA to itch page
+- Plans 14–15 (arcade juice) to polish the experience
 
 ---
 
-## Future: Plan 16 — Cambrian Explosion (Remixes)
+## Near-Term Plans
 
-Mass remix phase combining components from Plans 14–15 with the existing library to reach 20 games.
+### Plan 14 — Arcade Juice & Attract Mode
+**Status:** Not started  
+**Timeline:** Before itch export (late May)  
+**Scope:** Pared down to essentials — CRT visuals, boot screen polish
 
-### Path to 20
+### Plan 15 — Arcade Orchestrator Juice
+**Status:** Not started  
+**Timeline:** Before itch export (late May)  
+**Scope:** Three phases — Copyright rename pass (bootleg cabinet names) + Copyright-safety visual changes (formation/color/shape/layout tweaks for all 5 remakes) + Polybius face/voice integration. Full plan in `planning/15 - Arcade Orchestrator Juice.md`.
 
-8 existing + 4 remakes (Snake, LC, Qix, Xonix) + remixes from Plan 16 = **20 games**
+### Plan 16 — Cambrian Remix Explosion
+**Status:** Not started  
+**Timeline:** Mid–late May (after Plans 14–15)  
+**Scope:** 5 remakes + 10 remixes/originals (3 new games designed, 4 slots TBD), 5 Balatro-like modifiers with score gate unlocks, semi-random playlist mode, local high score persistence. Full plan in `planning/16 - Cambrian Remix Explosion.md`.
+
+### Plan 17 — Arcade Juice Post-Launch
+**Status:** Not started  
+**Timeline:** After itch launch  
+**Scope:** VRAM Boot Screen, Attract Mode System, Coin Drop Boot Sequence. Extracted from Plan 14 — deferred past first itch release. Full plan in `planning/17 - Arcade Juice Post-Launch.md`.
 
 ---
 
-## On Hold: Plan 13 — Arcade Orchestrator
+## Mid-Term (June–October 2026)
 
-Phases 0–1 complete, Phase 2 mostly complete, Phase 3 complete. Remaining:
-- Scrolling transitions between games
-- Preloading (`ResourceLoader.load_threaded_request`)
+### June–July — Vertical Slice Content
+- Expand modifier system beyond the initial 5 (more contraband, tokens, features)
+- Score progression / ranking system (10k → 1m → 1b)
+- Polish core loop to 20–30 second snappy runs
+- Fill remaining 4 remix slots from Plan 16
+
+### August 1–17 — Steamworks Integration
+- GodotSteam integration
+- Stats, leaderboards, achievements
+- In-game UI for all of the above
+
+### August 18–31 — Next Fest Registration
+- Register for October Next Fest
+- Finalize store page, capsule images, trailer
+
+### September — Steam Demo Build + Press
+- Steam demo build (with Steam backend features)
+- Submit for review by Sep 21
+- Press preview window Sep 21–30
+
+### October — Launch + Next Fest
+- Demo goes live on Steam before Oct 19
+- Next Fest Oct 19–26
+- Leave demo up after fest
 
 ---
 
-## Future Phases (Post-Plan 14)
+## Deferred
 
-- Phase 4 — Polybius face + voice + dialogue
-- Phase 5 — Scoreboard with local high scores
-- Phase 5.5 — Kill screen secret + code entry
-- Phase 6 — Juice: CRT, sounds, animations
-- Phase 7 — Ship: itch.io export
+The following plans have been **deleted** from the active pipeline. The component ideas may resurface post-launch if they serve a remix or modifier.
+
+- ~~Plan 14 — Snake + Light Cycles~~ (trail_spawner, cycle_ai, food_spawner)
+- ~~Plan 15 — Qix + Xonix~~ (territory_grid, line_drawer, area_filler)
+
+---
+
+## Complete
+
+| Plan | Description | Completed |
+|------|-------------|-----------|
+| 13 | Arcade Orchestrator (Interface Takeover, Scrolling Transitions, Fast Rules) | 2026-05-05 |
