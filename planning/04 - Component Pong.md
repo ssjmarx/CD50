@@ -1,8 +1,8 @@
-# Plan: Update 04 — Component Pong
+# Plan: Update 04 — Component Paddle Ball
 
 ## Goal
 
-Complete refactor of Pong into the componentized architecture. The `pong.gd` game script is **eliminated**. The Pong scene uses `UniversalGameScript` as its root script. ALL Pong game behavior is recreated through reusable components.
+Complete refactor of Paddle Ball into the componentized architecture. The `paddle_ball.gd` game script is **eliminated**. The Paddle Ball scene uses `UniversalGameScript` as its root script. ALL Paddle Ball game behavior is recreated through reusable components.
 
 **Attract mode is out of scope** — this update focuses solely on core gameplay behavior.
 
@@ -12,7 +12,7 @@ Complete refactor of Pong into the componentized architecture. The `pong.gd` gam
 
 This update is the proof-of-concept for the "Universal Architecture" (see `planning/brainstorming/universal architecture.md`). Instead of a game-specific script orchestrating logic, the scene itself IS the logic. Components are assembled in the scene tree, connected via signals on the UniversalGameScript blackboard, and the game runs autonomously.
 
-**Before:** `pong.gd` (165 lines) → monolithic game coordinator
+**Before:** `paddle_ball.gd` (165 lines) → monolithic game coordinator
 **After:** `UniversalGameScript` root + 14 component nodes → zero game-specific code
 
 ---
@@ -20,11 +20,11 @@ This update is the proof-of-concept for the "Universal Architecture" (see `plann
 ## Target Scene Tree
 
 ```
-Pong (UniversalGameScript)
+Paddle Ball (UniversalGameScript)
 ├── Ball (UniversalBody, Godot group: "balls")
 │   ├── CollisionShape2D
 │   ├── HitBox (Area2D)
-│   ├── PongAcceleration (enhanced — auto-connects to parent.body_collided, config: target_group "paddles")
+│   ├── Paddle BallAcceleration (enhanced — auto-connects to parent.body_collided, config: target_group "paddles")
 │   ├── AngledDeflector (enhanced — auto-connects to parent.body_collided, config: target_groups ["paddles"], deflection_bias: 5, 1)
 │   ├── ScreenCleanup (new — frees ball when it leaves screen)
 │   └── AudioStreamPlayer2D
@@ -128,7 +128,7 @@ enum Result {
 - This signal is emitted by any UniversalBody that detects a physics collision via `move_parent_physics()`
 - Bodies that use non-physical movement (`move_parent()`) simply won't emit this signal — no harm done
 
-**Why:** Both enhanced PongAcceleration and enhanced AngledDeflector need to detect collisions on their parent. Currently `ball.gd` emits a game-specific `ball_collision` signal. By making collision detection a first-class UniversalBody signal, any component can listen to `parent.body_collided` and filter by group — no custom bridge code needed.
+**Why:** Both enhanced Paddle BallAcceleration and enhanced AngledDeflector need to detect collisions on their parent. Currently `ball.gd` emits a game-specific `ball_collision` signal. By making collision detection a first-class UniversalBody signal, any component can listen to `parent.body_collided` and filter by group — no custom bridge code needed.
 
 **Note:** Individual body scripts (like `ball.gd`) still handle their own `_physics_process()` collision detection. They just emit the generic signal alongside their existing logic. This is not a change to the movement system — it's adding a standardized output.
 
@@ -185,11 +185,11 @@ Goal component detects body_entered
 - After spawning an entity, if `initial_velocity > 0`, set `entity.velocity` using the configured angle behavior
 - Angle priority: fixed_angle > random_angle > default (no velocity change)
 
-**Pong configuration:** `spawn_at_game_start: true`, `initial_velocity: 150`, `use_random_angle: true`, `random_angle_min: 3π/4`, `random_angle_max: 5π/4`, `random_flip_h: true`
+**Paddle Ball configuration:** `spawn_at_game_start: true`, `initial_velocity: 150`, `use_random_angle: true`, `random_angle_min: 3π/4`, `random_angle_max: 5π/4`, `random_flip_h: true`
 
-### 4. PongAcceleration — Enhancement
+### 4. Paddle BallAcceleration — Enhancement
 
-**Location:** `Scripts/Components/pong_acceleration.gd`
+**Location:** `Scripts/Components/paddle_ball_acceleration.gd`
 
 **New exports:**
 - `target_group: String = "paddles"` — group name to check against colliders
@@ -223,9 +223,9 @@ Conceptually, this makes sense: deflection bias is a property of "how the ball b
 - Apply to parent's velocity: preserve speed, change direction to the deflection angle
 - This component is now self-sufficient — no external script needs to call `bounce_offset()` or `custom_bounce()`
 
-**Pong configuration on Ball:** `target_groups: ["paddles"]`, `deflection_bias: Vector2(5, 1)`
+**Paddle Ball configuration on Ball:** `target_groups: ["paddles"]`, `deflection_bias: Vector2(5, 1)`
 
-**Note:** The existing `bounce_offset()` method can remain for manual use, but the auto-connect behavior makes it unnecessary for the componentized Pong.
+**Note:** The existing `bounce_offset()` method can remain for manual use, but the auto-connect behavior makes it unnecessary for the componentized Paddle Ball.
 
 **Impact on Paddles:** Paddles no longer need an AngledDeflector child. The `bounce_offset()` delegation in `paddle.gd` becomes unnecessary.
 
@@ -247,7 +247,7 @@ Conceptually, this makes sense: deflection bias is a property of "how the ball b
   - P2_SCORE → `parent.add_p2_score(score_amount)`
   - GENERIC_SCORE → `parent.add_score(score_amount)`
 
-**Pong configuration:**
+**Paddle Ball configuration:**
 - P1Goal: `score_type: P2_SCORE` (ball enters P1's goal → P2 scores)
 - P2Goal: `score_type: P1_SCORE` (ball enters P2's goal → P1 scores)
 
@@ -275,7 +275,7 @@ Conceptually, this makes sense: deflection bias is a property of "how the ball b
 - On body_entered: play the configured sound
 - Requires an internal AudioStreamPlayer (or extends it directly)
 
-**Pong configuration:** Attached to P1Goal and P2Goal, plays the goal scored sound (`threeTone1.ogg`)
+**Paddle Ball configuration:** Attached to P1Goal and P2Goal, plays the goal scored sound (`threeTone1.ogg`)
 
 ### 9. NEW RULES COMPONENT: VariableTuner
 
@@ -298,7 +298,7 @@ Conceptually, this makes sense: deflection bias is a property of "how the ball b
 - MULTIPLY: `parent[target_property] *= adjustment_amount`
 - SET: `parent[target_property] = adjustment_amount`
 
-**Pong configuration (on InterceptorAi):**
+**Paddle Ball configuration (on InterceptorAi):**
 - `source_node`: NodePath to P1Goal
 - `source_signal`: "body_entered"
 - `target_property`: "turning_speed"
@@ -326,7 +326,7 @@ Conceptually, this makes sense: deflection bias is a property of "how the ball b
 - On score update: check if condition is met (e.g., score >= target_score)
 - If met: emit `parent.victory()` or `parent.defeat()` based on result
 
-**Pong configuration:**
+**Paddle Ball configuration:**
 - P1PointsMonitor: `score_type: P1_SCORE`, `target_score: 11`, `condition: GREATER_OR_EQUAL`, `result: VICTORY`
 - P2PointsMonitor: `score_type: P2_SCORE`, `target_score: 11`, `condition: GREATER_OR_EQUAL`, `result: DEFEAT`
 
@@ -345,7 +345,7 @@ Conceptually, this makes sense: deflection bias is a property of "how the ball b
 - If parent is outside bounds: call `parent.queue_free()`
 - Viewport bounds: x < -margin, x > 640 + margin, y < -margin, y > 360 + margin
 
-**Pong usage:** Attached to Ball. When ball enters a goal Area2D, it passes through and exits the screen. ScreenCleanup frees it. GroupMonitor then detects "balls" group is empty → triggers WaveDirector → respawns ball.
+**Paddle Ball usage:** Attached to Ball. When ball enters a goal Area2D, it passes through and exits the screen. ScreenCleanup frees it. GroupMonitor then detects "balls" group is empty → triggers WaveDirector → respawns ball.
 
 ---
 
@@ -354,9 +354,9 @@ Conceptually, this makes sense: deflection bias is a property of "how the ball b
 **Location:** `Scripts/Bodies/ball.gd`
 
 **Removals:**
-- `BallCollision` signal — no longer needed (PongAcceleration and AngledDeflector auto-connect via `body_collided`)
+- `BallCollision` signal — no longer needed (Paddle BallAcceleration and AngledDeflector auto-connect via `body_collided`)
 - `custom_bounce()` method — no longer needed (AngledDeflector handles angle changes directly)
-- `accelerate()` method — no longer needed (PongAcceleration is self-sufficient)
+- `accelerate()` method — no longer needed (Paddle BallAcceleration is self-sufficient)
 - `reset()` method — no longer needed (ball is destroyed and respawned, not reused)
 
 **Additions:**
@@ -380,12 +380,12 @@ Conceptually, this makes sense: deflection bias is a property of "how the ball b
 
 ## Cleanup: Deleted Files
 
-- `Scripts/Games/pong.gd` — **DELETED** (entire point of this update)
+- `Scripts/Games/paddle_ball.gd` — **DELETED** (entire point of this update)
 - The Ball's `BallCollision` signal and related methods
 
 ---
 
-## Signal Flow: Complete Pong Game Loop
+## Signal Flow: Complete Paddle Ball Game Loop
 
 ```
 START:
@@ -396,7 +396,7 @@ START:
 GAMEPLAY:
   Ball moves → hits paddle (physics collision)
     → Ball emits body_collided(paddle, normal)
-      → PongAcceleration hears body_collided, checks "paddles" group → accelerates ball
+      → Paddle BallAcceleration hears body_collided, checks "paddles" group → accelerates ball
       → AngledDeflector hears body_collided, checks "paddles" group → deflects ball angle
   Ball moves → hits wall → physics bounce (automatic)
 
@@ -444,7 +444,7 @@ Suggested order to build and test incrementally:
 10. Test: verify score tracking works with debug prints
 
 ### Phase C: Enhanced Ball Components
-11. Enhance **PongAcceleration** (auto-connect to body_collided + group filtering)
+11. Enhance **Paddle BallAcceleration** (auto-connect to body_collided + group filtering)
 12. Enhance **AngledDeflector** (auto-connect to body_collided + group filtering + velocity update, moved to Ball)
 13. Build **VariableTuner** component
 14. Test: verify ball acceleration, deflection, and AI ramping
@@ -457,8 +457,8 @@ Suggested order to build and test incrementally:
 ### Phase E: Assembly
 18. Update **Ball** script (emit body_collided, remove BallCollision/custom_bounce/accelerate/reset)
 19. Update **Paddle** script (remove bounce_offset and deflector reference)
-20. **Delete `pong.gd`**
-21. Build new `pong.tscn` with `UniversalGameScript` root + all components
+20. **Delete `paddle_ball.gd`**
+21. Build new `paddle_ball.tscn` with `UniversalGameScript` root + all components
 22. Playtest full game loop
 
 ---
@@ -470,7 +470,7 @@ Attract mode requires additional components:
 - **AI randomizer** — VariableTuner could potentially serve this role with MULTIPLY mode + random source
 - **State-dependent UI** — ATTRACT_TEXT show/hide tied to state changes
 
-These will be addressed in a future update. For now, the componentized Pong starts directly in PLAYING state with PlayerControl already attached.
+These will be addressed in a future update. For now, the componentized Paddle Ball starts directly in PLAYING state with PlayerControl already attached.
 
 ---
 
@@ -482,4 +482,4 @@ These will be addressed in a future update. For now, the componentized Pong star
 
 3. **Ball death timing:** ScreenCleanup must free the ball AFTER Goal has processed the body_entered signal. Since both react to the same body_entered, ensure Goal processes first (scene order / process priority).
 
-4. **Ball lifecycle change:** Current `pong.gd` reuses the same Ball instance (reposition + reset). Componentized Pong spawns fresh Balls via WaveSpawner and destroys them via ScreenCleanup. PongAcceleration resets automatically on instantiation. This is a behavioral change but is more generic and correct for the component pattern.
+4. **Ball lifecycle change:** Current `paddle_ball.gd` reuses the same Ball instance (reposition + reset). Componentized Paddle Ball spawns fresh Balls via WaveSpawner and destroys them via ScreenCleanup. Paddle BallAcceleration resets automatically on instantiation. This is a behavioral change but is more generic and correct for the component pattern.

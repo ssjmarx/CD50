@@ -2,7 +2,7 @@
 
 [ext_resource type="Script" uid="uid://bufxw3hl0oqy0" path="res://Scripts/Bodies/ball.gd" id="1_2wnlm"]
 [ext_resource type="PackedScene" uid="uid://csg0e2wxlx4qd" path="res://Scenes/Components/angled_deflector.tscn" id="3_1bs62"]
-[ext_resource type="PackedScene" uid="uid://dvb6v6cqiiuag" path="res://Scenes/Components/pong_acceleration.tscn" id="3_o3brn"]
+[ext_resource type="PackedScene" uid="uid://dvb6v6cqiiuag" path="res://Scenes/Components/paddle_ball_acceleration.tscn" id="3_o3brn"]
 [ext_resource type="PackedScene" uid="uid://b3hvkyy38ihr1" path="res://Scenes/Components/screen_cleanup.tscn" id="4_8tmdj"]
 [ext_resource type="PackedScene" uid="uid://dga83l4d2rwyv" path="res://Scenes/Flow/sound_synth.tscn" id="5_0nysl"]
 [ext_resource type="PackedScene" uid="uid://qtgpgjpw1e77" path="res://Scenes/Flow/sfx_ramping.tscn" id="5_31dkr"]
@@ -14,7 +14,7 @@ collision_groups = Array[String](["balls"])
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="."]
 
-[node name="PongAcceleration" parent="." instance=ExtResource("3_o3brn")]
+[node name="Paddle BallAcceleration" parent="." instance=ExtResource("3_o3brn")]
 
 [node name="HitBox" type="Area2D" parent="."]
 

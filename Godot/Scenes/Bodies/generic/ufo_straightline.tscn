@@ -64,10 +64,10 @@ volume = 0.1
 exclusive = true
 
 [node name="ShootAi2" parent="." instance=ExtResource("7_fs1f2")]
-target_group = "asteroids"
+target_group = "space_rocks"
 
 [node name="AimAi2" parent="." instance=ExtResource("8_1vb8q")]
-target_group = "asteroids"
+target_group = "space_rocks"
 
 [node name="Path2D" type="Path2D" parent="."]
 curve = ExtResource("3_w8lrk")

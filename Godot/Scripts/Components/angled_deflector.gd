@@ -1,4 +1,4 @@
-# Pong-style deflection. Redirects velocity based on hit position relative to the collider, with configurable axis bias.
+# Paddle Ball-style deflection. Redirects velocity based on hit position relative to the collider, with configurable axis bias.
 
 extends UniversalComponent
 

@@ -1,6 +1,6 @@
 [gd_resource type="Resource" script_class="ArcadeGameEntry" load_steps=10 format=3 uid="uid://bcl4p542u027h"]
 
-[ext_resource type="PackedScene" uid="uid://6x4ilf17gq08" path="res://Scenes/Games/remakes/pong.tscn" id="1_ehhlw"]
+[ext_resource type="PackedScene" uid="uid://6x4ilf17gq08" path="res://Scenes/Games/remakes/paddle_ball.tscn" id="1_ehhlw"]
 [ext_resource type="Script" uid="uid://cp0ni1lgml7c6" path="res://Scripts/Core/property_override.gd" id="2_snkw5"]
 [ext_resource type="Script" uid="uid://bdsbfe65crnbu" path="res://Scripts/Hub/arcade_game_entry.gd" id="3_m0dg5"]
 

@@ -21,7 +21,7 @@ extends UniversalComponent2D
 
 # Safe zone configuration
 @export var use_safe_zone: bool = false
-@export var unsafe_groups: Array[String] = ["enemies", "asteroids"]
+@export var unsafe_groups: Array[String] = ["enemies", "space_rocks"]
 @export var safety_radius: float = 100.0 
 
 # Grid configuration

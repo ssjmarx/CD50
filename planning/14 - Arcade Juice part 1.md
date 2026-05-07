@@ -92,14 +92,14 @@ This single bool switches the CRT aesthetic. A `crt_controller` component (or lo
 
 | Game | Mode | Rationale |
 |------|------|-----------|
-| Pong | Raster | Original used a standard raster CRT |
-| Breakout | Raster | Standard raster display |
-| Asteroids | Vector | Original used a vector monitor (XY display) |
-| Pongsteroids | Vector | Asteroids-derived, vector aesthetic |
-| Dogfight | Vector | Asteroids-derived, vector aesthetic |
-| Space Invaders | Raster | Original used a raster CRT |
-| Tetris | Raster | Standard raster display |
-| Breaksteroids | Raster | Breakout-derived, raster aesthetic |
+| Paddle Ball | Raster | Original used a standard raster CRT |
+| Brick Breaker | Raster | Standard raster display |
+| Space Rocks | Vector | Original used a vector monitor (XY display) |
+| Meteor Rally | Vector | Space Rocks-derived, vector aesthetic |
+| Dogfight | Vector | Space Rocks-derived, vector aesthetic |
+| Bug Blaster | Raster | Original used a raster CRT |
+| Block Drop | Raster | Standard raster display |
+| Rock Breaker | Raster | Brick Breaker-derived, raster aesthetic |
 
 ### 1D. Body Draw Updates — Vector Glow
 
@@ -216,7 +216,7 @@ material.set_shader_parameter("roll_y", roll_y)
 
 ### Deliverable
 
-All games display with a CRT aesthetic. Vector games (Asteroids, Pongsteroids, Dogfight) show glow + phosphor trails + no scanlines + stronger aberration. Raster games show scanlines + phosphor grid + subtle noise. All games show barrel distortion, vignette, bloom, and the rolling hum bar. The heavy CRT addon is deleted. Runs at 60fps in WebGL.
+All games display with a CRT aesthetic. Vector games (Space Rocks, Meteor Rally, Dogfight) show glow + phosphor trails + no scanlines + stronger aberration. Raster games show scanlines + phosphor grid + subtle noise. All games show barrel distortion, vignette, bloom, and the rolling hum bar. The heavy CRT addon is deleted. Runs at 60fps in WebGL.
 
 ---
 

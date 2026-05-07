@@ -15,6 +15,8 @@ extends UniversalComponent2D
 
 # Scoring and timing
 @export var clear_delay: float = 0.3                        # pause for clear animation
+@export var use_health_kill: bool = false                   # kill via Health component instead of queue_free
+@export var sequential_kill_delay: float = 0.01            # delay between sequential kills in a line
 @export var enable_line_flash: bool = true                  # flash cleared rows white before clearing
 @export var enable_smooth_collapse: bool = true             # smooth collapse animation
 @export var collapse_duration: float = 0.1                  # seconds for collapse tween
@@ -34,7 +36,7 @@ extends UniversalComponent2D
 # Combo bonus per consecutive clear
 @export var combo_bonus: int = 50
 
-# Back-to-back multiplier (applied to difficult clears: Tetris, T-spin)
+# Back-to-back multiplier (applied to difficult clears: Block Drop, T-spin)
 @export var b2b_multiplier: float = 1.5
 
 # Score type for routing — uses standard enum like all other scoring components
@@ -54,7 +56,7 @@ var _total_lines_cleared: int = 0
 var _level: int = 1
 var _is_clearing: bool = false
 var _combo_count: int = -1          # -1 = no active combo; incremented each consecutive clear
-var _is_b2b_eligible: bool = false  # True after a "difficult" clear (Tetris or T-spin)
+var _is_b2b_eligible: bool = false  # True after a "difficult" clear (Block Drop or T-spin)
 var _last_t_spin: bool = false
 var _last_t_spin_mini: bool = false
 
@@ -134,14 +136,19 @@ func _check_and_clear() -> void:
 	_last_t_spin = false
 	_last_t_spin_mini = false
 	
-	# Flash cleared rows white during the clear delay
-	if enable_line_flash:
-		_flash_rows(full_rows)
+	# Kill rows: either via Health component (sequential death effects) or direct free
+	if use_health_kill:
+		await _kill_rows_sequential(full_rows)
+	else:
+		# Flash cleared rows white during the clear delay
+		if enable_line_flash:
+			_flash_rows(full_rows)
+		
+		# Pause for clear animation (includes flash time)
+		await get_tree().create_timer(clear_delay).timeout
+		
+		_clear_rows(full_rows)
 	
-	# Pause for clear animation (includes flash time)
-	await get_tree().create_timer(clear_delay).timeout
-	
-	_clear_rows(full_rows)
 	_collapse_rows(full_rows)
 	
 	_is_clearing = false
@@ -160,7 +167,7 @@ func _calculate_score(lines: int) -> int:
 	
 	return score_table[idx]
 
-# A "difficult" clear qualifies for back-to-back bonus (Tetris or any T-spin)
+# A "difficult" clear qualifies for back-to-back bonus (Block Drop or any T-spin)
 func _is_difficult_clear(lines: int) -> bool:
 	if lines >= 4:
 		return true
@@ -222,6 +229,54 @@ func _is_cell_filled(space_state: PhysicsDirectSpaceState2D, pos: Vector2) -> bo
 	return false
 
 # --- Row Mutation ---
+
+# Kill bodies in cleared rows sequentially via Health component (triggers death effects).
+# Falls back to queue_free() if no Health component is found.
+func _kill_rows_sequential(row_indices: Array[int]) -> void:
+	var space_state = get_world_2d().direct_space_state
+	var first_kill = true
+	
+	for row in row_indices:
+		var y_pos = playfield_origin.y + row * cell_size.y + cell_size.y / 2.0
+		
+		for col in range(columns):
+			var x_pos = playfield_origin.x + col * cell_size.x + cell_size.x / 2.0
+			var body = _get_body_at(space_state, Vector2(x_pos, y_pos))
+			
+			if body and is_instance_valid(body):
+				# Small delay between kills for sequential cascade effect
+				if not first_kill:
+					await get_tree().create_timer(sequential_kill_delay).timeout
+				first_kill = false
+				
+				# Try to kill via Health component (triggers death_effect)
+				var health_comp = _find_health_component(body)
+				if health_comp:
+					health_comp.reduce_health(health_comp.current_health)
+				else:
+					body.queue_free()
+
+# Find a Health component on the given body
+func _find_health_component(body: Node) -> Node:
+	for child in body.get_children():
+		if child.has_signal("zero_health"):
+			return child
+	return null
+
+# Get a single body in the target group at the given position
+func _get_body_at(space_state: PhysicsDirectSpaceState2D, pos: Vector2) -> Node2D:
+	var query = PhysicsPointQueryParameters2D.new()
+	query.position = pos
+	query.collide_with_areas = false
+	query.collide_with_bodies = true
+	
+	var results = space_state.intersect_point(query)
+	
+	for result in results:
+		var body = result["collider"]
+		if body and body.is_in_group(target_group):
+			return body
+	return null
 
 # Free all bodies in the target group that occupy the given rows
 func _clear_rows(row_indices: Array[int]) -> void:

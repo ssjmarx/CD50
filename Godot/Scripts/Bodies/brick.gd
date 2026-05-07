@@ -1,8 +1,8 @@
-# Breakout brick with health-based coloring. Color shifts from green to red as HP decreases.
+# Brick Breaker brick with health-based coloring. Color shifts from green to red as HP decreases.
 
 extends UniversalBody
 
-@export var use_score_color: bool = true
+@export var use_score_color: bool = false
 
 var color: Color = Color.WHITE
 

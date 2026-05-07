@@ -75,7 +75,7 @@ loop_mode = 1
 vision_cone_angle = 5.0
 
 [node name="ShootAi2" parent="." instance=ExtResource("18_g2hj8")]
-target_group = "asteroids"
+target_group = "space_rocks"
 
 [node name="ScoreOnDeath" parent="." instance=ExtResource("19_xjk3s")]
 base_score = 50

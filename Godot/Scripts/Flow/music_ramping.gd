@@ -4,7 +4,7 @@
 extends UniversalComponent2D
 
 # Group tracking and timing
-@export var target_group: String = "asteroids"
+@export var target_group: String = "space_rocks"
 @export var min_interval: float = 0.1
 @export var max_interval: float = 1.0
 

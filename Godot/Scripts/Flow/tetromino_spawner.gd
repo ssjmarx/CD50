@@ -1,4 +1,4 @@
-# Tetromino spawner. Manages the lock-spawn cycle for Tetris-style games.
+# Tetromino spawner. Manages the lock-spawn cycle for Block Drop-style games.
 # Handles piece locking (splitting into singles), next piece spawning,
 # preview display, bag system, and defeat detection. No grid dependency.
 
@@ -33,7 +33,7 @@ extends UniversalComponent2D
 # Any level beyond the table uses the last value as the floor.
 # Modern Guideline: [1.000, 0.793, 0.618, 0.473, 0.355, 0.262, 0.190, 0.135,
 #                    0.097, 0.068, 0.047, 0.032, 0.022, 0.015, 0.010]
-# NES Tetris:       [0.800, 0.717, 0.633, 0.550, 0.467, 0.383, 0.300, 0.217,
+# NES Block Drop:       [0.800, 0.717, 0.633, 0.550, 0.467, 0.383, 0.300, 0.217,
 #                    0.133, 0.100, 0.083, 0.083, 0.083, 0.067, 0.050, 0.050,
 #                    0.050, 0.033, 0.017]
 # Original:         [1.0]
@@ -51,6 +51,8 @@ var _next_index: int = -1
 var _expanded_bag: Array[Dictionary] = []  # { "scene": PackedScene, "overrides": Dictionary }
 var _current_level: int = 1
 var _current_fall_interval: float
+var _preview_tween: Tween = null
+var _hold_tween: Tween = null
 
 # Emitted when the next piece preview changes
 signal next_piece_changed(piece_scene: PackedScene)
@@ -116,6 +118,10 @@ func _spawn_next() -> void:
 	
 	# Move to spawn position, reset rotation, and unfreeze
 	piece.global_position = global_position
+	# Kill preview rotation tween and snap back to upright
+	if _preview_tween and _preview_tween.is_valid():
+		_preview_tween.kill()
+		_preview_tween = null
 	piece.rotation = 0
 	_unfreeze_piece(piece)
 	
@@ -216,6 +222,9 @@ func _spawn_preview() -> void:
 	# Freeze the preview — disable all child processing (brains, legs, components)
 	_freeze_piece(_preview_piece)
 	
+	# Start smooth looping rotation
+	_start_preview_rotation()
+	
 	next_piece_changed.emit(entry.scene)
 
 # --- Hold Piece ---
@@ -275,11 +284,16 @@ func _on_hold_requested() -> void:
 func _position_hold_piece() -> void:
 	if _held_piece and is_instance_valid(_held_piece):
 		_held_piece.global_position = hold_origin
+		# Kill old hold tween if any
+		if _hold_tween and _hold_tween.is_valid():
+			_hold_tween.kill()
 		_held_piece.rotation = PI / 2  # Rotate hold piece 90° clockwise
 		# Clear ghost offsets so the ghost doesn't project from hold position back onto the field
 		if "ghost_offsets" in _held_piece:
 			_held_piece.ghost_offsets.clear()
 			_held_piece.queue_redraw()
+		# Start smooth looping rotation
+		_start_hold_rotation()
 
 # Take a held/frozen piece and make it the active piece
 func _swap_in_held_piece(piece: Node, _bag_index: int) -> void:
@@ -293,6 +307,8 @@ func _swap_in_held_piece(piece: Node, _bag_index: int) -> void:
 	
 	_active_piece = piece
 	piece.global_position = global_position
+	# Reset rotation to upright (the old hold tween was already killed
+	# by _position_hold_piece when the new held piece was set up)
 	piece.rotation = 0
 	_unfreeze_piece(piece)
 	
@@ -329,6 +345,26 @@ func _get_current_bag_index(piece: Node) -> int:
 			if piece.shape == entry.overrides["shape"]:
 				return i
 	return 0
+
+# --- Preview/Hold Rotation ---
+
+# Start a smooth looping rotation tween on the preview piece
+func _start_preview_rotation() -> void:
+	if not _preview_piece or not is_instance_valid(_preview_piece):
+		return
+	if _preview_tween and _preview_tween.is_valid():
+		_preview_tween.kill()
+	_preview_tween = create_tween().set_loops().set_ease(Tween.EASE_IN_OUT).set_trans(Tween.TRANS_SINE)
+	_preview_tween.tween_property(_preview_piece, "rotation", TAU, 20.0).as_relative()
+
+# Start a smooth looping rotation tween on the held piece
+func _start_hold_rotation() -> void:
+	if not _held_piece or not is_instance_valid(_held_piece):
+		return
+	if _hold_tween and _hold_tween.is_valid():
+		_hold_tween.kill()
+	_hold_tween = create_tween().set_loops().set_ease(Tween.EASE_IN_OUT).set_trans(Tween.TRANS_SINE)
+	_hold_tween.tween_property(_held_piece, "rotation", TAU, 20.0).as_relative()
 
 # --- Preview Freeze ---
 

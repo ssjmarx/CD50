@@ -1,4 +1,4 @@
-# Pong-style acceleration. Ramps velocity through discrete levels on paddle collision.
+# Paddle Ball-style acceleration. Ramps velocity through discrete levels on paddle collision.
 
 extends UniversalComponent
 

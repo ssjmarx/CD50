@@ -23,20 +23,20 @@ metadata/_custom_type_script = "uid://bfkr4fdx316o5"
 
 [sub_resource type="Resource" id="Resource_dr0h3"]
 script = ExtResource("2_dd2rs")
-group_name = "asteroids"
+group_name = "space_rocks"
 targets = Array[String](["players"])
 metadata/_custom_type_script = "uid://bfkr4fdx316o5"
 
 [sub_resource type="Resource" id="Resource_tcn4d"]
 script = ExtResource("2_dd2rs")
 group_name = "players_bullets"
-targets = Array[String](["enemies", "asteroids"])
+targets = Array[String](["enemies", "space_rocks"])
 metadata/_custom_type_script = "uid://bfkr4fdx316o5"
 
 [sub_resource type="Resource" id="Resource_x51td"]
 script = ExtResource("2_dd2rs")
 group_name = "enemies_bullets"
-targets = Array[String](["asteroids", "players"])
+targets = Array[String](["space_rocks", "players"])
 metadata/_custom_type_script = "uid://bfkr4fdx316o5"
 
 [sub_resource type="Resource" id="Resource_5oyh6"]
@@ -50,9 +50,9 @@ property_name = "size"
 value = 1
 metadata/_custom_type_script = "uid://cp0ni1lgml7c6"
 
-[node name="Asteroids" type="Node2D"]
+[node name="Space Rocks" type="Node2D"]
 script = ExtResource("1_wqf31")
-game_title = "Asteroids"
+game_title = "Space Rocks"
 collision_groups = Array[ExtResource("2_dd2rs")]([SubResource("Resource_c1c35"), SubResource("Resource_dr0h3"), SubResource("Resource_tcn4d"), SubResource("Resource_x51td"), SubResource("Resource_5oyh6")])
 vector_monitor = true
 
@@ -70,8 +70,8 @@ display_lives = true
 trigger_type = 3
 wave_delay = 0.0
 
-[node name="WaveDirector(Asteroids)" parent="." instance=ExtResource("7_bleq4")]
-trigger_value = "asteroids"
+[node name="WaveDirector(Space Rocks)" parent="." instance=ExtResource("7_bleq4")]
+trigger_value = "space_rocks"
 
 [node name="WaveDirector(Player)" parent="." instance=ExtResource("7_bleq4")]
 trigger_value = "players"
@@ -84,10 +84,10 @@ director = NodePath("../WaveDirector(GameStart)")
 initial_velocity = Vector2(50, 0)
 use_random_angle = true
 
-[node name="WaveSpawner(Asteroids)" parent="." node_paths=PackedStringArray("director") instance=ExtResource("8_xck5w")]
+[node name="WaveSpawner(Space Rocks)" parent="." node_paths=PackedStringArray("director") instance=ExtResource("8_xck5w")]
 spawn_scene = ExtResource("9_wc0ik")
 spawn_count_equation = "4 + wave_number"
-director = NodePath("../WaveDirector(Asteroids)")
+director = NodePath("../WaveDirector(Space Rocks)")
 initial_velocity = Vector2(50, 0)
 use_random_angle = true
 
@@ -104,7 +104,7 @@ safety_radius = 50.0
 use_random_angle = true
 
 [node name="GroupMonitor" parent="." instance=ExtResource("10_vj7c1")]
-target_group = "asteroids"
+target_group = "space_rocks"
 
 [node name="GroupMonitor2" parent="." instance=ExtResource("10_vj7c1")]
 target_group = "players"

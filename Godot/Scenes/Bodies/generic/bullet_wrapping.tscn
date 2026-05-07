@@ -23,7 +23,7 @@ y_max = 380.0
 [node name="ScreenWrap" parent="." instance=ExtResource("3_1lbvm")]
 
 [node name="DamageOnHit" parent="." instance=ExtResource("5_68r4x")]
-target_groups = Array[String](["asteroids", "players", "enemies", "bricks"])
+target_groups = Array[String](["space_rocks", "players", "enemies", "bricks"])
 
 [node name="DieOnHit" parent="." instance=ExtResource("6_68r4x")]
 

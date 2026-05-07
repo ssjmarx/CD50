@@ -22,11 +22,11 @@ Three deliverables that turn the arcade mode into a shippable, replayable itch d
 
 | # | Game | Bootleg Name | Status |
 |---|------|-------------|--------|
-| 1 | Pong | Paddle Ball | ✅ Built |
-| 2 | Breakout | Brick Breaker | ✅ Built |
-| 3 | Asteroids | Space Rocks | ✅ Built |
-| 4 | Space Invaders | Bug Blaster | ✅ Built |
-| 5 | Tetris | Block Drop | ✅ Built |
+| 1 | Paddle Ball | Paddle Ball | ✅ Built |
+| 2 | Brick Breaker | Brick Breaker | ✅ Built |
+| 3 | Space Rocks | Space Rocks | ✅ Built |
+| 4 | Bug Blaster | Bug Blaster | ✅ Built |
+| 5 | Block Drop | Block Drop | ✅ Built |
 
 ### Remixes & Originals (3/10 built, 3 designed, 4 TBD)
 
@@ -59,7 +59,7 @@ Three deliverables that turn the arcade mode into a shippable, replayable itch d
 #### Space Bugs — Bug Blaster meets Space Rocks
 
 - Player controls a UFO (free-roaming, top-down like Space Rocks)
-- Must contend with both **asteroids** (drifting, splitting) AND **invaders** (attacking from all sides, shooting)
+- Must contend with both **space_rocks** (drifting, splitting) AND **invaders** (attacking from all sides, shooting)
 - Two threat types simultaneously
 - **Components:** player body (UFO/triangle ship), WaveSpawner for both asteroid and invader waves, SwarmController for invaders, gun_simple
 - **Fast rules:** 1 wave of each, limited asteroid count
@@ -188,9 +188,9 @@ Pulled from the Contraband and Tokens categories in the balatro elements brainst
 
 4. **Feature Creep** — Doubling entity count could tank performance on web (itch.io). The 98-asteroid scenario. Should profile on a low-end machine before shipping.
 
-5. **Bug Drop complexity** — This is the most mechanically complex of the 3 new games. Combining the Tetris grid system with invader AI is non-trivial. May need custom logic beyond pure component assembly.
+5. **Bug Drop complexity** — This is the most mechanically complex of the 3 new games. Combining the Block Drop grid system with invader AI is non-trivial. May need custom logic beyond pure component assembly.
 
-6. **Planetary Attack! input** — Player controlling the invader swarm is a new input paradigm. Need to figure out: does the player step each invader individually? Or control the swarm as a group (like normal Space Invaders, but you're the invaders)? The design says "swarm as a group" — simpler to implement.
+6. **Planetary Attack! input** — Player controlling the invader swarm is a new input paradigm. Need to figure out: does the player step each invader individually? Or control the swarm as a group (like normal Bug Blaster, but you're the invaders)? The design says "swarm as a group" — simpler to implement.
 
 ---
 

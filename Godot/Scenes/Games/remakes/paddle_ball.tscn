@@ -1,4 +1,4 @@
-[gd_scene load_steps=24 format=3 uid="uid://6x4ilf17gq08"]
+[gd_scene load_steps=25 format=3 uid="uid://6x4ilf17gq08"]
 
 [ext_resource type="Script" uid="uid://bjdgpevhahi6d" path="res://Scripts/Core/universal_game_script.gd" id="1_qu73x"]
 [ext_resource type="Script" uid="uid://bfkr4fdx316o5" path="res://Scripts/Core/collision_group.gd" id="2_5wgpo"]
@@ -16,6 +16,7 @@
 [ext_resource type="PackedScene" uid="uid://vlbel76nqh5w" path="res://Scenes/Rules/wave_spawner.tscn" id="14_b3t13"]
 [ext_resource type="PackedScene" uid="uid://d1r6vipc03isf" path="res://Scenes/Rules/points_monitor.tscn" id="17_gthws"]
 [ext_resource type="Script" uid="uid://cp0ni1lgml7c6" path="res://Scripts/Core/property_override.gd" id="19_gthws"]
+[ext_resource type="PackedScene" path="res://Scenes/Components/checkerboard_line.tscn" id="20_chk"]
 
 [sub_resource type="Resource" id="Resource_dvcgw"]
 script = ExtResource("2_5wgpo")
@@ -45,7 +46,6 @@ size = Vector2(640, 8)
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_vlhw5"]
 size = Vector2(8, 376)
 
-
 [sub_resource type="Resource" id="Resource_x2g5i"]
 script = ExtResource("19_gthws")
 node_path = NodePath("AngledDeflector")
@@ -53,9 +53,9 @@ property_name = "deflection_bias"
 value = Vector2(5, 1)
 metadata/_custom_type_script = "uid://cp0ni1lgml7c6"
 
-[node name="Pong" type="Node2D"]
+[node name="Paddle Ball" type="Node2D"]
 script = ExtResource("1_qu73x")
-game_title = "Pong"
+game_title = "Paddle Ball"
 collision_groups = Array[ExtResource("2_5wgpo")]([SubResource("Resource_dvcgw"), SubResource("Resource_gthws"), SubResource("Resource_647tp"), SubResource("Resource_5gtcf")])
 
 [node name="Player" parent="." groups=["paddles"] instance=ExtResource("3_qu73x")]
@@ -124,12 +124,9 @@ collision_groups = Array[String](["goals"])
 [node name="Goal" parent="P2Goal" instance=ExtResource("9_ortq3")]
 score_type = 1
 
-
-[node name="ColorRect" type="ColorRect" parent="."]
-offset_left = 318.0
-offset_top = 64.0
-offset_right = 322.0
-offset_bottom = 320.0
+[node name="CheckerboardLine" parent="." instance=ExtResource("20_chk")]
+position = Vector2(320, 64)
+columns = 2
 
 [node name="Interface" parent="." instance=ExtResource("8_d3mj0")]
 

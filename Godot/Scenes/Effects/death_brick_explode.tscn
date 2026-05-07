@@ -1,0 +1,10 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://Scripts/Effects/death_brick_explode.gd" id="1_script"]
+
+[node name="DeathBrickExplode" type="Node2D"]
+script = ExtResource("1_script")
+
+[node name="Timer" type="Timer" parent="."]
+one_shot = true
+autostart = true

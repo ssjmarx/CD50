@@ -174,7 +174,7 @@ func _on_shoot() -> void:
 
 # Unified movement check. For multi-cell bodies, checks each offset cell individually
 # for bounds + physics occupancy (per-cell intersect_point). For single-cell bodies,
-# falls back to test_move (existing behavior, zero impact on non-Tetris games).
+# falls back to test_move (existing behavior, zero impact on non-Block Drop games).
 func _can_move_to(displacement: Vector2) -> bool:
 	# Multi-cell body: per-cell bounds + per-cell occupancy
 	if "current_offsets" in parent and parent.current_offsets.size() > 0:

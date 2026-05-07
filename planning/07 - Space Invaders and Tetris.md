@@ -1,4 +1,4 @@
-# Plan 07 — Space Invaders and Tetris
+# Plan 07 — Bug Blaster and Block Drop
 
 **Created:** 2026-04-19  
 **Status:** Final Plan — All decisions resolved
@@ -48,7 +48,7 @@
 - `hop_delay: float` — seconds the leg waits AFTER a move before accepting the next one (0 = instant chain). This produces classic "snappy" grid movement.
 - `grid_name: String` — which grid_basic to find (if multiple exist)
 - `block_on_occupied: bool` — whether movement into occupied cells is prevented
-- `prevent_movement_up: bool` — block upward movement (prevents fighting gravity in Tetris)
+- `prevent_movement_up: bool` — block upward movement (prevents fighting gravity in Block Drop)
 - `prevent_movement_down: bool` — block downward movement
 - `prevent_movement_left: bool` — block leftward movement
 - `prevent_movement_right: bool` — block rightward movement
@@ -88,7 +88,7 @@ grid_movement stores most recent command, snaps on hop tick:
 
 **Future use:** Sokoban-style games where facing direction matters, grid-locked turrets.
 
-**Games:** Tetris (tetromino rotation), future games
+**Games:** Block Drop (tetromino rotation), future games
 
 ---
 
@@ -108,7 +108,7 @@ grid_movement stores most recent command, snaps on hop tick:
 
 **Why a component, not a leg:** If gravity were a separate leg, you'd have two legs both moving the body independently. Player moves would snap to grid cells while gravity moves smoothly — producing weird hybrid behavior. By making gravity an input source that emits the same signal the player uses, everything flows through one `grid_movement` leg. The `prevent_movement_up` ratchet on `grid_movement` prevents the player from fighting gravity.
 
-**Games:** Tetris
+**Games:** Block Drop
 
 ---
 
@@ -135,7 +135,7 @@ grid_movement stores most recent command, snaps on hop tick:
 
 **Communication:** Signal bus pattern. `swarm_controller` emits on its `swarm_move(direction)` signal. Each `swarm_ai` finds the bus by group name and connects. Multiple swarms can coexist with different bus groups.
 
-**Games:** Space Invaders, future swarm-based games
+**Games:** Bug Blaster, future swarm-based games
 
 ---
 
@@ -153,7 +153,7 @@ grid_movement stores most recent command, snaps on hop tick:
 
 **This is intentionally thin.** The intelligence lives in `swarm_controller`. The brain is just an antenna, keeping individual invaders autonomous — they die independently, their `grid_movement` handles their own interpolation.
 
-**Games:** Space Invaders
+**Games:** Bug Blaster
 
 ---
 
@@ -174,9 +174,9 @@ grid_movement stores most recent command, snaps on hop tick:
 - `edge_margin: float` — tolerance for edge detection (prevents precision issues)
 - `fire_direction: Vector2` — direction of the fire signal emitted
 
-**How it works in Space Invaders:** Configure with `down: true`, other directions false. Only invaders on the bottom edge of the formation fire downward. When one is destroyed, the next one up becomes the new edge and starts firing.
+**How it works in Bug Blaster:** Configure with `down: true`, other directions false. Only invaders on the bottom edge of the formation fire downward. When one is destroyed, the next one up becomes the new edge and starts firing.
 
-**Games:** Space Invaders, future formation-based games
+**Games:** Bug Blaster, future formation-based games
 
 ---
 
@@ -201,7 +201,7 @@ grid_movement stores most recent command, snaps on hop tick:
 
 **Why Head + Followers:** Followers are individually targetable for remix ideas (shoot individual blocks off a tetromino). This pattern also works for Centipede-style games where a chain of segments follows a head.
 
-**Games:** Tetris, future games (Centipede, etc.)
+**Games:** Block Drop, future games (Centipede, etc.)
 
 ---
 
@@ -220,7 +220,7 @@ grid_movement stores most recent command, snaps on hop tick:
 - `spawn_position: Vector2i` — grid cell where pieces spawn
 - `randomizer_mode: enum` (RANDOM, BAG7)
 
-**Games:** Tetris
+**Games:** Block Drop
 
 ---
 
@@ -232,16 +232,16 @@ grid_movement stores most recent command, snaps on hop tick:
 - Query `grid_basic` occupancy data for full lines
 - On detection: clear the line, shift remaining cells, emit score signal
 - Configurable for horizontal lines, vertical lines, or both
-- Generic enough for mashups: could clear lines of Space Invaders, puzzle game grids, etc.
+- Generic enough for mashups: could clear lines of Bug Blaster, puzzle game grids, etc.
 
 **Exports:**
 - `grid_name: String` — which grid to monitor
 - `check_horizontal: bool`
 - `check_vertical: bool`
-- `clear_direction: Vector2` — direction cells shift after a line is cleared (default: DOWN for Tetris)
+- `clear_direction: Vector2` — direction cells shift after a line is cleared (default: DOWN for Block Drop)
 - `score_per_line: int` — base score awarded per cleared line
 
-**Games:** Tetris, future mashup/puzzle games
+**Games:** Block Drop, future mashup/puzzle games
 
 ---
 
@@ -260,7 +260,7 @@ grid_movement stores most recent command, snaps on hop tick:
 
 **Behavior:** On signal received, iterate all nodes in `target_group`, apply property adjustment to each.
 
-**Games:** Tetris (adjust fall speed on level up), general purpose
+**Games:** Block Drop (adjust fall speed on level up), general purpose
 
 ---
 
@@ -268,7 +268,7 @@ grid_movement stores most recent command, snaps on hop tick:
 
 ### `universal_body` — Add `autofire` toggle
 
-When enabled, held inputs produce repeated signal emissions at a configurable rate. Needed for Tetris DAS (Delayed Auto Shift), useful for any grid-based game.
+When enabled, held inputs produce repeated signal emissions at a configurable rate. Needed for Block Drop DAS (Delayed Auto Shift), useful for any grid-based game.
 
 ---
 
@@ -280,10 +280,10 @@ Same pattern as existing `grid_health_by_row`. A top score value that gets subtr
 
 ## Games to Compose
 
-### Space Invaders
+### Bug Blaster
 
 ```
-UniversalGameScript (space_invaders)
+UniversalGameScript (bug_blaster)
 ├── grid_basic (11 cols × 6 rows)
 ├── swarm_controller (Flow) — bus_group: "swarm_bus_1"
 ├── wave_director (Flow)
@@ -320,7 +320,7 @@ UniversalGameScript (space_invaders)
     └── score_on_death (Component) — high score value
 ```
 
-**Note on player movement:** The Space Invaders player cannon uses `direct_movement` with lock_y and screen margins (existing UniversalBody features), NOT `grid_movement`. Only the invaders move on the grid.
+**Note on player movement:** The Bug Blaster player cannon uses `direct_movement` with lock_y and screen margins (existing UniversalBody features), NOT `grid_movement`. Only the invaders move on the grid.
 
 **Barriers:** Composed from many small 1 HP bricks packed tightly together. When a bullet hits one, only that brick is destroyed, producing the locational damage effect from the original game. No new component needed — just scene composition.
 
@@ -330,10 +330,10 @@ UniversalGameScript (space_invaders)
 
 ---
 
-### Tetris
+### Block Drop
 
 ```
-UniversalGameScript (tetris)
+UniversalGameScript (block_drop)
 ├── grid_basic (10 cols × 20 rows) — active occupancy tracking
 ├── tetromino_spawner (Flow) — random piece generation
 ├── line_clear_monitor (Rule) — horizontal line detection and clearing
@@ -381,22 +381,22 @@ Movement handlers:
 3. `grid_rotation` (Leg) — discrete rotation steps
 4. Test: single body on a grid, move with `player_control` + `grid_movement`, rotate with `grid_rotation`
 
-### Phase 2 — Space Invaders
+### Phase 2 — Bug Blaster
 5. `swarm_controller` (Flow) — swarm orchestration with signal bus
 6. `swarm_ai` (Brain) — antenna brain for swarm commands
 7. `shoot_ai_swarm` (Brain) — formation-aware edge shooting
 8. `wave_spawner` enhancement — add `grid_score_by_row`
-9. Compose Space Invaders game scene
+9. Compose Bug Blaster game scene
 10. Test: full gameplay loop
 
-### Phase 3 — Tetris
+### Phase 3 — Block Drop
 11. `falling_ai` (Component) — gravity as input source
 12. `tetromino_formation` (Component) — multi-cell shape + lock delay
 13. `tetromino_spawner` (Flow) — piece generation
 14. `line_clear_monitor` (Rule) — generic line clearing
 15. `variable_tuner_global` (Rule) — group-wide property changes
 16. `universal_body` enhancement — add `autofire` toggle
-17. Compose Tetris game scene
+17. Compose Block Drop game scene
 18. Test: full gameplay loop
 
 ---
@@ -409,14 +409,14 @@ Movement handlers:
 |---|---|---|---|---|
 | 1 | `grid_basic` | Flow | Flow | Both |
 | 2 | `grid_movement` | Leg | Legs | Both |
-| 3 | `grid_rotation` | Leg | Legs | Tetris, future |
-| 4 | `falling_ai` | Component | Components | Tetris |
-| 5 | `swarm_controller` | Flow | Flow | Space Invaders |
-| 6 | `swarm_ai` | Brain | Brains | Space Invaders |
-| 7 | `shoot_ai_swarm` | Brain | Brains | Space Invaders |
-| 8 | `tetromino_formation` | Component | Components | Tetris, future |
-| 9 | `tetromino_spawner` | Flow | Flow | Tetris |
-| 10 | `line_clear_monitor` | Rule | Rules | Tetris, future |
+| 3 | `grid_rotation` | Leg | Legs | Block Drop, future |
+| 4 | `falling_ai` | Component | Components | Block Drop |
+| 5 | `swarm_controller` | Flow | Flow | Bug Blaster |
+| 6 | `swarm_ai` | Brain | Brains | Bug Blaster |
+| 7 | `shoot_ai_swarm` | Brain | Brains | Bug Blaster |
+| 8 | `tetromino_formation` | Component | Components | Block Drop, future |
+| 9 | `tetromino_spawner` | Flow | Flow | Block Drop |
+| 10 | `line_clear_monitor` | Rule | Rules | Block Drop, future |
 | 11 | `variable_tuner_global` | Rule | Rules | Both |
 
 ### Enhancements (2)
@@ -431,22 +431,22 @@ Movement handlers:
 | Component | Games |
 |---|---|
 | `player_control` | Both |
-| `direct_movement` | Space Invaders (player cannon) |
-| `gun_simple` | Space Invaders |
-| `health` | Space Invaders |
+| `direct_movement` | Bug Blaster (player cannon) |
+| `gun_simple` | Bug Blaster |
+| `health` | Bug Blaster |
 | `die_on_hit` | Both |
-| `die_on_timer` | Space Invaders |
+| `die_on_timer` | Bug Blaster |
 | `score_on_death` | Both |
-| `screen_cleanup` | Space Invaders |
+| `screen_cleanup` | Bug Blaster |
 | `group_monitor` | Both |
-| `lives_counter` | Space Invaders |
+| `lives_counter` | Bug Blaster |
 | `timer` | Both |
-| `wave_director` | Space Invaders |
-| `wave_spawner` | Space Invaders |
+| `wave_director` | Bug Blaster |
+| `wave_spawner` | Bug Blaster |
 | `interface` | Both |
 | `collision_matrix` | Both |
-| `damage_on_hit` | Space Invaders |
-| `patrol_ai` | Space Invaders (mystery ship) |
+| `damage_on_hit` | Bug Blaster |
+| `patrol_ai` | Bug Blaster (mystery ship) |
 
 ---
 

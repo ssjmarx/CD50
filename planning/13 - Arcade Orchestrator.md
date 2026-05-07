@@ -146,7 +146,7 @@ GAME_OVER → (start/coin input) → RESTART → BOOT
 
 ### Deliverable
 
-Player opens scene → sees "INSERT COIN / PRESS START" → presses start → Pong loads and plays → Pong ends → score shows in HUD → orchestrator detects game over, shows result. No Polybius, no transition animation, no next game. Just the wiring.
+Player opens scene → sees "INSERT COIN / PRESS START" → presses start → Paddle Ball loads and plays → Paddle Ball ends → score shows in HUD → orchestrator detects game over, shows result. No Polybius, no transition animation, no next game. Just the wiring.
 
 ---
 
@@ -219,15 +219,15 @@ One `ArcadeGameEntry.tres` per game with property overrides:
 
 | Game | Scene | Fast Rule Overrides |
 |------|-------|-------------------|
-| Pong | `remakes/pong.tscn` | PointsMonitor threshold → 1 |
-| Breakout | `remakes/breakout.tscn` | LivesCounter lives → 1 |
-| Asteroids | `remakes/asteroids.tscn` | WaveDirector max_waves → 1 |
-| Pongsteroids | `remixes/pongsteroids.tscn` | PointsMonitor threshold → 1 |
+| Paddle Ball | `remakes/paddle_ball.tscn` | PointsMonitor threshold → 1 |
+| Brick Breaker | `remakes/brick_breaker.tscn` | LivesCounter lives → 1 |
+| Space Rocks | `remakes/space_rocks.tscn` | WaveDirector max_waves → 1 |
+| Meteor Rally | `remixes/meteor_rally.tscn` | PointsMonitor threshold → 1 |
 | Dogfight | `originals/dogfight.tscn` | WaveDirector max_waves → 1 |
-| Pongout | `remixes/pongout.tscn` | PointsMonitor threshold → 1 |
-| Breaksteroids | `remixes/breaksteroids.tscn` | WaveDirector max_waves → 1, LivesCounter lives → 1 |
-| Space Invaders | `remakes/space_invaders.tscn` | WaveDirector max_waves → 1 |
-| Tetris | `remakes/tetris.tscn` | Starting level → 5, gravity speed → fast |
+| Paddle Ballout | `remixes/paddle_ballout.tscn` | PointsMonitor threshold → 1 |
+| Rock Breaker | `remixes/rock_breaker.tscn` | WaveDirector max_waves → 1, LivesCounter lives → 1 |
+| Bug Blaster | `remakes/bug_blaster.tscn` | WaveDirector max_waves → 1 |
+| Block Drop | `remakes/block_drop.tscn` | Starting level → 5, gravity speed → fast |
 
 ### Override Application
 
@@ -259,7 +259,7 @@ All 9 working games play fast and punchy in arcade mode. A full 3-life run takes
 | 1c | Create `arcade_orchestrator.gd` (state machine + game loading) | 0d, 1b |
 | 1d | Create `boot_screen.tscn` (simple insert coin/press start) | 0a |
 | 1e | Create `arcade_orchestrator.tscn` (scene assembly) | 1c, 1d |
-| 1f | Test: boot → Pong loads → plays → ends → score read | all above |
+| 1f | Test: boot → Paddle Ball loads → plays → ends → score read | all above |
 | 2a | Create `arcade_playlist.gd` resource | 1b |
 | 2b | Add lives system to orchestrator | 1c |
 | 2c | Add game sequence + preload | 2a |

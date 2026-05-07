@@ -9,9 +9,9 @@
 [ext_resource type="PackedScene" path="res://Scenes/Components/bounce_on_hit.tscn" id="9_mkygg"]
 [ext_resource type="PackedScene" uid="uid://b3hvkyy38ihr1" path="res://Scenes/Components/screen_cleanup.tscn" id="9_xop50"]
 
-[node name="Asteroid" type="CharacterBody2D" groups=["asteroids"]]
+[node name="Asteroid" type="CharacterBody2D" groups=["space_rocks"]]
 script = ExtResource("1_7iwdv")
-collision_groups = Array[String](["asteroids"])
+collision_groups = Array[String](["space_rocks"])
 
 [node name="CollisionPolygon2D" type="CollisionPolygon2D" parent="."]
 

@@ -194,7 +194,7 @@ func _draw_vector_test() -> void:
 	# Concentric circles
 	_draw_concentric_circles()
 	
-	# Wireframe ship (Asteroids-style)
+	# Wireframe ship (Space Rocks-style)
 	_draw_ship(Vector2(VIEWPORT_W * 0.25, VIEWPORT_H * 0.5), 40.0, VECTOR_GREEN)
 	_draw_ship(Vector2(VIEWPORT_W * 0.75, VIEWPORT_H * 0.35), 30.0, VECTOR_CYAN)
 	

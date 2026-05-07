@@ -1,4 +1,4 @@
-# Pong ball. Draws a colored square and sets up collision shapes from a radius export.
+# Paddle Ball ball. Draws a colored square and sets up collision shapes from a radius export.
 
 extends UniversalBody
 

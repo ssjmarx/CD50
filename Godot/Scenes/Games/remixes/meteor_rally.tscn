@@ -26,7 +26,7 @@
 [sub_resource type="Resource" id="Resource_pkkn6"]
 script = ExtResource("2_egt1g")
 group_name = "balls"
-targets = Array[String](["paddles", "walls", "goals", "asteroids", "enemies"])
+targets = Array[String](["paddles", "walls", "goals", "space_rocks", "enemies"])
 metadata/_custom_type_script = "uid://bfkr4fdx316o5"
 
 [sub_resource type="Resource" id="Resource_5j7oo"]
@@ -47,8 +47,8 @@ metadata/_custom_type_script = "uid://bfkr4fdx316o5"
 
 [sub_resource type="Resource" id="Resource_8p135"]
 script = ExtResource("2_egt1g")
-group_name = "asteroids"
-targets = Array[String](["asteroids"])
+group_name = "space_rocks"
+targets = Array[String](["space_rocks"])
 metadata/_custom_type_script = "uid://bfkr4fdx316o5"
 
 [sub_resource type="Resource" id="Resource_ydxa1"]
@@ -59,7 +59,7 @@ metadata/_custom_type_script = "uid://bfkr4fdx316o5"
 [sub_resource type="Resource" id="Resource_dkt3g"]
 script = ExtResource("2_egt1g")
 group_name = "enemies_bullets"
-targets = Array[String](["asteroids"])
+targets = Array[String](["space_rocks"])
 metadata/_custom_type_script = "uid://bfkr4fdx316o5"
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_bg8lp"]
@@ -80,7 +80,7 @@ metadata/_custom_type_script = "uid://cp0ni1lgml7c6"
 script = ExtResource("18_pxxt0")
 node_path = NodePath("DamageOnHit")
 property_name = "target_groups"
-value = ["asteroids"]
+value = ["space_rocks"]
 metadata/_custom_type_script = "uid://cp0ni1lgml7c6"
 
 [sub_resource type="Resource" id="Resource_tk1t6"]
@@ -93,7 +93,7 @@ metadata/_custom_type_script = "uid://cp0ni1lgml7c6"
 script = ExtResource("18_pxxt0")
 node_path = NodePath("DamageOnHit")
 property_name = "target_groups"
-value = ["asteroids"]
+value = ["space_rocks"]
 metadata/_custom_type_script = "uid://cp0ni1lgml7c6"
 
 [sub_resource type="Resource" id="Resource_4oqwm"]
@@ -122,9 +122,9 @@ property_name = "size"
 value = 1
 metadata/_custom_type_script = "uid://cp0ni1lgml7c6"
 
-[node name="Pongsteroids" type="Node2D"]
+[node name="Meteor Rally" type="Node2D"]
 script = ExtResource("1_woixt")
-game_title = "Pongsteroids"
+game_title = "Meteor Rally"
 vector_monitor = true
 collision_groups = Array[ExtResource("2_egt1g")]([SubResource("Resource_pkkn6"), SubResource("Resource_5j7oo"), SubResource("Resource_dpifu"), SubResource("Resource_68rfy"), SubResource("Resource_8p135"), SubResource("Resource_ydxa1"), SubResource("Resource_dkt3g")])
 
@@ -249,7 +249,7 @@ random_flip_h = true
 trigger_type = 3
 wave_delay = 0.0
 
-[node name="WaveDirector(asteroids)" parent="." instance=ExtResource("15_8p135")]
+[node name="WaveDirector(space_rocks)" parent="." instance=ExtResource("15_8p135")]
 trigger_type = 1
 
 [node name="WaveSpawner(game start)" parent="." node_paths=PackedStringArray("director") instance=ExtResource("16_ydxa1")]
@@ -259,10 +259,10 @@ director = NodePath("../WaveDirector(game start)")
 initial_velocity = Vector2(50, 0)
 use_random_angle = true
 
-[node name="WaveSpawner(asteroids)" parent="." node_paths=PackedStringArray("director") instance=ExtResource("16_ydxa1")]
+[node name="WaveSpawner(space_rocks)" parent="." node_paths=PackedStringArray("director") instance=ExtResource("16_ydxa1")]
 spawn_scene = ExtResource("20_01box")
 spawn_count_equation = "1"
-director = NodePath("../WaveDirector(asteroids)")
+director = NodePath("../WaveDirector(space_rocks)")
 spawn_components = Array[PackedScene]([ExtResource("21_68rfy")])
 property_overrides = Array[ExtResource("18_pxxt0")]([SubResource("Resource_pxxt0")])
 initial_velocity = Vector2(50, 0)

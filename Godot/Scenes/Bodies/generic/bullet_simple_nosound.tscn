@@ -22,6 +22,6 @@ y_max = 380.0
 activation_time = 0.0
 
 [node name="DamageOnHit" parent="." instance=ExtResource("3_i1gtg")]
-target_groups = Array[String](["asteroids", "enemies", "players", "bricks"])
+target_groups = Array[String](["space_rocks", "enemies", "players", "bricks"])
 
 [node name="DieOnHit" parent="." instance=ExtResource("4_u7qyl")]

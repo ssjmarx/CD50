@@ -1,4 +1,4 @@
-# Swarm controller. Drives Space Invaders-style group movement with tick-based
+# Swarm controller. Drives Bug Blaster-style group movement with tick-based
 # horizontal stepping, edge detection, step-down shifts, and speed ramping.
 #
 # State machine: MOVING → (edge hit) → STEP_DOWN → MOVING

@@ -1,18 +1,18 @@
-# Plan 10 — Gridless Tetris: Decomposition, Physics-Based Line Clearing, and Full Composition
+# Plan 10 — Gridless Block Drop: Decomposition, Physics-Based Line Clearing, and Full Composition
 
 **Created:** 2026-05-02
 **Status:** Final Plan
-**Depends On:** Plan 07 (components built), Plan 12 (grid_movement refactored for Space Invaders)
+**Depends On:** Plan 07 (components built), Plan 12 (grid_movement refactored for Bug Blaster)
 
 ---
 
 ## Goals
 
-1. **Full Tetris implementation** — playable game as a pure scene assembly, zero game scripts
+1. **Full Block Drop implementation** — playable game as a pure scene assembly, zero game scripts
 2. **Decompose `tetromino_formation.gd`** — break the 278-line god component into focused single-responsibility components
-3. **Delete `grid_basic.gd`** — all grid movement uses the "simulated grid" pattern from Space Invaders (step by pixels, `test_move()` for occupancy, `move_parent()` for bounds)
+3. **Delete `grid_basic.gd`** — all grid movement uses the "simulated grid" pattern from Bug Blaster (step by pixels, `test_move()` for occupancy, `move_parent()` for bounds)
 4. **Physics-based line clearing** — a line_clear_monitor that scans world-space collision shapes instead of a grid data structure
-5. **Maximum remix potential** — every component works with the existing architecture, enabling cross-game mashups (fill gaps in Space Invaders formations with tetrominos, attach arbitrary components to pieces, etc.)
+5. **Maximum remix potential** — every component works with the existing architecture, enabling cross-game mashups (fill gaps in Bug Blaster formations with tetrominos, attach arbitrary components to pieces, etc.)
 
 ---
 
@@ -99,7 +99,7 @@ if parent.has_method("update_offsets"):  # multi-cell body
             return false
 ```
 
-If no `current_offsets` exist (single-cell bodies like Space Invaders invaders), the existing pivot-only bounds check in `move_parent()` handles it. This is additive — zero impact on existing games.
+If no `current_offsets` exist (single-cell bodies like Bug Blaster invaders), the existing pivot-only bounds check in `move_parent()` handles it. This is additive — zero impact on existing games.
 
 ---
 
@@ -147,7 +147,7 @@ var _timer: float = 0.0
 
 **Relationship to lock_detector:** `lock_detector` listens to `grid_gravity.grounded` to start its lock delay countdown, and `grid_gravity.fell` to reset the lock delay. This replaces lock_detector's previous design of polling `parent.test_move()` itself — the gravity leg *is* the floor detector.
 
-**`falling_ai.gd` status:** Remains in the codebase for non-Tetris use cases (simple "move DOWN on timer" brain behavior), but is no longer used by Tetris.
+**`falling_ai.gd` status:** Remains in the codebase for non-Block Drop use cases (simple "move DOWN on timer" brain behavior), but is no longer used by Block Drop.
 
 ---
 
@@ -293,7 +293,7 @@ for row in range(rows):
 
 **Row collapse:** After clearing, find all bodies in `target_group` that are above the cleared rows. For each cleared row (processed bottom-to-top), shift all bodies above it down by `cell_size.y`. This is done by iterating the `target_group` via `get_tree().get_nodes_in_group()`.
 
-**Remix-friendly design:** The `target_group` export means you can configure it to look for ANY group. Space Invaders in "invaders" group? Set `target_group = "invaders"` and if tetrominos fill the gaps between invaders, the row clears. Mixed entity types work as long as they're in the target group and have collision shapes at the correct positions.
+**Remix-friendly design:** The `target_group` export means you can configure it to look for ANY group. Bug Blaster in "invaders" group? Set `target_group = "invaders"` and if tetrominos fill the gaps between invaders, the row clears. Mixed entity types work as long as they're in the target group and have collision shapes at the correct positions.
 
 ---
 
@@ -310,7 +310,7 @@ The spawner becomes the central coordinator for the lock-spawn cycle. It handles
 5. **Spawn next piece:** Instantiate the next tetromino at the spawner's location
 6. **Attach components to new piece:** Configure an arbitrary list of component scenes to attach to the new piece (e.g., grid_gravity, grid_movement, grid_rotation_advanced, lock_detector, player_control)
 7. **Override properties on new piece:** Configure an arbitrary list of property overrides on the new piece
-8. **Preview display:** Spawn the next piece on the board at a configurable preview position (as a real entity — enables preview of space invaders, bombs, or any custom piece type)
+8. **Preview display:** Spawn the next piece on the board at a configurable preview position (as a real entity — enables preview of bug blaster, bombs, or any custom piece type)
 9. **Bag system:** Accept an arbitrary array of PackedScenes as the bag (no more hard-coded bag7)
 10. **Defeat detection:** Check if spawn position is occupied before spawning; if so, emit `defeat`
 
@@ -370,7 +370,7 @@ _spawn_next():
 ```
 
 **Preview system:** The preview is a real spawned entity, placed at `preview_origin`. When it becomes the active piece, it's moved to the spawner's position and given active components. This means:
-- Custom piece types (space invaders, bombs, power-ups) preview correctly
+- Custom piece types (bug blaster, bombs, power-ups) preview correctly
 - No special preview rendering code needed
 - Preview entity can be interacted with if desired (remix potential)
 
@@ -399,13 +399,13 @@ Changes:
 
 ### 8. `grid_basic.gd` — DELETE
 
-Remove script and scene after all dependent components are updated and Tetris is working.
+Remove script and scene after all dependent components are updated and Block Drop is working.
 
 **Consumers to update before deletion:**
 - `tetromino_formation.gd` → being deleted
 - `line_clear_monitor.gd` → being rewritten
 - `tetromino_spawner.gd` → being updated
-- No other components use `grid_basic` (Space Invaders doesn't use it)
+- No other components use `grid_basic` (Bug Blaster doesn't use it)
 
 ---
 
@@ -420,10 +420,10 @@ Deleted after decomposition is complete. All responsibilities distributed to:
 
 ---
 
-## Tetris Scene Composition
+## Block Drop Scene Composition
 
 ```
-UniversalGameScript (tetris)
+UniversalGameScript (block_drop)
 ├── CollisionMatrix (Core) — collision groups: pieces, settled, walls
 ├── TetrominoSpawner (Flow) — at playfield top-center, manages lock/spawn cycle
 ├── LineClearMonitor (Rule) — physics-based row scanning on piece_settled
@@ -464,14 +464,14 @@ UniversalGameScript (tetris)
 
 | Step | Component | Action | Risk | Test |
 |---|---|---|---|---|
-| 1 | `grid_movement.gd` | Add DAS + multi-cell bounds check | Low — additive change, default off | Verify existing Space Invaders still works |
-| 2 | `grid_gravity.gd` | Create new leg | Medium — new component, replaces falling_ai for Tetris | Test: tetromino falls on timer, stops at floor |
+| 1 | `grid_movement.gd` | Add DAS + multi-cell bounds check | Low — additive change, default off | Verify existing Bug Blaster still works |
+| 2 | `grid_gravity.gd` | Create new leg | Medium — new component, replaces falling_ai for Block Drop | Test: tetromino falls on timer, stops at floor |
 | 3 | `grid_rotation_advanced.gd` | Create new leg | Medium — new component, validation logic | Test: tetromino body, rotate with kicks, verify collision shapes rebuild |
 | 4 | `lock_detector.gd` | Create new component | Medium — timing logic, listens to grid_gravity signals | Test: tetromino falls, stops at floor, locks after delay |
 | 5 | `line_clear_monitor.gd` | Rewrite for physics | High — core game logic, collapse is tricky | Test: fill a row manually, verify it clears and collapses |
 | 6 | `tetromino.gd` | Add single_cell export | Low — additive | Test: single cell draws and collides correctly |
 | 7 | `tetromino_spawner.gd` | Major update | High — most complex change, coordinates lock/spawn cycle | Test: full spawn-lock-spawn cycle |
-| 8 | `tetris.tscn` | Compose game scene | Medium — scene assembly, export configuration | Test: full gameplay loop |
+| 8 | `block_drop.tscn` | Compose game scene | Medium — scene assembly, export configuration | Test: full gameplay loop |
 | 9 | Delete old components | Delete `grid_basic` + `tetromino_formation` | Low — cleanup after verification | Verify no references remain |
 
 ---
@@ -482,7 +482,7 @@ UniversalGameScript (tetris)
 |---|---|
 | **Invadertris** | Put space invader scenes in the bag. Line_clear_monitor with `target_group = "invaders"` clears rows of invaders. |
 | **Bomb pieces** | Put a custom "bomb" scene in the bag. On lock, bomb explodes nearby settled cells. |
-| **Non-grid movement** | Remove grid_movement, attach direct_movement + engine_simple. Tetrominos fly freely with Asteroids controls. |
+| **Non-grid movement** | Remove grid_movement, attach direct_movement + engine_simple. Tetrominos fly freely with Space Rocks controls. |
 | **Shootable settled cells** | Add Health + DieOnHit to settled_cell_components. Shoot settled cells to destroy them. |
 | **Gravity flip** | Set grid_gravity direction = UP, lock_detector listens to grounded signal, line_clear_monitor scans top-to-bottom. |
 | **Centipede-style** | Attach LockDetector to a chain of segments. Each segment locks independently. |
@@ -505,7 +505,7 @@ UniversalGameScript (tetris)
 | `Scenes/Legs/grid_rotation_advanced.tscn` | Create new | Scenes |
 | `Scenes/Components/lock_detector.tscn` | Create new | Scenes |
 | `Scenes/Bodies/generic/tetromino_single.tscn` | Update (single_cell=true) | Scenes |
-| `Scenes/Games/remakes/tetris.tscn` | Create new | Scenes |
+| `Scenes/Games/remakes/block_drop.tscn` | Create new | Scenes |
 | `Scripts/Flow/grid_basic.gd` | Delete | Flow |
 | `Scenes/Flow/grid_basic.tscn` | Delete | Scenes |
 | `Scripts/Legs/tetromino_formation.gd` | Delete | Legs |

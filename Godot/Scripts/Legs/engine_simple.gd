@@ -1,4 +1,4 @@
-# Simple engine for Asteroids-style thrust. Accelerates forward, caps at top speed.
+# Simple engine for Space Rocks-style thrust. Accelerates forward, caps at top speed.
 
 extends UniversalComponent
 

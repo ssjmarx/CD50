@@ -1,8 +1,8 @@
-# Plan: Pong & Breakout — Shared Components
+# Plan: Paddle Ball & Brick Breaker — Shared Components
 
 ## Goal
 
-Build Pong and Breakout as the first two playable games, using shared components from the start. These two games will validate the composable architecture before building the wider framework.
+Build Paddle Ball and Brick Breaker as the first two playable games, using shared components from the start. These two games will validate the composable architecture before building the wider framework.
 
 ---
 
@@ -22,13 +22,13 @@ Build these games with components in mind, but don't over-abstract prematurely. 
 | weight | float | For future spin/physics effects |
 
 **Behavior:**
-- `CharacterBody2D` for full control over bounce angles (especially paddle-hit-angle in Pong)
+- `CharacterBody2D` for full control over bounce angles (especially paddle-hit-angle in Paddle Ball)
 - Uses `move_and_collide()` and reflects velocity on collision
-- Emits signals: `ball_hit(body)`, `ball_off_screen(side)` (Pong scoring), `ball_lost()` (Breakout life lost)
+- Emits signals: `ball_hit(body)`, `ball_off_screen(side)` (Paddle Ball scoring), `ball_lost()` (Brick Breaker life lost)
 - `serve(direction: Vector2)` — launch the ball in a given direction
 - `reset()` — return to center, zero velocity
 
-**Used by:** Pong, Breakout
+**Used by:** Paddle Ball, Brick Breaker
 
 ---
 
@@ -43,10 +43,10 @@ Build these games with components in mind, but don't over-abstract prematurely. 
 **Behavior:**
 - Exposes `set_target_position(pos: Vector2)` or `set_velocity(vel: Vector2)`
 - Does NOT handle its own input — whatever drives it (player input, AI) calls its movement methods
-- Respects axis locks (e.g., Pong locks to Y, Breakout locks to X)
+- Respects axis locks (e.g., Paddle Ball locks to Y, Brick Breaker locks to X)
 - Emits signal: `ball_hit_paddle(ball)` — allows game script to modify ball angle based on hit position
 
-**Used by:** Pong, Breakout
+**Used by:** Paddle Ball, Brick Breaker
 
 ---
 
@@ -61,7 +61,7 @@ Build these games with components in mind, but don't over-abstract prematurely. 
 - If health ≤ 0: emit `brick_destroyed()` signal and queue_free
 - Emits signals: `brick_hit(current_health)`, `brick_destroyed()`
 
-**Used by:** Breakout (primary), Moon mashup (spawned in Pong arena)
+**Used by:** Brick Breaker (primary), Moon mashup (spawned in Paddle Ball arena)
 
 ---
 
@@ -75,10 +75,10 @@ Build these games with components in mind, but don't over-abstract prematurely. 
 **Behavior:**
 - Does NOT know it's attached to a paddle — just moves its parent toward the tracked target
 - Calls the parent's `set_target_position()` toward the target's position
-- In Pong: attached to opponent paddle, tracks the ball → since paddle is Y-locked, creates convincing opponent behavior
+- In Paddle Ball: attached to opponent paddle, tracks the ball → since paddle is Y-locked, creates convincing opponent behavior
 - Future reuse: missiles, enemies, any pursuit behavior
 
-**Used by:** Pong (opponent), future: Missile Command, enemies
+**Used by:** Paddle Ball (opponent), future: Missile Command, enemies
 
 ---
 
@@ -86,7 +86,7 @@ Build these games with components in mind, but don't over-abstract prematurely. 
 
 These are the scripts that live in each game's scene and orchestrate the components.
 
-### Pong Game Script
+### Paddle Ball Game Script
 - Sets up the arena: walls (top/bottom `StaticBody2D` for bouncing, left/right for scoring)
 - Configures paddles (lock to Y axis, set positions)
 - Attaches AI Interceptor to opponent paddle, sets tracked_target = ball
@@ -95,7 +95,7 @@ These are the scripts that live in each game's scene and orchestrate the compone
 - On `ball_off_screen(side)`: increment score, call `ball.reset()`, `ball.serve()`
 - Win condition: first to N points
 
-### Breakout Game Script
+### Brick Breaker Game Script
 - Sets up the arena: walls (top + sides `StaticBody2D` for bouncing, bottom = open)
 - Configures paddle (lock to X axis, position at bottom)
 - Places brick grid (rows × columns, configurable health per row)
@@ -108,9 +108,9 @@ These are the scripts that live in each game's scene and orchestrate the compone
 
 ## Scene Tree Sketches
 
-### Pong
+### Paddle Ball
 ```
-Pong (Node2D) — PongGame.gd
+Paddle Ball (Node2D) — Paddle BallGame.gd
 ├── Walls (Node2D)
 │   ├── TopWall (StaticBody2D)
 │   ├── BottomWall (StaticBody2D)
@@ -126,9 +126,9 @@ Pong (Node2D) — PongGame.gd
     └── RightScore (Label)
 ```
 
-### Breakout
+### Brick Breaker
 ```
-Breakout (Node2D) — BreakoutGame.gd
+Brick Breaker (Node2D) — Brick BreakerGame.gd
 ├── Walls (Node2D)
 │   ├── TopWall (StaticBody2D)
 │   ├── LeftWall (StaticBody2D)
@@ -149,11 +149,11 @@ Breakout (Node2D) — BreakoutGame.gd
 
 1. **Ball** — Most architecturally important; everything connects to it via signals
 2. **Paddle** — Second most shared; get movement and input right
-3. **Pong** — Simplest complete game; validates ball + paddle + walls
-4. **AI Interceptor** — Makes Pong a real game (opponent)
+3. **Paddle Ball** — Simplest complete game; validates ball + paddle + walls
+4. **AI Interceptor** — Makes Paddle Ball a real game (opponent)
 5. **Brick** — New component, but simple (health decrement + signals)
-6. **Breakout** — Second game; validates that components reuse cleanly
-7. **Moon mashup** — Pong arena + Breakout bricks spawned in the middle
+6. **Brick Breaker** — Second game; validates that components reuse cleanly
+7. **Moon mashup** — Paddle Ball arena + Brick Breaker bricks spawned in the middle
 
 ---
 
@@ -168,6 +168,6 @@ Breakout (Node2D) — BreakoutGame.gd
 
 ## Risks / Open Questions
 
-- **Paddle-ball angle control in Pong:** Need to decide if the paddle modifies the ball's bounce angle based on where it hit (standard Pong behavior). If so, the paddle should emit `ball_hit_paddle(ball, hit_position_ratio)` and the game script (or ball itself) adjusts velocity.
+- **Paddle-ball angle control in Paddle Ball:** Need to decide if the paddle modifies the ball's bounce angle based on where it hit (standard Paddle Ball behavior). If so, the paddle should emit `ball_hit_paddle(ball, hit_position_ratio)` and the game script (or ball itself) adjusts velocity.
 - **Ball speed escalation:** Both games traditionally speed up over time. Ball could have an `accelerate(factor)` method, called by the game script on each hit.
 - **Screen size/resolution:** Should be decided early so wall positions are consistent. Common Godot default is 1152×648 or 1280×720.

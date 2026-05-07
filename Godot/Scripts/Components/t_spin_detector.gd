@@ -9,7 +9,7 @@ extends UniversalComponent
 # Physics check size (slightly < tile_size to avoid false positives)
 @export var cell_size: float = 17.9
 
-# Collision mask for settled pieces only. In standard tetris configs:
+# Collision mask for settled pieces only. In standard block_drop configs:
 # tetrominos=bit0(1), settled_pieces=bit1(2), walls=bit2(4).
 # Only settled pieces should block corners — walls cause false positives.
 @export var settled_collision_mask: int = 2

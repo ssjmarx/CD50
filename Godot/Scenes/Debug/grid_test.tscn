@@ -33,7 +33,7 @@ metadata/_custom_type_script = "uid://bfkr4fdx316o5"
 [sub_resource type="Resource" id="Resource_prw83"]
 script = ExtResource("2_gf417")
 group_name = "balls"
-targets = Array[String](["players", "players_bullets", "walls", "tetrominos", "asteroids"])
+targets = Array[String](["players", "players_bullets", "walls", "tetrominos", "space_rocks"])
 metadata/_custom_type_script = "uid://bfkr4fdx316o5"
 
 [sub_resource type="Resource" id="Resource_a0pml"]
@@ -44,7 +44,7 @@ metadata/_custom_type_script = "uid://bfkr4fdx316o5"
 
 [sub_resource type="Resource" id="Resource_jesqy"]
 script = ExtResource("2_gf417")
-group_name = "asteroids"
+group_name = "space_rocks"
 targets = Array[String](["balls"])
 metadata/_custom_type_script = "uid://bfkr4fdx316o5"
 
@@ -61,7 +61,7 @@ size = Vector2(640, 8)
 script = ExtResource("7_a0pml")
 node_path = NodePath("DamageOnHit")
 property_name = "target_groups"
-value = ["asteroids", "tetrominos"]
+value = ["space_rocks", "tetrominos"]
 metadata/_custom_type_script = "uid://cp0ni1lgml7c6"
 
 [node name="GridTest" type="Node2D"]

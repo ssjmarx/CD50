@@ -1,4 +1,4 @@
-# Space Invaders-style barrier.  Made from around thirty bricks that individually take damage and die.
+# Bug Blaster-style barrier.  Made from around thirty bricks that individually take damage and die.
 
 extends UniversalComponent2D
 

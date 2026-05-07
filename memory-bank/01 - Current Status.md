@@ -3,7 +3,7 @@
 **Last Updated:** 2026-05-06  
 **Engine:** Godot 4.5 (GDScript)  
 **Architecture:** Entity-Component (composition over inheritance)  
-**Playable Games:** Pong, Breakout, Asteroids, Pongsteroids, Dogfight, Space Invaders, Tetris (Modern), Breaksteroids — ALL componentized, zero game scripts
+**Playable Games:** Paddle Ball, Brick Breaker, Space Rocks, Meteor Rally, Dogfight, Bug Blaster, Block Drop (Modern), Rock Breaker — ALL componentized, zero game scripts
 **In Progress:** Shipping itch.io demo + Steam Coming Soon (see `memory-bank/06 - Deadlines.md`)
 **Recent Completed:** Plan 14 (Arcade Juice Part 1) — Custom lightweight CRT shader, vector monitor mode, shader-based phosphor persistence, per-game display mode switching
 
@@ -108,9 +108,9 @@ Scenes/Bodies/nonplayer/
 | Core | 9 | universal_body, universal_game_script, universal_component, universal_component_2d, collision_matrix, collision_group, group_cache, property_override, common_enums |
 | Bodies | 12 | ball, paddle, asteroid, brick, barrier, bullet_simple, bullet_wrapping, tetromino, triangle_ship, ufo, invader, paddle_cannon |
 | Brains | 8 | player_control, interceptor_ai, aim_ai, shoot_ai, shoot_ai_swarm, patrol_ai, falling_ai, swarm_ai |
-| Legs | 14 | direct_movement, direct_acceleration, engine_simple, engine_complex, friction_linear, friction_static, rotation_direct, rotation_target, grid_movement, grid_rotation, grid_gravity, grid_rotation_advanced, tetromino_formation, warp_asteroids |
+| Legs | 14 | direct_movement, direct_acceleration, engine_simple, engine_complex, friction_linear, friction_static, rotation_direct, rotation_target, grid_movement, grid_rotation, grid_gravity, grid_rotation_advanced, tetromino_formation, warp_space_rocks |
 | Arms | 3 | gun_simple, damage_on_hit, damage_on_joust |
-| Components | 18 | angled_deflector, bounce_on_hit, collision_marker, death_effect, die_on_hit, die_on_timer, ghost_piece, health, hold_relay, lock_detector, pong_acceleration, ring_spawner, score_on_death, score_on_hit, screen_cleanup, screen_wrap, split_on_death, t_spin_detector, vector_engine_exhaust |
+| Components | 18 | angled_deflector, bounce_on_hit, collision_marker, death_effect, die_on_hit, die_on_timer, ghost_piece, health, hold_relay, lock_detector, paddle_ball_acceleration, ring_spawner, score_on_death, score_on_hit, screen_cleanup, screen_wrap, split_on_death, t_spin_detector, vector_engine_exhaust |
 | Rules | 9 | goal, points_monitor, variable_tuner, variable_tuner_global, group_monitor, group_count_multiplier, lives_counter, timer, line_clear_monitor |
 | Flow | 11 | interface, sound_on_hit, sound_synth, music_ramping, sfx_ramping, beep, grid_basic, swarm_controller, tetromino_spawner, wave_director*, wave_spawner* |
 | Effects | 2 | death_particles, death_broken_triangle_ship |

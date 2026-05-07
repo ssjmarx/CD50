@@ -4,13 +4,13 @@
 **Started:** 2026-04-20  
 **Completed:** 2026-04-30  
 **Depends On:** None (can be done at any time)  
-**Unblocks:** Space Invaders & Tetris game composition (Plan 07) — recommended before composing large-entity-count games
+**Unblocks:** Bug Blaster & Block Drop game composition (Plan 07) — recommended before composing large-entity-count games
 
 ---
 
 ## Background
 
-A full performance audit of the CD50 codebase identified one critical pattern and five medium-priority issues. The critical issue — `get_nodes_in_group()` called every frame by up to 15 scripts simultaneously — will cause GC stutter and frame time spikes once Space Invaders (55+ entities) is composed. The medium issues are hygiene fixes that improve code quality alongside performance.
+A full performance audit of the CD50 codebase identified one critical pattern and five medium-priority issues. The critical issue — `get_nodes_in_group()` called every frame by up to 15 scripts simultaneously — will cause GC stutter and frame time spikes once Bug Blaster (55+ entities) is composed. The medium issues are hygiene fixes that improve code quality alongside performance.
 
 The project's rendering configuration (640×360, GL Compatibility, pixel snapping, physics interpolation) is well-chosen and needs no changes. The signal-driven architecture (Brain → Body → Leg/Arm routing) is correct and should NOT be optimized — signal overhead is negligible at current and projected entity counts.
 
@@ -20,7 +20,7 @@ The project's rendering configuration (640×360, GL Compatibility, pixel snappin
 
 ### Problem
 
-`get_tree().get_nodes_in_group()` allocates a new Array on every call. Fifteen call sites across the codebase call it every frame. In a game with multiple AI brains (Dogfight, Space Invaders), this creates 20+ array allocations per frame, each requiring the engine to walk its internal group structure.
+`get_tree().get_nodes_in_group()` allocates a new Array on every call. Fifteen call sites across the codebase call it every frame. In a game with multiple AI brains (Dogfight, Bug Blaster), this creates 20+ array allocations per frame, each requiring the engine to walk its internal group structure.
 
 ### Solution
 
@@ -97,7 +97,7 @@ func get_group_count(group_name: String) -> int:
 
 ### 2.1 `split_on_death.gd` — Preload via PackedScene Export
 
-**Problem:** `load()` called at death time. In Asteroids, a chain of splits causes 5 rapid `load()` calls.
+**Problem:** `load()` called at death time. In Space Rocks, a chain of splits causes 5 rapid `load()` calls.
 
 **Fix:** Replace `@export var fragment_path: String` with `@export var fragment_scene: PackedScene`. Resources loaded via `@export` are loaded at scene import time (zero runtime cost) and shared across all instances (Godot's resource cache). Remove the runtime `load()` call.
 
@@ -217,12 +217,12 @@ func _process(delta: float) -> void:
 **Note:** Spawning is now frame-based, not physics-tied. For visual staggering this is correct. If any game needs physics-tied spawning, use `_physics_process` instead.
 
 **Games to test after this change:**
-- Pong (ball spawn at game start, stagger_delay)
-- Breakout (brick grid, no stagger)
-- Asteroids (wave spawning with stagger)
+- Paddle Ball (ball spawn at game start, stagger_delay)
+- Brick Breaker (brick grid, no stagger)
+- Space Rocks (wave spawning with stagger)
 - Dogfight (enemy wave spawning)
-- Breaksteroids (asteroid grid)
-- Pongout (brick grid + ball)
+- Rock Breaker (asteroid grid)
+- Paddle Ballout (brick grid + ball)
 
 ---
 
@@ -230,7 +230,7 @@ func _process(delta: float) -> void:
 
 ### Problem
 
-When composing Space Invaders (55 UFO entities, each with a CONTINUOUS SoundSynth component), three performance issues were identified:
+When composing Bug Blaster (55 UFO entities, each with a CONTINUOUS SoundSynth component), three performance issues were identified:
 
 1. **Voice explosion:** 55 identical synths all generating audio simultaneously — only the engine's AudioStreamPlayer limit prevented all 55 from playing. At 55 simultaneous `_get_sample()` loops, frame time spiked massively.
 2. **Buffer-fill burst:** When 6 voices all started playing at once, the first `_process()` frame saw ~1000+ available frames per voice. With 6 voices: ~6553 `_get_sample()` calls in a single frame — causing a noticeable stutter at spawn.
@@ -298,7 +298,7 @@ var _signature: String = ""  # "{wave_shape}_{effect}_{note}"
 
 - [x] Run each game with Godot's built-in profiler
 - [x] Confirm `get_nodes_in_group()` allocations are eliminated (GroupCache autoload)
-- [x] Test Space Invaders with 55+ entities — smooth after SoundSynth optimization
+- [x] Test Bug Blaster with 55+ entities — smooth after SoundSynth optimization
 - [x] Stress test: 150 UFOs seamless, 2000+ = engine physics ceiling (not a code issue)
 
 ---
@@ -318,7 +318,7 @@ var _signature: String = ""  # "{wave_shape}_{effect}_{note}"
 
 | Phase | GC Allocations Eliminated | Frame Time Savings | Risk |
 |-------|--------------------------|-------------------|------|
-| Phase 1 (GroupCache) | ~20 arrays/frame in Dogfight, ~60+ in Space Invaders | 2-5ms/frame at 55 entities | Low — drop-in replacement |
+| Phase 1 (GroupCache) | ~20 arrays/frame in Dogfight, ~60+ in Bug Blaster | 2-5ms/frame at 55 entities | Low — drop-in replacement |
 | Phase 2 (Easy wins) | ~5 allocations per asteroid death chain | <1ms | Very low — single-file changes |
 | Phase 3 (WaveSpawner) | ~200 timer objects per grid spawn | <1ms (but cleaner memory profile) | Medium — needs testing across all games |
 | Phase 4 (SoundSynth) | ~60,000 _get_sample() calls at spawn | Eliminated spawn stutter, audio hitching | Low — arcade-hardware-inspired caps |

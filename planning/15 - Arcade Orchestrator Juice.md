@@ -24,27 +24,27 @@ Two deliverables that make the demo shippable:
 
 | Old Name | New Name | Rationale |
 |----------|----------|-----------|
-| Pongsteroids | Meteor Rally | Hybrid name, evokes space + competition |
-| Breaksteroids | Rock Breaker | Hybrid name, evokes asteroids + breaking |
-| Pong | Paddle Ball | Bootleg literal, from renaming.md |
-| Breakout | Brick Breaker | Most obvious bootleg name in history |
-| Asteroids | Space Rocks | Literal, descriptive, zero effort |
-| Tetris | Block Drop | What every bootleg cabinet was actually called |
-| Space Invaders | Bug Blaster | Not even pretending it's not Space Invaders |
+| Meteor Rally | Meteor Rally | Hybrid name, evokes space + competition |
+| Rock Breaker | Rock Breaker | Hybrid name, evokes space_rocks + breaking |
+| Paddle Ball | Paddle Ball | Bootleg literal, from renaming.md |
+| Brick Breaker | Brick Breaker | Most obvious bootleg name in history |
+| Space Rocks | Space Rocks | Literal, descriptive, zero effort |
+| Block Drop | Block Drop | What every bootleg cabinet was actually called |
+| Bug Blaster | Bug Blaster | Not even pretending it's not Bug Blaster |
 | Dogfight | Dogfight | Original — no change |
 
-**Order matters:** The rename script processes longest/most-specific names first (Pongsteroids before Pong) to prevent partial matches.
+**Order matters:** The rename script processes longest/most-specific names first (Meteor Rally before Paddle Ball) to prevent partial matches.
 
 ### What Gets Renamed
 
 **File names:**
-- Game scenes: `pong.tscn` → `paddle_ball.tscn`, etc.
+- Game scenes: `paddle_ball.tscn` → `paddle_ball.tscn`, etc.
 - ArcadeGameEntry .tres filenames
 
 **File contents — all text files (.tscn, .gd, .tres, .md, .txt):**
 - `game_title` UGS export values
-- Scene resource path references (e.g., `path="res://Scenes/Games/remakes/pong.tscn"`)
-- Node names inside scenes (e.g., `[node name="SpaceInvaders"` → `[node name="BugBlaster"`)
+- Scene resource path references (e.g., `path="res://Scenes/Games/remakes/paddle_ball.tscn"`)
+- Node names inside scenes (e.g., `[node name="BugBlaster"` → `[node name="BugBlaster"`)
 - ArcadeGameEntry scene references
 - Code comments and doc references
 
@@ -52,32 +52,31 @@ Two deliverables that make the demo shippable:
 
 The script generates all case variants for each rename pair and replaces them across the codebase:
 
-| Variant | Example (Pong → Paddle Ball) |
+| Variant | Example (Paddle Ball → Paddle Ball) |
 |---------|------|
-| Display (Title Case with space) | "Pong" → "Paddle Ball" |
-| PascalCase (no space) | "Pong" → "PaddleBall" |
-| snake_case | "pong" → "paddle_ball" |
-| SCREAMING_SNAKE | "PONG" → "PADDLE_BALL" |
-| lowercase | "pong" → "paddle ball" |
-| UPPERCASE | "PONG" → "PADDLE BALL" |
-| Filename (snake_case) | `pong.tscn` → `paddle_ball.tscn` |
+| Display (Title Case with space) | "Paddle Ball" → "Paddle Ball" |
+| PascalCase (no space) | "Paddle Ball" → "PaddleBall" |
+| snake_case | "paddle_ball" → "paddle_ball" |
+| SCREAMING_SNAKE | "PADDLE_BALL" → "PADDLE_BALL" |
+| lowercase | "paddle_ball" → "paddle ball" |
+| UPPERCASE | "PADDLE_BALL" → "PADDLE BALL" |
+| Filename (snake_case) | `paddle_ball.tscn` → `paddle_ball.tscn` |
 
 **Example expansions:**
 
 | Old | New |
 |-----|-----|
-| `pong` / `Pong` / `PONG` / `pong` | `paddle ball` / `Paddle Ball` / `PADDLE BALL` / `paddle_ball` |
-| `pongsteroids` / `Pongsteroids` / `PONGSTEROIDS` | `meteor rally` / `MeteorRally` / `METEOR RALLY` |
-| `space_invaders` / `SpaceInvaders` / `Space Invaders` | `bug_blaster` / `BugBlaster` / `Bug Blaster` |
+| `paddle_ball` / `Paddle Ball` / `PADDLE_BALL` / `paddle_ball` | `paddle ball` / `Paddle Ball` / `PADDLE BALL` / `paddle_ball` |
+| `meteor_rally` / `Meteor Rally` / `METEOR_RALLY` | `meteor rally` / `MeteorRally` / `METEOR RALLY` |
+| `bug_blaster` / `BugBlaster` / `Bug Blaster` | `bug_blaster` / `BugBlaster` / `Bug Blaster` |
 
 The script:
-1. **Git commit** — Ensure clean state before rename
-2. **Build variant map** — For each rename pair, generate all case variants
-3. **Find-and-replace in file contents** — Process all `.tscn`, `.gd`, `.tres`, `.md`, `.txt` files. Longest matches first to avoid partial collisions.
-4. **Rename files** — `mv` game scene files and .tres files to their new snake_case names
-5. **Verification report** — Grep for remaining old names, print results for manual review
+1. **Build variant map** — For each rename pair, generate all case variants
+2. **Find-and-replace in file contents** — Process all `.tscn`, `.gd`, `.tres`, `.md`, `.txt` files. Longest matches first to avoid partial collisions.
+3. **Rename files** — `mv` game scene files and .tres files to their new snake_case names
+4. **Verification report** — Grep for remaining old names, print results for manual review
 
-**Target: 90% automated.** Edge cases (e.g., a comment that says "Pong-style gameplay" where the hyphenation changes meaning) are hand-fixed.
+**Target: 90% automated.** Edge cases (e.g., a comment that says "Paddle Ball-style gameplay" where the hyphenation changes meaning) are hand-fixed.
 
 ### ⚠️ Risk: Godot UIDs
 
@@ -107,37 +106,37 @@ Renaming isn't enough — the games also need to **look** distinct from their in
 
 ### Change List
 
-#### 1. Bug Blaster (Space Invaders) — Formation Change
+#### 1. Bug Blaster (Bug Blaster) — Formation Change
 - **Current:** Classic narrow 5×11 grid, small step-down
 - **New:** Wider formation (fewer rows, more columns), keep ~55 total invaders, increase step-down distance per edge hit
-- **Why:** The classic Space Invaders formation is iconic and recognizable. A wider, shallower grid with bigger step-downs feels different immediately.
+- **Why:** The classic Bug Blaster formation is iconic and recognizable. A wider, shallower grid with bigger step-downs feels different immediately.
 
-#### 2. Block Drop (Tetris) — Color Scheme + Juice Rework
-- **Current:** NES-Tetris-inspired color scheme, NES-style blink animation on line clear, standard next/held piece previews
+#### 2. Block Drop (Block Drop) — Color Scheme + Juice Rework
+- **Current:** NES-Block Drop-inspired color scheme, NES-style blink animation on line clear, standard next/held piece previews
 - **New:**
   - **Color scheme:** Active (falling) blocks use cool colors (blues, teals, purples). Settled (locked) blocks shift to warm colors (oranges, reds, yellows). Gives instant visual feedback on state.
   - **Line clear juice:** Replace NES-blink with something custom — consider: row dissolve into particles, row flash + collapse, row shatter into fragments, or row "burn away" effect. NOT the iconic blink.
   - **Next/held piece previews:** Rethink the presentation. Options: ghost overlay showing where piece will land, animated piece rotation in preview box, or a different layout for the preview panel entirely.
-- **Why:** The NES Tetris color palette and blink-on-clear are deeply associated with the original. Cool/warm state colors are a clear visual signature.
+- **Why:** The NES Block Drop color palette and blink-on-clear are deeply associated with the original. Cool/warm state colors are a clear visual signature.
 
-#### 3. Brick Breaker (Breakout) — Color Scheme + Layout Change
-- **Current:** Standard Breakout brick colors, standard narrow playfield
+#### 3. Brick Breaker (Brick Breaker) — Color Scheme + Layout Change
+- **Current:** Standard Brick Breaker brick colors, standard narrow playfield
 - **New:**
   - **Color scheme:** All bricks start white. A custom component colors bricks via `modulate` into different flag colors (e.g., rainbow gradient, or themed palettes — pirate flags, naval signals, etc.). The "flags" concept gives it personality.
   - **Layout:** Widen the brick layout AND widen the playfield proportionally. More bricks per row, wider paddle area.
-- **Why:** The rows-of-colored-bricks layout is Breakout's signature. White bricks + flag-coloring component makes it visually unique.
+- **Why:** The rows-of-colored-bricks layout is Brick Breaker's signature. White bricks + flag-coloring component makes it visually unique.
 
-#### 4. Space Rocks (Asteroids) — Ship + UFO Shape Redesign
-- **Current:** Classic Asteroids chevron ship, classic saucer UFO
+#### 4. Space Rocks (Space Rocks) — Ship + UFO Shape Redesign
+- **Current:** Classic Space Rocks chevron ship, classic saucer UFO
 - **New:**
   - **Ship shape:** More pronounced wings, flat nose. Still roughly chevron-shaped but clearly distinct — think "stealth bomber" vs "arrowhead." The wing tips should extend further and the nose should be blunted/flat.
   - **UFO shape:** Still saucer-like but with different sections (e.g., a raised center dome with antenna, asymmetric panels, or a more detailed silhouette). **Also:** use this redesign to make the visual shape more closely match its actual hitbox (which has been an annoyance).
-- **Why:** The Asteroids ship outline is one of the most recognizable shapes in gaming. It needs to be clearly different at a glance.
+- **Why:** The Space Rocks ship outline is one of the most recognizable shapes in gaming. It needs to be clearly different at a glance.
 
-#### 5. Paddle Ball (Pong) — Center Line Change
-- **Current:** Classic dashed line down center (Pong signature)
-- **New:** Thin checkerboard pattern with 3 columns in the center zone. Gives a clearer visual distinction from Pong's iconic dotted line while still communicating "divided field."
-- **Why:** The dashed center line IS Pong. A checkerboard center zone reads as "retro arcade" without being a direct copy.
+#### 5. Paddle Ball (Paddle Ball) — Center Line Change
+- **Current:** Classic dashed line down center (Paddle Ball signature)
+- **New:** Thin checkerboard pattern with 3 columns in the center zone. Gives a clearer visual distinction from Paddle Ball's iconic dotted line while still communicating "divided field."
+- **Why:** The dashed center line IS Paddle Ball. A checkerboard center zone reads as "retro arcade" without being a direct copy.
 
 ### Implementation Steps
 
@@ -256,7 +255,7 @@ Phase 1 (rename) should complete before Phase 2 (Polybius) so that Polybius inte
 
 ## Risks & Considerations
 
-1. **Rename script false positives** — The script replaces longest matches first (Pongsteroids → Meteor Rally before Pong → Paddle Ball). But edge cases like variable names or comments that happen to contain substrings may need hand-fixing. The 90% target is realistic.
+1. **Rename script false positives** — The script replaces longest matches first (Meteor Rally → Meteor Rally before Paddle Ball → Paddle Ball). But edge cases like variable names or comments that happen to contain substrings may need hand-fixing. The 90% target is realistic.
 
 2. **Godot UID integrity** — After renaming files, some UIDs may reference stale paths. Opening in the Godot editor and re-saving should fix this, but it's a manual verification step that must not be skipped.
 

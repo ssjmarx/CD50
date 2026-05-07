@@ -100,7 +100,7 @@ These components connect Rule components to Game Script state changes.
   - Calls `Spawner.spawn_next_wave()`
   - Updates "Level X" UI element
 - **Exports:** `wave_delay: float = 2.0`, `max_waves: int = -1` (infinite)
-- **Use Case:** Galaga, Space Invaders, Centipede
+- **Use Case:** Galaga, Bug Blaster, Centipede
 
 **Removes need to write:** "Level progression" code for every shooter game.
 
@@ -108,8 +108,8 @@ These components connect Rule components to Game Script state changes.
 - **Logic:** Spawns a wave on the wave spawning signal
 - **Behavior:**
   - When `spawning_wave` is emitted, spawns a configurable number of a configurable body in a selectable pattern
-  - SpawnPattern.SCREEN_EDGES - asteroid spawn pattern from Asteroids
-  - SpawnPattern.SCREEN_CENTER - ball spawn pattern from Pong
+  - SpawnPattern.SCREEN_EDGES - asteroid spawn pattern from Space Rocks
+  - SpawnPattern.SCREEN_CENTER - ball spawn pattern from Paddle Ball
 
 ### Intermission_Screen
 - **Logic:** Listens for Game Script state changes via signals
@@ -210,12 +210,12 @@ To implement this plan, create the following components:
 ### Phase 1: Core & Rules (Foundational)
 1. Create `Universal_Game_Script` base class
 2. Build Rule components (Player_Monitor, Objective_Monitor, Lives_Counter, Timer_Rule)
-3. Test with a simple game (e.g., Pong refactored to use components)
+3. Test with a simple game (e.g., Paddle Ball refactored to use components)
 
 ### Phase 2: Managers & Flow (Infrastructure)
 1. Create `Collision_Matrix` (built into Universal_Game_Script)
 2. Create `Wave_Director`, `Intermission_Screen`
-3. Refactor Asteroids to use Wave Director
+3. Refactor Space Rocks to use Wave Director
 
 ### Phase 3: Juice & Polish (Visual Impact)
 1. Create `ScreenShake`, `HitStop` autoloads
@@ -230,8 +230,8 @@ To implement this plan, create the following components:
 4. See `planning/brainstorming/arcade_orchestrator_design.md` for details
 
 ### Phase 5: Legacy Migration (Backfill)
-1. Refactor Pong to use componentized architecture
-2. Refactor Breakout to use componentized architecture
+1. Refactor Paddle Ball to use componentized architecture
+2. Refactor Brick Breaker to use componentized architecture
 3. Verify all games follow the same `game_over` signal pattern
 4. Update memory-bank with new component inventory
 
@@ -249,7 +249,7 @@ To implement this plan, create the following components:
 
 5. **Loading Hiccups:** Deferred loading of next game during current game play is essential for seamless transitions. Test on lower-end hardware.
 
-6. **Backward Compatibility:** Existing game scripts (pong.gd, breakout.gd, etc.) must be refactored to inherit from `Universal_Game_Script`. Consider a migration path that allows gradual adoption.
+6. **Backward Compatibility:** Existing game scripts (paddle_ball.gd, brick_breaker.gd, etc.) must be refactored to inherit from `Universal_Game_Script`. Consider a migration path that allows gradual adoption.
 
 ---
 

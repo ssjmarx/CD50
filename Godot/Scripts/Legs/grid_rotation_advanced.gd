@@ -3,7 +3,7 @@
 
 extends UniversalComponent
 
-# Which body signal triggers rotation (default: thrust for Tetris rotate)
+# Which body signal triggers rotation (default: thrust for Block Drop rotate)
 @export var rotation_signal: String = "thrust"
 
 # Rotation direction

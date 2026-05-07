@@ -11,7 +11,7 @@
 [ext_resource type="PackedScene" uid="uid://c5h0r2rnmwe4k" path="res://Scenes/Effects/death_particles.tscn" id="11_533y8"]
 [ext_resource type="PackedScene" uid="uid://dewo285lx7p70" path="res://Scenes/Effects/death_broken_triangle_ship.tscn" id="12_3y4d0"]
 [ext_resource type="PackedScene" uid="uid://b5qnknhyvemd5" path="res://Scenes/Components/vector_engine_exhaust.tscn" id="12_533y8"]
-[ext_resource type="PackedScene" uid="uid://ctcl3gid47wwl" path="res://Scenes/Legs/warp_asteroids.tscn" id="13_5diep"]
+[ext_resource type="PackedScene" uid="uid://ctcl3gid47wwl" path="res://Scenes/Legs/warp_space_rocks.tscn" id="13_5diep"]
 [ext_resource type="PackedScene" uid="uid://dga83l4d2rwyv" path="res://Scenes/Flow/sound_synth.tscn" id="14_smvxb"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_533y8"]
@@ -46,7 +46,7 @@ effect_scenes = Array[PackedScene]([ExtResource("11_533y8"), ExtResource("12_3y4
 
 [node name="VectorEngineExhaust" parent="." instance=ExtResource("12_533y8")]
 
-[node name="WarpAsteroids" parent="." instance=ExtResource("13_5diep")]
+[node name="WarpSpace Rocks" parent="." instance=ExtResource("13_5diep")]
 
 [node name="SoundSynth" parent="." node_paths=PackedStringArray("source_node") instance=ExtResource("14_smvxb")]
 play_mode = 1

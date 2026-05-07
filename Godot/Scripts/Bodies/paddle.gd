@@ -1,4 +1,4 @@
-# Pong paddle. Draws a white rectangle sized from width/height exports.
+# Paddle Ball paddle. Draws a white rectangle sized from width/height exports.
 
 extends UniversalBody
 

@@ -57,9 +57,9 @@ property_name = "shape"
 value = 2
 metadata/_custom_type_script = "uid://cp0ni1lgml7c6"
 
-[node name="SpaceInvaders" type="Node2D"]
+[node name="BugBlaster" type="Node2D"]
 script = ExtResource("1_vskpd")
-game_title = "Space Invaders"
+game_title = "Bug Blaster"
 collision_groups = Array[ExtResource("2_6vykp")]([SubResource("Resource_jwgp7"), SubResource("Resource_nacot"), SubResource("Resource_vcbdb"), SubResource("Resource_6ogln"), SubResource("Resource_jauks")])
 
 [node name="PaddleCannon" parent="." instance=ExtResource("2_s60y6")]
@@ -75,7 +75,7 @@ display_lives = true
 
 [node name="SwarmController" parent="." instance=ExtResource("9_y7sge")]
 min_tick_interval = 0.0
-step_down_distance = 4
+step_down_distance = 6
 boundary_left = 8.0
 boundary_right = 632.0
 boundary_bottom = 296.0
@@ -89,7 +89,7 @@ target_group = "enemies"
 trigger_value = "enemies"
 
 [node name="WaveSpawner" parent="." node_paths=PackedStringArray("director", "extra_directors") instance=ExtResource("4_wevyt")]
-position = Vector2(320, 72)
+position = Vector2(320, 56)
 spawn_scene = ExtResource("6_6vykp")
 spawn_pattern = 2
 stagger_delay = 0.01
@@ -98,14 +98,14 @@ extra_directors = [NodePath("../WaveDirector4")]
 spawn_groups = Array[String](["enemies", "invaders"])
 spawn_collision_groups = Array[String](["enemies"])
 grid_height = 16
-grid_columns = 11
-grid_rows = 2
+grid_columns = 18
+grid_rows = 1
 grid_spacing = 8
 grid_health_values = Array[int]([])
-grid_score_values = Array[int]([2, 2])
+grid_score_values = Array[int]([2])
 
 [node name="WaveSpawner2" parent="." node_paths=PackedStringArray("director", "extra_directors") instance=ExtResource("4_wevyt")]
-position = Vector2(320, 124)
+position = Vector2(320, 80)
 spawn_scene = ExtResource("6_6vykp")
 spawn_pattern = 2
 stagger_delay = 0.01
@@ -115,8 +115,8 @@ property_overrides = Array[ExtResource("7_yp3rw")]([SubResource("Resource_dbhjy"
 spawn_groups = Array[String](["enemies", "invaders"])
 spawn_collision_groups = Array[String](["enemies"])
 grid_height = 16
-grid_columns = 11
-grid_rows = 2
+grid_columns = 18
+grid_rows = 1
 grid_spacing = 8
 grid_health_values = Array[int]([])
 grid_score_values = Array[int]([])
@@ -132,7 +132,7 @@ property_overrides = Array[ExtResource("7_yp3rw")]([SubResource("Resource_74c7c"
 spawn_groups = Array[String](["enemies", "invaders"])
 spawn_collision_groups = Array[String](["enemies"])
 grid_height = 16
-grid_columns = 11
+grid_columns = 18
 grid_rows = 1
 grid_spacing = 8
 grid_health_values = Array[int]([])

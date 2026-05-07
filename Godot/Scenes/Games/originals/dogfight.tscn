@@ -30,18 +30,18 @@ metadata/_custom_type_script = "uid://bfkr4fdx316o5"
 [sub_resource type="Resource" id="Resource_yp1qk"]
 script = ExtResource("2_25ekh")
 group_name = "players_bullets"
-targets = Array[String](["enemies", "asteroids"])
+targets = Array[String](["enemies", "space_rocks"])
 metadata/_custom_type_script = "uid://bfkr4fdx316o5"
 
 [sub_resource type="Resource" id="Resource_u8jyr"]
 script = ExtResource("2_25ekh")
 group_name = "enemies_bullets"
-targets = Array[String](["players", "asteroids"])
+targets = Array[String](["players", "space_rocks"])
 metadata/_custom_type_script = "uid://bfkr4fdx316o5"
 
 [sub_resource type="Resource" id="Resource_s3uvk"]
 script = ExtResource("2_25ekh")
-group_name = "asteroids"
+group_name = "space_rocks"
 targets = Array[String](["players", "enemies"])
 metadata/_custom_type_script = "uid://bfkr4fdx316o5"
 
@@ -91,14 +91,14 @@ spawn_count_equation = "wave_number / 3 + 1"
 stagger_delay = 1.0
 director = NodePath("../WaveDirector2")
 
-[node name="WaveDirector(asteroids)" parent="." instance=ExtResource("12_fk46a")]
+[node name="WaveDirector(space_rocks)" parent="." instance=ExtResource("12_fk46a")]
 trigger_type = 1
 wave_delay = 0.0
 
-[node name="WaveSpawner(asteroids)" parent="." node_paths=PackedStringArray("director") instance=ExtResource("13_nvkvc")]
+[node name="WaveSpawner(space_rocks)" parent="." node_paths=PackedStringArray("director") instance=ExtResource("13_nvkvc")]
 spawn_scene = ExtResource("15_kkt1o")
 spawn_count_equation = "1"
-director = NodePath("../WaveDirector(asteroids)")
+director = NodePath("../WaveDirector(space_rocks)")
 spawn_components = Array[PackedScene]([ExtResource("16_te72y")])
 property_overrides = Array[ExtResource("15_te72y")]([SubResource("Resource_pxxt0")])
 initial_velocity = Vector2(50, 0)

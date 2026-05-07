@@ -1,4 +1,4 @@
-# Space Invaders-style UFO. Scales speed and accuracy for the SMALL variant. Draws a three-layer saucer shape.
+# Classically-styled UFO. Scales speed and accuracy for the SMALL variant. Draws a three-layer saucer shape.
 
 extends UniversalBody
 

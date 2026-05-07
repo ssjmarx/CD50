@@ -1,4 +1,4 @@
-# Manages player lives for games with lives systems (Asteroids, Breakout).
+# Manages player lives for games with lives systems (Space Rocks, Brick Breaker).
 
 extends UniversalComponent
 

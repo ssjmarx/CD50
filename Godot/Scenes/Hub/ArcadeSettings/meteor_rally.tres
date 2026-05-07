@@ -1,6 +1,6 @@
 [gd_resource type="Resource" script_class="ArcadeGameEntry" load_steps=11 format=3 uid="uid://bvgnffon2rxmn"]
 
-[ext_resource type="PackedScene" uid="uid://bx72rpqpg34hc" path="res://Scenes/Games/remixes/pongsteroids.tscn" id="1_bp1mj"]
+[ext_resource type="PackedScene" uid="uid://bx72rpqpg34hc" path="res://Scenes/Games/remixes/meteor_rally.tscn" id="1_bp1mj"]
 [ext_resource type="Script" uid="uid://cp0ni1lgml7c6" path="res://Scripts/Core/property_override.gd" id="2_2qeg8"]
 [ext_resource type="Script" uid="uid://bdsbfe65crnbu" path="res://Scripts/Hub/arcade_game_entry.gd" id="3_01exs"]
 

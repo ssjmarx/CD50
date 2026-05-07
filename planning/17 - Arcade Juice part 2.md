@@ -58,7 +58,7 @@ Each game shows an AI-controlled demo during transitions and while waiting for t
 
 ### Architecture: UGS-Managed Attract
 
-Attract mode is owned by the **UGS**, not the AO. This preserves standalone/arcade parity — running `asteroids.tscn` in the editor shows the same attract demo as the arcade cabinet.
+Attract mode is owned by the **UGS**, not the AO. This preserves standalone/arcade parity — running `space_rocks.tscn` in the editor shows the same attract demo as the arcade cabinet.
 
 **Key change to AO flow:** The AO no longer hides or pauses the next game during transitions. Instead:
 1. AO instances the game scene and adds it to the tree
@@ -117,14 +117,14 @@ Workflow per game (~60 seconds each):
 
 | Game | Attract Scene | AI Setup |
 |------|---------------|----------|
-| Pong | `pong_attract.tscn` | Both paddles: `interceptor_ai` |
-| Breakout | `breakout_attract.tscn` | Paddle: `interceptor_ai`, remove LivesCounter |
-| Asteroids | `asteroids_attract.tscn` | Ship: `interceptor_ai` + `aim_ai` + `gun_simple` |
-| Pongsteroids | `pongsteroids_attract.tscn` | Ship: `interceptor_ai` + `aim_ai` |
+| Paddle Ball | `paddle_ball_attract.tscn` | Both paddles: `interceptor_ai` |
+| Brick Breaker | `brick_breaker_attract.tscn` | Paddle: `interceptor_ai`, remove LivesCounter |
+| Space Rocks | `space_rocks_attract.tscn` | Ship: `interceptor_ai` + `aim_ai` + `gun_simple` |
+| Meteor Rally | `meteor_rally_attract.tscn` | Ship: `interceptor_ai` + `aim_ai` |
 | Dogfight | `dogfight_attract.tscn` | Ship: `interceptor_ai` + `aim_ai` + `gun_simple` |
-| Space Invaders | `space_invaders_attract.tscn` | Remove player, let invaders march |
-| Tetris | `tetris_attract.tscn` | `falling_ai` with random lateral moves |
-| Breaksteroids | `breaksteroids_attract.tscn` | Paddle: `interceptor_ai` |
+| Bug Blaster | `bug_blaster_attract.tscn` | Remove player, let invaders march |
+| Block Drop | `block_drop_attract.tscn` | `falling_ai` with random lateral moves |
+| Rock Breaker | `rock_breaker_attract.tscn` | Paddle: `interceptor_ai` |
 
 ### New/Modified Files
 
@@ -202,7 +202,7 @@ func _ready():
     set_process(false)  # Dead component, no further cost
 ```
 
-**Spawner synergy:** The existing `wave_spawner` stagger delay naturally sequences vram_pop activations. Asteroids pop in one by one as they spawn. Bricks appear left-to-right. No additional timing code needed.
+**Spawner synergy:** The existing `wave_spawner` stagger delay naturally sequences vram_pop activations. Space Rocks pop in one by one as they spawn. Bricks appear left-to-right. No additional timing code needed.
 
 ### 4C. Timing Choreography
 
@@ -248,16 +248,16 @@ Pressing Start triggers a choreographed boot sequence across all games. Pre-plac
 | **Phase 3** | | |
 | 3a | Add `attract_scene` export + lifecycle to UGS | — |
 | 3b | Update AO: remove game hiding/pausing, let UGS attract handle it | 3a |
-| 3c | Create attract stub for Pong (simplest game, proves the concept) | 3a |
-| 3d | Test: Pong attract visible during scroll, dies on Start | 3b, 3c |
+| 3c | Create attract stub for Paddle Ball (simplest game, proves the concept) | 3a |
+| 3d | Test: Paddle Ball attract visible during scroll, dies on Start | 3b, 3c |
 | 3e | Create attract stubs for remaining 7 games | 3d |
 | 3f | Test: full arcade run with attract modes | 3e |
 | **Phase 4** | | |
 | 4a | Create `stagger_reveal` component | — |
 | 4b | Create `vram_pop` component | — |
-| 4c | Add stagger_reveal to Breakout (best showcase: arena → paddle → bricks → ball) | 4a |
+| 4c | Add stagger_reveal to Brick Breaker (best showcase: arena → paddle → bricks → ball) | 4a |
 | 4d | Add vram_pop to body templates (asteroid, brick, ball) | 4b |
-| 4e | Test: Breakout full coin drop sequence | 4c, 4d |
+| 4e | Test: Brick Breaker full coin drop sequence | 4c, 4d |
 | 4f | Add stagger_reveal to remaining games | 4e |
 | 4g | Timing tuning pass — adjust reveal_delay per game | 4f |
 | 4h | Final playtest: full arcade run with CRT + attract + boot sequence | all above |
@@ -266,13 +266,13 @@ Pressing Start triggers a choreographed boot sequence across all games. Pre-plac
 
 ## Risks & Considerations
 
-1. **Attract stub AI quality** — Some games (Tetris, Space Invaders) are harder to make convincing AI demos for. A "bad" AI attract is fine — real arcade attract modes often showed terrible gameplay. The goal is "alive and moving," not "skilled."
+1. **Attract stub AI quality** — Some games (Block Drop, Bug Blaster) are harder to make convincing AI demos for. A "bad" AI attract is fine — real arcade attract modes often showed terrible gameplay. The goal is "alive and moving," not "skilled."
 
 2. **Two scenes in memory during attract** — The real game (hidden) + attract stub are both in the tree simultaneously. This is fine for the project's lightweight procedural scenes (~5KB RAM each). The `visible = false` on the real game saves draw calls.
 
 3. **Attract stub collision with Interface Takeover** — The AO's Interface Takeover connects to UGS signals. In ATTRACT state, the Interface should be hidden (it's part of the real game tree, which is hidden). When PLAYING starts, the tree becomes visible and Interface Takeover proceeds as before. Need to verify this flow doesn't create a 1-frame flash of unstyled Interface.
 
-4. **vram_pop on respawn** — Bodies that respawn (e.g., Tetris pieces, multi-wave asteroids) will vram_pop each time. This is actually desirable — each new piece/wave feels like the hardware is "writing" new data. But if it becomes distracting, add a `pop_only_once` flag.
+4. **vram_pop on respawn** — Bodies that respawn (e.g., Block Drop pieces, multi-wave space_rocks) will vram_pop each time. This is actually desirable — each new piece/wave feels like the hardware is "writing" new data. But if it becomes distracting, add a `pop_only_once` flag.
 
 ---
 

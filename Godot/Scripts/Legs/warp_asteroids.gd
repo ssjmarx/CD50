@@ -1,4 +1,4 @@
-# Emergency teleport with temporary intangibility for Asteroids-style games.
+# Emergency teleport with temporary intangibility for Space Rocks-style games.
 # Warps to a random position, hides briefly, then reappears with collision restored.
 
 extends UniversalComponent

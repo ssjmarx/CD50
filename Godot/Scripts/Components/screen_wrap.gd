@@ -1,4 +1,4 @@
-# Asteroids-style screen wrapping. Warps parent to opposite side when off-screen.
+# Space Rocks-style screen wrapping. Warps parent to opposite side when off-screen.
 
 extends UniversalComponent
 

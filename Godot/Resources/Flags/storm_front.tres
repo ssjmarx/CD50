@@ -1,0 +1,12 @@
+[gd_resource type="Resource" script_class="FlagResource" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://Scripts/Core/flag_resource.gd" id="1_fr"]
+
+[resource]
+script = ExtResource("1_fr")
+
+flag_name = "Storm Front"
+columns = 11
+palette_keys = "MW"
+palette_colors = [Color(0.3, 0.3, 0.35, 1), Color(0.9, 0.9, 0.95, 1)]
+rows = PackedStringArray("WWMMMMMMMMM", "MWWMMMMMMMM", "MMWWMMMMMMM", "MMMWWMMMMMM", "MMMMWWMMMMM", "MMMMMWWMMMM", "MMMMMMWWMMM", "MMMMMMMWWMM", "MMMMMMMMWWM", "MMMMMMMMMWW", "MMMMMMMMMMW", "MMMMMMMMMMM")

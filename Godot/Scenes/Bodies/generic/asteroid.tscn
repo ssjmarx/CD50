@@ -10,9 +10,9 @@
 [ext_resource type="PackedScene" uid="uid://c5h0r2rnmwe4k" path="res://Scenes/Effects/death_particles.tscn" id="9_5odhs"]
 [ext_resource type="PackedScene" uid="uid://dga83l4d2rwyv" path="res://Scenes/Flow/sound_synth.tscn" id="9_xff2r"]
 
-[node name="Asteroid" type="CharacterBody2D" groups=["asteroids"]]
+[node name="Asteroid" type="CharacterBody2D" groups=["space_rocks"]]
 script = ExtResource("1_52jog")
-collision_groups = Array[String](["asteroids"])
+collision_groups = Array[String](["space_rocks"])
 
 [node name="CollisionPolygon2D" type="CollisionPolygon2D" parent="."]
 

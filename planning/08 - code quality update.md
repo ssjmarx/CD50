@@ -11,7 +11,7 @@ These files demonstrate the documentation convention the project should follow:
 - **Bodies:** `ball.gd`, `brick.gd`, `paddle.gd`, `asteroid.gd`, `triangle_ship.gd`, `ufo.gd`
 - **Brains:** `player_control.gd`, `interceptor_ai.gd`, `aim_ai.gd`, `patrol_ai.gd`, `shoot_ai.gd`
 - **Arms:** `gun_simple.gd`, `damage_on_hit.gd`, `damage_on_joust.gd`
-- **Components:** `health.gd`, `death_effect.gd`, `screen_wrap.gd`, `split_on_death.gd`, `angled_deflector.gd`, `pong_acceleration.gd`
+- **Components:** `health.gd`, `death_effect.gd`, `screen_wrap.gd`, `split_on_death.gd`, `angled_deflector.gd`, `paddle_ball_acceleration.gd`
 - **Rules:** `group_monitor.gd`, `timer.gd`, `lives_counter.gd`
 
 Each has: a top-of-file description, section headers for variable blocks, and comments on every function.
@@ -62,7 +62,7 @@ Every line commented.
 | `rotation_target.gd` | 8–12 | 5 runtime vars, no section header |
 | `tetromino_formation.gd` | 5–13 | 9 exports, no section header (only `# --- State ---` at line 15) |
 | `tetromino_formation.gd` | 21–28 | 8 runtime vars under `# --- State ---` but could use sub-grouping |
-| `warp_asteroids.gd` | 3–4 | 2 exports (under threshold, but whole file has no variable comments) |
+| `warp_space_rocks.gd` | 3–4 | 2 exports (under threshold, but whole file has no variable comments) |
 
 ### Components
 
@@ -119,7 +119,7 @@ Every line commented.
 
 - `Legs/grid_movement.gd`
 - `Legs/grid_rotation.gd`
-- `Legs/warp_asteroids.gd`
+- `Legs/warp_space_rocks.gd`
 - `Components/screen_cleanup.gd`
 - `Components/vector_engine_exhaust.gd`
 - `Rules/group_count_multiplier.gd`

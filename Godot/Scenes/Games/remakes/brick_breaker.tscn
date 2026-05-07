@@ -1,4 +1,4 @@
-[gd_scene load_steps=29 format=3 uid="uid://c4ttsm1qowkgo"]
+[gd_scene load_steps=30 format=3 uid="uid://c4ttsm1qowkgo"]
 
 [ext_resource type="Script" uid="uid://bjdgpevhahi6d" path="res://Scripts/Core/universal_game_script.gd" id="1_lmwk8"]
 [ext_resource type="PackedScene" uid="uid://b4mr1t8pdtmf3" path="res://Scenes/Bodies/generic/paddle.tscn" id="2_7epd8"]
@@ -17,6 +17,7 @@
 [ext_resource type="Script" uid="uid://cp0ni1lgml7c6" path="res://Scripts/Core/property_override.gd" id="17_th3ku"]
 [ext_resource type="PackedScene" uid="uid://craitf0mklbon" path="res://Scenes/Rules/timer.tscn" id="19_8fcjv"]
 [ext_resource type="PackedScene" uid="uid://clhg61503vle8" path="res://Scenes/Rules/variable_tuner.tscn" id="19_oqfas"]
+[ext_resource type="PackedScene" path="res://Scenes/Components/flag_palette.tscn" id="20_flag"]
 
 [sub_resource type="Resource" id="Resource_5p75n"]
 script = ExtResource("2_vu4sl")
@@ -66,13 +67,12 @@ size = Vector2(8, 368)
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_7ju07"]
 size = Vector2(640, 8)
 
-
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_kxgnb"]
 size = Vector2(18, 360)
 
-[node name="Breakout" type="Node2D"]
+[node name="Brick Breaker" type="Node2D"]
 script = ExtResource("1_lmwk8")
-game_title = "Breakout"
+game_title = "Brick Breaker"
 collision_groups = Array[ExtResource("2_vu4sl")]([SubResource("Resource_5p75n"), SubResource("Resource_kxgnb"), SubResource("Resource_e4qot"), SubResource("Resource_8fcjv"), SubResource("Resource_ksd8j"), SubResource("Resource_ardit")])
 
 [node name="Paddle" parent="." groups=["paddles"] instance=ExtResource("2_7epd8")]
@@ -183,14 +183,17 @@ property_overrides = Array[ExtResource("17_th3ku")]([SubResource("Resource_pxig7
 initial_velocity = Vector2(0, -100)
 
 [node name="WaveSpawner2" parent="." node_paths=PackedStringArray("director", "extra_directors") instance=ExtResource("13_ckqoe")]
-position = Vector2(320, 64)
+position = Vector2(320, 96)
 spawn_scene = ExtResource("17_61uu3")
 spawn_pattern = 2
 stagger_delay = 0.001
 director = NodePath("../WaveDirector")
 extra_directors = [NodePath("../WaveDirector3")]
+grid_columns = 11
+grid_rows = 12
 grid_spacing = 4
 grid_health_values = Array[int]([])
+grid_score_values = Array[int]([6, 6, 5, 5, 4, 4, 3, 3, 2, 2, 1, 1])
 
 [node name="VariableTuner" parent="." node_paths=PackedStringArray("source_node") instance=ExtResource("19_oqfas")]
 source_node = NodePath("../Area2D")
@@ -239,6 +242,8 @@ lose_life_on_clear = true
 
 [node name="WaveDirector2" parent="." instance=ExtResource("12_6wwyy")]
 trigger_value = "balls"
+
+[node name="FlagPalette" parent="." instance=ExtResource("20_flag")]
 
 [node name="GroupMonitor2" parent="." instance=ExtResource("10_vu4sl")]
 target_group = "bricks"

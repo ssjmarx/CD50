@@ -22,7 +22,7 @@
 [sub_resource type="Resource" id="Resource_5p75n"]
 script = ExtResource("2_men1n")
 group_name = "balls"
-targets = Array[String](["paddles", "walls", "floors", "asteroids"])
+targets = Array[String](["paddles", "walls", "floors", "space_rocks"])
 metadata/_custom_type_script = "uid://bfkr4fdx316o5"
 
 [sub_resource type="Resource" id="Resource_kxgnb"]
@@ -37,8 +37,8 @@ metadata/_custom_type_script = "uid://bfkr4fdx316o5"
 
 [sub_resource type="Resource" id="Resource_8fcjv"]
 script = ExtResource("2_men1n")
-group_name = "asteroids"
-targets = Array[String](["walls", "asteroids", "asteroidfloor"])
+group_name = "space_rocks"
+targets = Array[String](["walls", "space_rocks", "asteroidfloor"])
 metadata/_custom_type_script = "uid://bfkr4fdx316o5"
 
 [sub_resource type="Resource" id="Resource_ksd8j"]
@@ -72,9 +72,9 @@ metadata/_custom_type_script = "uid://cp0ni1lgml7c6"
 
 [sub_resource type="Resource" id="Resource_t7ne2"]
 script = ExtResource("9_hn3l5")
-node_path = NodePath("PongAcceleration")
+node_path = NodePath("Paddle BallAcceleration")
 property_name = "target_group"
-value = "asteroids"
+value = "space_rocks"
 metadata/_custom_type_script = "uid://cp0ni1lgml7c6"
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_per38"]
@@ -96,9 +96,9 @@ metadata/_custom_type_script = "uid://cp0ni1lgml7c6"
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_kxgnb"]
 size = Vector2(18, 360)
 
-[node name="Breaksteroids" type="Node2D"]
+[node name="Rock Breaker" type="Node2D"]
 script = ExtResource("1_3ahes")
-game_title = "Breaksteroids"
+game_title = "Rock Breaker"
 collision_groups = Array[ExtResource("2_men1n")]([SubResource("Resource_5p75n"), SubResource("Resource_kxgnb"), SubResource("Resource_e4qot"), SubResource("Resource_8fcjv"), SubResource("Resource_ksd8j"), SubResource("Resource_ardit"), SubResource("Resource_q3q3d")])
 
 [node name="Paddle" parent="." groups=["paddles"] instance=ExtResource("3_a83tw")]
@@ -275,10 +275,10 @@ lose_life_on_clear = true
 trigger_value = "balls"
 
 [node name="GroupMonitor2" parent="." instance=ExtResource("18_6v0nt")]
-target_group = "asteroids"
+target_group = "space_rocks"
 
 [node name="WaveDirector3" parent="." instance=ExtResource("15_tlebt")]
-trigger_value = "asteroids"
+trigger_value = "space_rocks"
 
 [node name="AsteroidFloor" type="StaticBody2D" parent="."]
 position = Vector2(324, 372)

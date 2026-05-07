@@ -1,6 +1,6 @@
 [gd_resource type="Resource" script_class="ArcadeGameEntry" load_steps=6 format=3 uid="uid://cirxnwcy2g34q"]
 
-[ext_resource type="PackedScene" uid="uid://bpj70hfifidra" path="res://Scenes/Games/remakes/tetris.tscn" id="1_ecjqk"]
+[ext_resource type="PackedScene" uid="uid://bpj70hfifidra" path="res://Scenes/Games/remakes/block_drop.tscn" id="1_ecjqk"]
 [ext_resource type="Script" uid="uid://cp0ni1lgml7c6" path="res://Scripts/Core/property_override.gd" id="1_l06m0"]
 [ext_resource type="Script" uid="uid://bdsbfe65crnbu" path="res://Scripts/Hub/arcade_game_entry.gd" id="2_ecjqk"]
 

@@ -1,6 +1,6 @@
 [gd_resource type="Resource" script_class="ArcadeGameEntry" load_steps=11 format=3 uid="uid://wtj1l710dfsc"]
 
-[ext_resource type="PackedScene" uid="uid://bjs0gtnsur7e6" path="res://Scenes/Games/remakes/asteroids.tscn" id="1_vybgi"]
+[ext_resource type="PackedScene" uid="uid://bjs0gtnsur7e6" path="res://Scenes/Games/remakes/space_rocks.tscn" id="1_vybgi"]
 [ext_resource type="Script" uid="uid://cp0ni1lgml7c6" path="res://Scripts/Core/property_override.gd" id="2_okycj"]
 [ext_resource type="Script" uid="uid://bdsbfe65crnbu" path="res://Scripts/Hub/arcade_game_entry.gd" id="3_j5aq8"]
 

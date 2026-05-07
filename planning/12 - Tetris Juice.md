@@ -1,6 +1,6 @@
-# 12 — Tetris Juice
+# 12 — Block Drop Juice
 
-Audio and visual enhancements for the Tetris remake, organized by implementation order. Reuses existing components (`sound_synth`, `interface`, `death_effect`) and signal flows wherever possible.
+Audio and visual enhancements for the Block Drop remake, organized by implementation order. Reuses existing components (`sound_synth`, `interface`, `death_effect`) and signal flows wherever possible.
 
 ---
 
@@ -28,7 +28,7 @@ All juice connects to these existing signals — no new signals needed for most 
 
 ## Phase 1 — Sound Effects (sound_synth instances)
 
-All sounds use the existing `sound_synth.tscn` in ON_SIGNAL mode. Each is a scene instance placed in the Tetris game scene, wired to a signal source.
+All sounds use the existing `sound_synth.tscn` in ON_SIGNAL mode. Each is a scene instance placed in the Block Drop game scene, wired to a signal source.
 
 ### 1.1 Piece Lock Thunk
 - **Sound:** Low square wave, DECAY effect, short duration (~0.08s), note C3
@@ -102,7 +102,7 @@ All sounds use the existing `sound_synth.tscn` in ON_SIGNAL mode. Each is a scen
 
 ### 2.4 Next Piece Box / Board Frame
 - **Behavior:** Drawn UI elements around the playfield
-- **Implementation:** These are scene-level additions to `tetris.tscn` — either:
+- **Implementation:** These are scene-level additions to `block_drop.tscn` — either:
   - A: Drawn in Godot using `ColorRect` / `Line2D` / custom drawing
   - B: Made with Kenney assets
 - **User preference:** Try drawn version first

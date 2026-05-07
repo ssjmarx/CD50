@@ -1,0 +1,8 @@
+[gd_scene load_steps=3 format=3]
+
+[ext_resource type="Script" uid="uid://c3c6y5jol3knc" path="res://Scripts/Components/death_effect.gd" id="1_script"]
+[ext_resource type="PackedScene" path="res://Scenes/Effects/death_brick_explode.tscn" id="2_effect"]
+
+[node name="DeathEffectBrick" type="Node2D"]
+script = ExtResource("1_script")
+effect_scenes = Array[PackedScene]([ExtResource("2_effect")])

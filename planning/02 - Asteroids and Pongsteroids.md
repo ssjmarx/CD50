@@ -1,22 +1,22 @@
-# Plan: Asteroids & Pongsteroids — Component Architecture Expansion
+# Plan: Space Rocks & Meteor Rally — Component Architecture Expansion
 
 ## Goal
 
-1. **Refactor Pong** — Extract hardwired logic into reusable components (input, movement, deflection, speed boost)
-2. **Build Asteroids** — A new game that introduces rotation/thrust physics, screen wrapping, shooting, and destructible physics objects
-3. **Build Pongsteroids** — A mashup game combining Pong arena + Asteroids, proving the component architecture can compose hybrids
+1. **Refactor Paddle Ball** — Extract hardwired logic into reusable components (input, movement, deflection, speed boost)
+2. **Build Space Rocks** — A new game that introduces rotation/thrust physics, screen wrapping, shooting, and destructible physics objects
+3. **Build Meteor Rally** — A mashup game combining Paddle Ball arena + Space Rocks, proving the component architecture can compose hybrids
 
 ---
 
 ## Design Philosophy: Extract on Demand
 
-Pong and Breakout are working. Now we extract patterns into components *because Asteroids needs them*, not speculatively. Each refactor should leave Pong working identically.
+Paddle Ball and Brick Breaker are working. Now we extract patterns into components *because Space Rocks needs them*, not speculatively. Each refactor should leave Paddle Ball working identically.
 
 ---
 
-## Part 1: Pong Refactors
+## Part 1: Paddle Ball Refactors
 
-Before building Asteroids, extract the following from existing components so they can be reused.
+Before building Space Rocks, extract the following from existing components so they can be reused.
 
 ### 1.1 Ball: Extract Speed Boost into Component
 
@@ -44,14 +44,14 @@ Before building Asteroids, extract the following from existing components so the
 **Target state:**
 ```
 Ball (CharacterBody2D)
-├── CollisionShape2D      ← Layer 1: Physics (walls, paddles, asteroids)
-├── Hitbox (Area2D)       ← Layer 2: Gameplay (damages asteroids, bricks)
+├── CollisionShape2D      ← Layer 1: Physics (walls, paddles, space_rocks)
+├── Hitbox (Area2D)       ← Layer 2: Gameplay (damages space_rocks, bricks)
 │   └── CollisionShape2D
 ├── SpeedBoost (Node)
 └── AudioStreamPlayer2D
 ```
 
-**Why:** In Pongsteroids, the ball needs to physically bounce off asteroids AND trigger their death via gameplay hitbox — simultaneously but independently. Physics bounce ≠ gameplay damage.
+**Why:** In Meteor Rally, the ball needs to physically bounce off space_rocks AND trigger their death via gameplay hitbox — simultaneously but independently. Physics bounce ≠ gameplay damage.
 
 ### 1.3 Paddle: Add Hurtbox Area2D
 
@@ -66,11 +66,11 @@ Paddle (CharacterBody2D)
 └── Deflector (Node)      ← Bounce angle calculation
 ```
 
-**Why:** In Pongsteroids, asteroids hitting the paddle is a gameplay event (damage/stun), not just a physics bounce. The Hurtbox catches this safely — if no Health component exists, the signal just fires harmlessly.
+**Why:** In Meteor Rally, space_rocks hitting the paddle is a gameplay event (damage/stun), not just a physics bounce. The Hurtbox catches this safely — if no Health component exists, the signal just fires harmlessly.
 
 ### 1.4 Extract Deflector Logic from Paddle
 
-**Current state:** `paddle.gd` has `bounce_offset()` which calculates hit-angle ratio, and `Pong.gd` applies the `physics_angle.x * 5` multiplier.
+**Current state:** `paddle.gd` has `bounce_offset()` which calculates hit-angle ratio, and `Paddle Ball.gd` applies the `physics_angle.x * 5` multiplier.
 
 **Target state:** A `Deflector` component on the paddle that encapsulates the full angle-calculation logic.
 
@@ -91,7 +91,7 @@ The interceptor already follows the "Brain" pattern — it calls `parent.set_dir
 
 ---
 
-## Part 2: Asteroids
+## Part 2: Space Rocks
 
 ### New Components Required
 
@@ -104,7 +104,7 @@ The interceptor already follows the "Brain" pattern — it calls `parent.set_dir
 **Behavior:**
 - In `_physics_process()`, checks parent's global position
 - If parent exits one side of viewport, teleports to opposite side
-- Reusable for: asteroids, ship, bullets, anything in a wrapping space
+- Reusable for: space_rocks, ship, bullets, anything in a wrapping space
 
 #### 2.2 Thrust Component (Rotation-Based Movement)
 | Property | Type | Description |
@@ -147,7 +147,7 @@ The interceptor already follows the "Brain" pattern — it calls `parent.set_dir
 ```
 Bullet (CharacterBody2D)
 ├── CollisionShape2D      ← Layer 1: Physics
-├── Hitbox (Area2D)       ← Layer 2: Gameplay (damages asteroids)
+├── Hitbox (Area2D)       ← Layer 2: Gameplay (damages space_rocks)
 │   └── CollisionShape2D
 └── ScreenWrap (Node)     ← Wraps like everything else
 ```
@@ -171,8 +171,8 @@ Bullet (CharacterBody2D)
 
 #### 2.7 Asteroid Scene
 ```
-Asteroid (CharacterBody2D) — group: "asteroids"
-├── CollisionShape2D      ← Layer 1: Physics (ball, ship, other asteroids)
+Asteroid (CharacterBody2D) — group: "space_rocks"
+├── CollisionShape2D      ← Layer 1: Physics (ball, ship, other space_rocks)
 ├── Hitbox (Area2D)       ← Layer 2: Gameplay (damages ship)
 │   └── CollisionShape2D
 ├── Hurtbox (Area2D)      ← Layer 2: Gameplay (receives damage from ball/bullets)
@@ -193,58 +193,58 @@ Asteroid (CharacterBody2D) — group: "asteroids"
 ```
 Ship (CharacterBody2D) — group: "ship"
 ├── CollisionShape2D
-├── Hurtbox (Area2D)      ← Receives damage from asteroids
+├── Hurtbox (Area2D)      ← Receives damage from space_rocks
 │   └── CollisionShape2D
-├── Health (Node)         ← HP = 1 (one-hit death, traditional Asteroids)
+├── Health (Node)         ← HP = 1 (one-hit death, traditional Space Rocks)
 ├── RotateInput (Node)    ← Handles rotation + thrust + shoot input
 ├── Thrust (Node)         ← Applies velocity based on rotation
 ├── Shooter (Node)        ← Fires bullets
 └── ScreenWrap (Node)     ← Wraps around screen
 ```
 
-### Asteroids Game Coordinator (`asteroids.gd`)
+### Space Rocks Game Coordinator (`space_rocks.gd`)
 
 **Responsibilities:**
-- Spawn initial wave of large asteroids (e.g., 4) with random positions and velocities
+- Spawn initial wave of large space_rocks (e.g., 4) with random positions and velocities
 - Listen for asteroid `died` signals → award score (large=20, medium=50, small=100)
 - Listen for ship `died` signal → lose a life, respawn ship (or game over)
 - Track lives (start at 3)
-- When all asteroids destroyed → spawn next wave (more asteroids)
+- When all space_rocks destroyed → spawn next wave (more space_rocks)
 - Game over: show text, ENTER to restart, ESC to quit
 
 ### Collision Layers Setup
 
 | Layer | Name | Used By |
 |-------|------|---------|
-| 1 | Physics | Ship, Asteroids, Bullets, Ball, Paddles, Walls |
+| 1 | Physics | Ship, Space Rocks, Bullets, Ball, Paddles, Walls |
 | 2 | Gameplay | Hitboxes, Hurtboxes |
 
 Physics bodies use Layer 1 for solid collisions. Area2D hitboxes/hurtboxes use Layer 2 for damage detection. This keeps "bouncing" separate from "damage."
 
 ---
 
-## Part 3: Pongsteroids (The Mashup)
+## Part 3: Meteor Rally (The Mashup)
 
 ### Concept
-Standard Pong (two paddles, one ball, scoring goals) with asteroids floating through the arena. The ball bounces off asteroids (physics), destroys them (gameplay), and does NOT speed up on asteroid hits — only on paddle hits.
+Standard Paddle Ball (two paddles, one ball, scoring goals) with space_rocks floating through the arena. The ball bounces off space_rocks (physics), destroys them (gameplay), and does NOT speed up on asteroid hits — only on paddle hits.
 
-### Game Coordinator (`pongsteroids.gd`)
+### Game Coordinator (`meteor_rally.gd`)
 
-**Inherits or heavily references `Pong.gd` logic with additions:**
+**Inherits or heavily references `Paddle Ball.gd` logic with additions:**
 
-- Spawn standard Pong setup (2 paddles, ball, walls, goals)
-- Timer spawns large asteroids from random edges every N seconds
+- Spawn standard Paddle Ball setup (2 paddles, ball, walls, goals)
+- Timer spawns large space_rocks from random edges every N seconds
 - Ball collision logic branches:
-  - **Paddle hit:** Deflect + accelerate (standard Pong) + reset multiplier
+  - **Paddle hit:** Deflect + accelerate (standard Paddle Ball) + reset multiplier
   - **Asteroid hit (physics):** Bounce (reflect off normal), do NOT accelerate
   - **Asteroid hit (gameplay):** Ball's Hitbox triggers asteroid's Hurtbox → asteroid takes damage → potentially splits
   - **Wall hit:** Standard bounce
-- Asteroids can hit paddles (Hurtbox detects, optional stun/damage)
-- Scoring: Pong goals + asteroid destruction points
+- Space Rocks can hit paddles (Hurtbox detects, optional stun/damage)
+- Scoring: Paddle Ball goals + asteroid destruction points
 
 ### Scene Tree
 ```
-Pongsteroids (Node2D) — pongsteroids.gd
+Meteor Rally (Node2D) — meteor_rally.gd
 ├── Walls (StaticBody2D)
 ├── player (Paddle)           ← Refactored paddle with Hurtbox
 ├── opponent (Paddle)         ← With AI Interceptor
@@ -252,7 +252,7 @@ Pongsteroids (Node2D) — pongsteroids.gd
 ├── ball (Ball)               ← Refactored ball with Hitbox
 ├── P1 Goal (Area2D)
 ├── P2 Goal (Area2D)
-├── AsteroidSpawner (Timer)   ← Spawns asteroids periodically
+├── AsteroidSpawner (Timer)   ← Spawns space_rocks periodically
 ├── UI
 │   ├── P1 Score
 │   ├── P2 Score
@@ -262,24 +262,24 @@ Pongsteroids (Node2D) — pongsteroids.gd
 ```
 
 ### Key Design Test
-Pongsteroids proves the architecture works if:
-1. **Paddle scene** works in Pong, Breakout, and Pongsteroids without modification
+Meteor Rally proves the architecture works if:
+1. **Paddle scene** works in Paddle Ball, Brick Breaker, and Meteor Rally without modification
 2. **Ball scene** handles both paddle-deflection and asteroid-bounce without game-specific code in the ball script
-3. **Asteroid scene** works identically in Asteroids and Pongsteroids
-4. **Health component** works on bricks, asteroids, and (optionally) the ship
+3. **Asteroid scene** works identically in Space Rocks and Meteor Rally
+4. **Health component** works on bricks, space_rocks, and (optionally) the ship
 
 ---
 
 ## Build Order
 
-### Phase A: Pong Refactors (Don't Break Pong!)
-1. Extract `SpeedBoost` component from ball → verify Pong + Breakout still work
+### Phase A: Paddle Ball Refactors (Don't Break Paddle Ball!)
+1. Extract `SpeedBoost` component from ball → verify Paddle Ball + Brick Breaker still work
 2. Add `Hitbox` Area2D child to ball → verify physics still works
-3. Add `Hurtbox` Area2D child to paddle → verify Pong still works
-4. Extract `Deflector` component from paddle → verify Pong bounce angles unchanged
+3. Add `Hurtbox` Area2D child to paddle → verify Paddle Ball still works
+4. Extract `Deflector` component from paddle → verify Paddle Ball bounce angles unchanged
 5. Verify AI Interceptor still works with refactored paddle
 
-### Phase B: Asteroids Components
+### Phase B: Space Rocks Components
 6. Build `ScreenWrap` component
 7. Build `Thrust` component (rotation-based movement)
 8. Build `RotateInput` component
@@ -288,21 +288,21 @@ Pongsteroids proves the architecture works if:
 11. Build `Asteroid` scene (Large, Medium, Small variants)
 12. Build `Ship` scene
 
-### Phase C: Asteroids Game
-13. Build `asteroids.gd` game coordinator
-14. Build `Asteroids.tscn` scene
+### Phase C: Space Rocks Game
+13. Build `space_rocks.gd` game coordinator
+14. Build `Space Rocks.tscn` scene
 15. Playtest and tune
 
-### Phase D: Pongsteroids
-16. Build `pongsteroids.gd` (Pong coordinator + asteroid spawning)
-17. Build `Pongsteroids.tscn` scene
-18. Tune ball behavior (bounce off asteroids but don't accelerate)
+### Phase D: Meteor Rally
+16. Build `meteor_rally.gd` (Paddle Ball coordinator + asteroid spawning)
+17. Build `Meteor Rally.tscn` scene
+18. Tune ball behavior (bounce off space_rocks but don't accelerate)
 19. Playtest the mashup
 
 ---
 
 ## Risks / Open Questions
 
-- **CharacterBody2D vs RigidBody2D for asteroids:** CharacterBody2D gives precise control but requires manual collision resolution between asteroids. RigidBody2D handles elastic collisions automatically but reduces control. **Recommendation:** Start with CharacterBody2D (consistent with existing architecture). If asteroid-to-asteroid bouncing feels wrong, switch to RigidBody2D for asteroids only.
-- **Ball behavior in Pongsteroids:** The ball needs to physically bounce off asteroids AND trigger their gameplay death simultaneously. The Layer separation (Physics Layer 1 vs Gameplay Layer 2) handles this, but needs testing to ensure the timing works (physics bounce + health reduction in the same frame).
-- **Collision layer complexity:** Adding Layer 2 for gameplay hitboxes/hurtboxes requires updating existing scenes. Pong and Breakout can stay on Layer 1 only until they need the split.
+- **CharacterBody2D vs RigidBody2D for space_rocks:** CharacterBody2D gives precise control but requires manual collision resolution between space_rocks. RigidBody2D handles elastic collisions automatically but reduces control. **Recommendation:** Start with CharacterBody2D (consistent with existing architecture). If asteroid-to-asteroid bouncing feels wrong, switch to RigidBody2D for space_rocks only.
+- **Ball behavior in Meteor Rally:** The ball needs to physically bounce off space_rocks AND trigger their gameplay death simultaneously. The Layer separation (Physics Layer 1 vs Gameplay Layer 2) handles this, but needs testing to ensure the timing works (physics bounce + health reduction in the same frame).
+- **Collision layer complexity:** Adding Layer 2 for gameplay hitboxes/hurtboxes requires updating existing scenes. Paddle Ball and Brick Breaker can stay on Layer 1 only until they need the split.

@@ -67,11 +67,11 @@ volume = 0.1
 exclusive = true
 
 [node name="ShootAi2" parent="." instance=ExtResource("7_0wj3c")]
-target_group = "asteroids"
+target_group = "space_rocks"
 vision_cone_angle = 360.0
 
 [node name="AimAi2" parent="." instance=ExtResource("8_rcfo5")]
-target_group = "asteroids"
+target_group = "space_rocks"
 turning_speed = 180
 
 [node name="RingSpawner" parent="." instance=ExtResource("13_yedcn")]

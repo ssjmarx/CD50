@@ -8,12 +8,12 @@ Concept: A commercial collection of 10 classic arcade remakes with a modular "co
 The primary technical directive is Modularity. We are not building 10 separate games; we are building one robust framework that runs 10 distinct "Game Modes." 
 A. The Entity-Component Approach 
 
-To allow Galaga enemies to exist in a Breakout level, we must decouple Behavior from Context. 
+To allow Galaga enemies to exist in a Brick Breaker level, we must decouple Behavior from Context. 
 
      Actors: All game objects (Paddles, Ships, Enemies, Falling Tetrominoes) inherit from a base Actor.gd that handles standard signals (death, spawn, collision).
      Components: Scripts should be attached as nodes to provide specific capabilities.
-         Component_Movement_PlayerPong.gd (moves up/down)
-         Component_Movement_ShipAsteroids.gd (roams freely)
+         Component_Movement_PlayerPaddle Ball.gd (moves up/down)
+         Component_Movement_ShipSpace Rocks.gd (roams freely)
          Component_Movement_Tetromino.gd (falls in grid)
          Component_Shooter.gd (handles spawning projectiles)
          Component_Breakable.gd (handles health/bricks)
@@ -53,7 +53,7 @@ Hub Data Structure
 Each Planet is a Resource file (e.g., PlanetData.tres) containing: 
 
      game_scene: PackedScene (The main game scene).
-     display_name: String (e.g., "Breakout").
+     display_name: String (e.g., "Brick Breaker").
      orbit_speed: float.
      moons: Array[MoonData].
      high_score: int.
@@ -63,11 +63,11 @@ Each Planet is a Resource file (e.g., PlanetData.tres) containing:
 
 These are the base remakes. They must be built using the modular components defined in Section 1. 
 
-    Planet Pong
+    Planet Paddle Ball
          Core Loop: Two paddles, one ball, scoring walls.
-         Key Component: Movement_PongBall (bounces at angles), Input_Paddle.
+         Key Component: Movement_Paddle BallBall (bounces at angles), Input_Paddle.
           
-    Planet Breakout
+    Planet Brick Breaker
          Core Loop: Player paddle, ball, grid of breakable bricks.
          Key Component: GridMap_Bricks (manages brick health and placement).
           
@@ -91,11 +91,11 @@ These are the base remakes. They must be built using the modular components defi
          Core Loop: Point-and-click defense, intercept missiles.
          Key Component: Input_MouseTargeting, Projectile_Missile.
           
-    Planet Asteroids
+    Planet Space Rocks
          Core Loop: 360-degree movement, shoot rocks, wrap-around screen.
          Key Component: Physics_ScreenWrap, Shatter_Spawner (big rock -> 2 small rocks).
           
-    Planet Tetris
+    Planet Block Drop
          Core Loop: Falling grid pieces, line clearing, increasing speed.
          Key Component: Grid_Matrix (collision logic), Piece_Rotator.
           
@@ -110,17 +110,17 @@ This section demonstrates the power of the modular architecture. Moons are varia
 
 Example Moon Designs: 
 
-     Moon: Galaga-Breakout (Orbiting Breakout)
-         Concept: Play Breakout, but the bricks are Galaga enemies that shoot back at you.
-         Implementation: Load the Breakout scene. Replace static Brick nodes with Enemy_Galaga nodes. Add Component_Shooter to the bricks.
+     Moon: Galaga-Brick Breaker (Orbiting Brick Breaker)
+         Concept: Play Brick Breaker, but the bricks are Galaga enemies that shoot back at you.
+         Implementation: Load the Brick Breaker scene. Replace static Brick nodes with Enemy_Galaga nodes. Add Component_Shooter to the bricks.
          
-     Moon: Tetris-Kong (Orbiting Donkey Kong)
-         Concept: The platforms are made of falling Tetris blocks. The player must climb them as they stack.
-         Implementation: Load the Donkey Kong scene. Replace the static TileMap with a Tetris_Grid_Matrix. Player uses PlatformerController to jump on falling tetrominoes.
+     Moon: Block Drop-Kong (Orbiting Donkey Kong)
+         Concept: The platforms are made of falling Block Drop blocks. The player must climb them as they stack.
+         Implementation: Load the Donkey Kong scene. Replace the static TileMap with a Block Drop_Grid_Matrix. Player uses PlatformerController to jump on falling tetrominoes.
          
-     Moon: Asteroids-Pong (Orbiting Pong)
-         Concept: Play Pong, but random Asteroids float in the middle of the arena, deflecting the ball.
-         Implementation: Load the Pong arena. Spawn Asteroid nodes with Physics_RigidBody in the center zone.
+     Moon: Space Rocks-Paddle Ball (Orbiting Paddle Ball)
+         Concept: Play Paddle Ball, but random Space Rocks float in the middle of the arena, deflecting the ball.
+         Implementation: Load the Paddle Ball arena. Spawn Asteroid nodes with Physics_RigidBody in the center zone.
          
      
 

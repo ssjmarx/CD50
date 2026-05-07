@@ -61,11 +61,10 @@ volume = 0.1
 exclusive = true
 
 [node name="ShootAi2" parent="." instance=ExtResource("7_sfmur")]
-target_group = "asteroids"
+target_group = "space_rocks"
 
 [node name="AimAi2" parent="." instance=ExtResource("8_i51fb")]
-target_group = "asteroids"
+target_group = "space_rocks"
 
 [node name="ScoreOnDeath" parent="." instance=ExtResource("13_lx6du")]
 base_score = 10
-

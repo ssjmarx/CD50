@@ -15,8 +15,8 @@
 
 [node name="UFO" type="CharacterBody2D" groups=["enemies"]]
 script = ExtResource("1_1yl3i")
-width = 16
-height = 16
+width = 32
+height = 8
 x_min = -100.0
 x_max = 740.0
 y_min = -100.0
@@ -55,10 +55,10 @@ aim_inaccuracy = 180
 effect_scenes = Array[PackedScene]([ExtResource("11_51k15")])
 
 [node name="ShootAi2" parent="." instance=ExtResource("7_af45i")]
-target_group = "asteroids"
+target_group = "space_rocks"
 
 [node name="AimAi2" parent="." instance=ExtResource("8_lh6uf")]
-target_group = "asteroids"
+target_group = "space_rocks"
 
 [node name="ScoreOnDeath" parent="." instance=ExtResource("12_1yl3i")]
 base_score = 10

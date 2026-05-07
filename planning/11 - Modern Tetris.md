@@ -1,8 +1,8 @@
-# Modern Tetris Features
+# Modern Block Drop Features
 
 ## Overview
 
-Enhance the CD50 Tetris implementation with modern features while preserving full backward compatibility to original Tetris (1984) through toggleable components and export variables. Every feature can be disabled in the scene editor to downgrade to any historical version.
+Enhance the CD50 Block Drop implementation with modern features while preserving full backward compatibility to original Block Drop (1984) through toggleable components and export variables. Every feature can be disabled in the scene editor to downgrade to any historical version.
 
 ### Version Reference
 
@@ -12,7 +12,7 @@ Enhance the CD50 Tetris implementation with modern features while preserving ful
 | **Spectrum HoloByte** | 1988 | Short lock delay, simple scoring, Russian visual theme |
 | **Nintendo NES** | 1989 | Lock delay, level speed curve, NES scoring table |
 | **Nintendo Game Boy** | 1989 | Lock delay, battery save, simple scoring |
-| **Tetris Guideline** | 2001+ | Ghost, hold, 7-bag, lock delay with move limit, T-spin, SRS rotation |
+| **Block Drop Guideline** | 2001+ | Ghost, hold, 7-bag, lock delay with move limit, T-spin, SRS rotation |
 | **Modern Guideline** | 2018+ | All 2001 features + T-spin mini, combo, back-to-back bonus |
 
 ---
@@ -302,7 +302,7 @@ var _can_hold: bool = true         # Reset to true when new piece spawns
 #### New UGS Signal (add to game coordinator or via spawner)
 
 ```gdscript
-# On the game node (universal_game_script or tetris coordinator):
+# On the game node (universal_game_script or block_drop coordinator):
 signal hold_requested
 ```
 
@@ -590,7 +590,7 @@ This lets the same scoring component serve single-player, versus, and cooperativ
 # 2001+:             true
 @export var enable_combo: bool = true
 
-# Enable back-to-back bonus (1.5× for consecutive Tetrises or T-spins).
+# Enable back-to-back bonus (1.5× for consecutive Block Dropes or T-spins).
 # Original/NES/GB:   false
 # 2001:              false (not in early Guideline)
 # Modern:            true
@@ -651,8 +651,8 @@ This lets the same scoring component serve single-player, versus, and cooperativ
 # Modern:           [0, 50, 100, 150, 200, 300, 400, 500, ...]
 @export var combo_table: Array[int] = [0, 50, 100, 150, 200, 300, 400, 500]
 
-# Back-to-back multiplier applied to Tetrises and T-spins when the
-# previous clear was also a Tetris or T-spin.
+# Back-to-back multiplier applied to Block Dropes and T-spins when the
+# previous clear was also a Block Drop or T-spin.
 # Original/NES/GB:  N/A (feature off)
 # 2001:             N/A
 # Modern:           1.5 (50% bonus)
@@ -668,7 +668,7 @@ This lets the same scoring component serve single-player, versus, and cooperativ
 
 ```gdscript
 var _combo_count: int = 0            # Consecutive drops that cleared ≥1 line
-var _is_b2b_eligible: bool = false   # Last clear was Tetris (4) or T-spin
+var _is_b2b_eligible: bool = false   # Last clear was Block Drop (4) or T-spin
 var _last_t_spin: bool = false       # Last piece lock was T-spin
 var _last_t_spin_mini: bool = false  # Last piece lock was T-spin mini
 ```
@@ -696,13 +696,13 @@ func _ready() -> void:
      If T-spin full:   lookup t_spin_table[line_count] × level
      If T-spin mini:   lookup t_spin_mini_table[line_count] × level
      If regular:        lookup score_table[line_count] × level
-4. If enable_back_to_back AND _is_b2b_eligible AND (Tetris or T-spin):
+4. If enable_back_to_back AND _is_b2b_eligible AND (Block Drop or T-spin):
      Apply b2b_multiplier to base score
 5. If enable_combo AND _combo_count > 0:
      Add combo_table[_combo_count] (capped to table size)
 6. Route total score via _apply_score(total, line_score_type)
 7. Route combo bonus via _apply_score(combo_bonus, combo_score_type)
-8. Update _is_b2b_eligible = (Tetris or T-spin)
+8. Update _is_b2b_eligible = (Block Drop or T-spin)
 9. If enable_combo: increment _combo_count
 10. If enable_level_up_multiplier AND level changed:
       game.add_multiplier(level_up_multiplier_bonus)
@@ -778,7 +778,7 @@ These exports already exist in `tetromino_spawner.gd` and should be set per vers
 | 4 | Hold piece | `hold_relay.gd` (new), `tetromino_spawner.gd` (major), `.tscn` (new) | High |
 | 5 | T-spin detection | `t_spin_detector.gd` (new), `.tscn` (new) | High |
 | 6 | Enhanced scoring | `line_clear_monitor.gd` (major) | High |
-| 7 | Scene composition | `tetris.tscn` — attach new components, configure exports | Medium |
+| 7 | Scene composition | `block_drop.tscn` — attach new components, configure exports | Medium |
 
 ---
 
@@ -796,11 +796,11 @@ These exports already exist in `tetromino_spawner.gd` and should be set per vers
 | `Scenes/Components/ghost_piece.tscn` | **Create** | Ghost piece scene |
 | `Scenes/Components/hold_relay.tscn` | **Create** | Hold relay scene |
 | `Scenes/Components/t_spin_detector.tscn` | **Create** | T-spin detector scene |
-| `Scenes/Games/remakes/tetris.tscn` | Update | Attach new components, configure exports |
+| `Scenes/Games/remakes/block_drop.tscn` | Update | Attach new components, configure exports |
 
 ---
 
-## "Electronika 60" Configuration (Minimal Tetris)
+## "Electronika 60" Configuration (Minimal Block Drop)
 
 To recreate the original 1984 experience, configure in the scene editor:
 
@@ -828,7 +828,7 @@ Remove from active_piece_components:
   grid_rotation_advanced.tscn  (original had no rotate button)
 ```
 
-## "NES Tetris" Configuration
+## "NES Block Drop" Configuration
 
 ```
 tetromino_spawner:

@@ -1,6 +1,6 @@
 [gd_resource type="Resource" script_class="ArcadeGameEntry" load_steps=7 format=3 uid="uid://x1w7jhywtp3r"]
 
-[ext_resource type="PackedScene" uid="uid://c4ttsm1qowkgo" path="res://Scenes/Games/remakes/breakout.tscn" id="1_8h1ts"]
+[ext_resource type="PackedScene" uid="uid://c4ttsm1qowkgo" path="res://Scenes/Games/remakes/brick_breaker.tscn" id="1_8h1ts"]
 [ext_resource type="Script" uid="uid://cp0ni1lgml7c6" path="res://Scripts/Core/property_override.gd" id="2_da73w"]
 [ext_resource type="Script" uid="uid://bdsbfe65crnbu" path="res://Scripts/Hub/arcade_game_entry.gd" id="3_tvrsh"]
 

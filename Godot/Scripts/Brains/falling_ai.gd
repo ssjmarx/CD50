@@ -1,4 +1,4 @@
-# AI brain that emits a move signal at regular intervals, used for Tetris-style falling movement.
+# AI brain that emits a move signal at regular intervals, used for Block Drop-style falling movement.
 
 extends UniversalComponent
 

@@ -4,7 +4,7 @@
 
 [node name="Tetromino" type="CharacterBody2D" groups=["tetrominos"]]
 script = ExtResource("1_bg046")
-color = Color(0, 0, 1, 1)
+color = Color(1, 0.45, 0, 1)
 single_cell = true
 collision_groups = Array[String](["tetrominos", "settled_pieces"])
 

@@ -1,4 +1,4 @@
-# Plan 06: Asteroids Polish and More Remix Games
+# Plan 06: Space Rocks Polish and More Remix Games
 
 **Status:** 🔄 Planning  
 **Prerequisite:** Plan 05 ✅ (all games componentized)
@@ -7,7 +7,7 @@
 
 ## Objective
 
-Full Asteroids recreation: ship death animation, UFO enemy, warp, reactive music. Input system refactor for remappable buttons. Three new remix games that stress-test the component architecture.
+Full Space Rocks recreation: ship death animation, UFO enemy, warp, reactive music. Input system refactor for remappable buttons. Three new remix games that stress-test the component architecture.
 
 ---
 
@@ -43,7 +43,7 @@ PlayerControl → parent.button_pressed(InputEvent)
 - Components that listen to `shoot`/`thrust` are unaffected
 
 **New component pattern:**
-- `asteroids_warp` (and future components) connect to `parent.action`
+- `space_rocks_warp` (and future components) connect to `parent.action`
 - Filter inside the callback: `if button.is_action("button_3"): ...`
 - This means every game action is remappable through Godot's Input Map — no code changes needed to rebind
 
@@ -103,7 +103,7 @@ DeathEffect (UniversalComponent)
 │   └── Effect scenes handle their own lifetime (DieOnTimer)
 ```
 
-### Scene Assembly for Asteroids
+### Scene Assembly for Space Rocks
 
 **Asteroid death:** asteroid.tscn already has `SplitOnDeath` → add `DeathEffect` with `[death_effect_particles.tscn]`
 
@@ -191,7 +191,7 @@ UFO (UniversalBody)
 
 **Result:** Early game = frequent large UFOs (slow, inaccurate, low-value). Late game = frequent small UFOs (fast, precise, high-value). At most one UFO on screen at a time.
 
-**Integration into Asteroids (`asteroids.tscn`):**
+**Integration into Space Rocks (`space_rocks.tscn`):**
 ```
 ├── LargeUfoTimer (Timer, auto_start, wait_time=10, adjust_on_loop=+2.0)
 │   → WaveDirector → WaveSpawner
@@ -214,10 +214,10 @@ UFO (UniversalBody)
 
 ## Part 4: Warp
 
-**New Component: `asteroids_warp` (Leg)**
+**New Component: `space_rocks_warp` (Leg)**
 
 ```
-AsteroidsWarp (UniversalComponent)
+Space RocksWarp (UniversalComponent)
 ├── Exports:
 │   ├── chance_of_death: float = 0.25 (1.0 is 100%)
 │   ├── warp_duration: float = 0.5 (time spent warping, intangible during this period)
@@ -241,9 +241,9 @@ AsteroidsWarp (UniversalComponent)
 - Filters for `button.is_action("button_3")`
 - Pure Leg component — no body-specific logic
 - Intangibility = disabling CollisionShape2D children (same pattern as Health.die but temporary)
-- Random position should avoid spawning on top of asteroids (optional — could use safe zone logic from WaveSpawner)
+- Random position should avoid spawning on top of space_rocks (optional — could use safe zone logic from WaveSpawner)
 
-**Assembly:** Add to triangle_ship.tscn or via spawn_components when creating the player ship in asteroids.tscn.
+**Assembly:** Add to triangle_ship.tscn or via spawn_components when creating the player ship in space_rocks.tscn.
 
 ---
 
@@ -255,7 +255,7 @@ AsteroidsWarp (UniversalComponent)
 MusicRamping (UniversalComponent)
 ├── Exports:
 │   ├── sound: AudioStream (the "doot DOOT" loop)
-│   ├── target_group: String = "asteroids" (group to watch)
+│   ├── target_group: String = "space_rocks" (group to watch)
 │   ├── base_pitch: float = 1.0 (starting playback speed)
 │   ├── max_pitch: float = 3.0 (fastest playback speed)
 │   ├── initial_count: int = 0 (set on _ready, counts group at start)
@@ -273,25 +273,25 @@ MusicRamping (UniversalComponent)
 - Uses AudioStreamPlayer2D for positional audio (or AudioStreamPlayer for global)
 - Godot's `pitch_scale` property on AudioStreamPlayer controls playback speed
 - Linear interpolation from base_pitch → max_pitch as group count → 0
-- The initial_count capture means it works regardless of how many asteroids spawn per wave
+- The initial_count capture means it works regardless of how many space_rocks spawn per wave
 - Stops entirely when group empties
 
-**Assembly:** Add to asteroids.tscn as a child of the UGS root.
+**Assembly:** Add to space_rocks.tscn as a child of the UGS root.
 
 ---
 
 ## Part 6: Remix Games
 
-### 6A — Pongout (Pong + Breakout)
+### 6A — Paddle Ballout (Paddle Ball + Brick Breaker)
 
-**Concept:** Pong where each goal is shielded by a wall of breakout bricks. One goal ends the game (not 11). Enemy AI difficulty ramps as their bricks are destroyed.
+**Concept:** Paddle Ball where each goal is shielded by a wall of brick_breaker bricks. One goal ends the game (not 11). Enemy AI difficulty ramps as their bricks are destroyed.
 
-**Scene Assembly (`pongout.tscn`):**
+**Scene Assembly (`paddle_ballout.tscn`):**
 ```
 UniversalGameScript (collision_groups: balls, paddles, bricks, walls, goals)
 ├── Player Paddle (PlayerControl + DirectMovement + AngledDeflector)
 ├── Enemy Paddle (InterceptorAi + DirectMovement + AngledDeflector)
-├── Ball (DamageOnHit [target_groups: bricks] + ScoreOnHit + DieOnHit + ScreenCleanup + PongAcceleration)
+├── Ball (DamageOnHit [target_groups: bricks] + ScoreOnHit + DieOnHit + ScreenCleanup + Paddle BallAcceleration)
 ├── Left Goal Area2D (Goal [P1_SCORE, score_amount=1])
 │   └── Brick Grid (WaveSpawner GRID, positioned in front of goal)
 │       └── Each brick: Health + ScoreOnDeath, spawn_group: "bricks_left"
@@ -310,7 +310,7 @@ UniversalGameScript (collision_groups: balls, paddles, bricks, walls, goals)
 
 ---
 
-### 6B — Asterout (Asteroids + Breakout)
+### 6B — Asterout (Space Rocks + Brick Breaker)
 
 **Concept:** Triangle ship with modern controls dogfighting against shielded UFOs. Each UFO has a ring of tiny bricks childed to it that act as a destructible shield. The shield moves with the UFO. Chip away the shield to get shots at the UFO underneath.
 
@@ -385,37 +385,37 @@ RingSpawner (UniversalComponent)
 
 ---
 
-### 6C — Breaksteroids (Breakout + Asteroids)
+### 6C — Rock Breaker (Brick Breaker + Space Rocks)
 
-**Concept:** You are the Breakout paddle at the bottom. Your weapon is a ball. Asteroids with health float near the top. They split on death. Don't let the ball fall.
+**Concept:** You are the Brick Breaker paddle at the bottom. Your weapon is a ball. Space Rocks with health float near the top. They split on death. Don't let the ball fall.
 
-**Scene Assembly (`breaksteroids.tscn`):**
+**Scene Assembly (`rock_breaker.tscn`):**
 ```
-UniversalGameScript (collision_groups: paddles, balls, asteroids, walls)
+UniversalGameScript (collision_groups: paddles, balls, space_rocks, walls)
 ├── Player Paddle
 │   ├── PlayerControl
 │   ├── DirectMovement (lock_y = true)
 │   └── AngledDeflector (target_group: balls)
 ├── Ball (ball)
-│   ├── DamageOnHit (target_groups: ["asteroids"])
-│   ├── PongAcceleration
+│   ├── DamageOnHit (target_groups: ["space_rocks"])
+│   ├── Paddle BallAcceleration
 │   └── (no ScreenCleanup — bottom Goal handles death)
 ├── Bottom Goal Area2D (Goal [lose_life mode])
-├── WaveSpawner (GRID pattern, spawns asteroids)
+├── WaveSpawner (GRID pattern, spawns space_rocks)
 │   ├── Asteroid bodies with Health + ScoreOnDeath + SplitOnDeath
 │   ├── PropertyOverrides: set Health.max_health per size, small random velocities
-│   └── spawn_groups: ["asteroids"]
+│   └── spawn_groups: ["space_rocks"]
 ├── WaveDirector (GAME_START trigger)
-├── GroupMonitor ("asteroids") → WaveDirector → spawn next wave
+├── GroupMonitor ("space_rocks") → WaveDirector → spawn next wave
 ├── GroupMonitor ("balls") → WaveDirector → WaveSpawner (respawn ball)
 ├── LivesCounter
-├── GroupCountMultiplier ("asteroids")
+├── GroupCountMultiplier ("space_rocks")
 ├── Interface (POINTS_MULTIPLIER mode)
 └── Walls (top, left, right) + CollisionMarkers + SoundOnHits
 ```
 
 **Key design:**
-- Asteroids use size-as-health: Big=3hp, Medium=2hp, Small=1hp
+- Space Rocks use size-as-health: Big=3hp, Medium=2hp, Small=1hp
 - SplitOnDeath reduces size on death — existing behavior
 - PropertyOverride in WaveSpawner sets Health.max_health per asteroid size
 - Ball falling through bottom = Goal in lose_life mode = LivesCounter decrement
@@ -432,11 +432,11 @@ UniversalGameScript (collision_groups: paddles, balls, asteroids, walls)
 | Component | Category | Purpose | Used By |
 |-----------|----------|---------|---------|
 | `death_effect` | Component | Spawn visual effect scenes on parent death | Ship, asteroid, UFO |
-| `patrol_ai` | Brain | Curve2D path following + random path generation | UFO (Asteroids, Asterout) |
-| `asteroids_warp` | Leg | Emergency teleport with random death chance, no cooldown | Ship (Asteroids) |
-| `music_ramping` | Rule | Loop sound with pitch scaling based on group count | Asteroids |
+| `patrol_ai` | Brain | Curve2D path following + random path generation | UFO (Space Rocks, Asterout) |
+| `space_rocks_warp` | Leg | Emergency teleport with random death chance, no cooldown | Ship (Space Rocks) |
+| `music_ramping` | Rule | Loop sound with pitch scaling based on group count | Space Rocks |
 | `ring_spawner` | Flow | Spawn child entities in a ring around parent on _ready | UFO shields (Asterout) |
-| `health_color` (optional) | Component | Change parent draw color based on Health HP | Breaksteroids asteroids |
+| `health_color` (optional) | Component | Change parent draw color based on Health HP | Rock Breaker space_rocks |
 
 ### Modified Components (3)
 
@@ -453,9 +453,9 @@ UniversalGameScript (collision_groups: paddles, balls, asteroids, walls)
 | `Scenes/Effects/death_effect_particles.tscn` | Effect | Particle burst (white dots) |
 | `Scenes/Effects/death_effect_ship_debris.tscn` | Effect | 6 floating line segments |
 | `Scenes/Effects/engine_flame.tscn` | Effect | Thrust flame triangle (show/hide on thrust signal) |
-| `pongout.tscn` | Game | Pongout remix |
+| `paddle_ballout.tscn` | Game | Paddle Ballout remix |
 | `asterout.tscn` | Game | Asterout remix |
-| `breaksteroids.tscn` | Game | Breaksteroids remix |
+| `rock_breaker.tscn` | Game | Rock Breaker remix |
 
 ### New Folder
 
@@ -465,7 +465,7 @@ Godot/Scenes/Effects/   ← One-off self-destructing visual effect scenes
 
 ### No Game Scripts
 
-All games (asteroids updated + 3 new remixes) run as pure UGS scene assemblies. Zero new `.gd` files in `Scripts/Games/`.
+All games (space_rocks updated + 3 new remixes) run as pure UGS scene assemblies. Zero new `.gd` files in `Scripts/Games/`.
 
 ---
 
@@ -487,24 +487,24 @@ All games (asteroids updated + 3 new remixes) run as pure UGS scene assemblies. 
 
 ### Phase C: UFO + Polish Components
 1. Build `patrol_ai.gd` (Brain) — Curve2D path following + random path generation
-2. Build `asteroids_warp.gd` (Leg) — teleport on button_3 with intangibility
+2. Build `space_rocks_warp.gd` (Leg) — teleport on button_3 with intangibility
 3. Build `music_ramping.gd` (Rule) — looping sound with pitch scaling on group count
 4. Assemble UFO scene (`ufo.tscn`) — PatrolAI + DirectMovement + AimAI + GunSimple + Health + ScoreOnDeath + DieOnHit + DamageOnHit + DeathEffect + ScreenWrap + SoundOnHit
-5. Update `asteroids.tscn` — add UFO timer/WaveDirector/WaveSpawner, warp on ship, MusicRamping
-6. Test full Asteroids
+5. Update `space_rocks.tscn` — add UFO timer/WaveDirector/WaveSpawner, warp on ship, MusicRamping
+6. Test full Space Rocks
 
-### Phase D: Pongout
-1. Assemble `pongout.tscn` — paddles, ball with DamageOnHit, two brick grids, Goals, PointsMonitor, VariableTuner
-2. Test Pongout
+### Phase D: Paddle Ballout
+1. Assemble `paddle_ballout.tscn` — paddles, ball with DamageOnHit, two brick grids, Goals, PointsMonitor, VariableTuner
+2. Test Paddle Ballout
 
 ### Phase E: Asterout
 1. Build `ring_spawner.gd` (Flow) — spawn child entities in a ring around parent on _ready
 2. Assemble `asterout.tscn` — triangle ship with modern controls, UFO spawner with RingSpawner for shield bricks
 3. Test Asterout
 
-### Phase F: Breaksteroids
-1. Assemble `breaksteroids.tscn` — paddle, ball, asteroid grid with health/split, bottom Goal
-2. Test Breaksteroids
+### Phase F: Rock Breaker
+1. Assemble `rock_breaker.tscn` — paddle, ball, asteroid grid with health/split, bottom Goal
+2. Test Rock Breaker
 
 ---
 
@@ -512,7 +512,7 @@ All games (asteroids updated + 3 new remixes) run as pure UGS scene assemblies. 
 
 - [ ] `action`/`end_action` signals pass InputEvent — components can filter by action name
 - [ ] Existing games unaffected by input refactor
-- [ ] Asteroids explode with particle burst effect
+- [ ] Space Rocks explode with particle burst effect
 - [ ] Ship explodes with particle burst + floating debris lines
 - [ ] UFO has LARGE/SMALL size variants with different speed, accuracy, score
 - [ ] Large UFOs spawn frequently early, taper off; small UFOs ramp up over time
@@ -520,10 +520,10 @@ All games (asteroids updated + 3 new remixes) run as pure UGS scene assemblies. 
 - [ ] Timer adjust_on_loop works — wait_time changes each cycle
 - [ ] Ship can warp (button_3) — teleports with random death chance (25%), no cooldown
 - [ ] Reactive music speeds up as asteroid count decreases
-- [ ] Pongout is playable — bricks shield goals, one goal ends the game
+- [ ] Paddle Ballout is playable — bricks shield goals, one goal ends the game
 - [ ] RingSpawner spawns brick children in a ring around UFO body
 - [ ] Asterout is playable — modern controls, UFO dogfighting with brick shields
-- [ ] Breaksteroids is playable — paddle + ball vs asteroid grid
+- [ ] Rock Breaker is playable — paddle + ball vs asteroid grid
 - [ ] All games are pure UGS scene assemblies, zero game scripts
 
 ---
@@ -531,10 +531,10 @@ All games (asteroids updated + 3 new remixes) run as pure UGS scene assemblies. 
 ## Open Questions
 
 - **Asterout brick placement:** ✅ Decided — bricks childed to UFO as shield ring (4×4 px), moves with parent.
-- **Breaksteroids asteroid coloring:** Size-based health (existing) or color-based (new health_color component)? Recommend size-based.
-- **UFO spawn frequency in Asteroids:** ~15-20 seconds via Timer?
-- **Pongout AI scaling:** Per-brick or per-group-cleared? Recommend per-group-cleared.
+- **Rock Breaker asteroid coloring:** Size-based health (existing) or color-based (new health_color component)? Recommend size-based.
+- **UFO spawn frequency in Space Rocks:** ~15-20 seconds via Timer?
+- **Paddle Ballout AI scaling:** Per-brick or per-group-cleared? Recommend per-group-cleared.
 - **Asterout wave structure:** Endless waves with Timer, or fixed number of UFOs per round?
 - **MusicRamping initial count:** Captured on _ready, or set via export? Recommend captured on _ready.
-- **Warp safe landing:** Should warp avoid spawning on asteroids? Optional enhancement.
+- **Warp safe landing:** Should warp avoid spawning on space_rocks? Optional enhancement.
 - **Death effect scenes:** Should these be Node2D scripts with `_draw()` and `_physics_process`, or use GPUParticles2D? Recommend `_draw()` for consistency with the project's vector art style.
