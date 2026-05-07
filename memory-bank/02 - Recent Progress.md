@@ -4,6 +4,49 @@
 
 ---
 
+## Plan 14 — Arcade Juice Part 1: Custom CRT Shader (COMPLETE)
+
+Replaced the heavy open-source CRT addon with a custom ultra-lightweight CRT post-processing system. Added vector monitor mode with shader-based phosphor persistence for vector-based games (Asteroids, Dogfight, Pongsteroids).
+
+### Lightweight CRT System
+- **New shader:** `Shaders/crt_light.gdshader` — ~80 lines of GLSL replacing the old ~500-line addon. Effects: barrel warp, chromatic aberration, bloom (bright-pixel sampling), vignette, hum bar (scrolling brightness band), flicker, brightness/contrast, persistence blend
+- **Persistence shader:** `Shaders/persistence.gdshader` — Frame accumulation shader running inside a `CLEAR_MODE_NEVER` SubViewport. Uses `max(prev * decay, game)` for physically-motivated phosphor decay. Provides full-screen phosphor trails in vector mode without any per-body components
+- **CRT Controller:** `Scripts/Flow/crt_controller.gd` — Self-building Node2D (not CanvasLayer — CanvasLayer + SCREEN_TEXTURE doesn't work in GL Compatibility mode). Creates its own BackBufferCopy, persistence SubViewport + ColorRect, CRT shader ColorRect, and 3 TextureRect overlays programmatically. No .tscn needed — fully portable
+- **PNG overlays:** 3 generated textures in `Assets/CRT/`:
+  - `scanlines.png` — Scanline overlay (raster mode)
+  - `phosphor_grid.png` — Phosphor dot grid overlay (vector mode)
+  - `noise.png` — Static noise texture (always on, scrolls for animated effect)
+- **Per-game display modes:** `vector_monitor` export on UGS. When true: brighter bloom, stronger warp, phosphor grid overlay, persistence phosphor trails. When false: scanlines, milder bloom, no persistence
+- **All shader parameters are inspector-tunable** — exported as grouped presets (Raster Mode, Vector Mode, Persistence, Overlay Opacity, Animation) for live tweaking via the CRT Tuner debug scene
+
+### Files Created
+| File | Purpose |
+|------|---------|
+| `Shaders/crt_light.gdshader` | Lightweight CRT post-processing shader |
+| `Shaders/persistence.gdshader` | Frame accumulation shader for phosphor persistence |
+| `Scripts/Flow/crt_controller.gd` | Self-building CRT controller (Node2D + SubViewport) |
+| `Assets/CRT/scanlines.png` | Scanline overlay texture |
+| `Assets/CRT/phosphor_grid.png` | Phosphor dot grid texture |
+| `Assets/CRT/noise.png` | Static noise texture |
+
+### Files Modified
+| File | Changes |
+|------|---------|
+| `universal_game_script.gd` | Added `vector_monitor` export |
+| `arcade_orchestrator.gd` | Creates CRT controller, calls `set_vector_mode()` on game start |
+| `project.godot` | Removed CRT plugin from enabled plugins |
+| 7 game scene `.tscn` files | Removed old CRT CanvasLayer + WorldEnvironment nodes |
+
+### Files Deleted
+| File | Reason |
+|------|--------|
+| `addons/crt/` (entire directory) | Replaced by custom lightweight system |
+
+### Design Decision: Shader-Based Phosphor vs Per-Body Component
+The original plan called for a `PhosphorTrail` component attached to each vector body, with body `_draw()` rendering ghost images from a position ring buffer. After testing, this was replaced with a **shader-based persistence approach**: a SubViewport with `CLEAR_MODE_NEVER` accumulates previous frames with exponential decay (`persistence.gdshader`). This provides full-screen phosphor trails automatically — no per-body components, no body script modifications, and it affects everything on screen (including bullets, particles, etc.) which looks more authentic for a vector monitor.
+
+---
+
 ## Priority Pivot: Shipping Over Building (May 6, 2026)
 
 The project pivoted from building new games to shipping what exists. Deadlines have been set from May through October 2026 targeting an itch.io demo, Steam Coming Soon page, and October Next Fest.

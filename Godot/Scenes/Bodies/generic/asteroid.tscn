@@ -45,3 +45,4 @@ note = 48
 duration = 1.0
 source_node = NodePath("..")
 source_signal = "body_collided"
+

@@ -68,3 +68,4 @@ note = 48
 volume = 0.1
 source_node = NodePath("..")
 source_signal = "thrust"
+

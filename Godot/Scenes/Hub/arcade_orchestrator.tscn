@@ -3,15 +3,15 @@
 [ext_resource type="Script" uid="uid://dt4uemfscl0x6" path="res://Scripts/Hub/arcade_orchestrator.gd" id="1_script"]
 [ext_resource type="FontFile" uid="uid://imm2iompf7sv" path="res://Assets/Fonts/Kenney Pixel.ttf" id="2_font"]
 [ext_resource type="Script" uid="uid://bdsbfe65crnbu" path="res://Scripts/Hub/arcade_game_entry.gd" id="2_u78ae"]
-[ext_resource type="Resource" uid="uid://bvgnffon2rxmn" path="res://Scenes/Hub/ArcadeSettings/pongsteroids.tres" id="3_5jrs3"]
-[ext_resource type="Resource" uid="uid://x1w7jhywtp3r" path="res://Scenes/Hub/ArcadeSettings/breakout.tres" id="3_enkk5"]
-[ext_resource type="Resource" uid="uid://bcl4p542u027h" path="res://Scenes/Hub/ArcadeSettings/pong.tres" id="3_s1wbx"]
-[ext_resource type="Resource" uid="uid://wtj1l710dfsc" path="res://Scenes/Hub/ArcadeSettings/asteroids.tres" id="4_2j8et"]
-[ext_resource type="Resource" uid="uid://cirxnwcy2g34q" path="res://Scenes/Hub/ArcadeSettings/tetris.tres" id="5_p7kvk"]
+[ext_resource type="Resource" uid="uid://wtj1l710dfsc" path="res://Scenes/Hub/ArcadeSettings/asteroids.tres" id="3_u78ae"]
+[ext_resource type="Resource" uid="uid://x1w7jhywtp3r" path="res://Scenes/Hub/ArcadeSettings/breakout.tres" id="4_n0muh"]
+[ext_resource type="Resource" uid="uid://bcl4p542u027h" path="res://Scenes/Hub/ArcadeSettings/pong.tres" id="5_42jm0"]
 [ext_resource type="FontFile" uid="uid://71u6h0td0205" path="res://Assets/Fonts/Kenney Future Narrow.ttf" id="6_2j8et"]
-[ext_resource type="Resource" uid="uid://bnsuj1p7iiehg" path="res://Scenes/Hub/ArcadeSettings/space_invaders.tres" id="7_5jrs3"]
-[ext_resource type="Resource" uid="uid://bcphcp71aw3nt" path="res://Scenes/Hub/ArcadeSettings/dogfight.tres" id="9_n0muh"]
-[ext_resource type="Resource" uid="uid://cu3ds5oe230om" path="res://Scenes/Hub/ArcadeSettings/breaksteroids.tres" id="10_42jm0"]
+[ext_resource type="Resource" uid="uid://cirxnwcy2g34q" path="res://Scenes/Hub/ArcadeSettings/tetris.tres" id="6_3qvvg"]
+[ext_resource type="Resource" uid="uid://bcphcp71aw3nt" path="res://Scenes/Hub/ArcadeSettings/dogfight.tres" id="7_k3wos"]
+[ext_resource type="Resource" uid="uid://bvgnffon2rxmn" path="res://Scenes/Hub/ArcadeSettings/pongsteroids.tres" id="8_hby7g"]
+[ext_resource type="Resource" uid="uid://cu3ds5oe230om" path="res://Scenes/Hub/ArcadeSettings/breaksteroids.tres" id="9_el0dv"]
+[ext_resource type="Resource" uid="uid://bnsuj1p7iiehg" path="res://Scenes/Hub/ArcadeSettings/space_invaders.tres" id="10_s8yab"]
 
 [sub_resource type="LabelSettings" id="LabelSettings_title"]
 font = ExtResource("6_2j8et")
@@ -27,13 +27,14 @@ font_size = 20
 
 [node name="ArcadeOrchestrator" type="Node2D"]
 script = ExtResource("1_script")
-playlist = Array[ExtResource("2_u78ae")]([ExtResource("3_s1wbx"), ExtResource("4_2j8et"), ExtResource("5_p7kvk"), ExtResource("3_enkk5"), ExtResource("7_5jrs3"), ExtResource("3_5jrs3"), ExtResource("9_n0muh"), ExtResource("10_42jm0")])
+playlist = Array[ExtResource("2_u78ae")]([ExtResource("3_u78ae"), ExtResource("4_n0muh"), ExtResource("5_42jm0"), ExtResource("6_3qvvg"), ExtResource("7_k3wos"), ExtResource("8_hby7g"), ExtResource("9_el0dv"), ExtResource("10_s8yab")])
 playlist_mode = 1
 
 [node name="GameContainer" type="Node2D" parent="."]
 
 [node name="BootScreen" type="Control" parent="."]
-layout_mode = 0
+layout_mode = 3
+anchors_preset = 0
 offset_right = 640.0
 offset_bottom = 360.0
 mouse_filter = 2
@@ -58,7 +59,8 @@ label_settings = SubResource("LabelSettings_title")
 horizontal_alignment = 1
 
 [node name="GameOverScreen" type="Control" parent="."]
-layout_mode = 0
+layout_mode = 3
+anchors_preset = 0
 offset_right = 640.0
 offset_bottom = 360.0
 mouse_filter = 2

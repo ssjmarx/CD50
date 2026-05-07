@@ -48,3 +48,4 @@ target_groups = Array[String](["bricks", "asteroids"])
 target_group = "bricks"
 score_amount = 0.1
 score_type = 3
+

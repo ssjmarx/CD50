@@ -25,10 +25,10 @@ The project has pivoted from building new games to shipping what we have. The im
 
 ## Near-Term Plans
 
-### Plan 14 — Arcade Juice & Attract Mode
-**Status:** Not started  
-**Timeline:** Before itch export (late May)  
-**Scope:** Pared down to essentials — CRT visuals, boot screen polish
+### Plan 14 — Arcade Juice Part 1: Custom CRT Shader
+**Status:** COMPLETE  
+**Timeline:** Completed May 6, 2026  
+**Scope:** Replaced heavy CRT addon with lightweight custom shader + persistence shader + vector monitor mode with SubViewport-based phosphor persistence. No per-body phosphor component needed — shader-based approach handles trails automatically.
 
 ### Plan 15 — Arcade Orchestrator Juice
 **Status:** Not started  
@@ -89,4 +89,5 @@ The following plans have been **deleted** from the active pipeline. The componen
 
 | Plan | Description | Completed |
 |------|-------------|-----------|
+| 14 | Arcade Juice Part 1 (Custom CRT Shader, Vector Monitor, Phosphor Trails) | 2026-05-06 |
 | 13 | Arcade Orchestrator (Interface Takeover, Scrolling Transitions, Fast Rules) | 2026-05-05 |

@@ -24,4 +24,5 @@ shape = SubResource("RectangleShape2D_iythh")
 [node name="DamageOnHit" parent="." instance=ExtResource("4_tj72q")]
 target_groups = Array[String](["players", "asteroids"])
 
+
 [connection signal="health_changed" from="Health" to="." method="_on_health_health_changed"]

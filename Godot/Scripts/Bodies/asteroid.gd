@@ -38,7 +38,7 @@ func _setup_collision_polygons(poly_points: PackedVector2Array) -> void:
 	$HitBox/CollisionPolygon2D.polygon = poly_points
 	$HurtBox/CollisionPolygon2D.polygon = poly_points
 
-# Draw the polygon outline with the first point appended to close the loop
+# Draw the polygon outline
 func _draw() -> void:
 	var outline: PackedVector2Array = PackedVector2Array(points)
 	outline.append(points[0])

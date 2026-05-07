@@ -1,9 +1,11 @@
 # Plan 14 — Arcade Juice (CRT Visual System)
 
 **Created:** 2026-05-05  
-**Status:** Not started  
+**Updated:** 2026-05-06  
+**Status:** COMPLETE  
 **Scope:** Phase 1 only (CRT Visual System)  
-**Source:** `planning/brainstorming/attract mode.md` + `planning/brainstorming/arcade juice.md`
+**Source:** `planning/brainstorming/attract mode.md` + `planning/brainstorming/arcade juice.md`  
+**Implementation notes:** Phosphor trails implemented via shader-based persistence (SubViewport + `persistence.gdshader`) instead of per-body `PhosphorTrail` component. Body `_draw()` methods were NOT modified — vector glow is handled by CRT shader bloom parameters. See `memory-bank/02 - Recent Progress.md` for full details.
 
 ---
 
@@ -21,37 +23,58 @@ All changes must run at 60fps in WebGL compatibility mode. The project's zero-as
 
 The existing CRT addon (`addons/crt/`) is a high-quality but heavy shader: multi-tap Gaussian filtering (27+ texture samples per pixel for scanlines + aberration), per-pixel noise math, and rolling line computation. This is overkill for 640×360 procedural graphics running in a browser.
 
-The replacement uses a **layered approach**: tiny PNG overlays for static effects + a minimal shader for distortion + body-level `_draw()` for vector glow and phosphor trails. Zero SCREEN_TEXTURE usage.
+**The performance problem is sample count, not SCREEN_TEXTURE.** The original shader's expense comes from 27+ multi-tap Gaussian samples per pixel. A replacement using SCREEN_TEXTURE with exactly 3 samples (for chromatic aberration) is ~10x cheaper and runs without issue on any WebGL GPU.
+
+The replacement uses a **layered approach**: tiny PNG overlays for static effects + a minimal shader for dynamic distortion + body-level `_draw()` for vector glow and phosphor trails.
 
 ### 1A. Lightweight CRT Shader
 
 **Replace:** `addons/crt/crt.gdshader` (delete entire addon when new system is accepted)
 
-**New:** `Shaders/crt_light.gdshader` — a minimal canvas_item shader handling only what textures and draw code can't:
+**New:** `Shaders/crt_light.gdshader` — a minimal canvas_item shader using SCREEN_TEXTURE with exactly 3 samples total:
 
 ```
-- Barrel distortion (screen bulge)
-- Chromatic aberration (color fringing, distance-based)
-- Bloom boost (brighten pixels above a threshold)
+Effects in shader:
+- Barrel distortion (screen bulge) — UV warp, zero extra samples
+- Chromatic aberration (R/G/B offset) — 3 samples total (one per channel)
+- Vignette (math, not texture) — pow() falloff, zero extra samples
+- Bloom boost (brightness threshold) — dot() + max(), zero extra samples
+- Rolling hum bar (scrolling bright band) — smoothstep, zero extra samples
 ```
 
-Approximately 20 lines of GLSL. No Gaussian multi-tap. No noise. No SCREEN_TEXTURE. No rolling lines. Each pixel: 1 UV warp + 3 texture samples (R/G/B offset for aberration) + 1 brightness calculation. This runs in single-digit microseconds per frame on any GPU.
+Approximately 35–40 lines of GLSL. No Gaussian multi-tap. No per-pixel noise. Each pixel: 1 UV warp + 3 texture samples (R/G/B offset for aberration) + vignette calculation + bloom threshold + hum bar smoothstep. This runs in single-digit microseconds per frame on any GPU.
+
+**Shader uniform inputs:**
+- `resolution` — base resolution for pixel grid calculations
+- `warp_amount` — barrel distortion strength
+- `aberration_amount` — chromatic aberration offset distance
+- `vignette_intensity` — edge darkening strength
+- `bloom_threshold` — brightness cutoff for bloom
+- `bloom_amount` — bloom intensity multiplier
+- `roll_y` — current Y position of the hum bar (updated by script each frame)
+- `roll_brightness` — hum bar intensity
 
 ### 1B. PNG Texture Overlays
 
-Three `TextureRect` nodes added to the AO scene (or a CRT controller node), drawn on top of the game view:
+Two `TextureRect` nodes added to the AO scene (or CRT controller node), drawn on top of the game view. A third optional noise overlay provides subtle "alive" texture.
 
-| Overlay | Size | Content | Mode |
-|---------|------|---------|------|
-| Scanlines | 1×2 px | Top pixel transparent, bottom pixel semi-transparent black | `TILE`, `NEAREST` |
-| Phosphor grid | 3×3 px | Repeating RGB sub-pixel aperture grille pattern | `TILE`, `NEAREST` |
-| Vignette | 640×360 px | Transparent center, soft black edges/corners | `SCALE`, `NEAREST` |
+| Overlay | Size | Content | Mode | Required? |
+|---------|------|---------|------|-----------|
+| Scanlines | 1×2 px | Top pixel transparent, bottom pixel semi-transparent black | `TILE`, `NEAREST` | Yes |
+| Phosphor grid | 3×3 px | Repeating RGB sub-pixel aperture grille pattern | `TILE`, `NEAREST` | Yes |
+| Noise | 64×64 px | Pre-generated tileable greyscale noise, scrolled slowly via script | `TILE`, `NEAREST` | Optional |
 
-These are generated as tiny PNGs (scanlines = 8 bytes, phosphor = 18 bytes, vignette ~50KB). The GPU composites them for free — no math, just alpha blending.
+Scanlines and phosphor grid are generated as tiny PNGs (scanlines = 8 bytes, phosphor = 18 bytes). The GPU composites them for free — no math, just alpha blending.
+
+The noise overlay scrolls slowly downward via script (`position.y += delta * scroll_speed`) at very low alpha (0.02–0.04). This provides subtle "living screen" texture without per-pixel shader noise computation. ~4KB PNG.
+
+**Vignette is NOT a PNG** — it's computed in the shader as math (5 lines of GLSL, follows barrel distortion naturally, saves ~50KB texture, identical visual result to the original shader).
 
 **Visibility toggled by `vector_monitor`:**
-- Raster mode (`vector_monitor = false`): Scanlines ON, Phosphor Grid ON, Vignette ON
-- Vector mode (`vector_monitor = true`): Scanlines OFF, Phosphor Grid OFF, Vignette ON
+- Raster mode (`vector_monitor = false`): Scanlines ON, Phosphor Grid ON, Noise ON
+- Vector mode (`vector_monitor = true`): Scanlines OFF, Phosphor Grid OFF, Noise ON (optional, weaker alpha)
+
+Vignette, aberration, bloom, and hum bar are always on (controlled by shader uniforms, not visibility toggles).
 
 ### 1C. `vector_monitor` Export on UGS
 
@@ -61,7 +84,7 @@ These are generated as tiny PNGs (scanlines = 8 bytes, phosphor = 18 bytes, vign
 ```
 
 This single bool switches the CRT aesthetic. A `crt_controller` component (or logic in the Interface Takeover) reads this on ready and configures:
-- Texture overlay visibility
+- Texture overlay visibility (scanlines, phosphor grid)
 - Shader uniform values (aberration strength, bloom amount)
 - Body draw mode (passed through `game.vector_monitor`)
 
@@ -156,18 +179,26 @@ if trail_comp and trail_comp.get_trail_data().size() > 0:
 **New component:** `crt_controller.gd` — reads UGS `vector_monitor` and configures shader + overlays.
 
 Or this logic can be part of the AO's Interface Takeover, since AO already manages the child Interface. The controller would:
-1. Set shader uniforms on the CRT ColorRect (aberration, bloom)
+1. Set shader uniforms on the CRT ColorRect (aberration, bloom, vignette)
 2. Toggle TextureRect visibility (scanlines, phosphor grid)
-3. Optionally adjust per-game (e.g., stronger aberration for vector games)
+3. Update `roll_y` uniform each frame for the rolling hum bar
+4. Optionally scroll the noise overlay
+5. Optionally adjust per-game (e.g., stronger aberration for vector games)
+
+```gdscript
+# Rolling hum bar update (in _process)
+roll_y = fmod(roll_y + delta * roll_speed, 1.0)
+material.set_shader_parameter("roll_y", roll_y)
+```
 
 ### New Files
 
 | File | Location | Purpose |
 |------|----------|---------|
-| `crt_light.gdshader` | `Shaders/` | Lightweight CRT shader (barrel + aberration + bloom) |
+| `crt_light.gdshader` | `Shaders/` | Lightweight CRT shader (barrel + aberration + vignette + bloom + hum bar) |
 | `scanlines.png` | `Assets/CRT/` | 1×2 pixel scanline overlay |
 | `phosphor_grid.png` | `Assets/CRT/` | 3×3 pixel aperture grille overlay |
-| `vignette.png` | `Assets/CRT/` | 640×360 vignette overlay |
+| `noise.png` | `Assets/CRT/` | 64×64 tileable noise overlay (optional) |
 | `phosphor_trail.tscn` | `Scenes/Components/` | Phosphor trail component scene |
 | `phosphor_trail.gd` | `Scripts/Components/` | Ghost trail ring buffer + redraw trigger |
 | `crt_controller.tscn` | `Scenes/Flow/` | CRT overlay controller scene |
@@ -185,7 +216,7 @@ Or this logic can be part of the AO's Interface Takeover, since AO already manag
 
 ### Deliverable
 
-All games display with a CRT aesthetic. Vector games (Asteroids, Pongsteroids, Dogfight) show glow + phosphor trails + no scanlines. Raster games show scanlines + phosphor grid. The heavy CRT addon is deleted. Runs at 60fps in WebGL.
+All games display with a CRT aesthetic. Vector games (Asteroids, Pongsteroids, Dogfight) show glow + phosphor trails + no scanlines + stronger aberration. Raster games show scanlines + phosphor grid + subtle noise. All games show barrel distortion, vignette, bloom, and the rolling hum bar. The heavy CRT addon is deleted. Runs at 60fps in WebGL.
 
 ---
 
@@ -193,13 +224,13 @@ All games display with a CRT aesthetic. Vector games (Asteroids, Pongsteroids, D
 
 | Step | What | Depends On |
 |------|------|-----------|
-| 1a | Create lightweight CRT shader (`crt_light.gdshader`) | — |
-| 1b | Generate PNG overlays (scanlines, phosphor, vignette) | — |
+| 1a | Create lightweight CRT shader (`crt_light.gdshader`) — barrel + aberration + vignette + bloom + hum bar | — |
+| 1b | Generate PNG overlays (scanlines, phosphor, noise) | — |
 | 1c | Add `vector_monitor` export to UGS | — |
 | 1d | Update body `_draw()` for vector glow (triangle_ship, ball, asteroid) | 1c |
 | 1e | Create `phosphor_trail` component | 1c |
 | 1f | Attach phosphor_trail to vector-mode bodies, integrate ghost drawing into body `_draw()` | 1e, 1d |
-| 1g | Create CRT controller (shader + overlay setup) | 1a, 1b, 1c |
+| 1g | Create CRT controller (shader uniforms + overlay toggles + hum bar scroll + noise scroll) | 1a, 1b, 1c |
 | 1h | Wire CRT controller into AO scene | 1g |
 | 1i | Test all 8 games — verify raster vs vector aesthetics | all above |
 | 1j | Delete old CRT addon | 1i |
@@ -208,11 +239,13 @@ All games display with a CRT aesthetic. Vector games (Asteroids, Pongsteroids, D
 
 ## Risks & Considerations
 
-1. **WebGL shader compatibility** — The CRT shader must use only GLSL ES 2.0 features (no `dFdx`, no integer operations, no texture arrays). Test early in a browser. The brainstorm shader uses `hint_screen_texture` which we're explicitly NOT using — the new shader only needs standard `TEXTURE` + `UV`.
+1. **WebGL shader compatibility** — The CRT shader must use only GLSL ES 2.0 features (no `dFdx`, no integer operations, no texture arrays). Test early in a browser. The shader uses `SCREEN_TEXTURE` with exactly 3 texture samples for chromatic aberration — this is ~10x fewer than the original and well within WebGL performance budget. No Gaussian multi-tap.
 
 2. **Phosphor trail visual quality** — Pure `_draw()` ghosts may look "choppy" at low frame rates if position changes are large between frames. Mitigation: interpolate between stored positions, or increase ring buffer size. May need tuning per game.
 
 3. **CRT overlay z-ordering** — The texture overlays and CRT shader ColorRect must draw ABOVE all game content (including Interface) but BELOW the BootScreen/GameOverScreen overlays. Verify z-index ordering in the AO scene tree.
+
+4. **Rolling hum bar subtlety** — The hum bar should be barely noticeable (brightness ~0.03–0.05). Too strong and it becomes distracting during gameplay. Tunable via `roll_brightness` uniform.
 
 ---
 

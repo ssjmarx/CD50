@@ -1,8 +1,9 @@
 # Component Catalogue
 
-**Last Updated:** 2026-05-05  
-**Total Scripts:** 86 across 10 categories  
-**Total Scene Variants:** 2 (no unique script)
+**Last Updated:** 2026-05-06  
+**Total Scripts:** 87 across 10 categories  
+**Total Scene Variants:** 2 (no unique script)  
+**Total Shaders:** 2 (crt_light.gdshader, persistence.gdshader)
 
 Each entry includes the script name, class declaration, and a one-line description extracted from the script's top comment.
 
@@ -102,7 +103,7 @@ Arms handle weapons and combat interactions.
 
 ---
 
-## Components (19)
+## Components (18)
 
 General-purpose gameplay modifier components.
 
@@ -150,9 +151,9 @@ Game logic and condition components.
 
 ---
 
-## Flow (7)
+## Flow (8)
 
-Wave management, spawning, UI, and audio components.
+Wave management, spawning, UI, audio, and CRT post-processing components.
 
 | Script | Extends | Summary |
 |--------|---------|---------|
@@ -163,6 +164,7 @@ Wave management, spawning, UI, and audio components.
 | `sfx_ramping.gd` | `extends UniversalComponent` | Maps a property value from a source node to a semitone range and plays a synth note. Useful for dynamic pitch-shifting based on game state. |
 | `swarm_controller.gd` | `extends UniversalComponent2D` | Swarm controller. Drives Space Invaders-style group movement with tick-based horizontal stepping, edge detection, step-down shifts, and speed ramping. |
 | `tetromino_spawner.gd` | `extends UniversalComponent2D` | Tetromino spawner. Manages the lock-spawn cycle for Tetris-style games. Handles piece locking, next piece spawning, preview display, bag system, and defeat detection. |
+| `crt_controller.gd` | `extends Node2D` | Self-building CRT post-processing controller. Creates BackBufferCopy, persistence SubViewport + ColorRect, CRT shader ColorRect, and 3 PNG overlay TextureRects programmatically. Toggles vector/raster mode per game. Persistence shader provides phosphor trails in vector mode via SubViewport frame accumulation with exponential decay. |
 
 ---
 

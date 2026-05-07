@@ -19,3 +19,4 @@ effect = 3
 duration = 0.5
 source_node = NodePath("..")
 source_signal = "ready"
+

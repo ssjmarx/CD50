@@ -41,3 +41,4 @@ speed = 200
 
 [node name="DeathEffect" parent="." instance=ExtResource("7_83dsw")]
 effect_scenes = Array[PackedScene]([ExtResource("7_y86ox")])
+

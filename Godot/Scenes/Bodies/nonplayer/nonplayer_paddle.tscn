@@ -16,3 +16,4 @@ shape = SubResource("RectangleShape2D_da2tq")
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="HurtBox"]
 shape = SubResource("RectangleShape2D_da2tq")
+

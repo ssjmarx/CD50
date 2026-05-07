@@ -1,0 +1,7 @@
+[gd_scene load_steps=2 format=3 uid="uid://dmhiqkup56gip"]
+
+[ext_resource type="Script" uid="uid://c2lrkrvsrb1iu" path="res://Scripts/Debug/crt_tuner.gd" id="1_crt"]
+
+[node name="CRTTuner" type="Node2D"]
+script = ExtResource("1_crt")
+body_count = 60

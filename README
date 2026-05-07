@@ -1,0 +1,45 @@
+# CD50
+
+"Balatro but with classic arcade games instead of poker."
+
+CD50 is a collection of classic arcade games from the 70s and 80s remade in Godot, and remixes of those games' nouns and verbs into unexpected combinations.  These remakes and remixes are bound together by a Balatro-inspired system of modifiers, with the main goal of the game being to chase ever higher scores by breaking the logic of the game with combinations of these modifiers in order to get higher and higher scores.
+
+# The Entity-Component Architecture
+
+CD50 uses an ECS architecture in order to:
+
+1) Rapidly iterate new games by reusing existing code and assets
+2) Allow for unrelated game entities to interact with each other
+3) Allow the player to apply a diverse list of modifiers to the games as they play, creating exciting new combinations on the fly
+
+# Polybius
+
+"I hunger for score."
+
+Polybius is your digital jailer.  He will judge you, he will mock you, and if you set a new top score, he will only demand more.
+
+# The Games
+
+## Dogfight
+
+Survive a brutal gauntlet of enemies in this classic quarter muncher from 19■■!  They will stop at nothing, and your death is guaranteed - how many can you take down with you?
+
+## Meteor Rally
+
+## Rock Breaker
+
+## Bug Drop
+
+## Space Bugs
+
+## Planetary Attack
+
+## Paddle Ball
+
+## Brick Breaker
+
+## Space Rocks
+
+## Block Drop
+
+## Bug Blaster

@@ -56,3 +56,4 @@ source_signal = "thrust"
 
 [node name="InterceptorAi" parent="." instance=ExtResource("13_ck0bw")]
 target_group = "players"
+

@@ -36,3 +36,4 @@ effect_scenes = Array[PackedScene]([ExtResource("8_keoks")])
 [node name="BounceOnHit" parent="." instance=ExtResource("9_mkygg")]
 
 [node name="ScreenCleanup" parent="." instance=ExtResource("9_xop50")]
+

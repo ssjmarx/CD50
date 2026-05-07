@@ -5,7 +5,7 @@
 **Architecture:** Entity-Component (composition over inheritance)  
 **Playable Games:** Pong, Breakout, Asteroids, Pongsteroids, Dogfight, Space Invaders, Tetris (Modern), Breaksteroids — ALL componentized, zero game scripts
 **In Progress:** Shipping itch.io demo + Steam Coming Soon (see `memory-bank/06 - Deadlines.md`)
-**Recent Completed:** Plan 13 (Arcade Orchestrator) — Interface Takeover + Scrolling Transitions + full arcade run system
+**Recent Completed:** Plan 14 (Arcade Juice Part 1) — Custom lightweight CRT shader, vector monitor mode, shader-based phosphor persistence, per-game display mode switching
 
 ---
 
@@ -110,13 +110,13 @@ Scenes/Bodies/nonplayer/
 | Brains | 8 | player_control, interceptor_ai, aim_ai, shoot_ai, shoot_ai_swarm, patrol_ai, falling_ai, swarm_ai |
 | Legs | 14 | direct_movement, direct_acceleration, engine_simple, engine_complex, friction_linear, friction_static, rotation_direct, rotation_target, grid_movement, grid_rotation, grid_gravity, grid_rotation_advanced, tetromino_formation, warp_asteroids |
 | Arms | 3 | gun_simple, damage_on_hit, damage_on_joust |
-| Components | 19 | angled_deflector, bounce_on_hit, collision_marker, death_effect, die_on_hit, die_on_timer, ghost_piece, health, hold_relay, lock_detector, pong_acceleration, ring_spawner, score_on_death, score_on_hit, screen_cleanup, screen_wrap, split_on_death, t_spin_detector, vector_engine_exhaust |
+| Components | 18 | angled_deflector, bounce_on_hit, collision_marker, death_effect, die_on_hit, die_on_timer, ghost_piece, health, hold_relay, lock_detector, pong_acceleration, ring_spawner, score_on_death, score_on_hit, screen_cleanup, screen_wrap, split_on_death, t_spin_detector, vector_engine_exhaust |
 | Rules | 9 | goal, points_monitor, variable_tuner, variable_tuner_global, group_monitor, group_count_multiplier, lives_counter, timer, line_clear_monitor |
 | Flow | 11 | interface, sound_on_hit, sound_synth, music_ramping, sfx_ramping, beep, grid_basic, swarm_controller, tetromino_spawner, wave_director*, wave_spawner* |
 | Effects | 2 | death_particles, death_broken_triangle_ship |
 | Hub | 2 | arcade_orchestrator, arcade_game_entry |
 | *Interface takeover + scrolling transitions are AO-only features — no changes to interface.gd or game scenes* |
-| **Total** | **89** | |
+| **Total** | **88** | |
 
 *\* wave_director and wave_spawner scripts live in `Scripts/Rules/` but are categorized as Flow by function.*
 
@@ -151,5 +151,5 @@ EFFECTS (death_particles, death_broken_triangle_ship)
 
 - **Audio:** Procedural synthesis via SoundSynth component (all game audio generated at runtime)
 - **Fonts:** Kenney retro fonts (Pixel, High, Mini, Rocket, Future, Blocks, Square — regular and narrow variants)
-- **CRT Addon:** Custom CRT post-processing effect
+- **CRT System:** Custom lightweight CRT shader (`Shaders/crt_light.gdshader`) + persistence shader (`Shaders/persistence.gdshader`) + `crt_controller.gd` (self-building Node2D with SubViewport frame accumulation) + PNG overlays (scanlines, phosphor grid, noise). Vector monitor mode uses SubViewport persistence with exponential decay for phosphor trails. Per-game display mode switching via `vector_monitor` export on UGS.
 - **Effects:** Self-destructing effect scenes (death_particles, death_broken_triangle_ship)

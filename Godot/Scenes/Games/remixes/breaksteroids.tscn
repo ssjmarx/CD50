@@ -1,4 +1,4 @@
-[gd_scene load_steps=36 format=3 uid="uid://v3jmmfy6yptl"]
+[gd_scene load_steps=34 format=3 uid="uid://v3jmmfy6yptl"]
 
 [ext_resource type="Script" uid="uid://bjdgpevhahi6d" path="res://Scripts/Core/universal_game_script.gd" id="1_3ahes"]
 [ext_resource type="Script" uid="uid://bfkr4fdx316o5" path="res://Scripts/Core/collision_group.gd" id="2_men1n"]
@@ -10,7 +10,6 @@
 [ext_resource type="PackedScene" uid="uid://c74nhjbvdo3ff" path="res://Scenes/Bodies/generic/ball_combo.tscn" id="8_0lfsw"]
 [ext_resource type="Script" uid="uid://cp0ni1lgml7c6" path="res://Scripts/Core/property_override.gd" id="9_hn3l5"]
 [ext_resource type="PackedScene" uid="uid://b418fukpc5m41" path="res://Scenes/Components/collision_marker.tscn" id="10_vdr85"]
-[ext_resource type="Script" uid="uid://bghaddibpt6f1" path="res://addons/crt/crt.gd" id="11_lwpp6"]
 [ext_resource type="PackedScene" uid="uid://tre5p2x1bb2k" path="res://Scenes/Rules/lives_counter.tscn" id="12_leucg"]
 [ext_resource type="PackedScene" uid="uid://bq6cdrx340jp7" path="res://Scenes/Flow/interface.tscn" id="13_3ng1p"]
 [ext_resource type="PackedScene" uid="uid://craitf0mklbon" path="res://Scenes/Rules/timer.tscn" id="14_k1l0y"]
@@ -87,11 +86,6 @@ size = Vector2(8, 372)
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_7ju07"]
 size = Vector2(640, 8)
 
-[sub_resource type="Environment" id="Environment_per38"]
-background_mode = 3
-glow_enabled = true
-glow_intensity = 3.0
-glow_bloom = 0.33
 
 [sub_resource type="Resource" id="Resource_w7bif"]
 script = ExtResource("9_hn3l5")
@@ -167,25 +161,6 @@ shape = SubResource("RectangleShape2D_7ju07")
 
 [node name="CollisionMarker" parent="Area2D" instance=ExtResource("10_vdr85")]
 collision_groups = Array[String](["paddle_zone"])
-
-[node name="CRT" type="CanvasLayer" parent="."]
-script = ExtResource("11_lwpp6")
-resolution = Vector2(640, 360)
-scan_line_amount = 0.5
-scan_line_strength = -10.0
-warp_amount = 0.05
-noise_amount = 0.015
-interference_amount = 0.1
-grille_amount = 0.05
-vignette_amount = 0.3
-vignette_intensity = 0.2
-aberation_amount = 0.25
-roll_line_amount = 0.0
-roll_speed = 0.5
-pixel_strength = -3.0
-
-[node name="CRT - bloom" type="WorldEnvironment" parent="."]
-environment = SubResource("Environment_per38")
 
 [node name="LivesCounter" parent="." instance=ExtResource("12_leucg")]
 

@@ -21,4 +21,5 @@ shape = SubResource("RectangleShape2D_iythh")
 [node name="ScoreOnDeath" parent="." instance=ExtResource("3_jxt6j")]
 base_score = 0
 
+
 [connection signal="health_changed" from="Health" to="." method="_on_health_health_changed"]

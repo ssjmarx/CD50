@@ -74,3 +74,4 @@ curve = ExtResource("3_w8lrk")
 
 [node name="ScoreOnDeath" parent="." instance=ExtResource("14_g3g2y")]
 base_score = 10
+

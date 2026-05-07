@@ -1,10 +1,9 @@
-[gd_scene load_steps=31 format=3 uid="uid://c4ttsm1qowkgo"]
+[gd_scene load_steps=29 format=3 uid="uid://c4ttsm1qowkgo"]
 
 [ext_resource type="Script" uid="uid://bjdgpevhahi6d" path="res://Scripts/Core/universal_game_script.gd" id="1_lmwk8"]
 [ext_resource type="PackedScene" uid="uid://b4mr1t8pdtmf3" path="res://Scenes/Bodies/generic/paddle.tscn" id="2_7epd8"]
 [ext_resource type="Script" uid="uid://bfkr4fdx316o5" path="res://Scripts/Core/collision_group.gd" id="2_vu4sl"]
 [ext_resource type="PackedScene" uid="uid://eketockdsssi" path="res://Scenes/Legs/direct_movement.tscn" id="4_2njjq"]
-[ext_resource type="Script" uid="uid://bghaddibpt6f1" path="res://addons/crt/crt.gd" id="4_fkkyb"]
 [ext_resource type="PackedScene" uid="uid://6tweepbhleep" path="res://Scenes/Brains/player_control.tscn" id="5_oqfas"]
 [ext_resource type="PackedScene" uid="uid://b418fukpc5m41" path="res://Scenes/Components/collision_marker.tscn" id="6_fkkyb"]
 [ext_resource type="PackedScene" uid="uid://c8ynf452mj3if" path="res://Scenes/Components/score_on_hit.tscn" id="6_th3ku"]
@@ -67,11 +66,6 @@ size = Vector2(8, 368)
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_7ju07"]
 size = Vector2(640, 8)
 
-[sub_resource type="Environment" id="Environment_per38"]
-background_mode = 3
-glow_enabled = true
-glow_intensity = 3.0
-glow_bloom = 0.33
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_kxgnb"]
 size = Vector2(18, 360)
@@ -141,25 +135,6 @@ shape = SubResource("RectangleShape2D_7ju07")
 
 [node name="CollisionMarker" parent="Area2D" instance=ExtResource("6_fkkyb")]
 collision_groups = Array[String](["paddle_zone"])
-
-[node name="CRT" type="CanvasLayer" parent="."]
-script = ExtResource("4_fkkyb")
-resolution = Vector2(640, 360)
-scan_line_amount = 0.5
-scan_line_strength = -10.0
-warp_amount = 0.05
-noise_amount = 0.015
-interference_amount = 0.1
-grille_amount = 0.05
-vignette_amount = 0.3
-vignette_intensity = 0.2
-aberation_amount = 0.25
-roll_line_amount = 0.0
-roll_speed = 0.5
-pixel_strength = -3.0
-
-[node name="CRT - bloom" type="WorldEnvironment" parent="."]
-environment = SubResource("Environment_per38")
 
 [node name="LivesCounter" parent="." instance=ExtResource("9_lmwk8")]
 

@@ -81,3 +81,4 @@ orbit_speed = 2.5
 
 [node name="ScoreOnDeath" parent="." instance=ExtResource("15_g5t1l")]
 base_score = 10
+

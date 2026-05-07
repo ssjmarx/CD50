@@ -8,6 +8,8 @@
 
 config_version=5
 
+glowcouldbealargersemi-transparentrectbehindthemainone.Isthatacceptable,orshoulditswitchtoacircularglow?config_version=5
+
 [application]
 
 config/name="CD50"
@@ -35,7 +37,7 @@ movie_writer/movie_file="/home/ssjmarx/Videos/Screencasts/test.avi"
 
 [editor_plugins]
 
-enabled=PackedStringArray("res://addons/crt/plugin.cfg")
+enabled=PackedStringArray()
 
 [input]
 

@@ -17,4 +17,4 @@ var points: Array = [
 
 # Draw the ship outline
 func _draw() -> void:
-	draw_polyline(points, color, 1.0, true)
+	draw_polyline(points, color, 2.0, true)

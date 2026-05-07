@@ -8,6 +8,7 @@ enum Mode { STANDALONE, ARCADE }
 @export var game_title: String
 @export var collision_groups: Array[CollisionGroup]
 @export var mode: Mode = Mode.STANDALONE
+@export var vector_monitor: bool = false
 
 var states = CommonEnums.State
 var collision_matrix: CollisionMatrix

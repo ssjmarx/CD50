@@ -41,11 +41,18 @@ var _game_start_time: float = 0.0 # when current game started (seconds since epo
 @onready var _boot_screen: Control = $BootScreen
 @onready var _game_over_screen: Control = $GameOverScreen
 
+var _crt_controller: Node2D = null
+
 func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
 	_lives = starting_lives
 	# GameOverScreen starts off-screen below viewport
 	_game_over_screen.position.y = VIEWPORT_HEIGHT
+	# Create CRT controller programmatically (self-building Node2D with high z_index)
+	_crt_controller = Node2D.new()
+	_crt_controller.name = "CRTController"
+	_crt_controller.set_script(load("res://Scripts/Flow/crt_controller.gd"))
+	add_child(_crt_controller)
 	_show_boot_screen()
 
 func _input(event: InputEvent) -> void:
@@ -223,6 +230,10 @@ func _finalize_game_start(instance: Node2D) -> void:
 		
 		# Notify UGS of arcade bonus so scoring is affected
 		ugs.set_arcade_bonus(float(_game_count))
+		
+		# Configure CRT for this game's display mode
+		if _crt_controller:
+			_crt_controller.set_vector_mode(ugs.vector_monitor)
 		
 		# Start the game (unpauses tree, sets PLAYING state)
 		ugs.start_game()

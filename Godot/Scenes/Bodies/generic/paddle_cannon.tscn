@@ -26,3 +26,4 @@ ammo = ExtResource("3_60yti")
 max_bullets = 1
 muzzle_offset = 10
 bullet_group = "players_bullets"
+

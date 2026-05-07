@@ -1,10 +1,9 @@
-[gd_scene load_steps=24 format=3 uid="uid://bjs0gtnsur7e6"]
+[gd_scene load_steps=22 format=3 uid="uid://bjs0gtnsur7e6"]
 
 [ext_resource type="Script" uid="uid://bjdgpevhahi6d" path="res://Scripts/Core/universal_game_script.gd" id="1_wqf31"]
 [ext_resource type="Script" uid="uid://bfkr4fdx316o5" path="res://Scripts/Core/collision_group.gd" id="2_dd2rs"]
 [ext_resource type="PackedScene" uid="uid://bcktpeqc0t10f" path="res://Scenes/Bodies/generic/triangle_ship.tscn" id="3_axs4k"]
 [ext_resource type="PackedScene" uid="uid://6tweepbhleep" path="res://Scenes/Brains/player_control.tscn" id="4_jmqec"]
-[ext_resource type="Script" uid="uid://bghaddibpt6f1" path="res://addons/crt/crt.gd" id="5_610mp"]
 [ext_resource type="PackedScene" uid="uid://bq6cdrx340jp7" path="res://Scenes/Flow/interface.tscn" id="6_rcjri"]
 [ext_resource type="PackedScene" uid="uid://dwyyfxniivl1r" path="res://Scenes/Rules/wave_director.tscn" id="7_bleq4"]
 [ext_resource type="PackedScene" uid="uid://vlbel76nqh5w" path="res://Scenes/Rules/wave_spawner.tscn" id="8_xck5w"]
@@ -45,12 +44,6 @@ script = ExtResource("2_dd2rs")
 group_name = "enemies"
 metadata/_custom_type_script = "uid://bfkr4fdx316o5"
 
-[sub_resource type="Environment" id="Environment_hcst1"]
-background_mode = 3
-glow_enabled = true
-glow_intensity = 3.0
-glow_bloom = 0.33
-
 [sub_resource type="Resource" id="Resource_5y4c8"]
 script = ExtResource("16_35ds8")
 property_name = "size"
@@ -61,31 +54,13 @@ metadata/_custom_type_script = "uid://cp0ni1lgml7c6"
 script = ExtResource("1_wqf31")
 game_title = "Asteroids"
 collision_groups = Array[ExtResource("2_dd2rs")]([SubResource("Resource_c1c35"), SubResource("Resource_dr0h3"), SubResource("Resource_tcn4d"), SubResource("Resource_x51td"), SubResource("Resource_5oyh6")])
+vector_monitor = true
 
 [node name="TriangleShip" parent="." groups=["players"] instance=ExtResource("3_axs4k")]
 position = Vector2(320, 184)
 collision_groups = Array[String](["players"])
 
 [node name="PlayerControl" parent="TriangleShip" instance=ExtResource("4_jmqec")]
-
-[node name="CRT" type="CanvasLayer" parent="."]
-script = ExtResource("5_610mp")
-resolution = Vector2(640, 360)
-scan_line_amount = 0.5
-scan_line_strength = -10.0
-warp_amount = 0.05
-noise_amount = 0.015
-interference_amount = 0.1
-grille_amount = 0.05
-vignette_amount = 0.3
-vignette_intensity = 0.2
-aberation_amount = 0.25
-roll_line_amount = 0.0
-roll_speed = 0.5
-pixel_strength = -3.0
-
-[node name="CRT - bloom" type="WorldEnvironment" parent="."]
-environment = SubResource("Environment_hcst1")
 
 [node name="Interface" parent="." instance=ExtResource("6_rcjri")]
 display_mode = 1

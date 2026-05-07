@@ -68,3 +68,4 @@ target_group = "asteroids"
 
 [node name="ScoreOnDeath" parent="." instance=ExtResource("13_lx6du")]
 base_score = 10
+

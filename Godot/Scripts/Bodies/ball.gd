@@ -15,6 +15,7 @@ func _ready() -> void:
 	$CollisionShape2D.shape = shape
 	$HitBox/CollisionShape2D.shape = shape
 
-# Draw a colored square centered on the body
+# Draw ball
 func _draw() -> void:
-	draw_rect(Rect2(-radius / 2.0, -radius / 2.0, radius, radius), color)
+	var half: float = radius / 2.0
+	draw_rect(Rect2(-half, -half, radius, radius), color)

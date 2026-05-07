@@ -16,3 +16,4 @@ collision_groups = Array[String](["bricks"])
 shape = SubResource("RectangleShape2D_iythh")
 
 [node name="DieOnHit" parent="." instance=ExtResource("4_ot6r2")]
+

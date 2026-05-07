@@ -1,6 +1,5 @@
-[gd_scene load_steps=25 format=3 uid="uid://vt2aalri00kw"]
+[gd_scene load_steps=23 format=3 uid="uid://vt2aalri00kw"]
 
-[ext_resource type="Script" uid="uid://bghaddibpt6f1" path="res://addons/crt/crt.gd" id="1_vq5hb"]
 [ext_resource type="Script" uid="uid://bjdgpevhahi6d" path="res://Scripts/Core/universal_game_script.gd" id="1_vskpd"]
 [ext_resource type="Script" uid="uid://bfkr4fdx316o5" path="res://Scripts/Core/collision_group.gd" id="2_6vykp"]
 [ext_resource type="PackedScene" uid="uid://blcwsjhbx62t5" path="res://Scenes/Bodies/player/player_paddle_cannon.tscn" id="2_s60y6"]
@@ -45,11 +44,6 @@ group_name = "bricks"
 targets = Array[String](["enemies"])
 metadata/_custom_type_script = "uid://bfkr4fdx316o5"
 
-[sub_resource type="Environment" id="Environment_vskpd"]
-background_mode = 3
-glow_enabled = true
-glow_intensity = 3.0
-glow_bloom = 0.33
 
 [sub_resource type="Resource" id="Resource_dbhjy"]
 script = ExtResource("7_yp3rw")
@@ -70,25 +64,6 @@ collision_groups = Array[ExtResource("2_6vykp")]([SubResource("Resource_jwgp7"),
 
 [node name="PaddleCannon" parent="." instance=ExtResource("2_s60y6")]
 position = Vector2(320, 312)
-
-[node name="CanvasLayer" type="CanvasLayer" parent="."]
-script = ExtResource("1_vq5hb")
-resolution = Vector2(640, 360)
-scan_line_amount = 0.5
-scan_line_strength = -10.0
-warp_amount = 0.05
-noise_amount = 0.015
-interference_amount = 0.1
-grille_amount = 0.05
-vignette_amount = 0.3
-vignette_intensity = 0.2
-aberation_amount = 0.25
-roll_line_amount = 0.0
-roll_speed = 0.5
-pixel_strength = -3.0
-
-[node name="WorldEnvironment" type="WorldEnvironment" parent="."]
-environment = SubResource("Environment_vskpd")
 
 [node name="WaveDirector" parent="." instance=ExtResource("6_nhucj")]
 trigger_type = 3

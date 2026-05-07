@@ -1,7 +1,6 @@
-[gd_scene load_steps=23 format=3 uid="uid://ckxvsijl3fwv1"]
+[gd_scene load_steps=21 format=3 uid="uid://ckxvsijl3fwv1"]
 
 [ext_resource type="Script" uid="uid://bjdgpevhahi6d" path="res://Scripts/Core/universal_game_script.gd" id="1_04s2g"]
-[ext_resource type="Script" uid="uid://bghaddibpt6f1" path="res://addons/crt/crt.gd" id="2_1hu7k"]
 [ext_resource type="Script" uid="uid://bfkr4fdx316o5" path="res://Scripts/Core/collision_group.gd" id="2_25ekh"]
 [ext_resource type="PackedScene" uid="uid://bq6cdrx340jp7" path="res://Scenes/Flow/interface.tscn" id="3_h75pn"]
 [ext_resource type="PackedScene" uid="uid://dhulxxtcsipl6" path="res://Scenes/Rules/group_monitor.tscn" id="11_v3mlj"]
@@ -46,11 +45,6 @@ group_name = "asteroids"
 targets = Array[String](["players", "enemies"])
 metadata/_custom_type_script = "uid://bfkr4fdx316o5"
 
-[sub_resource type="Environment" id="Environment_1b6ap"]
-background_mode = 3
-glow_enabled = true
-glow_intensity = 3.0
-glow_bloom = 0.33
 
 [sub_resource type="Resource" id="Resource_pxxt0"]
 script = ExtResource("15_te72y")
@@ -62,26 +56,8 @@ metadata/_custom_type_script = "uid://cp0ni1lgml7c6"
 [node name="Dogfight" type="Node2D"]
 script = ExtResource("1_04s2g")
 game_title = "Dogfight"
+vector_monitor = true
 collision_groups = Array[ExtResource("2_25ekh")]([SubResource("Resource_1b6ap"), SubResource("Resource_25ekh"), SubResource("Resource_yp1qk"), SubResource("Resource_u8jyr"), SubResource("Resource_s3uvk")])
-
-[node name="CRT" type="CanvasLayer" parent="."]
-script = ExtResource("2_1hu7k")
-resolution = Vector2(640, 360)
-scan_line_amount = 0.5
-scan_line_strength = -10.0
-warp_amount = 0.05
-noise_amount = 0.015
-interference_amount = 0.1
-grille_amount = 0.05
-vignette_amount = 0.3
-vignette_intensity = 0.2
-aberation_amount = 0.25
-roll_line_amount = 0.0
-roll_speed = 0.5
-pixel_strength = -3.0
-
-[node name="CRT - bloom" type="WorldEnvironment" parent="."]
-environment = SubResource("Environment_1b6ap")
 
 [node name="Interface" parent="." instance=ExtResource("3_h75pn")]
 display_mode = 1
