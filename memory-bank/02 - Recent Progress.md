@@ -1,43 +1,122 @@
 # Recent Progress
 
-**Last Updated:** 2026-05-06
+**Last Updated:** 2026-05-09
 
 ---
 
-## Plan 15 — Arcade Orchestrator Juice (IN PROGRESS)
+## Plan 15 — Arcade Orchestrator Juice (Phase 2 IN PROGRESS)
 
-Visual and gameplay polish pass across Bug Blaster and Block Drop.
+### Phase 1 — Copyright Rename (COMPLETE)
+- All game names renamed across the entire codebase (scenes, scripts, resources, docs)
+- Rename map: `pong` → `paddle_ball`, `breakout` → `brick_breaker`, `asteroids` → `space_rocks`, `space_invaders` → `bug_blaster`, `tetris` → `block_drop`, `pongsteroids` → `meteor_rally`, `breaksteroids` → `rock_breaker`
+- All `.tscn` game scenes, `.tres` arcade settings, and internal references updated
+- First export to itch.io completed (commit `8703f0a`)
 
-### Bug Blaster Formation Change (COMPLETE)
+### Phase 1.5 — Copyright-Safety Visual Changes (COMPLETE)
+
+Targeted visual/mechanical tweaks to make each remake look distinct from its inspiration.
+
+#### Bug Blaster — Formation Change
 - Changed from 5×11 grid (55 invaders across 3 mixed rows) to 3×18 single-row formation (54 invaders)
 - **WaveSpawner3** (nautilus): `grid_columns=18, grid_rows=1`, pos=(320,32) — top row, 3pts each
 - **WaveSpawner** (squid/default): `grid_columns=18, grid_rows=1`, pos=(320,56) — middle row, 2pts each
 - **WaveSpawner2** (crab): `grid_columns=18, grid_rows=1`, pos=(320,80) — bottom row
 - `SwarmController.step_down_distance` increased from 4→6 (1.5× for wider formation)
 
-### Block Drop Juice (COMPLETE)
+#### Block Drop — Color Scheme + Juice Rework
 - **Single brick warm color default:** `tetromino_single.tscn` color changed from blue to orange `Color(1, 0.45, 0, 1)`
-- **Line clear death effect:** New `death_brick_explode` effect — 4 spinning line segments + 8 particle dots, color-inherited from parent brick. Creates satisfying colored explosions on line clears.
-- **Health-based sequential kill:** `line_clear_monitor.gd` now supports `use_health_kill` mode — instead of flash+queue_free, it reduces each brick's Health to zero sequentially with configurable delay. This triggers each brick's DeathEffect naturally, producing a cascading explosion effect row by row.
-- **Preview/hold smooth rotation:** Preview and hold pieces now continuously rotate via looping Tween (4s per revolution, ease-in-out). Rotation tween is killed and snapped to 0 when pieces become active.
+- **Line clear death effect:** New `death_brick_explode` effect — 4 spinning line segments + 8 particle dots, color-inherited from parent brick
+- **Health-based sequential kill:** `line_clear_monitor.gd` now supports `use_health_kill` mode — cascading explosion effect row by row
+- **Preview/hold smooth rotation:** Preview and hold pieces continuously rotate via looping Tween (4s per revolution)
+
+#### Brick Breaker — Flag Coloring + Wider Layout
+- **New `FlagResource` core class:** Custom resource defining a flag color grid
+- **New `flag_palette.gd` component:** Colors bricks via `modulate` from a randomly selected flag pattern. 20 flag `.tres` resources in `Resources/Flags/`
+- **Layout widened:** Playfield and brick layout expanded
+- **All bricks start white** — flag_palette applies themed colors on wave spawn
+
+#### Space Rocks — Ship + UFO Redesign
+- **Ship shape redrawn:** Blunt nose, extended wings (stealth bomber vs arrowhead). Comment in `triangle_ship.gd`: "blunt nose, extended wings"
+- **UFO shape redesigned:** Updated visual shape
+
+#### Paddle Ball — Center Line Change
+- **New `checkerboard_line.gd` component:** Draws a checkerboard pattern of alternating squares (3 columns × 64 rows, configurable)
+- Replaced classic dashed center line with checkerboard center zone
 
 ### New Files Created
 
 | File | Purpose |
 |------|---------|
+| `Scripts/Core/flag_resource.gd` | Custom resource defining a flag color grid for brick palettes |
+| `Scripts/Components/flag_palette.gd` | Colors bricks from a randomly selected flag pattern |
+| `Scenes/Components/flag_palette.tscn` | Scene wrapper for flag_palette |
+| `Scripts/Components/checkerboard_line.gd` | Draws checkerboard pattern (Paddle Ball center line) |
+| `Scenes/Components/checkerboard_line.tscn` | Scene wrapper for checkerboard_line |
 | `Scripts/Effects/death_brick_explode.gd` | Draw-based death effect with spinning line fragments + colored particles |
 | `Scenes/Effects/death_brick_explode.tscn` | Scene wrapper for death_brick_explode + Timer |
 | `Scenes/Components/death_effect_brick.tscn` | Pre-configured DeathEffect with death_brick_explode attached |
+| `Godot/export_presets.cfg` | First export configuration |
+| 20 × `Resources/Flags/*.tres` | Flag color palette resources |
 
 ### Files Modified
 
 | File | Changes |
 |------|---------|
+| All 8 game `.tscn` files | Renamed from old names, updated internal references |
+| All 7 `.tres` arcade settings | Renamed to match new game names |
+| `triangle_ship.gd` | Ship polygon redrawn (blunt nose, extended wings) |
 | `tetromino_single.tscn` | Default color → warm orange |
-| `line_clear_monitor.gd` | Added `use_health_kill`, `sequential_kill_delay` exports; `_kill_rows_sequential()`, `_find_health_component()`, `_get_body_at()` methods |
-| `block_drop.tscn` | Added Health + DeathEffectBrick to settled_cell_components; `use_health_kill=true`, `enable_line_flash=false` on LineClearMonitor |
-| `tetromino_spawner.gd` | Added `_preview_tween`/`_hold_tween` vars; `_start_preview_rotation()`/`_start_hold_rotation()` methods; tween kill on piece activation |
-| `bug_blaster.tscn` | All 3 wave spawners → 18×1 single row; positions adjusted; step_down_distance 4→6 |
+| `line_clear_monitor.gd` | Added `use_health_kill`, `sequential_kill_delay` exports; health-based sequential kill |
+| `block_drop.tscn` | Added Health + DeathEffectBrick to settled_cell_components; health kill mode |
+| `tetromino_spawner.gd` | Preview/hold rotation tweens |
+| `bug_blaster.tscn` | 3×18 single-row formation, wider step-down |
+| `brick_breaker.tscn` | Added flag_palette, widened layout |
+| `paddle_ball.tscn` | Replaced center line with checkerboard_line |
+| Multiple body scenes | Updated references after rename |
+
+### Phase 1.7 — Music System + Polish (COMPLETE)
+
+#### Music System
+- **New `music_player.gd`:** Flow component that shuffles and plays through an array of `MusicTrack` resources with fade in/out and a floating credit overlay. Only plays in STANDALONE mode. Supports optional speed ramping (listens for a signal and increases `pitch_scale` per fire, capped at 3.0).
+- **New `music_track.gd`:** `MusicTrack` custom resource — pairs an OGG stream with `song_title`, `song_credit`, and `render_credit` attribution fields.
+- **2 OGG tracks:** `el_manisero.ogg` (Moisés Simons, 1928 — Public Domain) and `son_de_la_loma.ogg` — both rendered with 8-bit NES soundfont (CC-BY 3.0)
+- **2 MusicTrack resources:** `Resources/Music/el_manisero.tres`, `Resources/Music/son_de_la_loma.tres`
+- **Block Drop integration:** MusicPlayer wired to Block Drop with speed ramping — `speed_ramp_source` connected to `LineClearMonitor`, `speed_per_level = 0.1`. Music speeds up with each line clear (Tetris-style).
+- **Credit overlay:** Floating text with song title + credit, fade in/hold/fade out animation. Black outline (2px) on labels for readability without blocking play area.
+
+#### Flag Palette Overhaul
+- **Flag count reduced from 20 → 11** real-world country flags: algeria, cuba, cuba_10x5, egypt, ethiopia, ghana, india, indonesia, tanzania, yugoslavia, zambia
+- **Black replaced with dark grey** (`Color(0.25, 0.25, 0.25, 1)`) in 4 flags that used pure black (cuba, egypt, ghana, tanzania) — bricks were invisible against black backgrounds
+
+#### Brick Breaker Tweaks
+- **Random launch angle:** Both ball WaveSpawners (initial spawn + paddle respawn) now fire at random angle ±45° from vertical (`random_angle_min = -2.356`, `random_angle_max = -0.785`)
+
+#### New Files Created
+
+| File | Purpose |
+|------|---------|
+| `Scripts/Flow/music_player.gd` | Music player component — shuffles playlist, fades, shows credits, speed ramping |
+| `Scripts/Flow/music_track.gd` | MusicTrack resource — OGG stream + attribution metadata |
+| `Scenes/Flow/music_player.tscn` | Scene wrapper for music_player |
+| `Resources/Music/el_manisero.tres` | MusicTrack for El Manisero |
+| `Resources/Music/son_de_la_loma.tres` | MusicTrack for Son de la Loma |
+| `Assets/Music/el_manisero.ogg` | OGG audio file |
+| `Assets/Music/son_de_la_loma.ogg` | OGG audio file |
+
+#### Files Modified
+
+| File | Changes |
+|------|---------|
+| `block_drop.tscn` | Added MusicPlayer with playlist + speed ramping wired to LineClearMonitor |
+| `brick_breaker.tscn` | Random launch angle on both ball spawners |
+| `Resources/Flags/cuba.tres` | Black → dark grey (0.25) |
+| `Resources/Flags/egypt.tres` | Black → dark grey (0.25) |
+| `Resources/Flags/ghana.tres` | Black → dark grey (0.25) |
+| `Resources/Flags/tanzania.tres` | Black → dark grey (0.25) |
+
+### Phase 2 — Polybius Character (NOT STARTED)
+
+Next step. See `planning/15 - Arcade Orchestrator Juice.md` Phase 2 for full plan.
 
 ---
 

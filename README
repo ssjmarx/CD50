@@ -90,4 +90,13 @@ CD50 is built with [Godot Engine](https://godotengine.org).
 
 Fonts by [Kenney](https://kenney.nl), used under the terms in `LICENSE.ASSETS`.
 
-All audio is procedurally generated at runtime — no audio assets exist in this project.
+## Music
+
+- **El Manisero** — Moisés Simons (1928) · Public Domain
+- **Son de la Loma** — Miguel Matamoros (1922) · Public Domain
+
+Rendered with [RoyTheRailfanner's 8-Bit NES Soundfont](https://musical-artifacts.com/artifacts/2759) by RoyTheRailfanner, licensed under [CC-BY 3.0](https://creativecommons.org/licenses/by/3.0/).
+
+## Audio
+
+Sound effects are procedurally generated at runtime. Music is pre-rendered OGG from public domain compositions using the soundfont above.

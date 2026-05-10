@@ -1,0 +1,12 @@
+[gd_resource type="Resource" script_class="FlagResource" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://Scripts/Core/flag_resource.gd" id="1_fr"]
+
+[resource]
+script = ExtResource("1_fr")
+
+flag_name = "Indonesia"
+columns = 10
+palette_keys = "RW"
+palette_colors = [Color(0.86, 0.08, 0.09, 1), Color(1.0, 1.0, 1.0, 1)]
+rows = PackedStringArray("RRRRRRRRRR", "RRRRRRRRRR", "RRRRRRRRRR", "RRRRRRRRRR", "RRRRRRRRRR", "WWWWWWWWWW", "WWWWWWWWWW", "WWWWWWWWWW", "WWWWWWWWWW", "WWWWWWWWWW")

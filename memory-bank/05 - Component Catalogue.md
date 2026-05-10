@@ -1,7 +1,7 @@
 # Component Catalogue
 
-**Last Updated:** 2026-05-06  
-**Total Scripts:** 88 across 10 categories  
+**Last Updated:** 2026-05-09  
+**Total Scripts:** 94 across 10 categories  
 **Total Scene Variants:** 2 (no unique script)  
 **Total Shaders:** 2 (crt_light.gdshader, persistence.gdshader)
 
@@ -9,7 +9,7 @@ Each entry includes the script name, class declaration, and a one-line descripti
 
 ---
 
-## Core (9)
+## Core (10)
 
 | Script | Extends | Summary |
 |--------|---------|---------|
@@ -22,6 +22,7 @@ Each entry includes the script name, class declaration, and a one-line descripti
 | `group_cache.gd` | `extends Node` | Lazy dirty-flag cache for group node lookups. Avoids repeated get_nodes_in_group() allocations. |
 | `property_override.gd` | `PropertyOverride extends Resource` | Defines a single property override: targets a node path and sets a named property to a value. |
 | `common_enums.gd` | `CommonEnums extends RefCounted` | Shared enumerations for type safety across the codebase. |
+| `flag_resource.gd` | `FlagResource extends Resource` | Custom resource defining a flag color grid for brick palette theming. |
 
 ---
 
@@ -103,7 +104,7 @@ Arms handle weapons and combat interactions.
 
 ---
 
-## Components (18)
+## Components (20)
 
 General-purpose gameplay modifier components.
 
@@ -111,10 +112,12 @@ General-purpose gameplay modifier components.
 |--------|---------|---------|
 | `angled_deflector.gd` | `extends UniversalComponent` | Angled deflector. Reflects the parent's velocity on collision based on the collision normal and a configurable angle offset. |
 | `bounce_on_hit.gd` | `extends UniversalComponent` | Bounces the parent's velocity on collision using the collision normal. |
+| `checkerboard_line.gd` | `extends UniversalComponent2D` | Draws a checkerboard pattern of alternating squares. Used for Paddle Ball center line replacement. |
 | `collision_marker.gd` | `extends UniversalComponent` | Collision marker. Allows non-UniversalBody nodes to participate in the CollisionMatrix system. |
 | `death_effect.gd` | `extends UniversalComponent` | Spawns a self-destructing effect scene when the parent's health reaches zero. |
 | `die_on_hit.gd` | `extends UniversalComponent` | Destroys the parent body immediately on collision with a target group. |
 | `die_on_timer.gd` | `extends UniversalComponent` | Destroys the parent body after a configurable timer expires. |
+| `flag_palette.gd` | `extends UniversalComponent2D` | Colors bricks via modulate from a randomly selected FlagResource pattern. 11 real-world flag themes available. Black replaced with dark grey (0.25) for visibility on dark backgrounds. |
 | `ghost_piece.gd` | `extends UniversalComponent` | Ghost piece component. Projects the active piece downward to show its landing position as a transparent outline. Updates on move and rotation signals. |
 | `health.gd` | `extends UniversalComponent` | Health component. Tracks HP, emits signals on change, and handles death by disabling colliders and freeing the parent. |
 | `hold_relay.gd` | `extends UniversalComponent` | Hold relay component. Forwards the body's action signal to the game's hold_requested signal. Pure signal relay — no game logic. |
@@ -151,9 +154,9 @@ Game logic and condition components.
 
 ---
 
-## Flow (8)
+## Flow (10)
 
-Wave management, spawning, UI, audio, and CRT post-processing components.
+Wave management, spawning, UI, audio, music, and CRT post-processing components.
 
 | Script | Extends | Summary |
 |--------|---------|---------|
@@ -165,6 +168,8 @@ Wave management, spawning, UI, audio, and CRT post-processing components.
 | `swarm_controller.gd` | `extends UniversalComponent2D` | Swarm controller. Drives Bug Blaster-style group movement with tick-based horizontal stepping, edge detection, step-down shifts, and speed ramping. |
 | `tetromino_spawner.gd` | `extends UniversalComponent2D` | Tetromino spawner. Manages the lock-spawn cycle for Block Drop-style games. Handles piece locking, next piece spawning, preview display, bag system, and defeat detection. |
 | `crt_controller.gd` | `extends Node2D` | Self-building CRT post-processing controller. Creates BackBufferCopy, persistence SubViewport + ColorRect, CRT shader ColorRect, and 3 PNG overlay TextureRects programmatically. Toggles vector/raster mode per game. Persistence shader provides phosphor trails in vector mode via SubViewport frame accumulation with exponential decay. |
+| `music_player.gd` | `extends UniversalComponent2D` | Music player. Shuffles and plays through an array of MusicTrack resources with fade in/out and a floating credit overlay. Only plays in STANDALONE mode. Supports speed ramping (pitch_scale increase on signal fire, capped at 3.0). Credits have 2px black outline for readability. |
+| `music_track.gd` | `MusicTrack extends Resource` | Music track resource. Pairs an OGG stream with song_title, song_credit, and render_credit attribution fields for the credit overlay system. |
 
 ---
 

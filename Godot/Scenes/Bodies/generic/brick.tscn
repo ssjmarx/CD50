@@ -7,12 +7,12 @@
 [ext_resource type="PackedScene" uid="uid://c5h0r2rnmwe4k" path="res://Scenes/Effects/death_particles.tscn" id="5_4yqll"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_iythh"]
-size = Vector2(16, 8)
+size = Vector2(12, 8)
 
 [node name="Brick" type="CharacterBody2D" groups=["bricks"]]
 script = ExtResource("1_iythh")
-width = 16
-height = 8
+width = 18
+height = 12
 collision_groups = Array[String](["bricks"])
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="."]
@@ -24,6 +24,3 @@ shape = SubResource("RectangleShape2D_iythh")
 
 [node name="DeathEffect" parent="." instance=ExtResource("4_n0cto")]
 effect_scenes = Array[PackedScene]([ExtResource("5_4yqll")])
-
-
-[connection signal="health_changed" from="Health" to="." method="_on_health_health_changed"]

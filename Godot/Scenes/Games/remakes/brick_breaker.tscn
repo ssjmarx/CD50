@@ -98,7 +98,9 @@ spawn_pattern = 3
 spawn_count_equation = "1"
 director = NodePath("../../WaveDirector2")
 property_overrides = Array[ExtResource("17_th3ku")]([SubResource("Resource_pxig7")])
-initial_velocity = Vector2(0, -100)
+initial_velocity = Vector2(0, 100)
+random_angle_min = -2.356
+random_angle_max = -0.785
 
 [node name="Walls" type="StaticBody2D" parent="."]
 position = Vector2(-8, -8)
@@ -181,19 +183,24 @@ spawn_count_equation = "1"
 director = NodePath("../WaveDirector")
 property_overrides = Array[ExtResource("17_th3ku")]([SubResource("Resource_pxig7")])
 initial_velocity = Vector2(0, -100)
+use_random_angle = true
+random_angle_min = -2.356
+random_angle_max = -0.785
 
 [node name="WaveSpawner2" parent="." node_paths=PackedStringArray("director", "extra_directors") instance=ExtResource("13_ckqoe")]
-position = Vector2(320, 96)
+position = Vector2(320, 100)
 spawn_scene = ExtResource("17_61uu3")
 spawn_pattern = 2
 stagger_delay = 0.001
 director = NodePath("../WaveDirector")
 extra_directors = [NodePath("../WaveDirector3")]
-grid_columns = 11
-grid_rows = 12
+grid_width = 18
+grid_height = 12
+grid_columns = 10
+grid_rows = 10
 grid_spacing = 4
 grid_health_values = Array[int]([])
-grid_score_values = Array[int]([6, 6, 5, 5, 4, 4, 3, 3, 2, 2, 1, 1])
+grid_score_values = Array[int]([5, 5, 4, 4, 4, 3, 3, 2, 2, 1])
 
 [node name="VariableTuner" parent="." node_paths=PackedStringArray("source_node") instance=ExtResource("19_oqfas")]
 source_node = NodePath("../Area2D")
@@ -244,6 +251,9 @@ lose_life_on_clear = true
 trigger_value = "balls"
 
 [node name="FlagPalette" parent="." instance=ExtResource("20_flag")]
+position = Vector2(203, 18)
+rows = 10
+cell_size = Vector2(22, 16)
 
 [node name="GroupMonitor2" parent="." instance=ExtResource("10_vu4sl")]
 target_group = "bricks"

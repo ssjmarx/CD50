@@ -1,7 +1,7 @@
 # Current Goal
 
-**Last Updated:** 2026-05-08  
-**Status:** Active — Plan 15 (Arcade Orchestrator Juice) in progress + shipping itch.io demo
+**Last Updated:** 2026-05-09  
+**Status:** Active — Plan 15 Phase 2 (Polybius Character) + shipping itch.io demo
 
 ---
 
@@ -35,11 +35,13 @@ The project has pivoted from building new games to shipping what we have. The im
 **Timeline:** Before itch export (late May)  
 **Scope:** Three phases — Copyright rename pass (bootleg cabinet names) + Copyright-safety visual changes (formation/color/shape/layout tweaks for all 5 remakes) + Polybius face/voice integration. Full plan in `planning/15 - Arcade Orchestrator Juice.md`.
 
-**Progress so far:**
-- Bug Blaster formation changed to 3×18 single-row (54 invaders)
-- Block Drop juice: warm default color, line clear cascading explosions (death_brick_explode), preview/hold smooth rotation
-- New files: `death_brick_explode.gd`, `death_effect_brick.tscn`
-- Modified: `line_clear_monitor.gd` (health-based sequential kill), `tetromino_spawner.gd` (preview/hold rotation tweens), `bug_blaster.tscn` (wider formation)
+**Phases 1 & 1.5 COMPLETE:**
+- Phase 1: All games renamed (copyright-safe bootleg names), first itch.io export
+- Phase 1.5: Bug Blaster 3×18 formation, Block Drop color/juice rework (warm colors, cascading explosions, rotating previews), Brick Breaker flag coloring + wider layout, Space Rocks ship+UFO redesign, Paddle Ball checkerboard center line
+- New components: `checkerboard_line`, `flag_palette`, `flag_resource`, `death_brick_explode`
+
+**Phase 2 NEXT — Polybius Character:**
+- Step 2a: Create `polybius_face.gd` — vector CRT face drawing + expression states
 
 ### Plan 16 — Cambrian Remix Explosion
 **Status:** Not started  

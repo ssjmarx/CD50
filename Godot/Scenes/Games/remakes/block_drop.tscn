@@ -1,4 +1,4 @@
-[gd_scene load_steps=22 format=3 uid="uid://bpj70hfifidra"]
+[gd_scene load_steps=28 format=3 uid="uid://bpj70hfifidra"]
 
 [ext_resource type="Script" uid="uid://bjdgpevhahi6d" path="res://Scripts/Core/universal_game_script.gd" id="1_d0qe2"]
 [ext_resource type="Script" uid="uid://bfkr4fdx316o5" path="res://Scripts/Core/collision_group.gd" id="2_n304l"]
@@ -15,6 +15,12 @@
 [ext_resource type="PackedScene" uid="uid://dga83l4d2rwyv" path="res://Scenes/Flow/sound_synth.tscn" id="13_snd"]
 [ext_resource type="PackedScene" uid="uid://bj81pr736k256" path="res://Scenes/Components/health.tscn" id="14_health"]
 [ext_resource type="PackedScene" path="res://Scenes/Components/death_effect_brick.tscn" id="15_death"]
+[ext_resource type="PackedScene" path="res://Scenes/Components/flag_palette.tscn" id="16_flag"]
+[ext_resource type="Resource" path="res://Resources/Flags/cuba_10x5.tres" id="17_cuba"]
+[ext_resource type="PackedScene" path="res://Scenes/Flow/music_player.tscn" id="18_music"]
+[ext_resource type="Script" uid="uid://cfd1lio8bfym2" path="res://Scripts/Flow/music_track.gd" id="19_mtrack"]
+[ext_resource type="Resource" path="res://Resources/Music/el_manisero.tres" id="20_track1"]
+[ext_resource type="Resource" path="res://Resources/Music/son_de_la_loma.tres" id="21_track2"]
 
 [sub_resource type="Resource" id="Resource_ubbxl"]
 script = ExtResource("2_n304l")
@@ -55,14 +61,26 @@ text = "Press Enter to
 start playing."
 
 [node name="Points" parent="Interface" index="7"]
-offset_left = 19.0
-offset_right = 91.0
+visible = true
+offset_left = 195.0
+offset_top = 344.0
+offset_right = 267.0
+offset_bottom = 368.0
+rotation = -1.5707964
+
+[node name="PointsNumber" parent="Interface/Points" index="0"]
+visible = true
 
 [node name="Multiplier" parent="Interface" index="8"]
-offset_left = 19.0
-offset_top = 298.0
-offset_right = 135.0
-offset_bottom = 322.0
+visible = true
+offset_left = 174.0
+offset_top = 344.0
+offset_right = 290.0
+offset_bottom = 368.0
+rotation = -1.5707964
+
+[node name="MultiplierNumber" parent="Interface/Multiplier" index="0"]
+visible = true
 
 [node name="LineClearMonitor" parent="." instance=ExtResource("7_yqjmt")]
 playfield_origin = Vector2(239, 0)
@@ -275,5 +293,29 @@ label_settings = SubResource("LabelSettings_1s8f2")
 [node name="Timer" parent="." instance=ExtResource("13_1s8f2")]
 duration = 20.0
 game_start = true
+
+[node name="FlagPalette" parent="." instance=ExtResource("16_flag")]
+position = Vector2(239, 270)
+source_signal = "piece_settled"
+flag_resource = ExtResource("17_cuba")
+
+[node name="FlagPalette2" parent="." instance=ExtResource("16_flag")]
+position = Vector2(239, 162)
+source_signal = "piece_settled"
+flag_resource = ExtResource("17_cuba")
+
+[node name="FlagPalette3" parent="." instance=ExtResource("16_flag")]
+position = Vector2(239, 54)
+source_signal = "piece_settled"
+flag_resource = ExtResource("17_cuba")
+
+[node name="MusicPlayer" parent="." node_paths=PackedStringArray("speed_ramp_source") instance=ExtResource("18_music")]
+playlist = Array[ExtResource("19_mtrack")]([ExtResource("20_track1"), ExtResource("21_track2")])
+loop = true
+volume_db = 12.5
+fade_out_duration = 1.0
+speed_ramp_source = NodePath("../LineClearMonitor")
+speed_ramp_signal = "level_changed"
+speed_per_level = 0.025
 
 [editable path="Interface"]

@@ -267,15 +267,14 @@ func _on_hold_requested() -> void:
 		_active_piece = null
 		_swap_in_held_piece(old_held, old_held_index)
 	else:
-		# No held piece yet: hold active, spawn new from queue
+		# No held piece yet: hold active, promote preview to active
 		_held_piece = _active_piece
 		_held_bag_index = _get_current_bag_index(_active_piece)
 		_position_hold_piece()
 		_active_piece = null
 		
-		# Spawn next from queue
-		_next_index = _get_next_index()
-		_spawn_preview()
+		# _spawn_next() will promote the existing _preview_piece to active
+		# and pick a new next index + spawn a new preview
 		await get_tree().create_timer(0.05).timeout
 		if game.current_state == CommonEnums.State.PLAYING:
 			_spawn_next()

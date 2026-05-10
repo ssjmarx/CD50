@@ -1,11 +1,11 @@
 # Current Status: CD50 — Arcade Cabinet
 
-**Last Updated:** 2026-05-06  
+**Last Updated:** 2026-05-09  
 **Engine:** Godot 4.5 (GDScript)  
 **Architecture:** Entity-Component (composition over inheritance)  
 **Playable Games:** Paddle Ball, Brick Breaker, Space Rocks, Meteor Rally, Dogfight, Bug Blaster, Block Drop (Modern), Rock Breaker — ALL componentized, zero game scripts
 **In Progress:** Shipping itch.io demo + Steam Coming Soon (see `memory-bank/06 - Deadlines.md`)
-**Recent Completed:** Plan 14 (Arcade Juice Part 1) — Custom lightweight CRT shader, vector monitor mode, shader-based phosphor persistence, per-game display mode switching
+**Recent Completed:** Music system (MusicPlayer + MusicTrack resources), flag palette overhaul (11 flags, visibility fix), Brick Breaker random launch angle, credit overlay text outlines
 
 ---
 
@@ -105,18 +105,18 @@ Scenes/Bodies/nonplayer/
 
 | Category | Count | Components |
 |----------|-------|------------|
-| Core | 9 | universal_body, universal_game_script, universal_component, universal_component_2d, collision_matrix, collision_group, group_cache, property_override, common_enums |
+| Core | 10 | universal_body, universal_game_script, universal_component, universal_component_2d, collision_matrix, collision_group, group_cache, property_override, common_enums, flag_resource |
 | Bodies | 12 | ball, paddle, asteroid, brick, barrier, bullet_simple, bullet_wrapping, tetromino, triangle_ship, ufo, invader, paddle_cannon |
 | Brains | 8 | player_control, interceptor_ai, aim_ai, shoot_ai, shoot_ai_swarm, patrol_ai, falling_ai, swarm_ai |
 | Legs | 14 | direct_movement, direct_acceleration, engine_simple, engine_complex, friction_linear, friction_static, rotation_direct, rotation_target, grid_movement, grid_rotation, grid_gravity, grid_rotation_advanced, tetromino_formation, warp_space_rocks |
 | Arms | 3 | gun_simple, damage_on_hit, damage_on_joust |
-| Components | 18 | angled_deflector, bounce_on_hit, collision_marker, death_effect, die_on_hit, die_on_timer, ghost_piece, health, hold_relay, lock_detector, paddle_ball_acceleration, ring_spawner, score_on_death, score_on_hit, screen_cleanup, screen_wrap, split_on_death, t_spin_detector, vector_engine_exhaust |
+| Components | 20 | angled_deflector, bounce_on_hit, checkerboard_line, collision_marker, death_effect, die_on_hit, die_on_timer, flag_palette, ghost_piece, health, hold_relay, lock_detector, paddle_ball_acceleration, ring_spawner, score_on_death, score_on_hit, screen_cleanup, screen_wrap, split_on_death, t_spin_detector, vector_engine_exhaust |
 | Rules | 9 | goal, points_monitor, variable_tuner, variable_tuner_global, group_monitor, group_count_multiplier, lives_counter, timer, line_clear_monitor |
-| Flow | 11 | interface, sound_on_hit, sound_synth, music_ramping, sfx_ramping, beep, grid_basic, swarm_controller, tetromino_spawner, wave_director*, wave_spawner* |
-| Effects | 2 | death_particles, death_broken_triangle_ship |
+| Flow | 13 | interface, sound_on_hit, sound_synth, music_ramping, sfx_ramping, music_player, music_track, beep, grid_basic, swarm_controller, tetromino_spawner, wave_director*, wave_spawner* |
+| Effects | 3 | death_particles, death_broken_triangle_ship, death_brick_explode |
 | Hub | 2 | arcade_orchestrator, arcade_game_entry |
 | *Interface takeover + scrolling transitions are AO-only features — no changes to interface.gd or game scenes* |
-| **Total** | **88** | |
+| **Total** | **94** | |
 
 *\* wave_director and wave_spawner scripts live in `Scripts/Rules/` but are categorized as Flow by function.*
 
@@ -149,7 +149,8 @@ EFFECTS (death_particles, death_broken_triangle_ship)
 
 ## Assets
 
-- **Audio:** Procedural synthesis via SoundSynth component (all game audio generated at runtime)
+- **Audio:** Procedural synthesis via SoundSynth component (all game audio generated at runtime) + pre-recorded OGG music tracks via MusicPlayer component with floating credit overlays
+- **Music:** 2 licensed OGG tracks (`el_manisero.ogg`, `son_de_la_loma.ogg`) with `MusicTrack` attribution resources. MusicPlayer shuffles playlist, fades in/out, shows credits, supports speed ramping (wired to Block Drop for Tetris-style tempo increase).
 - **Fonts:** Kenney retro fonts (Pixel, High, Mini, Rocket, Future, Blocks, Square — regular and narrow variants)
 - **CRT System:** Custom lightweight CRT shader (`Shaders/crt_light.gdshader`) + persistence shader (`Shaders/persistence.gdshader`) + `crt_controller.gd` (self-building Node2D with SubViewport frame accumulation) + PNG overlays (scanlines, phosphor grid, noise). Vector monitor mode uses SubViewport persistence with exponential decay for phosphor trails. Per-game display mode switching via `vector_monitor` export on UGS.
 - **Effects:** Self-destructing effect scenes (death_particles, death_broken_triangle_ship)
