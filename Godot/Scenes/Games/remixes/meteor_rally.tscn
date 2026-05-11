@@ -67,7 +67,7 @@ metadata/_custom_type_script = "uid://bfkr4fdx316o5"
 size = Vector2(640, 8)
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_l0p4r"]
-size = Vector2(8, 376)
+size = Vector2(40, 376)
 
 [sub_resource type="Resource" id="Resource_x2g5i"]
 script = ExtResource("18_pxxt0")

@@ -28,6 +28,7 @@ func _ready() -> void:
 		var sound_synth = get_node_or_null("SoundSynth")
 		if sound_synth:
 			sound_synth.note = 72
+			sound_synth._update_cached_freq()
 		var shoot_ai2 = get_node_or_null("ShootAi2")
 		if shoot_ai2:
 			shoot_ai2.fire_rate = shoot_ai2.fire_rate / 2.0

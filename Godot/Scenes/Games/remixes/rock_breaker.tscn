@@ -1,4 +1,4 @@
-[gd_scene load_steps=35 format=3 uid="uid://v3jmmfy6yptl"]
+[gd_scene load_steps=36 format=3 uid="uid://v3jmmfy6yptl"]
 
 [ext_resource type="Script" uid="uid://bjdgpevhahi6d" path="res://Scripts/Core/universal_game_script.gd" id="1_3ahes"]
 [ext_resource type="Script" uid="uid://bfkr4fdx316o5" path="res://Scripts/Core/collision_group.gd" id="2_men1n"]
@@ -96,6 +96,9 @@ metadata/_custom_type_script = "uid://cp0ni1lgml7c6"
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_kxgnb"]
 size = Vector2(18, 360)
 
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_floor"]
+size = Vector2(640, 40)
+
 [node name="Rock Breaker" type="Node2D"]
 script = ExtResource("1_3ahes")
 game_title = "Rock Breaker"
@@ -147,8 +150,8 @@ collision_groups = Array[String](["walls"])
 [node name="Floor" type="Area2D" parent="."]
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="Floor"]
-position = Vector2(320, 364)
-shape = SubResource("RectangleShape2D_7ju07")
+position = Vector2(320, 368)
+shape = SubResource("RectangleShape2D_floor")
 
 [node name="CollisionMarker" parent="Floor" instance=ExtResource("10_vdr85")]
 collision_groups = Array[String](["floors"])

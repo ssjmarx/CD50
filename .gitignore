@@ -1,2 +1,4 @@
 temp
 planning/brainstorming/
+build/
+deploy.sh

@@ -1,4 +1,4 @@
-[gd_scene load_steps=43 format=3 uid="uid://c4ttsm1qowkgo"]
+[gd_scene load_steps=44 format=3 uid="uid://c4ttsm1qowkgo"]
 
 [ext_resource type="Script" uid="uid://bjdgpevhahi6d" path="res://Scripts/Core/universal_game_script.gd" id="1_lmwk8"]
 [ext_resource type="PackedScene" uid="uid://b4mr1t8pdtmf3" path="res://Scenes/Bodies/generic/paddle.tscn" id="2_7epd8"]
@@ -82,6 +82,9 @@ size = Vector2(640, 8)
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_kxgnb"]
 size = Vector2(18, 360)
 
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_floor"]
+size = Vector2(640, 40)
+
 [node name="Brick Breaker" type="Node2D"]
 script = ExtResource("1_lmwk8")
 game_title = "Brick Breaker"
@@ -135,8 +138,8 @@ collision_groups = Array[String](["walls"])
 [node name="Floor" type="Area2D" parent="."]
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="Floor"]
-position = Vector2(320, 364)
-shape = SubResource("RectangleShape2D_7ju07")
+position = Vector2(320, 368)
+shape = SubResource("RectangleShape2D_floor")
 
 [node name="CollisionMarker" parent="Floor" instance=ExtResource("6_fkkyb")]
 collision_groups = Array[String](["floors"])
