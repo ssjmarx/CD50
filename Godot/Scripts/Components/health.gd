@@ -10,17 +10,28 @@ signal zero_health(parent: Node)
 @export var death_sound: AudioStream
 
 @onready var current_health: int = max_health
+var _is_dead: bool = false
 
-# Reduce HP and emit signals; triggers death if health reaches zero
+# Reduce HP and emit signals; triggers death if health reaches zero.
+# Guarded against double-death from multiple collision signals in the same frame.
 func reduce_health(amount: int) -> void:
+	if _is_dead:
+		return
 	current_health -= amount
 	health_changed.emit(current_health)
 	if current_health <= 0:
+		_is_dead = true
 		zero_health.emit(parent)
 		die()
 
 # Hide parent, zero velocity, disable all colliders and child processing, then free
 func die() -> void:
+	# Immediately remove from physics queries — prevents dying bodies from
+	# triggering N² collision callbacks in the same frame
+	if parent is PhysicsBody2D:
+		parent.collision_mask = 0
+		parent.collision_layer = 0
+	
 	# Immediately mark all parent's groups dirty so cached lookups refresh
 	for group in parent.get_groups():
 		GroupCache.mark_dirty(group)

@@ -1,4 +1,4 @@
-[gd_scene load_steps=40 format=3 uid="uid://bx72rpqpg34hc"]
+[gd_scene load_steps=41 format=3 uid="uid://bx72rpqpg34hc"]
 
 [ext_resource type="Script" uid="uid://bjdgpevhahi6d" path="res://Scripts/Core/universal_game_script.gd" id="1_woixt"]
 [ext_resource type="PackedScene" uid="uid://mw70bjrifcpb" path="res://Scenes/Bodies/generic/ball.tscn" id="2_ball"]
@@ -22,6 +22,7 @@
 [ext_resource type="PackedScene" uid="uid://craitf0mklbon" path="res://Scenes/Rules/timer.tscn" id="21_dpifu"]
 [ext_resource type="PackedScene" uid="uid://dh545dmdhudol" path="res://Scenes/Bodies/generic/ufo.tscn" id="22_tk1t6"]
 [ext_resource type="PackedScene" uid="uid://dv3y04bswv3t4" path="res://Scenes/Flow/music_ramping.tscn" id="25_ydxa1"]
+[ext_resource type="PackedScene" path="res://Scenes/Components/checkerboard_line.tscn" id="26_check"]
 
 [sub_resource type="Resource" id="Resource_pkkn6"]
 script = ExtResource("2_egt1g")
@@ -67,7 +68,6 @@ size = Vector2(640, 8)
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_l0p4r"]
 size = Vector2(8, 376)
-
 
 [sub_resource type="Resource" id="Resource_x2g5i"]
 script = ExtResource("18_pxxt0")
@@ -125,7 +125,6 @@ metadata/_custom_type_script = "uid://cp0ni1lgml7c6"
 [node name="Meteor Rally" type="Node2D"]
 script = ExtResource("1_woixt")
 game_title = "Meteor Rally"
-vector_monitor = true
 collision_groups = Array[ExtResource("2_egt1g")]([SubResource("Resource_pkkn6"), SubResource("Resource_5j7oo"), SubResource("Resource_dpifu"), SubResource("Resource_68rfy"), SubResource("Resource_8p135"), SubResource("Resource_ydxa1"), SubResource("Resource_dkt3g")])
 
 [node name="Player" parent="." groups=["paddles"] instance=ExtResource("3_paddle")]
@@ -194,11 +193,9 @@ collision_groups = Array[String](["goals"])
 [node name="Goal" parent="P2Goal" instance=ExtResource("8_pkkn6")]
 score_type = 1
 
-[node name="ColorRect" type="ColorRect" parent="."]
-offset_left = 318.0
-offset_top = 64.0
-offset_right = 322.0
-offset_bottom = 320.0
+[node name="CenterLine" parent="." instance=ExtResource("26_check")]
+position = Vector2(320, 64)
+columns = 2
 
 [node name="Interface" parent="." instance=ExtResource("9_46oju")]
 

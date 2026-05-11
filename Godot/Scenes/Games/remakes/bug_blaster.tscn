@@ -44,7 +44,6 @@ group_name = "bricks"
 targets = Array[String](["enemies"])
 metadata/_custom_type_script = "uid://bfkr4fdx316o5"
 
-
 [sub_resource type="Resource" id="Resource_dbhjy"]
 script = ExtResource("7_yp3rw")
 property_name = "shape"
@@ -98,7 +97,7 @@ extra_directors = [NodePath("../WaveDirector4")]
 spawn_groups = Array[String](["enemies", "invaders"])
 spawn_collision_groups = Array[String](["enemies"])
 grid_height = 16
-grid_columns = 18
+grid_columns = 14
 grid_rows = 1
 grid_spacing = 8
 grid_health_values = Array[int]([])
@@ -115,7 +114,7 @@ property_overrides = Array[ExtResource("7_yp3rw")]([SubResource("Resource_dbhjy"
 spawn_groups = Array[String](["enemies", "invaders"])
 spawn_collision_groups = Array[String](["enemies"])
 grid_height = 16
-grid_columns = 18
+grid_columns = 14
 grid_rows = 1
 grid_spacing = 8
 grid_health_values = Array[int]([])
@@ -132,11 +131,28 @@ property_overrides = Array[ExtResource("7_yp3rw")]([SubResource("Resource_74c7c"
 spawn_groups = Array[String](["enemies", "invaders"])
 spawn_collision_groups = Array[String](["enemies"])
 grid_height = 16
-grid_columns = 18
+grid_columns = 14
 grid_rows = 1
 grid_spacing = 8
 grid_health_values = Array[int]([])
 grid_score_values = Array[int]([3])
+
+[node name="WaveSpawner5" parent="." node_paths=PackedStringArray("director", "extra_directors") instance=ExtResource("4_wevyt")]
+position = Vector2(320, 104)
+spawn_scene = ExtResource("6_6vykp")
+spawn_pattern = 2
+stagger_delay = 0.01
+director = NodePath("../WaveDirector")
+extra_directors = [NodePath("../WaveDirector4")]
+property_overrides = Array[ExtResource("7_yp3rw")]([SubResource("Resource_dbhjy")])
+spawn_groups = Array[String](["enemies", "invaders"])
+spawn_collision_groups = Array[String](["enemies"])
+grid_height = 16
+grid_columns = 14
+grid_rows = 1
+grid_spacing = 8
+grid_health_values = Array[int]([])
+grid_score_values = Array[int]([])
 
 [node name="LivesCounter" parent="." instance=ExtResource("12_k2lq6")]
 

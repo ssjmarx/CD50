@@ -1,10 +1,10 @@
 # Recent Progress
 
-**Last Updated:** 2026-05-09
+**Last Updated:** 2026-05-10
 
 ---
 
-## Plan 15 — Arcade Orchestrator Juice (Phase 2 IN PROGRESS)
+## Plan 15 — Arcade Orchestrator Juice (Phase 1.8 IN PROGRESS)
 
 ### Phase 1 — Copyright Rename (COMPLETE)
 - All game names renamed across the entire codebase (scenes, scripts, resources, docs)
@@ -114,9 +114,52 @@ Targeted visual/mechanical tweaks to make each remake look distinct from its ins
 | `Resources/Flags/ghana.tres` | Black → dark grey (0.25) |
 | `Resources/Flags/tanzania.tres` | Black → dark grey (0.25) |
 
+### Phase 1.8 — Web Performance Optimization (IN PROGRESS)
+
+Target: **ThinkPad T480 running in a browser** (Intel UHD 620, WebGL). Optimize the synth-heavy audio pipeline and CRT rendering for smooth 60fps on integrated graphics.
+
+#### Planned Changes (9 optimizations)
+
+| # | Optimization | File | Impact |
+|---|-------------|------|--------|
+| 1 | Cap `max_fps=60` for web export | `export_presets.cfg` | Halves render workload |
+| 2 | Reduce `MAX_VOICES` 16→8 | `sound_synth.gd` | 50% fewer active synths |
+| 3 | Cache `_get_frequency()` (pre-compute on note change, not per-sample) | `sound_synth.gd` | Eliminates pow() in hot loop |
+| 4 | Fix NOISE dead code (redundant randf() overwritten by lerp) | `sound_synth.gd` | Saves randf() in hot path |
+| 5 | Lower `MIX_RATE` 22050→11025 (arcade-accurate) | `sound_synth.gd` | 50% fewer samples to generate |
+| 6 | Signal-based continuous dedup (`tree_exiting` instead of per-frame polling) | `sound_synth.gd` | Eliminates 54 wasted _process calls in Bug Blaster |
+| 7 | Dirty-flag CRT shader params (push on mode switch, not every frame) | `crt_controller.gd` | Eliminates 20+ WASM bridge calls/frame |
+| 8 | Disable persistence VP in raster mode | `crt_controller.gd` | Eliminates wasted full-screen shader pass |
+| 9 | Enable thread support in export (progressive enhancement) | `export_presets.cfg` | Offloads audio to Web Worker |
+
+#### Key Decisions
+- **No runtime `OS.has_feature("web")` checks** — MIX_RATE 11025 sounds fine on desktop too; max_fps and thread support are export-preset-specific
+- **CRT shader quality deferred** — 7-sample shader acceptable after other optimizations; revisit only if needed post-testing
+- **Thread support as progressive enhancement** — enabled in export but game must perform well without it (itch.io header compatibility concerns)
+- **Signal-based dedup uses `tree_exiting`** — blocked continuous synths connect to the active synth's `tree_exiting` signal, then `set_process(false)` until woken up. Zero per-frame cost.
+
+Full implementation details: `planning/15 - Arcade Orchestrator Juice.md` Phase 1.8
+
+#### Flag Palette Web Fix (Phase 1.8 bonus)
+
+**Bug:** Brick Breaker bricks had no colors on web export. Block Drop (which explicitly sets `flag_resource`) worked fine.
+
+**Root cause:** `flag_palette.gd` used `DirAccess.open()` + `list_dir_begin()` to scan for flag resources at runtime. This directory scanning doesn't work in web exports (packed `.pck` bundles), so the flags array was always empty → no colors applied.
+
+**Fix:**
+- **`flag_palette.gd`**: Removed `flags_dir` export and `_load_flags()` runtime scanning. Replaced with `@export var flag_resources: Array[FlagResource] = []` — resources loaded at scene parse time (web-safe). Also uses position-based node matching instead of physics queries for coloring.
+- **`brick_breaker.tscn`**: Added all 11 flag resources (algeria, cuba, cuba_10x5, egypt, ethiopia, ghana, india, indonesia, tanzania, yugoslavia, zambia) as ext_resources and set on FlagPalette's `flag_resources` array. Random flag picked each wave.
+
+#### Files Modified
+
+| File | Changes |
+|------|---------|
+| `Scripts/Components/flag_palette.gd` | Removed `flags_dir`/`_load_flags()`. Added `flag_resources: Array[FlagResource]` export. Position-based node matching replaces physics queries. |
+| `Scenes/Games/remakes/brick_breaker.tscn` | Added 11 flag ext_resources. FlagPalette `flag_resources` array set with all flags. |
+
 ### Phase 2 — Polybius Character (NOT STARTED)
 
-Next step. See `planning/15 - Arcade Orchestrator Juice.md` Phase 2 for full plan.
+See `planning/15 - Arcade Orchestrator Juice.md` Phase 2 for full plan.
 
 ---
 

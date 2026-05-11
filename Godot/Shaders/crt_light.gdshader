@@ -1,12 +1,12 @@
 // Lightweight CRT shader — barrel distortion, chromatic aberration (3 samples),
 // real bloom spread (4 samples), vignette, rolling hum bar, flicker.
-// Optional persistence input for vector mode phosphor trails.
+// Persistence input for phosphor trails (always on).
 // ~7 texture samples per pixel (3 chroma + 4 bloom). Scanlines/noise via PNG overlays.
 shader_type canvas_item;
 
 uniform sampler2D SCREEN_TEXTURE : hint_screen_texture, filter_nearest;
 
-// Optional persistence buffer (SubViewport with phosphor decay, vector mode only)
+// Persistence buffer (SubViewport with phosphor decay, always active)
 uniform sampler2D persistence_tex;
 uniform float persistence_blend : hint_range(0.0, 1.0) = 0.0;
 
@@ -37,7 +37,8 @@ uniform float flicker_amount : hint_range(0.0, 0.1) = 0.005;
 
 // Master controls
 uniform float brightness : hint_range(0.5, 2.0) = 1.0;
-uniform float contrast : hint_range(0.5, 3.0) = 1.1;
+// Gamma (CRT phosphor power-curve response — >1.0 brightens midtones)
+uniform float gamma : hint_range(0.5, 3.0) = 1.1;
 
 // Barrel distortion — UV warp, zero extra samples
 vec2 warp(vec2 uv) {
@@ -61,15 +62,20 @@ void fragment() {
 	float b = texture(SCREEN_TEXTURE, uv + chroma_offset).b;
 	vec3 clr = vec3(r, g, b);
 
-	// Blend with persistence buffer (vector mode phosphor trails)
+	// Blend with persistence buffer (phosphor trails)
 	if (persistence_blend > 0.0) {
 		vec3 pers = texture(persistence_tex, uv).rgb;
 		clr = mix(clr, pers, persistence_blend);
 	}
 
-	// Real bloom — 4-sample cross pattern, spread bright pixels into neighbors
+	// Vignette — computed before bloom for center-weighting
+	vec2 vuv = uv * (1.0 - uv);
+	float vig = vuv.x * vuv.y * 15.0;
+	vig = clamp(pow(vig, vignette_intensity), 0.0, 1.0);
+
+	// Bloom — 4-sample asymmetric cross pattern, center-weighted by vignette
 	if (bloom_amount > 0.0) {
-		vec2 bloom_px = vec2(2.0) / resolution;
+		vec2 bloom_px = vec2(3.0, 2.0) / resolution;
 		vec3 bloom = vec3(0.0);
 		vec3 s;
 		s = texture(SCREEN_TEXTURE, uv + vec2(bloom_px.x, 0.0)).rgb;
@@ -80,13 +86,10 @@ void fragment() {
 		bloom += max(vec3(0.0), s - bloom_threshold);
 		s = texture(SCREEN_TEXTURE, uv - vec2(0.0, bloom_px.y)).rgb;
 		bloom += max(vec3(0.0), s - bloom_threshold);
-		clr += bloom * bloom_amount * 0.25;
+		clr += bloom * bloom_amount * 0.25 * (0.7 + 0.3 * vig);
 	}
 
-	// Vignette — math falloff, follows barrel distortion naturally
-	vec2 vuv = uv * (1.0 - uv);
-	float vig = vuv.x * vuv.y * 15.0;
-	vig = clamp(pow(vig, vignette_intensity), 0.0, 1.0);
+	// Apply vignette falloff
 	clr *= vig;
 
 	// Rolling hum bar — scrolling bright band
@@ -102,10 +105,10 @@ void fragment() {
 	// Master brightness
 	clr *= brightness;
 
-	// Master contrast (S-curve: x^gamma where gamma > 1 increases contrast)
-	if (contrast != 1.0) {
+	// Gamma — CRT phosphor power-curve response (>1.0 lifts midtones)
+	if (gamma != 1.0) {
 		clr = clamp(clr, 0.0, 1.0);
-		clr = pow(clr, vec3(1.0 / contrast));
+		clr = pow(clr, vec3(1.0 / gamma));
 	}
 
 	COLOR = vec4(clr, 1.0);

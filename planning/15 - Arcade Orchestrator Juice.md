@@ -1,9 +1,9 @@
 # Plan 15 — Arcade Orchestrator Juice (Polybius + Renaming)
 
 **Created:** 2026-05-06  
-**Status:** Not started  
+**Status:** Phase 1.8 in progress  
 **Timeline:** Before itch export (late May)  
-**Scope:** Three phases — Copyright rename pass + Copyright-safety visual changes + Polybius face/voice integration  
+**Scope:** Five phases — Copyright rename pass + Copyright-safety visual changes + Web performance optimization + Polybius face/voice integration  
 **Depends on:** Plan 13 (Arcade Orchestrator) complete
 
 ---
@@ -155,6 +155,150 @@ Renaming isn't enough — the games also need to **look** distinct from their in
 
 ---
 
+## Phase 1.8 — Web Performance Optimization
+
+Target: **ThinkPad T480 running in a browser** (Intel UHD 620, WebGL). Optimize the synth-heavy audio pipeline and CRT rendering for smooth 60fps on integrated graphics.
+
+### Background
+
+The SoundSynth system (AudioStreamGenerator) does per-sample math in GDScript for up to 16 simultaneous voices. On a browser with no thread support, all audio processing runs on the main thread, competing with physics and rendering. The CRT shader does 7 texture samples per pixel at 640×360 (~1.6M samples/frame). Combined, these are the two largest frame-time consumers.
+
+### Optimization Targets
+
+| # | Optimization | File | Approach | Impact |
+|---|-------------|------|----------|--------|
+| 1 | Cap `max_fps=60` for web export | `export_presets.cfg` | Export preset override — 120fps is wasteful for a pixel art CRT game in a vsync'd browser | **High** — halves render workload |
+| 2 | Reduce `MAX_VOICES` 16→8 | `sound_synth.gd` | Lower the hard cap. Sounds were getting lost at 6; try 8 as a middle ground | **High** — 50% fewer active synths |
+| 3 | Cache `_get_frequency()` | `sound_synth.gd` | Pre-compute `440 * pow(2, (note-69)/12)` once per note change instead of per-sample (was called 256× per frame per voice) | **Medium** — eliminates pow() in hot loop |
+| 4 | Fix NOISE dead code | `sound_synth.gd` | Line 308 computes `sample = randf()*2-1` which is immediately overwritten by line 311's lerp. Remove the dead `randf()` call | **Low-Medium** — saves randf() in hot path |
+| 5 | Lower `MIX_RATE` 22050→11025 | `sound_synth.gd` | 11025 Hz is arcade-accurate (matches TI SN76489 / AY-3-8910 effective rates). Highest note B5 (987 Hz) is well within Nyquist. Halves all sample generation | **Medium** — 50% fewer samples to generate |
+| 6 | Signal-based continuous dedup | `sound_synth.gd` | Blocked continuous synths currently poll `WeakRef.get_ref()` every frame. Instead: connect to the blocking synth's `tree_exiting` signal, then `set_process(false)` until the slot frees up. 54 blocked UFOs go from 54 wasted `_process` calls/frame to zero | **Medium** — eliminates wasted processing |
+| 7 | Dirty-flag CRT shader params | `crt_controller.gd` | `_process()` pushes ~20 `set_shader_parameter()` calls every frame. In production, push once on mode switch only. Use a `_params_dirty` flag | **Medium** — eliminates 20+ WASM bridge calls/frame |
+| 8 | Disable persistence VP in raster | `crt_controller.gd` | Persistence SubViewport runs `UPDATE_ALWAYS` even in raster mode (just outputs black). Set `UPDATE_DISABLED` when not in vector mode | **Medium** — eliminates wasted full-screen shader pass |
+| 9 | Enable thread support in export | `export_presets.cfg` | Set `variant/thread_support=true`. Moves audio processing to a Web Worker. Progressive enhancement — game works without it, but browsers that support SharedArrayBuffer (all modern desktop browsers in 2026) get audio off the main thread | **Bonus** — offloads audio entirely |
+
+### Implementation Details
+
+#### 1. Web Export Preset Override (`export_presets.cfg`)
+Add to `[preset.0.options]`:
+```
+application/run/max_fps=60
+```
+This overrides `project.godot`'s `max_fps=120` for the web build only. Desktop builds stay at 120.
+
+#### 2. MAX_VOICES (`sound_synth.gd` line 46)
+```gdscript
+const MAX_VOICES: int = 8
+```
+Try 8 and playtest. If sounds are still getting lost, bump to 10. If still smooth on T480, try going down to 6.
+
+#### 3. Cached frequency (`sound_synth.gd`)
+Add a cached frequency variable, pre-computed when `note` changes or at play start:
+```gdscript
+var _cached_freq: float = 0.0
+
+func _update_cached_freq() -> void:
+    _cached_freq = 440.0 * pow(2.0, (note - 69) / 12.0)
+```
+Call `_update_cached_freq()` in `_ready()` and `play_one_shot()`. In `_get_sample()`, use `_cached_freq` instead of calling `_get_frequency()`.
+
+#### 4. NOISE fix (`sound_synth.gd` lines 308-311)
+Replace:
+```gdscript
+sample = randf() * 2.0 - 1.0
+var noise = randf() * 2.0 - 1.0
+var tone = sin(TAU * _phase)
+sample = lerp(tone, noise, 0.5)
+```
+With:
+```gdscript
+var noise = randf() * 2.0 - 1.0
+var tone = sin(TAU * _phase)
+sample = lerp(tone, noise, 0.5)
+```
+
+#### 5. MIX_RATE (`sound_synth.gd` line 45)
+```gdscript
+const MIX_RATE: int = 11025
+```
+11025 Hz is the most commonly used rate for retro audio emulation. All notes C3-B5 (130-987 Hz) are well within Nyquist (5512 Hz).
+
+#### 6. Signal-based continuous dedup (`sound_synth.gd`)
+In `_try_claim_continuous()`, when a synth is blocked:
+```gdscript
+var blocking = ref.get_ref() as Node
+if blocking and blocking.has_signal("tree_exiting"):
+    blocking.tree_exiting.connect(_on_slot_freed)
+    set_process(false)  # No polling needed
+```
+New method:
+```gdscript
+func _on_slot_freed() -> void:
+    _try_claim_continuous()
+    if _voice_active:
+        set_process(true)
+```
+In `_exit_tree()`, disconnect if we were blocked:
+```gdscript
+# Clean up: disconnect from blocking synth if we were waiting
+var ref = _continuous_registry.get(_signature)
+if ref:
+    var blocking = ref.get_ref() as Node
+    if blocking and blocking.tree_exiting.is_connected(_on_slot_freed):
+        blocking.tree_exiting.disconnect(_on_slot_freed)
+```
+
+#### 7. Dirty-flag CRT params (`crt_controller.gd`)
+Add a `_params_dirty: bool = true` flag. In `_process()`, only push params when dirty:
+```gdscript
+if _params_dirty:
+    _push_params()
+    _params_dirty = false
+```
+Set `_params_dirty = true` in `set_vector_mode()`. In production builds, params only need pushing on mode switch. Inspector live-tweaking can set the dirty flag via property setters.
+
+#### 8. Persistence VP in raster (`crt_controller.gd`)
+In `set_vector_mode()`:
+```gdscript
+if _persistence_vp:
+    _persistence_vp.render_target_update_mode = SubViewport.UPDATE_ALWAYS if enabled else SubViewport.UPDATE_DISABLED
+```
+
+#### 9. Thread support (`export_presets.cfg`)
+Set `variant/thread_support=true`. Note: requires itch.io to serve COOP/COEP headers. If the itch wrapper breaks, disable for itch export only — the other 8 optimizations make the game fast enough single-threaded.
+
+### Implementation Steps
+
+| Step | What | Depends On |
+|------|------|-----------|
+| 1.8a | Cap max_fps=60 in web export preset | — |
+| 1.8b | Reduce MAX_VOICES to 8 | — |
+| 1.8c | Cache `_get_frequency()` + fix NOISE dead code | — |
+| 1.8d | Lower MIX_RATE to 11025 | — |
+| 1.8e | Signal-based continuous dedup (tree_exiting) | — |
+| 1.8f | Dirty-flag CRT params | — |
+| 1.8g | Disable persistence VP in raster mode | — |
+| 1.8h | Enable thread support in export preset | — |
+| 1.8i | Playtest all 8 games — verify audio sounds correct at 11025 Hz with 8 voices | 1.8b–1.8d |
+| 1.8j | Test on target (T480 browser) — measure frame time improvement | 1.8a–1.8h |
+
+### Files Modified
+
+| File | Changes |
+|------|---------|
+| `Scripts/Flow/sound_synth.gd` | Cached freq, NOISE fix, MIX_RATE→11025, MAX_VOICES→8, signal-based continuous dedup |
+| `Scripts/Flow/crt_controller.gd` | Dirty-flag params, persistence VP disable in raster |
+| `export_presets.cfg` | max_fps=60 override, thread_support=true |
+
+### What's NOT Changing
+
+- **CRT shader quality** — Deferred. The 7-sample shader is acceptable after the other optimizations reduce main-thread pressure. Can revisit with a "web quality" preset if frame time is still high post-testing.
+- **Runtime `OS.has_feature("web")` checks** — Not needed. All changes are either constants that are fine globally (MIX_RATE 11025 sounds great on desktop too) or export-preset-specific (max_fps, thread support).
+- **Game scripts or scenes** — Zero game behavior changes.
+- `project.godot` — Desktop settings stay as-is.
+
+---
+
 ## Phase 2 — Polybius Character
 
 ### What Polybius Is (In This Phase)
@@ -249,6 +393,7 @@ Phase 1 (rename) should complete before Phase 2 (Polybius) so that Polybius inte
 |-------|------|-------|-----------|
 | **1** | Copyright rename | 1a–1g | 1–2 |
 | **1.5** | Copyright-safety visuals | 1.5a–1.5j | 2–3 |
+| **1.8** | Web performance optimization | 1.8a–1.8j | 1–2 |
 | **2** | Polybius character | 2a–2j | 3–4 |
 
 ---

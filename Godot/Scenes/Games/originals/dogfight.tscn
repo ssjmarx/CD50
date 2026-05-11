@@ -45,7 +45,6 @@ group_name = "space_rocks"
 targets = Array[String](["players", "enemies"])
 metadata/_custom_type_script = "uid://bfkr4fdx316o5"
 
-
 [sub_resource type="Resource" id="Resource_pxxt0"]
 script = ExtResource("15_te72y")
 node_path = NodePath("AngledDeflector")
@@ -56,7 +55,6 @@ metadata/_custom_type_script = "uid://cp0ni1lgml7c6"
 [node name="Dogfight" type="Node2D"]
 script = ExtResource("1_04s2g")
 game_title = "Dogfight"
-vector_monitor = true
 collision_groups = Array[ExtResource("2_25ekh")]([SubResource("Resource_1b6ap"), SubResource("Resource_25ekh"), SubResource("Resource_yp1qk"), SubResource("Resource_u8jyr"), SubResource("Resource_s3uvk")])
 
 [node name="Interface" parent="." instance=ExtResource("3_h75pn")]
@@ -116,7 +114,6 @@ target_property = "current_multiplier"
 adjustment_amount = 1.0
 
 [node name="LivesCounter" parent="." instance=ExtResource("19_vm45j")]
-max_lives = 5
 
 [node name="TriangleShip" parent="." instance=ExtResource("20_54n4y")]
 position = Vector2(64, 320)

@@ -42,8 +42,8 @@ enum Semitone {
 }
 
 # Voice limiting (arcade hardware had 1-3 sound channels)
-const MIX_RATE: int = 22050
-const MAX_VOICES: int = 16
+const MIX_RATE: int = 11025
+const MAX_VOICES: int = 8
 const MAX_FILL_PER_FRAME: int = 256
 static var _active_voices: int = 0
 static var _continuous_registry: Dictionary = {}  # signature -> WeakRef to self
@@ -57,6 +57,12 @@ var _player: Node
 var _frame_pos: int = 0
 var _shot_end: int = 0
 var _phase: float = 0.0
+var _cached_freq: float = 0.0
+var _blocking_node: Node = null
+
+# Initial fill cap for play_one_shot — limits samples generated during collision
+# callbacks to prevent audio-gen spikes. Remaining samples fill via _process.
+const MAX_INITIAL_FILL: int = 128
 
 # Editor preview state
 var _preview_player: AudioStreamPlayer = null
@@ -86,6 +92,7 @@ func _get(property: StringName) -> Variant:
 
 # Play a preview of this sound in the editor
 func _editor_preview() -> void:
+	_update_cached_freq()
 	# Clean up any existing preview
 	if _preview_player and is_instance_valid(_preview_player):
 		_preview_player.queue_free()
@@ -142,6 +149,7 @@ func _ready() -> void:
 	add_child(_player)
 	
 	_signature = str(wave_shape) + "_" + str(effect) + "_" + str(note)
+	_update_cached_freq()
 	
 	# Start playback and fill initial buffer
 	match play_mode:
@@ -157,9 +165,15 @@ func _ready() -> void:
 func _try_claim_continuous() -> void:
 	var ref = _continuous_registry.get(_signature)
 	if ref != null and ref.get_ref() != null:
-		# Another synth already holds this slot — stay silent but keep processing
+		# Another synth already holds this slot — connect to its tree_exiting signal
+		# instead of polling every frame
 		_player.stop()
 		_voice_active = false
+		var blocking = ref.get_ref() as Node
+		if blocking and not blocking.tree_exiting.is_connected(_on_slot_freed):
+			blocking.tree_exiting.connect(_on_slot_freed)
+			_blocking_node = blocking
+		set_process(false)
 		return
 	# Slot is free — claim it
 	if _active_voices >= MAX_VOICES:
@@ -174,6 +188,11 @@ func _try_claim_continuous() -> void:
 
 # Release voice when leaving the tree
 func _exit_tree() -> void:
+	# Clean up: disconnect from blocking synth if we were waiting
+	if _blocking_node and is_instance_valid(_blocking_node):
+		if _blocking_node.tree_exiting.is_connected(_on_slot_freed):
+			_blocking_node.tree_exiting.disconnect(_on_slot_freed)
+		_blocking_node = null
 	if _voice_active:
 		_active_voices -= 1
 		_voice_active = false
@@ -199,13 +218,9 @@ func _process(_delta: float) -> void:
 			if not _player.playing and _voice_active:
 				_player.play()
 				_playback = _player.get_stream_playback()
-			# If not active, check if the slot opened up
+			# If not active, wait for signal-based slot notification
 			if not _voice_active:
-				var ref = _continuous_registry.get(_signature)
-				if ref == null or ref.get_ref() == null:
-					_try_claim_continuous()
-				if not _voice_active:
-					return
+				return
 			var to_fill = mini(_playback.get_frames_available(), MAX_FILL_PER_FRAME)
 			for i in to_fill:
 				var t = float(_frame_pos) / _stream.mix_rate
@@ -253,13 +268,15 @@ func play_one_shot() -> void:
 	_frame_pos = 0
 	_shot_end = int(duration * _stream.mix_rate)
 	_phase = 0.0
+	_update_cached_freq()
 	
 	if not _player.playing:
 		_player.play()
 		_playback = _player.get_stream_playback()
 	
-	# Fill as many frames as the buffer can hold
-	var to_push = mini(mini(_playback.get_frames_available(), _shot_end), MAX_FILL_PER_FRAME)
+	# Cap initial fill to limit audio-gen work during collision callbacks.
+	# Remaining samples are generated in _process over subsequent frames.
+	var to_push = mini(mini(_playback.get_frames_available(), _shot_end), MAX_INITIAL_FILL)
 	for i in to_push:
 		var t = float(_frame_pos) / _stream.mix_rate
 		var sample = _get_sample(t)
@@ -267,20 +284,31 @@ func play_one_shot() -> void:
 		_frame_pos += 1
 	
 	# Continue in _process if there are more frames to fill
-	if _frame_pos >= _shot_end:
-		set_process(false)
-	else:
+	if _frame_pos < _shot_end:
 		set_process(true)
 
 # --- Audio Generation ---
 
-# Convert the semitone enum value to a frequency in Hz (A4 = 440Hz reference)
-func _get_frequency() -> float:
-	return 440.0 * pow(2.0, (note - 69) / 12.0)
+# Pre-compute frequency from current note (A4 = 440Hz reference).
+# Called once per note change instead of per-sample to avoid pow() in the hot loop.
+func _update_cached_freq() -> void:
+	_cached_freq = 440.0 * pow(2.0, (note - 69) / 12.0)
+
+# Signal handler: a blocking continuous synth is exiting the tree.
+# Clean up its registry entry so we can claim the freed slot.
+func _on_slot_freed() -> void:
+	if _blocking_node and is_instance_valid(_blocking_node):
+		var ref = _continuous_registry.get(_signature)
+		if ref != null and ref.get_ref() == _blocking_node:
+			_continuous_registry.erase(_signature)
+		_blocking_node = null
+	_try_claim_continuous()
+	if _voice_active:
+		set_process(true)
 
 # Generate a single audio sample at the given time, applying wave shape and effects
 func _get_sample(t: float) -> float:
-	var freq = _get_frequency()
+	var freq = _cached_freq
 	
 	# Frequency-modifying effects
 	match effect:
@@ -305,7 +333,6 @@ func _get_sample(t: float) -> float:
 		WaveShape.TRIANGLE:
 			sample = 2.0 * abs(2.0 * (_phase - floor(_phase + 0.5))) - 1.0
 		WaveShape.NOISE:
-			sample = randf() * 2.0 - 1.0
 			var noise = randf() * 2.0 - 1.0
 			var tone = sin(TAU * _phase)
 			sample = lerp(tone, noise, 0.5)

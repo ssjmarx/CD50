@@ -1,7 +1,7 @@
 # Current Goal
 
-**Last Updated:** 2026-05-09  
-**Status:** Active — Plan 15 Phase 2 (Polybius Character) + shipping itch.io demo
+**Last Updated:** 2026-05-10  
+**Status:** Active — Plan 15 Phase 1.8 (Web Performance Optimization) + shipping itch.io demo
 
 ---
 
@@ -33,12 +33,18 @@ The project has pivoted from building new games to shipping what we have. The im
 ### Plan 15 — Arcade Orchestrator Juice
 **Status:** IN PROGRESS  
 **Timeline:** Before itch export (late May)  
-**Scope:** Three phases — Copyright rename pass (bootleg cabinet names) + Copyright-safety visual changes (formation/color/shape/layout tweaks for all 5 remakes) + Polybius face/voice integration. Full plan in `planning/15 - Arcade Orchestrator Juice.md`.
+**Scope:** Five phases — Copyright rename pass + Copyright-safety visual changes + Web performance optimization + Polybius face/voice integration. Full plan in `planning/15 - Arcade Orchestrator Juice.md`.
 
-**Phases 1 & 1.5 COMPLETE:**
+**Phases 1, 1.5, 1.7 COMPLETE:**
 - Phase 1: All games renamed (copyright-safe bootleg names), first itch.io export
-- Phase 1.5: Bug Blaster 3×18 formation, Block Drop color/juice rework (warm colors, cascading explosions, rotating previews), Brick Breaker flag coloring + wider layout, Space Rocks ship+UFO redesign, Paddle Ball checkerboard center line
-- New components: `checkerboard_line`, `flag_palette`, `flag_resource`, `death_brick_explode`
+- Phase 1.5: Bug Blaster 3×18 formation, Block Drop color/juice rework, Brick Breaker flag coloring + wider layout, Space Rocks ship+UFO redesign, Paddle Ball checkerboard center line
+- Phase 1.7: Music system (MusicPlayer + MusicTrack resources), flag palette overhaul, Brick Breaker random launch angle
+
+**Phase 1.8 IN PROGRESS — Web Performance Optimization:**
+- 9 targeted optimizations for ThinkPad T480 / browser target (COMPLETE)
+- Key changes: MAX_VOICES 16→8, MIX_RATE 22050→11025, cached frequency, signal-based continuous dedup, dirty-flag CRT params, max_fps=60 web override, thread support enabled
+- Files: `sound_synth.gd`, `crt_controller.gd`, `export_presets.cfg`
+- **Flag palette web fix (COMPLETE):** Replaced broken `DirAccess` runtime scanning with explicit `flag_resources: Array[FlagResource]` export. Brick Breaker now has all 11 flags in scene — works on web.
 
 **Phase 2 NEXT — Polybius Character:**
 - Step 2a: Create `polybius_face.gd` — vector CRT face drawing + expression states

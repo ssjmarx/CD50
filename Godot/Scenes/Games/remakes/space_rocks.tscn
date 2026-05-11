@@ -54,7 +54,6 @@ metadata/_custom_type_script = "uid://cp0ni1lgml7c6"
 script = ExtResource("1_wqf31")
 game_title = "Space Rocks"
 collision_groups = Array[ExtResource("2_dd2rs")]([SubResource("Resource_c1c35"), SubResource("Resource_dr0h3"), SubResource("Resource_tcn4d"), SubResource("Resource_x51td"), SubResource("Resource_5oyh6")])
-vector_monitor = true
 
 [node name="TriangleShip" parent="." groups=["players"] instance=ExtResource("3_axs4k")]
 position = Vector2(320, 184)

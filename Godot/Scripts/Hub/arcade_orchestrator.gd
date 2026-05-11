@@ -231,10 +231,6 @@ func _finalize_game_start(instance: Node2D) -> void:
 		# Notify UGS of arcade bonus so scoring is affected
 		ugs.set_arcade_bonus(float(_game_count))
 		
-		# Configure CRT for this game's display mode
-		if _crt_controller:
-			_crt_controller.set_vector_mode(ugs.vector_monitor)
-		
 		# Start the game (unpauses tree, sets PLAYING state)
 		ugs.start_game()
 	

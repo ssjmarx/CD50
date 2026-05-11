@@ -5,7 +5,7 @@
 **Architecture:** Entity-Component (composition over inheritance)  
 **Playable Games:** Paddle Ball, Brick Breaker, Space Rocks, Meteor Rally, Dogfight, Bug Blaster, Block Drop (Modern), Rock Breaker — ALL componentized, zero game scripts
 **In Progress:** Shipping itch.io demo + Steam Coming Soon (see `memory-bank/06 - Deadlines.md`)
-**Recent Completed:** Music system (MusicPlayer + MusicTrack resources), flag palette overhaul (11 flags, visibility fix), Brick Breaker random launch angle, credit overlay text outlines
+**Recent Completed:** Flag palette web fix (explicit resource array replaces broken DirAccess scanning), web perf optimizations (9 sound/CRT/export fixes), music system, Brick Breaker random launch angle
 
 ---
 
@@ -110,7 +110,7 @@ Scenes/Bodies/nonplayer/
 | Brains | 8 | player_control, interceptor_ai, aim_ai, shoot_ai, shoot_ai_swarm, patrol_ai, falling_ai, swarm_ai |
 | Legs | 14 | direct_movement, direct_acceleration, engine_simple, engine_complex, friction_linear, friction_static, rotation_direct, rotation_target, grid_movement, grid_rotation, grid_gravity, grid_rotation_advanced, tetromino_formation, warp_space_rocks |
 | Arms | 3 | gun_simple, damage_on_hit, damage_on_joust |
-| Components | 20 | angled_deflector, bounce_on_hit, checkerboard_line, collision_marker, death_effect, die_on_hit, die_on_timer, flag_palette, ghost_piece, health, hold_relay, lock_detector, paddle_ball_acceleration, ring_spawner, score_on_death, score_on_hit, screen_cleanup, screen_wrap, split_on_death, t_spin_detector, vector_engine_exhaust |
+| Components | 20 | angled_deflector, bounce_on_hit, checkerboard_line, collision_marker, death_effect, die_on_hit, die_on_timer, flag_palette (web-safe: explicit `flag_resources` array, no DirAccess scanning), ghost_piece, health, hold_relay, lock_detector, paddle_ball_acceleration, ring_spawner, score_on_death, score_on_hit, screen_cleanup, screen_wrap, split_on_death, t_spin_detector, vector_engine_exhaust |
 | Rules | 9 | goal, points_monitor, variable_tuner, variable_tuner_global, group_monitor, group_count_multiplier, lives_counter, timer, line_clear_monitor |
 | Flow | 13 | interface, sound_on_hit, sound_synth, music_ramping, sfx_ramping, music_player, music_track, beep, grid_basic, swarm_controller, tetromino_spawner, wave_director*, wave_spawner* |
 | Effects | 3 | death_particles, death_broken_triangle_ship, death_brick_explode |

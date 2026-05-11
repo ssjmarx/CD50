@@ -12,12 +12,19 @@ extends UniversalComponent
 func _ready() -> void:
 	parent.connect(listen_signal, _on_collision)
 
-# Apply damage to the collider if it matches target groups (or any entity if no groups specified)
+# Apply damage to the collider if it matches target groups (or any entity if no groups specified).
+# Skips entities already in death state to prevent multi-collision lag spikes.
+# Uses get_node_or_null to avoid double tree traversal (has_node + get_node).
 func _on_collision(collider: Node, _normal: Vector2) -> void:
-	if target_groups.is_empty() and collider.has_node("Health"):
-		collider.get_node("Health").reduce_health(damage_amount)
+	var health: Node = collider.get_node_or_null("Health")
+	if health == null or health._is_dead:
+		return
+	
+	if target_groups.is_empty():
+		health.reduce_health(damage_amount)
+		return
 	
 	for group in target_groups:
-		if collider.is_in_group(group) and collider.has_node("Health"):
-			collider.get_node("Health").reduce_health(damage_amount)
+		if collider.is_in_group(group):
+			health.reduce_health(damage_amount)
 			return

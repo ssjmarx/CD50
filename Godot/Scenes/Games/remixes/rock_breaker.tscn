@@ -1,4 +1,4 @@
-[gd_scene load_steps=34 format=3 uid="uid://v3jmmfy6yptl"]
+[gd_scene load_steps=35 format=3 uid="uid://v3jmmfy6yptl"]
 
 [ext_resource type="Script" uid="uid://bjdgpevhahi6d" path="res://Scripts/Core/universal_game_script.gd" id="1_3ahes"]
 [ext_resource type="Script" uid="uid://bfkr4fdx316o5" path="res://Scripts/Core/collision_group.gd" id="2_men1n"]
@@ -18,6 +18,7 @@
 [ext_resource type="PackedScene" uid="uid://clhg61503vle8" path="res://Scenes/Rules/variable_tuner.tscn" id="17_ay3y2"]
 [ext_resource type="PackedScene" uid="uid://dhulxxtcsipl6" path="res://Scenes/Rules/group_monitor.tscn" id="18_6v0nt"]
 [ext_resource type="PackedScene" uid="uid://dv3y04bswv3t4" path="res://Scenes/Flow/music_ramping.tscn" id="19_a62kv"]
+[ext_resource type="PackedScene" path="res://Scenes/Components/checkerboard_line.tscn" id="20_check"]
 
 [sub_resource type="Resource" id="Resource_5p75n"]
 script = ExtResource("2_men1n")
@@ -244,13 +245,12 @@ shape = SubResource("RectangleShape2D_kxgnb")
 [node name="CollisionMarker" parent="StaticBody2D" instance=ExtResource("10_vdr85")]
 collision_groups = Array[String](["walls"])
 
-[node name="ColorRect" type="ColorRect" parent="StaticBody2D"]
-offset_left = -9.0
-offset_top = -180.0
-offset_right = 9.0
-offset_bottom = 180.0
-localize_numeral_system = false
-color = Color(0.74509805, 0.74509805, 0.74509805, 1)
+[node name="WallChecker" parent="StaticBody2D" instance=ExtResource("20_check")]
+position = Vector2(0, -180)
+cell_size = 3
+columns = 6
+rows = 120
+color_a = Color(0.745, 0.745, 0.745, 1)
 
 [node name="StaticBody2D2" type="StaticBody2D" parent="."]
 position = Vector2(152, 180)
@@ -261,13 +261,12 @@ shape = SubResource("RectangleShape2D_kxgnb")
 [node name="CollisionMarker" parent="StaticBody2D2" instance=ExtResource("10_vdr85")]
 collision_groups = Array[String](["walls"])
 
-[node name="ColorRect" type="ColorRect" parent="StaticBody2D2"]
-offset_left = -10.0
-offset_top = -180.0
-offset_right = 9.0
-offset_bottom = 180.0
-localize_numeral_system = false
-color = Color(0.74509805, 0.74509805, 0.74509805, 1)
+[node name="WallChecker" parent="StaticBody2D2" instance=ExtResource("20_check")]
+position = Vector2(0, -180)
+cell_size = 3
+columns = 6
+rows = 120
+color_a = Color(0.745, 0.745, 0.745, 1)
 
 [node name="GroupMonitor" parent="." instance=ExtResource("18_6v0nt")]
 target_group = "balls"

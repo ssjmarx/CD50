@@ -65,17 +65,19 @@ effect_scenes = Array[PackedScene]([ExtResource("13_ysd2f"), ExtResource("14_0ov
 [node name="AimAi" parent="." instance=ExtResource("16_xwb4j")]
 target_group = "players"
 turning_speed = 180
-aim_inaccuracy = 15
 
 [node name="PatrolAi" parent="." instance=ExtResource("19_4wtmv")]
 waypoint_count = 6
 loop_mode = 1
 
 [node name="ShootAi" parent="." instance=ExtResource("18_g2hj8")]
-vision_cone_angle = 5.0
+vision_cone_angle = 45.0
+fire_rate = 1.0
 
 [node name="ShootAi2" parent="." instance=ExtResource("18_g2hj8")]
 target_group = "space_rocks"
+vision_cone_angle = 45.0
+fire_rate = 1.0
 
 [node name="ScoreOnDeath" parent="." instance=ExtResource("19_xjk3s")]
 base_score = 50
@@ -88,4 +90,3 @@ note = 48
 volume = 0.1
 source_node = NodePath("..")
 source_signal = "thrust"
-

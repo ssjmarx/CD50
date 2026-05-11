@@ -22,7 +22,7 @@ metadata/_custom_type_script = "uid://cp0ni1lgml7c6"
 script = ExtResource("2_okycj")
 node_path = NodePath("WaveSpawner(GameStart)")
 property_name = "spawn_count_equation"
-value = "7"
+value = "6"
 metadata/_custom_type_script = "uid://cp0ni1lgml7c6"
 
 [sub_resource type="Resource" id="Resource_yxgaa"]

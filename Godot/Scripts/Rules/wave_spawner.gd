@@ -33,6 +33,10 @@ extends UniversalComponent2D
 @export var grid_health_values: Array[int] = [7, 5, 3, 1, 1, 1, 1, 1]
 @export var grid_score_values: Array[int] = [7, 7, 5, 5, 3, 3, 1, 1]
 
+# Grid random skip — for junk block patterns (guarantees gaps per row)
+@export var grid_skip_chance: float = 0.0       # 0.0 = spawn all, 0.3 = skip ~30%
+@export var grid_min_skips_per_row: int = 0      # guarantee ≥N gaps per row
+
 # Initial velocity configuration
 @export var initial_velocity: Vector2 = Vector2.ZERO
 @export var use_random_angle: bool = false
@@ -87,6 +91,27 @@ func _on_spawning_wave(signaller = game, wave_number: int = 0) -> void:
 	_spawn_queue.clear()
 	for i in spawn_count:
 		_spawn_queue.append(i)
+	
+	# Apply random skips for grid pattern (junk blocks)
+	if spawn_pattern == CommonEnums.SpawnPattern.GRID and (grid_skip_chance > 0.0 or grid_min_skips_per_row > 0):
+		var skip_set: Dictionary = {}
+		for row in grid_rows:
+			var skips_in_row: int = 0
+			# Random skip pass
+			for col in grid_columns:
+				var idx = row * grid_columns + col
+				if randf() < grid_skip_chance:
+					skip_set[idx] = true
+					skips_in_row += 1
+			# Enforce minimum skips per row
+			while skips_in_row < grid_min_skips_per_row and skips_in_row < grid_columns:
+				var col = randi() % grid_columns
+				var idx = row * grid_columns + col
+				if not skip_set.has(idx):
+					skip_set[idx] = true
+					skips_in_row += 1
+		_spawn_queue = _spawn_queue.filter(func(idx): return not skip_set.has(idx))
+	
 	_spawn_wave_num = wave_number
 	_spawn_timer = 0.0
 	set_process(true)

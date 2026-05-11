@@ -1,4 +1,4 @@
-[gd_scene load_steps=28 format=3 uid="uid://bpj70hfifidra"]
+[gd_scene load_steps=32 format=3 uid="uid://bpj70hfifidra"]
 
 [ext_resource type="Script" uid="uid://bjdgpevhahi6d" path="res://Scripts/Core/universal_game_script.gd" id="1_d0qe2"]
 [ext_resource type="Script" uid="uid://bfkr4fdx316o5" path="res://Scripts/Core/collision_group.gd" id="2_n304l"]
@@ -21,6 +21,9 @@
 [ext_resource type="Script" uid="uid://cfd1lio8bfym2" path="res://Scripts/Flow/music_track.gd" id="19_mtrack"]
 [ext_resource type="Resource" path="res://Resources/Music/el_manisero.tres" id="20_track1"]
 [ext_resource type="Resource" path="res://Resources/Music/son_de_la_loma.tres" id="21_track2"]
+[ext_resource type="PackedScene" uid="uid://dwyyfxniivl1r" path="res://Scenes/Rules/wave_director.tscn" id="22_junkd"]
+[ext_resource type="PackedScene" uid="uid://vlbel76nqh5w" path="res://Scenes/Rules/wave_spawner.tscn" id="23_junks"]
+[ext_resource type="PackedScene" path="res://Scenes/Components/checkerboard_line.tscn" id="24_check"]
 
 [sub_resource type="Resource" id="Resource_ubbxl"]
 script = ExtResource("2_n304l")
@@ -93,6 +96,29 @@ enable_t_spin_scoring = true
 t_spin_score_table = Array[int]([40, 80, 120, 160])
 t_spin_mini_score_table = Array[int]([10, 30, 60, 90])
 
+[node name="JunkDirector" parent="." instance=ExtResource("22_junkd")]
+trigger_type = 3
+wave_delay = 0.0
+
+[node name="JunkSpawner" parent="." node_paths=PackedStringArray("director") instance=ExtResource("23_junks")]
+position = Vector2(329, 324)
+spawn_scene = ExtResource("4_cqxkq")
+spawn_pattern = 2
+spawn_count_equation = "1"
+stagger_delay = 0.001
+director = NodePath("../JunkDirector")
+grid_width = 18
+grid_height = 18
+grid_columns = 10
+grid_rows = 0
+grid_spacing = 0
+grid_health_values = Array[int]([])
+grid_score_values = Array[int]([])
+grid_skip_chance = 0.3
+grid_min_skips_per_row = 1
+spawn_components = Array[PackedScene]([ExtResource("14_health"), ExtResource("15_death")])
+spawn_groups = Array[String](["settled_pieces"])
+
 [node name="TetrominoSpawner" parent="." instance=ExtResource("3_ubbxl")]
 position = Vector2(338, 27)
 bag = Array[PackedScene]([ExtResource("4_v8b0n")])
@@ -113,13 +139,12 @@ shape = SubResource("RectangleShape2D_yqjmt")
 [node name="CollisionMarker" parent="StaticBody2D" instance=ExtResource("11_w5ai1")]
 collision_groups = Array[String](["walls"])
 
-[node name="ColorRect" type="ColorRect" parent="StaticBody2D"]
-offset_left = -9.0
-offset_top = -180.0
-offset_right = 9.0
-offset_bottom = 180.0
-localize_numeral_system = false
-color = Color(0.74509805, 0.74509805, 0.74509805, 1)
+[node name="WallChecker" parent="StaticBody2D" instance=ExtResource("24_check")]
+position = Vector2(0, -180)
+cell_size = 3
+columns = 6
+rows = 120
+color_a = Color(0.745, 0.745, 0.745, 1)
 
 [node name="StaticBody2D2" type="StaticBody2D" parent="."]
 position = Vector2(230, 180)
@@ -130,13 +155,12 @@ shape = SubResource("RectangleShape2D_yqjmt")
 [node name="CollisionMarker" parent="StaticBody2D2" instance=ExtResource("11_w5ai1")]
 collision_groups = Array[String](["walls"])
 
-[node name="ColorRect" type="ColorRect" parent="StaticBody2D2"]
-offset_left = -10.0
-offset_top = -180.0
-offset_right = 9.0
-offset_bottom = 180.0
-localize_numeral_system = false
-color = Color(0.74509805, 0.74509805, 0.74509805, 1)
+[node name="WallChecker" parent="StaticBody2D2" instance=ExtResource("24_check")]
+position = Vector2(0, -180)
+cell_size = 3
+columns = 6
+rows = 120
+color_a = Color(0.745, 0.745, 0.745, 1)
 
 [node name="Sounds" type="Node2D" parent="."]
 

@@ -1,4 +1,4 @@
-[gd_resource type="Resource" script_class="ArcadeGameEntry" load_steps=6 format=3 uid="uid://cirxnwcy2g34q"]
+[gd_resource type="Resource" script_class="ArcadeGameEntry" load_steps=7 format=3 uid="uid://cirxnwcy2g34q"]
 
 [ext_resource type="PackedScene" uid="uid://bpj70hfifidra" path="res://Scenes/Games/remakes/block_drop.tscn" id="1_ecjqk"]
 [ext_resource type="Script" uid="uid://cp0ni1lgml7c6" path="res://Scripts/Core/property_override.gd" id="1_l06m0"]
@@ -18,8 +18,15 @@ property_name = "emit_result_on_expire"
 value = true
 metadata/_custom_type_script = "uid://cp0ni1lgml7c6"
 
+[sub_resource type="Resource" id="Resource_junk"]
+script = ExtResource("1_l06m0")
+node_path = NodePath("JunkSpawner")
+property_name = "grid_rows"
+value = 6
+metadata/_custom_type_script = "uid://cp0ni1lgml7c6"
+
 [resource]
 script = ExtResource("2_ecjqk")
 game_scene = ExtResource("1_ecjqk")
-overrides = Array[ExtResource("1_l06m0")]([SubResource("Resource_ecjqk"), SubResource("Resource_780gg")])
+overrides = Array[ExtResource("1_l06m0")]([SubResource("Resource_ecjqk"), SubResource("Resource_780gg"), SubResource("Resource_junk")])
 metadata/_custom_type_script = "uid://bdsbfe65crnbu"

@@ -1,4 +1,4 @@
-[gd_scene load_steps=30 format=3 uid="uid://c4ttsm1qowkgo"]
+[gd_scene load_steps=43 format=3 uid="uid://c4ttsm1qowkgo"]
 
 [ext_resource type="Script" uid="uid://bjdgpevhahi6d" path="res://Scripts/Core/universal_game_script.gd" id="1_lmwk8"]
 [ext_resource type="PackedScene" uid="uid://b4mr1t8pdtmf3" path="res://Scenes/Bodies/generic/paddle.tscn" id="2_7epd8"]
@@ -16,8 +16,20 @@
 [ext_resource type="PackedScene" uid="uid://c74nhjbvdo3ff" path="res://Scenes/Bodies/generic/ball_combo.tscn" id="17_kxgnb"]
 [ext_resource type="Script" uid="uid://cp0ni1lgml7c6" path="res://Scripts/Core/property_override.gd" id="17_th3ku"]
 [ext_resource type="PackedScene" uid="uid://craitf0mklbon" path="res://Scenes/Rules/timer.tscn" id="19_8fcjv"]
+[ext_resource type="Script" uid="uid://bck7ggx4nghd7" path="res://Scripts/Core/flag_resource.gd" id="19_lef1e"]
 [ext_resource type="PackedScene" uid="uid://clhg61503vle8" path="res://Scenes/Rules/variable_tuner.tscn" id="19_oqfas"]
 [ext_resource type="PackedScene" path="res://Scenes/Components/flag_palette.tscn" id="20_flag"]
+[ext_resource type="Resource" path="res://Resources/Flags/algeria.tres" id="21_algeria"]
+[ext_resource type="Resource" path="res://Resources/Flags/cuba.tres" id="22_cuba"]
+[ext_resource type="Resource" path="res://Resources/Flags/egypt.tres" id="24_egypt"]
+[ext_resource type="Resource" path="res://Resources/Flags/ethiopia.tres" id="25_ethiopia"]
+[ext_resource type="Resource" path="res://Resources/Flags/ghana.tres" id="26_ghana"]
+[ext_resource type="Resource" path="res://Resources/Flags/india.tres" id="27_india"]
+[ext_resource type="Resource" path="res://Resources/Flags/indonesia.tres" id="28_indonesia"]
+[ext_resource type="Resource" path="res://Resources/Flags/tanzania.tres" id="29_tanzania"]
+[ext_resource type="Resource" path="res://Resources/Flags/yugoslavia.tres" id="30_yugoslavia"]
+[ext_resource type="Resource" path="res://Resources/Flags/zambia.tres" id="31_zambia"]
+[ext_resource type="PackedScene" path="res://Scenes/Components/checkerboard_line.tscn" id="32_check"]
 
 [sub_resource type="Resource" id="Resource_5p75n"]
 script = ExtResource("2_vu4sl")
@@ -218,13 +230,12 @@ shape = SubResource("RectangleShape2D_kxgnb")
 [node name="CollisionMarker" parent="StaticBody2D" instance=ExtResource("6_fkkyb")]
 collision_groups = Array[String](["walls"])
 
-[node name="ColorRect" type="ColorRect" parent="StaticBody2D"]
-offset_left = -9.0
-offset_top = -180.0
-offset_right = 9.0
-offset_bottom = 180.0
-localize_numeral_system = false
-color = Color(0.74509805, 0.74509805, 0.74509805, 1)
+[node name="WallChecker" parent="StaticBody2D" instance=ExtResource("32_check")]
+position = Vector2(0, -180)
+cell_size = 3
+columns = 6
+rows = 120
+color_a = Color(0.745, 0.745, 0.745, 1)
 
 [node name="StaticBody2D2" type="StaticBody2D" parent="."]
 position = Vector2(152, 180)
@@ -235,13 +246,12 @@ shape = SubResource("RectangleShape2D_kxgnb")
 [node name="CollisionMarker" parent="StaticBody2D2" instance=ExtResource("6_fkkyb")]
 collision_groups = Array[String](["walls"])
 
-[node name="ColorRect" type="ColorRect" parent="StaticBody2D2"]
-offset_left = -10.0
-offset_top = -180.0
-offset_right = 9.0
-offset_bottom = 180.0
-localize_numeral_system = false
-color = Color(0.74509805, 0.74509805, 0.74509805, 1)
+[node name="WallChecker" parent="StaticBody2D2" instance=ExtResource("32_check")]
+position = Vector2(0, -180)
+cell_size = 3
+columns = 6
+rows = 120
+color_a = Color(0.745, 0.745, 0.745, 1)
 
 [node name="GroupMonitor" parent="." instance=ExtResource("10_vu4sl")]
 target_group = "balls"
@@ -254,6 +264,7 @@ trigger_value = "balls"
 position = Vector2(203, 18)
 rows = 10
 cell_size = Vector2(22, 16)
+flag_resources = Array[ExtResource("19_lef1e")]([ExtResource("21_algeria"), ExtResource("22_cuba"), ExtResource("24_egypt"), ExtResource("25_ethiopia"), ExtResource("26_ghana"), ExtResource("27_india"), ExtResource("28_indonesia"), ExtResource("29_tanzania"), ExtResource("30_yugoslavia"), ExtResource("31_zambia")])
 
 [node name="GroupMonitor2" parent="." instance=ExtResource("10_vu4sl")]
 target_group = "bricks"
