@@ -29,14 +29,6 @@ target_groups = Array[String](["space_rocks", "players", "enemies", "bricks"])
 
 [node name="DieOnTimer" parent="." instance=ExtResource("4_kp2sk")]
 
-[node name="SoundSynth" parent="." node_paths=PackedStringArray("source_node") instance=ExtResource("6_qe1e6")]
-play_mode = 1
-effect = 4
-note = 76
-source_node = NodePath("..")
-source_signal = "body_collided"
-exclusive = true
-
 [node name="SoundSynth2" parent="." node_paths=PackedStringArray("source_node") instance=ExtResource("6_qe1e6")]
 effect = 3
 note = 69

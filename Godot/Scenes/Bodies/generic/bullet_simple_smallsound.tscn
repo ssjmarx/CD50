@@ -1,10 +1,9 @@
-[gd_scene load_steps=6 format=3 uid="uid://b5mvtda2xfqqo"]
+[gd_scene load_steps=5 format=3 uid="uid://b5mvtda2xfqqo"]
 
 [ext_resource type="Script" uid="uid://dk4n6dgf8uiht" path="res://Scripts/Bodies/bullet_simple.gd" id="1_enbqu"]
 [ext_resource type="PackedScene" uid="uid://b3hvkyy38ihr1" path="res://Scenes/Components/screen_cleanup.tscn" id="2_wbcsn"]
 [ext_resource type="PackedScene" uid="uid://cg5rnfuldr2n0" path="res://Scenes/Arms/damage_on_hit.tscn" id="3_60skh"]
 [ext_resource type="PackedScene" uid="uid://86gfkqtgv2yc" path="res://Scenes/Components/die_on_hit.tscn" id="4_26loi"]
-[ext_resource type="PackedScene" uid="uid://dga83l4d2rwyv" path="res://Scenes/Flow/sound_synth.tscn" id="5_68nq2"]
 
 [node name="BulletSimple" type="CharacterBody2D"]
 script = ExtResource("1_enbqu")
@@ -26,21 +25,3 @@ activation_time = 0.0
 target_groups = Array[String](["space_rocks", "enemies", "players", "bricks"])
 
 [node name="DieOnHit" parent="." instance=ExtResource("4_26loi")]
-
-[node name="SoundSynth" parent="." node_paths=PackedStringArray("source_node") instance=ExtResource("5_68nq2")]
-play_mode = 1
-effect = 4
-note = 76
-source_node = NodePath("..")
-source_signal = "body_collided"
-exclusive = true
-
-[node name="SoundSynth2" parent="." node_paths=PackedStringArray("source_node") instance=ExtResource("5_68nq2")]
-play_mode = 1
-effect = 3
-note = 57
-volume = 0.1
-duration = 0.2
-source_node = NodePath("..")
-source_signal = "ready"
-exclusive = true

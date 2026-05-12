@@ -131,34 +131,34 @@ func _editor_preview() -> void:
 				_preview_player = null
 		)
 
-# Create the audio stream, player, and connect signal source if in ON_SIGNAL mode
+# Create the audio stream, player, and connect signal source.
+# ON_SIGNAL mode: lightweight config holder — routes through SoundBank,
+# no audio nodes created locally. CONTINUOUS mode: unchanged.
 func _ready() -> void:
 	if Engine.is_editor_hint():
 		return
 	
-	_stream = AudioStreamGenerator.new()
-	_stream.mix_rate = MIX_RATE
-	
-	if positional:
-		_player = AudioStreamPlayer2D.new()
-	else:
-		_player = AudioStreamPlayer.new()
-
-	_player.stream = _stream
-	_player.volume_db = linear_to_db(volume)
-	add_child(_player)
-	
 	_signature = str(wave_shape) + "_" + str(effect) + "_" + str(note)
 	_update_cached_freq()
 	
-	# Start playback and fill initial buffer
 	match play_mode:
 		PlayMode.ON_SIGNAL:
+			# Lightweight path: no audio node creation, just connect signal
 			if source_node != null:
 				source_node.connect(source_signal, _on_signal)
-			_player.stop()
 			set_process(false)
 		PlayMode.CONTINUOUS:
+			_stream = AudioStreamGenerator.new()
+			_stream.mix_rate = MIX_RATE
+			
+			if positional:
+				_player = AudioStreamPlayer2D.new()
+			else:
+				_player = AudioStreamPlayer.new()
+
+			_player.stream = _stream
+			_player.volume_db = linear_to_db(volume)
+			add_child(_player)
 			_try_claim_continuous()
 
 # Try to register as the active CONTINUOUS synth for this signature
@@ -251,13 +251,26 @@ func _on_signal(arg1 = "", _arg2 = null) -> void:
 		return
 	play_one_shot()
 
-# Start a one-shot playback from the beginning of the waveform
+# Start a one-shot playback.
+# ON_SIGNAL mode: routes through SoundBank pool (no local audio nodes).
+# CONTINUOUS mode: not used externally, but functional if called.
 func play_one_shot() -> void:
+	if gameplay_only and game != null and game.current_state != CommonEnums.State.PLAYING:
+		return
+	
+	if play_mode == PlayMode.ON_SIGNAL:
+		# Route through SoundBank — no local node creation or buffer management
+		var pos: Vector2 = global_position if is_inside_tree() else Vector2.ZERO
+		SoundBank.play(wave_shape, effect, note, volume, duration,
+			pos, positional, exclusive, get_instance_id())
+		return
+	
+	# Legacy local path (only reached if a CONTINUOUS synth calls play_one_shot)
+	if _player == null:
+		return
 	if exclusive and _player.playing:
 		return
 	if _active_voices >= MAX_VOICES:
-		return
-	if gameplay_only and game != null and game.current_state != CommonEnums.State.PLAYING:
 		return
 	
 	# Only claim a new voice slot if we don't already have one

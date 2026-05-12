@@ -21,6 +21,7 @@ config/icon="res://icon.svg"
 [autoload]
 
 GroupCache="*res://Scripts/Core/group_cache.gd"
+SoundBank="*res://Scripts/Core/sound_bank.gd"
 
 [display]
 
