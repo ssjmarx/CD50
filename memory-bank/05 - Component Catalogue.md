@@ -1,7 +1,7 @@
 # Component Catalogue
 
-**Last Updated:** 2026-05-09  
-**Total Scripts:** 94 across 10 categories  
+**Last Updated:** 2026-05-11  
+**Total Scripts:** 95 across 10 categories  
 **Total Scene Variants:** 2 (no unique script)  
 **Total Shaders:** 2 (crt_light.gdshader, persistence.gdshader)
 
@@ -9,7 +9,7 @@ Each entry includes the script name, class declaration, and a one-line descripti
 
 ---
 
-## Core (10)
+## Core (11)
 
 | Script | Extends | Summary |
 |--------|---------|---------|
@@ -23,6 +23,7 @@ Each entry includes the script name, class declaration, and a one-line descripti
 | `property_override.gd` | `PropertyOverride extends Resource` | Defines a single property override: targets a node path and sets a named property to a value. |
 | `common_enums.gd` | `CommonEnums extends RefCounted` | Shared enumerations for type safety across the codebase. |
 | `flag_resource.gd` | `FlagResource extends Resource` | Custom resource defining a flag color grid for brick palette theming. |
+| `sound_bank.gd` | `extends Node` (Autoload) | Pre-warmed pool of 8 AudioStreamPlayer2D + AudioStreamGenerator pairs for one-shot synthesized sounds. Centralized fill loop replaces per-synth _process. ON_SIGNAL SoundSynth routes through this pool. |
 
 ---
 
@@ -162,7 +163,7 @@ Wave management, spawning, UI, audio, music, and CRT post-processing components.
 |--------|---------|---------|
 | `interface.gd` | `extends Control` | Reusable user interface. Parent shows/hides elements and calls update methods on score/lives events. |
 | `sound_on_hit.gd` | `extends UniversalComponent` | Plays a sound effect when the parent body is hit (via body_entered or body_collided). |
-| `sound_synth.gd` | *(not shown — unique)* | Synthesized audio generator. Produces real-time waveforms (sine, square, sawtooth, triangle, noise) with optional effects. Supports continuous playback or signal-triggered one-shots. |
+| `sound_synth.gd` | *(not shown — unique)* | Synthesized audio config holder + signal relay. ON_SIGNAL mode routes through SoundBank autoload (no local audio nodes). CONTINUOUS mode creates its own AudioStreamPlayer2D + AudioStreamGenerator. Produces waveforms (sine, square, sawtooth, triangle, noise) with optional effects. |
 | `music_ramping.gd` | `extends UniversalComponent2D` | Music ramping. Accelerates a two-voice synth beat as the count of a target group decreases, creating tension. |
 | `sfx_ramping.gd` | `extends UniversalComponent` | Maps a property value from a source node to a semitone range and plays a synth note. Useful for dynamic pitch-shifting based on game state. |
 | `swarm_controller.gd` | `extends UniversalComponent2D` | Swarm controller. Drives Bug Blaster-style group movement with tick-based horizontal stepping, edge detection, step-down shifts, and speed ramping. |

@@ -44,6 +44,7 @@ The project has pivoted from building new games to shipping what we have. The im
 - 9 targeted optimizations for ThinkPad T480 / browser target (COMPLETE)
 - Key changes: MAX_VOICES 16→8, MIX_RATE 22050→11025, cached frequency, signal-based continuous dedup, dirty-flag CRT params, max_fps=60 web override, thread support enabled
 - Files: `sound_synth.gd`, `crt_controller.gd`, `export_presets.cfg`
+- **SoundBank autoload (COMPLETE):** Pre-warmed 8-voice audio pool. ON_SIGNAL SoundSynth routes through pool instead of creating/destroying nodes per sound. Eliminates node churn for bullets, death effects, asteroid collisions. Files: `sound_bank.gd` (new), `sound_synth.gd`, `project.godot`
 - **Flag palette web fix (COMPLETE):** Replaced broken `DirAccess` runtime scanning with explicit `flag_resources: Array[FlagResource]` export. Brick Breaker now has all 11 flags in scene — works on web.
 
 **Phase 2 NEXT — Polybius Character:**

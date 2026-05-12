@@ -1,11 +1,11 @@
 # Current Status: CD50 — Arcade Cabinet
 
-**Last Updated:** 2026-05-09  
+**Last Updated:** 2026-05-11  
 **Engine:** Godot 4.5 (GDScript)  
 **Architecture:** Entity-Component (composition over inheritance)  
 **Playable Games:** Paddle Ball, Brick Breaker, Space Rocks, Meteor Rally, Dogfight, Bug Blaster, Block Drop (Modern), Rock Breaker — ALL componentized, zero game scripts
 **In Progress:** Shipping itch.io demo + Steam Coming Soon (see `memory-bank/06 - Deadlines.md`)
-**Recent Completed:** Flag palette web fix (explicit resource array replaces broken DirAccess scanning), web perf optimizations (9 sound/CRT/export fixes), music system, Brick Breaker random launch angle
+**Recent Completed:** SoundBank autoload (pre-warmed audio pool eliminates ON_SIGNAL node churn), flag palette web fix (explicit resource array replaces broken DirAccess scanning), web perf optimizations (9 sound/CRT/export fixes), music system, Brick Breaker random launch angle
 
 ---
 
@@ -48,6 +48,9 @@ CD50 is a modular arcade game collection built around a composable component arc
 
 ### `Scripts/Core/group_cache.gd` — `extends Node`
 - Lazy dirty-flag cache for group node lookups. Avoids repeated `get_nodes_in_group()` allocations. Marks groups dirty when nodes enter/exit the tree or `add_to_group()` is called.
+
+### `Scripts/Core/sound_bank.gd` — `extends Node` (Autoload)
+- Pre-warmed pool of 8 `AudioStreamPlayer2D` + `AudioStreamGenerator` pairs for one-shot synthesized sounds. SoundSynth ON_SIGNAL mode routes through this pool instead of creating/destroying audio nodes per sound. Centralized `_process` loop fills all active voices in one pass. CONTINUOUS mode SoundSynth is unaffected.
 
 ### `Scripts/Core/collision_group.gd` — `CollisionGroup extends Resource`
 - Custom resource defining a collision group name and its target groups.
@@ -105,7 +108,7 @@ Scenes/Bodies/nonplayer/
 
 | Category | Count | Components |
 |----------|-------|------------|
-| Core | 10 | universal_body, universal_game_script, universal_component, universal_component_2d, collision_matrix, collision_group, group_cache, property_override, common_enums, flag_resource |
+| Core | 11 | universal_body, universal_game_script, universal_component, universal_component_2d, collision_matrix, collision_group, group_cache, sound_bank, property_override, common_enums, flag_resource |
 | Bodies | 12 | ball, paddle, asteroid, brick, barrier, bullet_simple, bullet_wrapping, tetromino, triangle_ship, ufo, invader, paddle_cannon |
 | Brains | 8 | player_control, interceptor_ai, aim_ai, shoot_ai, shoot_ai_swarm, patrol_ai, falling_ai, swarm_ai |
 | Legs | 14 | direct_movement, direct_acceleration, engine_simple, engine_complex, friction_linear, friction_static, rotation_direct, rotation_target, grid_movement, grid_rotation, grid_gravity, grid_rotation_advanced, tetromino_formation, warp_space_rocks |
@@ -116,7 +119,7 @@ Scenes/Bodies/nonplayer/
 | Effects | 3 | death_particles, death_broken_triangle_ship, death_brick_explode |
 | Hub | 2 | arcade_orchestrator, arcade_game_entry |
 | *Interface takeover + scrolling transitions are AO-only features — no changes to interface.gd or game scenes* |
-| **Total** | **94** | |
+| **Total** | **95** | |
 
 *\* wave_director and wave_spawner scripts live in `Scripts/Rules/` but are categorized as Flow by function.*
 

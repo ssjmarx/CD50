@@ -1,6 +1,6 @@
 # Recent Progress
 
-**Last Updated:** 2026-05-10
+**Last Updated:** 2026-05-11
 
 ---
 
@@ -139,6 +139,20 @@ Target: **ThinkPad T480 running in a browser** (Intel UHD 620, WebGL). Optimize 
 - **Signal-based dedup uses `tree_exiting`** — blocked continuous synths connect to the active synth's `tree_exiting` signal, then `set_process(false)` until woken up. Zero per-frame cost.
 
 Full implementation details: `planning/15 - Arcade Orchestrator Juice.md` Phase 1.8
+
+#### SoundBank Autoload (Phase 1.8 — COMPLETE)
+
+Performance optimization: pre-warmed audio pool eliminates per-entity node creation/destruction for one-shot synthesized sounds.
+
+- **New `sound_bank.gd` autoload:** Pre-warms 8 `AudioStreamPlayer2D` + `AudioStreamGenerator` pairs at startup. Centralized `_process` loop fills all active voices in one pass (replacing N separate per-synth `_process` calls). Voice reuse by `source_id` matches old per-synth restart behavior.
+- **Modified `sound_synth.gd`:** ON_SIGNAL mode no longer creates `AudioStreamGenerator` or `AudioStreamPlayer2D` nodes — routes `play_one_shot()` through `SoundBank.play()` instead. SoundSynth becomes a lightweight config holder + signal relay. CONTINUOUS mode unchanged.
+- **Modified `project.godot`:** Registered `SoundBank` autoload.
+
+| File | Changes |
+|------|---------|
+| `Scripts/Core/sound_bank.gd` | **NEW** — Pre-warmed 8-voice audio pool, centralized fill loop, waveform generation |
+| `Scripts/Flow/sound_synth.gd` | ON_SIGNAL mode: no audio node creation, routes through SoundBank |
+| `project.godot` | Added SoundBank autoload registration |
 
 #### Flag Palette Web Fix (Phase 1.8 bonus)
 
