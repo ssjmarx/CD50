@@ -311,10 +311,27 @@ A **vector CRT face** that appears:
 
 ### Architecture
 
-**`polybius_face.gd`** — Control node that draws a vector face:
+**Two-channel design** — Eyes and mouth are independent, allowing any expression at any mouth position for proper lip sync:
 
-- **Face construction:** All `_draw()` — rounded rect border, two circular eyes with pupils, mouth line, scanline overlay. Amber/green phosphor color palette.
-- **Expression states:** Enum — `IDLE`, `SPEAKING`, `PLEASED`, `DISPLEASED`, `NEUTRAL`. Each state adjusts eye size/position and mouth shape.
+- **Eyes channel:** Face outline, eyes, pupils, eyebrows — controlled by `PolybiusEyes` resources (one per expression: neutral, displeased, etc.)
+- **Mouth channel:** Mouth shape — controlled by `PolybiusMouth` resources (one per mouth position for lip sync)
+- Both channels combine freely via two independent frame indices
+
+**`polybius_eyes.gd`** — Custom Resource (`PolybiusEyes`):
+- `outline`, `left_eye`, `right_eye`, `left_pupil`, `right_pupil`, `left_eyebrow`, `right_eyebrow` — all `PackedVector2Array`
+- One resource per expression state, editable directly in the Godot inspector
+
+**`polybius_mouth.gd`** — Custom Resource (`PolybiusMouth`):
+- `mouth` — `PackedVector2Array`
+- One resource per mouth position, editable in the inspector
+
+**`polybius_face.gd`** — `@tool extends Control`:
+- `eye_frames: Array[PolybiusEyes]` — expression frames
+- `mouth_frames: Array[PolybiusMouth]` — lip sync frames
+- `current_eye_frame: int` / `current_mouth_frame: int` — switch in inspector to preview combinations
+- `_draw()` reads both channels and draws polylines
+- `@tool` + `queue_redraw()` for live viewport preview while editing
+
 - **Animations:** Face rolls up from below viewport, pauses, speaks, rolls back down. Quick-flash for between-game commentary.
 - **Typewriter text:** Label that reveals text character-by-character. Emits `text_finished` when done.
 
@@ -333,8 +350,10 @@ A **vector CRT face** that appears:
 
 | File | Location | Purpose |
 |------|----------|---------|
+| `polybius_eyes.gd` | `Scripts/Hub/` | Custom Resource — eye/expression frame data (`PolybiusEyes`) |
+| `polybius_mouth.gd` | `Scripts/Hub/` | Custom Resource — mouth frame data (`PolybiusMouth`) |
+| `polybius_face.gd` | `Scripts/Hub/` | `@tool` Control — vector face drawing, two-channel frame system |
 | `polybius_face.tscn` | `Scenes/Hub/` | Face scene (Control + script) |
-| `polybius_face.gd` | `Scripts/Hub/` | Vector face drawing, expressions, typewriter, animations |
 | Voice line assets | `Assets/Voice/` | Self-recorded, bitcrushed .ogg files |
 
 ### Modified Files

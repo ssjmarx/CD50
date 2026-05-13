@@ -372,13 +372,13 @@ func _find_ugs(node: Node) -> UniversalGameScript:
 	return null
 
 func _calc_time_bonus(elapsed: float) -> int:
-	# 1000 points at ≤10s, linearly to 0 at ≥30s
+	# 100 points at ≤10s, linearly to 0 at ≥30s
 	if elapsed <= 10.0:
-		return 1000
+		return 100
 	elif elapsed >= 30.0:
 		return 0
 	else:
-		return int((1.0 - (elapsed - 10.0) / 20.0) * 1000.0)
+		return int((1.0 - (elapsed - 10.0) / 20.0) * 100.0)
 
 func _apply_overrides(game_instance: Node, overrides: Array[PropertyOverride]) -> void:
 	for prop_override: PropertyOverride in overrides:

@@ -1,0 +1,47 @@
+[gd_scene load_steps=9 format=3 uid="uid://dhuojwtl418fn"]
+
+[ext_resource type="Script" uid="uid://bu243h1ftpwmp" path="res://Scripts/Hub/polybius_face.gd" id="1_script"]
+[ext_resource type="Script" uid="uid://s0i81tsdtu5j" path="res://Scripts/Hub/polybius_eyes.gd" id="2_famy8"]
+[ext_resource type="Texture2D" uid="uid://bq3mc2o73ig86" path="res://temp/closed.webp" id="2_j7skl"]
+[ext_resource type="Script" uid="uid://d2getvbkf5jai" path="res://Scripts/Hub/polybius_mouth.gd" id="3_lc37n"]
+[ext_resource type="Script" uid="uid://3unnrlolfulm" path="res://Scripts/Hub/polybius_nose.gd" id="3_y2ofk"]
+
+[sub_resource type="Resource" id="Resource_y2ofk"]
+script = ExtResource("2_famy8")
+outline = PackedVector2Array(270, 10, 370, 10, 450, 70, 450, 200, 420, 275, 350, 350, 290, 350, 220, 275, 190, 200, 190, 70, 270, 10)
+left_eye = PackedVector2Array(225, 115, 285, 160, 275, 165, 215, 150, 215, 127, 225, 115)
+right_eye = PackedVector2Array(415, 115, 355, 160, 365, 165, 425, 150, 425, 127, 415, 115)
+left_pupil = PackedVector2Array(250, 141, 255, 144.5, 255, 159, 250, 158, 250, 141)
+right_pupil = PackedVector2Array(390, 141, 385, 144.5, 385, 159, 390, 158, 390, 141)
+left_eyebrow = PackedVector2Array(290, 140, 225, 90, 240, 75, 295, 137, 290, 140)
+right_eyebrow = PackedVector2Array(350, 140, 415, 90, 400, 75, 345, 137, 350, 140)
+metadata/_custom_type_script = "uid://s0i81tsdtu5j"
+
+[sub_resource type="Resource" id="Resource_l1csx"]
+script = ExtResource("3_y2ofk")
+left_nostril = PackedVector2Array(300, 220, 305, 230)
+right_nostril = PackedVector2Array(340, 220, 335, 230)
+metadata/_custom_type_script = "uid://3unnrlolfulm"
+
+[sub_resource type="Resource" id="Resource_xq7i8"]
+script = ExtResource("3_lc37n")
+mouth = PackedVector2Array(290, 275, 300, 272.5, 340, 272.5, 350, 275)
+lower_lip = PackedVector2Array(310, 290, 330, 290)
+metadata/_custom_type_script = "uid://d2getvbkf5jai"
+
+[node name="PolybiusFace" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+script = ExtResource("1_script")
+eye_frames = Array[ExtResource("2_famy8")]([SubResource("Resource_y2ofk")])
+nose_frames = Array[ExtResource("3_y2ofk")]([SubResource("Resource_l1csx")])
+mouth_frames = Array[ExtResource("3_lc37n")]([SubResource("Resource_xq7i8")])
+face_color = Color(0, 1, 0, 1)
+reference_image = ExtResource("2_j7skl")
+show_reference = false
+reference_offset = Vector2(40, -100)

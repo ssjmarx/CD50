@@ -47,8 +47,11 @@ The project has pivoted from building new games to shipping what we have. The im
 - **SoundBank autoload (COMPLETE):** Pre-warmed 8-voice audio pool. ON_SIGNAL SoundSynth routes through pool instead of creating/destroying nodes per sound. Eliminates node churn for bullets, death effects, asteroid collisions. Files: `sound_bank.gd` (new), `sound_synth.gd`, `project.godot`
 - **Flag palette web fix (COMPLETE):** Replaced broken `DirAccess` runtime scanning with explicit `flag_resources: Array[FlagResource]` export. Brick Breaker now has all 11 flags in scene — works on web.
 
-**Phase 2 NEXT — Polybius Character:**
+**Phase 2 IN PROGRESS — Polybius Character:**
 - Step 2a: Create `polybius_face.gd` — vector CRT face drawing + expression states
+- **Two-channel architecture:** Eyes (`PolybiusEyes` resource) and mouth (`PolybiusMouth` resource) are independent — any expression at any mouth position for lip sync
+- **Files created:** `polybius_eyes.gd`, `polybius_mouth.gd`, `polybius_face.gd`, `polybius_face.tscn` — all in `Scripts/Hub/` and `Scenes/Hub/`
+- **Next:** Create `PolybiusEyes` + `PolybiusMouth` resource instances and fill in point data for neutral/displeased expressions and mouth positions
 
 ### Plan 16 — Cambrian Remix Explosion
 **Status:** Not started  
