@@ -1,7 +1,7 @@
 # Component Catalogue
 
-**Last Updated:** 2026-05-11  
-**Total Scripts:** 95 across 10 categories  
+**Last Updated:** 2026-05-14  
+**Total Scripts:** 98 across 10 categories  
 **Total Scene Variants:** 2 (no unique script)  
 **Total Shaders:** 2 (crt_light.gdshader, persistence.gdshader)
 
@@ -174,20 +174,24 @@ Wave management, spawning, UI, audio, music, and CRT post-processing components.
 
 ---
 
-## Hub (2 scripts + 1 scene variant)
+## Hub (5 scripts + 1 scene variant)
 
-Meta-level scripts for the arcade orchestrator system.
+Meta-level scripts for the arcade orchestrator system and Polybius character.
 
 | Script | Extends | Summary |
 |--------|---------|---------|
 | `arcade_orchestrator.gd` | `extends Node2D` | State machine: BOOT → PLAYING → RESULT → GAME_OVER → TRANSITIONING → RESTART. Loads games, tracks lives/score/multiplier. Interface Takeover: hijacks child Interface from each game, connects to AO signals. Scrolling transitions between all screens via `position:y` tween. `PROCESS_MODE_ALWAYS` so tweens survive UGS tree pause. |
 | `arcade_game_entry.gd` | `ArcadeGameEntry extends Resource` | Defines a single game entry in the arcade playlist. Contains the game scene and property overrides for arcade fast rules. |
+| `polybius_face.gd` | `@tool extends Control` | Vector CRT face drawing with two-channel frame system. Eyes and mouth are independent — any expression at any mouth position for lip sync. Reads `PolybiusEyes` + `PolybiusMouth` resources and draws polylines via `_draw()`. |
+| `polybius_eyes.gd` | `PolybiusEyes extends Resource` | Custom resource holding eye/expression frame data: outline, eyes, pupils, eyebrows — all `PackedVector2Array`. One resource per expression state (neutral, displeased, etc.). Editable in Godot inspector. |
+| `polybius_mouth.gd` | `PolybiusMouth extends Resource` | Custom resource holding mouth shape frame data as `PackedVector2Array`. One resource per mouth position for lip sync. Editable in Godot inspector. |
 
 **Scene variants:**
 
 | Scene | Script Used | Summary |
 |-------|-------------|---------|
 | `boot_screen.tscn` | *(scene only — no script)* | Arcade boot screen. "CD50 ARCADE" title, black background. Position-based layout for scroll tweening. |
+| `polybius_face.tscn` | `polybius_face.gd` | Polybius vector CRT face scene. Control + script, used by ArcadeOrchestrator for run intros, taunts, and game-over commentary. |
 
 ---
 

@@ -1,11 +1,11 @@
 # Current Status: CD50 — Arcade Cabinet
 
-**Last Updated:** 2026-05-11  
+**Last Updated:** 2026-05-14  
 **Engine:** Godot 4.5 (GDScript)  
 **Architecture:** Entity-Component (composition over inheritance)  
 **Playable Games:** Paddle Ball, Brick Breaker, Space Rocks, Meteor Rally, Dogfight, Bug Blaster, Block Drop (Modern), Rock Breaker — ALL componentized, zero game scripts
-**In Progress:** Shipping itch.io demo + Steam Coming Soon (see `memory-bank/06 - Deadlines.md`)
-**Recent Completed:** SoundBank autoload (pre-warmed audio pool eliminates ON_SIGNAL node churn), flag palette web fix (explicit resource array replaces broken DirAccess scanning), web perf optimizations (9 sound/CRT/export fixes), music system, Brick Breaker random launch angle
+**In Progress:** Plan 15 Phase 2 — Polybius Character (drawing facial frames); itch.io demo page private, build uploaded and tested
+**Recent Completed:** All 9 web perf optimizations (60fps on T480 browser target), SoundBank autoload, flag palette web fix, music system, Steamworks submitted (awaiting identity verification), itch.io pipeline live (deploy.sh → Butler → private page)
 
 ---
 

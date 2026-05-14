@@ -1,10 +1,10 @@
 # Recent Progress
 
-**Last Updated:** 2026-05-11
+**Last Updated:** 2026-05-14
 
 ---
 
-## Plan 15 — Arcade Orchestrator Juice (Phase 1.8 IN PROGRESS)
+## Plan 15 — Arcade Orchestrator Juice (Phase 2 IN PROGRESS)
 
 ### Phase 1 — Copyright Rename (COMPLETE)
 - All game names renamed across the entire codebase (scenes, scripts, resources, docs)
@@ -114,9 +114,9 @@ Targeted visual/mechanical tweaks to make each remake look distinct from its ins
 | `Resources/Flags/ghana.tres` | Black → dark grey (0.25) |
 | `Resources/Flags/tanzania.tres` | Black → dark grey (0.25) |
 
-### Phase 1.8 — Web Performance Optimization (IN PROGRESS)
+### Phase 1.8 — Web Performance Optimization (COMPLETE)
 
-Target: **ThinkPad T480 running in a browser** (Intel UHD 620, WebGL). Optimize the synth-heavy audio pipeline and CRT rendering for smooth 60fps on integrated graphics.
+Target: **ThinkPad T480 running in a browser** (Intel UHD 620, WebGL). Optimize the synth-heavy audio pipeline and CRT rendering for smooth 60fps on integrated graphics. **All 9 optimizations implemented and verified — game runs at 60fps on target hardware.** Tested via private itch.io upload.
 
 #### Planned Changes (9 optimizations)
 
@@ -171,7 +171,37 @@ Performance optimization: pre-warmed audio pool eliminates per-entity node creat
 | `Scripts/Components/flag_palette.gd` | Removed `flags_dir`/`_load_flags()`. Added `flag_resources: Array[FlagResource]` export. Position-based node matching replaces physics queries. |
 | `Scenes/Games/remakes/brick_breaker.tscn` | Added 11 flag ext_resources. FlagPalette `flag_resources` array set with all flags. |
 
-### Phase 2 — Polybius Character (NOT STARTED)
+### Phase 2 — Polybius Character (IN PROGRESS)
+
+Vector CRT face that introduces runs, taunts between games, and delivers game-over commentary.
+
+#### Two-Channel Architecture
+- **Eyes channel:** Face outline, eyes, pupils, eyebrows — controlled by `PolybiusEyes` resources (one per expression)
+- **Mouth channel:** Mouth shape — controlled by `PolybiusMouth` resources (one per mouth position for lip sync)
+- Both channels combine freely via independent frame indices
+
+#### Files Created
+
+| File | Purpose |
+|------|---------|
+| `Scripts/Hub/polybius_eyes.gd` | Custom Resource — eye/expression frame data (`PolybiusEyes`) |
+| `Scripts/Hub/polybius_mouth.gd` | Custom Resource — mouth frame data (`PolybiusMouth`) |
+| `Scripts/Hub/polybius_face.gd` | `@tool` Control — vector face drawing, two-channel frame system |
+| `Scenes/Hub/polybius_face.tscn` | Face scene (Control + script) |
+
+#### Current Status
+- Step 2a ✅: `polybius_face.gd` created — vector face drawing + expression states
+- **Step 2b (ACTIVE):** Drawing facial frames — filling in point data for `PolybiusEyes` + `PolybiusMouth` resource instances (neutral/displeased expressions, mouth positions)
+
+#### Remaining Steps
+- 2c: Record voice lines + bitcrush → export as .ogg
+- 2d: Implement typewriter text + voice playback sync
+- 2e: Implement face animations (roll up/down, quick flash)
+- 2f: Add INTRO state to AO + face integration on run start
+- 2g: Add quick-comment integration on RESULT state
+- 2h: Add game-over integration on GAME_OVER state
+- 2i: Add random in-game taunt during PLAYING state
+- 2j: Playtest full arcade run with Polybius
 
 See `planning/15 - Arcade Orchestrator Juice.md` Phase 2 for full plan.
 

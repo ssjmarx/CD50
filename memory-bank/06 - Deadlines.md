@@ -1,6 +1,6 @@
 # Deadlines: CD50 — Arcade Cabinet
 
-**Last Updated:** 2026-05-06  
+**Last Updated:** 2026-05-14  
 **Source:** Commercial shipping schedule — itch.io demo + Steam Coming Soon + Next Fest
 
 ---
@@ -21,31 +21,32 @@
 
 ---
 
-## Phase 1 — This Week (May 6–11)
+## Phase 1 — May 6–11 (COMPLETE)
 
 ### Steamworks
-- [ ] Pay the $100 fee and create the App ID
-- [ ] Fill in tax/bank info
-- [ ] Create Coming Soon page:
+- [x] Pay the $100 fee and create the App ID
+- [x] Fill in tax/bank info
+- [ ] Create Coming Soon page (blocked: awaiting identity verification):
   - [ ] Short description (Balatro/WarioWare pitch)
   - [ ] Capsule images (even rough ones)
   - [ ] At least one trailer or gameplay GIF (the crossover moment)
 
 ### itch.io
-- [ ] Create the game page; set to unlisted for now
-- [ ] Decide web vs native for the demo:
-  - Web: HTML export + Cross-Origin Isolation
-  - Native: Windows build + Butler
-- [ ] Install Butler and do a test push of a tiny Godot project to confirm the pipeline works
+- [x] Create the game page (set to private)
+- [x] Decide web vs native: **Web** (HTML export)
+- [x] Butler pipeline operational (`deploy.sh` — export → zip → push)
+- [x] Build uploaded and tested at 60fps on T480 browser target
 
 ---
 
 ## Phase 2 — Mid–Late May (May 12–31)
 
 ### Finalize Arcade Mode Content
-- [ ] Export web and/or Windows builds
-- [ ] Upload to itch via Butler
-- [ ] Test web build on a low-end machine if possible
+- [x] Export web build
+- [x] Upload to itch via Butler
+- [x] Test web build on T480 browser target (60fps confirmed)
+- [ ] Complete Polybius integration (Plan 15 Phase 2 — in progress)
+- [ ] Flip itch page from private to public
 
 ### itch.io Page Polish
 - [ ] Add "Wishlist on Steam" button on the itch page:

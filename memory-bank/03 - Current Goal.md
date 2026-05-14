@@ -1,25 +1,26 @@
 # Current Goal
 
-**Last Updated:** 2026-05-10  
-**Status:** Active — Plan 15 Phase 1.8 (Web Performance Optimization) + shipping itch.io demo
+**Last Updated:** 2026-05-14  
+**Status:** Active — Plan 15 Phase 2 (Polybius Character) + preparing itch.io demo for public launch
 
 ---
 
 ## Active Priority: Ship the Demo (May 2026)
 
-The project has pivoted from building new games to shipping what we have. The immediate goal is to get an itch.io demo and a Steam "Coming Soon" page live by end of May 2026.
+The project has pivoted from building new games to shipping what we have. The immediate goal is a public itch.io demo and a Steam "Coming Soon" page by end of May 2026.
 
 **Full deadline schedule:** `memory-bank/06 - Deadlines.md`
 
-### This Week (May 6–11)
-- Steamworks: pay fee, create App ID, tax/bank info, Coming Soon page
-- itch.io: create game page, decide web vs native, test Butler pipeline
+### Completed This Phase (May 6–14)
+- ✅ Steamworks: Fee paid, App ID created, tax/bank info submitted — awaiting identity verification
+- ✅ itch.io: Game page created (private), build uploaded and tested at 60fps on T480 browser target
+- ✅ Butler pipeline: `deploy.sh` fully operational (export → zip → push)
+- ✅ Web performance: All 9 optimizations implemented and verified
 
-### Mid–Late May (May 12–31)
-- Finalize arcade mode content and export
-- Upload to itch via Butler
-- Add Steam wishlist CTA to itch page
-- Plans 14–15 (arcade juice) to polish the experience
+### Current Focus (May 14–31)
+- **Plan 15 Phase 2:** Polybius Character — currently drawing facial frames
+- **Public itch launch:** Flip page to public once Polybius is integrated
+- **Steam Coming Soon:** Live as soon as identity verification completes
 
 ---
 
@@ -28,47 +29,38 @@ The project has pivoted from building new games to shipping what we have. The im
 ### Plan 14 — Arcade Juice Part 1: Custom CRT Shader
 **Status:** COMPLETE  
 **Timeline:** Completed May 6, 2026  
-**Scope:** Replaced heavy CRT addon with lightweight custom shader + persistence shader + vector monitor mode with SubViewport-based phosphor persistence. No per-body phosphor component needed — shader-based approach handles trails automatically.
 
 ### Plan 15 — Arcade Orchestrator Juice
 **Status:** IN PROGRESS  
-**Timeline:** Before itch export (late May)  
-**Scope:** Five phases — Copyright rename pass + Copyright-safety visual changes + Web performance optimization + Polybius face/voice integration. Full plan in `planning/15 - Arcade Orchestrator Juice.md`.
+**Timeline:** Before itch public launch (late May)  
 
-**Phases 1, 1.5, 1.7 COMPLETE:**
+**Phases 1, 1.5, 1.7, 1.8 COMPLETE:**
 - Phase 1: All games renamed (copyright-safe bootleg names), first itch.io export
 - Phase 1.5: Bug Blaster 3×18 formation, Block Drop color/juice rework, Brick Breaker flag coloring + wider layout, Space Rocks ship+UFO redesign, Paddle Ball checkerboard center line
 - Phase 1.7: Music system (MusicPlayer + MusicTrack resources), flag palette overhaul, Brick Breaker random launch angle
-
-**Phase 1.8 IN PROGRESS — Web Performance Optimization:**
-- 9 targeted optimizations for ThinkPad T480 / browser target (COMPLETE)
-- Key changes: MAX_VOICES 16→8, MIX_RATE 22050→11025, cached frequency, signal-based continuous dedup, dirty-flag CRT params, max_fps=60 web override, thread support enabled
-- Files: `sound_synth.gd`, `crt_controller.gd`, `export_presets.cfg`
-- **SoundBank autoload (COMPLETE):** Pre-warmed 8-voice audio pool. ON_SIGNAL SoundSynth routes through pool instead of creating/destroying nodes per sound. Eliminates node churn for bullets, death effects, asteroid collisions. Files: `sound_bank.gd` (new), `sound_synth.gd`, `project.godot`
-- **Flag palette web fix (COMPLETE):** Replaced broken `DirAccess` runtime scanning with explicit `flag_resources: Array[FlagResource]` export. Brick Breaker now has all 11 flags in scene — works on web.
+- Phase 1.8: All 9 web perf optimizations — 60fps on T480 browser target. SoundBank autoload, flag palette web fix.
 
 **Phase 2 IN PROGRESS — Polybius Character:**
-- Step 2a: Create `polybius_face.gd` — vector CRT face drawing + expression states
-- **Two-channel architecture:** Eyes (`PolybiusEyes` resource) and mouth (`PolybiusMouth` resource) are independent — any expression at any mouth position for lip sync
-- **Files created:** `polybius_eyes.gd`, `polybius_mouth.gd`, `polybius_face.gd`, `polybius_face.tscn` — all in `Scripts/Hub/` and `Scenes/Hub/`
-- **Next:** Create `PolybiusEyes` + `PolybiusMouth` resource instances and fill in point data for neutral/displeased expressions and mouth positions
+- Step 2a ✅: `polybius_face.gd`, `polybius_eyes.gd`, `polybius_mouth.gd`, `polybius_face.tscn` created
+- **Step 2b (ACTIVE):** Drawing facial frames — filling in point data for expression/mouth resources
+- Remaining: voice lines, typewriter text, animations, AO integration (steps 2c–2j)
 
 ### Plan 16 — Cambrian Remix Explosion
 **Status:** Not started  
-**Timeline:** Mid–late May (after Plans 14–15)  
-**Scope:** 5 remakes + 10 remixes/originals (3 new games designed, 4 slots TBD), 5 Balatro-like modifiers with score gate unlocks, semi-random playlist mode, local high score persistence. Full plan in `planning/16 - Cambrian Remix Explosion.md`.
+**Timeline:** June–July 2026 (shifted from original mid-May target)  
+**Scope:** 3 new games (Bug Drop, Space Bugs, Planetary Attack!), 5 Balatro-like modifiers, semi-random playlist, local high score persistence
 
 ### Plan 17 — Arcade Juice Post-Launch
 **Status:** Not started  
 **Timeline:** After itch launch  
-**Scope:** VRAM Boot Screen, Attract Mode System, Coin Drop Boot Sequence. Extracted from Plan 14 — deferred past first itch release. Full plan in `planning/17 - Arcade Juice Post-Launch.md`.
+**Scope:** VRAM Boot Screen, Attract Mode System, Coin Drop Boot Sequence
 
 ---
 
 ## Mid-Term (June–October 2026)
 
 ### June–July — Vertical Slice Content
-- Expand modifier system beyond the initial 5 (more contraband, tokens, features)
+- Expand modifier system beyond the initial 5
 - Score progression / ranking system (10k → 1m → 1b)
 - Polish core loop to 20–30 second snappy runs
 - Fill remaining 4 remix slots from Plan 16
@@ -96,7 +88,7 @@ The project has pivoted from building new games to shipping what we have. The im
 
 ## Deferred
 
-The following plans have been **deleted** from the active pipeline. The component ideas may resurface post-launch if they serve a remix or modifier.
+The following plans have been **deleted** from the active pipeline:
 
 - ~~Plan 14 — Snake + Light Cycles~~ (trail_spawner, cycle_ai, food_spawner)
 - ~~Plan 15 — Qix + Xonix~~ (territory_grid, line_drawer, area_filler)
