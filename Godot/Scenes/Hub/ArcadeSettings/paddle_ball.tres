@@ -1,8 +1,9 @@
-[gd_resource type="Resource" script_class="ArcadeGameEntry" load_steps=10 format=3 uid="uid://bcl4p542u027h"]
+[gd_resource type="Resource" script_class="ArcadeGameEntry" load_steps=13 format=3 uid="uid://bcl4p542u027h"]
 
 [ext_resource type="PackedScene" uid="uid://6x4ilf17gq08" path="res://Scenes/Games/remakes/paddle_ball.tscn" id="1_ehhlw"]
 [ext_resource type="Script" uid="uid://cp0ni1lgml7c6" path="res://Scripts/Core/property_override.gd" id="2_snkw5"]
 [ext_resource type="Script" uid="uid://bdsbfe65crnbu" path="res://Scripts/Hub/arcade_game_entry.gd" id="3_m0dg5"]
+[ext_resource type="PackedScene" uid="uid://c7q14snra7h3p" path="res://Scenes/Bodies/generic/ball_arcade.tscn" id="4_arcade"]
 
 [sub_resource type="Resource" id="Resource_tdlot"]
 script = ExtResource("2_snkw5")
@@ -46,8 +47,22 @@ property_name = "score_amount"
 value = 100
 metadata/_custom_type_script = "uid://cp0ni1lgml7c6"
 
+[sub_resource type="Resource" id="Resource_spawn1"]
+script = ExtResource("2_snkw5")
+node_path = NodePath("WaveSpawner")
+property_name = "spawn_scene"
+value = ExtResource("4_arcade")
+metadata/_custom_type_script = "uid://cp0ni1lgml7c6"
+
+[sub_resource type="Resource" id="Resource_spawn2"]
+script = ExtResource("2_snkw5")
+node_path = NodePath("WaveSpawner2")
+property_name = "spawn_scene"
+value = ExtResource("4_arcade")
+metadata/_custom_type_script = "uid://cp0ni1lgml7c6"
+
 [resource]
 script = ExtResource("3_m0dg5")
 game_scene = ExtResource("1_ehhlw")
-overrides = Array[ExtResource("2_snkw5")]([SubResource("Resource_tdlot"), SubResource("Resource_n0muh"), SubResource("Resource_42jm0"), SubResource("Resource_3qvvg"), SubResource("Resource_ehhlw"), SubResource("Resource_snkw5")])
+overrides = Array[ExtResource("2_snkw5")]([SubResource("Resource_tdlot"), SubResource("Resource_n0muh"), SubResource("Resource_42jm0"), SubResource("Resource_3qvvg"), SubResource("Resource_ehhlw"), SubResource("Resource_snkw5"), SubResource("Resource_spawn1"), SubResource("Resource_spawn2")])
 metadata/_custom_type_script = "uid://bdsbfe65crnbu"

@@ -7,7 +7,7 @@ extends UniversalComponent2D
 
 @export var playlist: Array[MusicTrack] = []
 @export var loop: bool = false
-@export var volume_db: float = -10.0
+@export var volume_db: float = -6.0
 @export var fade_in_duration: float = 1.0
 @export var fade_out_duration: float = 0.5
 @export var credit_display_time: float = 5.0
@@ -22,6 +22,7 @@ var _credit_layer: CanvasLayer
 var _credit_tween: Tween = null
 var _queue: Array[MusicTrack] = []
 var _current_track: MusicTrack = null
+var _playing: bool = false
 
 func _ready() -> void:
 	_player = AudioStreamPlayer.new()
@@ -30,10 +31,22 @@ func _ready() -> void:
 	add_child(_player)
 	_player.finished.connect(_on_track_finished)
 
-	game.state_changed.connect(_on_state_changed)
+	if game:
+		game.state_changed.connect(_on_state_changed)
 
 	if speed_ramp_source and speed_ramp_signal != "":
 		speed_ramp_source.connect(speed_ramp_signal, _on_speed_ramp)
+
+# --- Public API (for external control, e.g. ArcadeOrchestrator) ---
+
+func start() -> void:
+	if not _playing:
+		_playing = true
+		_play_next()
+
+func fade_to(target_db: float, duration: float = 1.0) -> void:
+	var tween = create_tween()
+	tween.tween_property(_player, "volume_db", target_db, duration)
 
 func _on_state_changed(new_state: int) -> void:
 	match new_state:
@@ -104,8 +117,8 @@ func _show_credit(track: MusicTrack) -> void:
 	label.text = "♪ %s — %s" % [track.song_title, track.song_credit]
 	label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	label.anchor_right = 1.0
-	label.offset_top = 310.0
-	label.offset_bottom = 340.0
+	label.offset_top = 3== 280.0
+	label.offset_bottom = 310.0
 	container.add_child(label)
 
 	# Render credit — smaller, below

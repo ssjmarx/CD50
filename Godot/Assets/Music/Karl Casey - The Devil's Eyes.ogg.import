@@ -1,0 +1,19 @@
+[remap]
+
+importer="oggvorbisstr"
+type="AudioStreamOggVorbis"
+uid="uid://d2vrmgsn8ph6o"
+path="res://.godot/imported/Karl Casey - The Devil's Eyes.ogg-6ab5569293984ab33c013b3dd4d89b4c.oggvorbisstr"
+
+[deps]
+
+source_file="res://Assets/Music/Karl Casey - The Devil's Eyes.ogg"
+dest_files=["res://.godot/imported/Karl Casey - The Devil's Eyes.ogg-6ab5569293984ab33c013b3dd4d89b4c.oggvorbisstr"]
+
+[params]
+
+loop=false
+loop_offset=0
+bpm=0
+beat_count=0
+bar_beats=4

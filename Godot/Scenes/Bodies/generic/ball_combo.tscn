@@ -1,7 +1,7 @@
 [gd_scene load_steps=10 format=3 uid="uid://c74nhjbvdo3ff"]
 
 [ext_resource type="Script" uid="uid://bufxw3hl0oqy0" path="res://Scripts/Bodies/ball.gd" id="1_6rbnc"]
-[ext_resource type="PackedScene" uid="uid://dvb6v6cqiiuag" path="res://Scenes/Components/paddle_ball_acceleration.tscn" id="2_ryu0r"]
+[ext_resource type="PackedScene" uid="uid://dvb6v6cqiiuag" path="res://Scenes/Components/pong_acceleration.tscn" id="2_ryu0r"]
 [ext_resource type="PackedScene" path="res://Scenes/Components/bounce_on_hit.tscn" id="3_mpkbi"]
 [ext_resource type="PackedScene" uid="uid://csg0e2wxlx4qd" path="res://Scenes/Components/angled_deflector.tscn" id="4_5fx64"]
 [ext_resource type="PackedScene" uid="uid://b3hvkyy38ihr1" path="res://Scenes/Components/screen_cleanup.tscn" id="5_4ipsr"]
@@ -16,7 +16,7 @@ collision_groups = Array[String](["balls"])
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="."]
 
-[node name="Paddle BallAcceleration" parent="." instance=ExtResource("2_ryu0r")]
+[node name="PongAcceleration" parent="." instance=ExtResource("2_ryu0r")]
 
 [node name="HitBox" type="Area2D" parent="."]
 
@@ -49,3 +49,7 @@ target_group = "bricks"
 score_amount = 0.1
 score_type = 3
 
+[node name="ScoreOnHit2" parent="." instance=ExtResource("9_5fx64")]
+target_group = "space_rocks"
+score_amount = 0.1
+score_type = 3

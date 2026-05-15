@@ -2,6 +2,7 @@
 # Loads games from ArcadeGameEntry resources, tracks lives/score, detects game end, applies property overrides.
 # Emits Interface-compatible signals so a child Interface component can display score, lives, and multiplier.
 # Uses scrolling transitions between all screens (boot, games, game over).
+# Music is handled by the child MusicPlayer component; this script just controls volume via fade_to().
 
 extends Node2D
 
@@ -12,6 +13,13 @@ enum PlaylistMode { IN_ORDER, SHUFFLE }
 @export var starting_lives: int = 3
 @export var playlist_mode: PlaylistMode = PlaylistMode.IN_ORDER
 @export var transition_duration: float = 0.4
+
+# --- Music volume control (delegates to MusicPlayer component) ---
+@export_group("Music")
+@export var music_volume_db: float = -6.0
+@export var music_idle_volume_db: float = -20.0
+@export var music_fade_in_duration: float = 1.0
+@export var music_fade_out_duration: float = 0.5
 
 # Signals for Interface component
 signal on_points_changed(new_score: int)
@@ -40,6 +48,7 @@ var _game_start_time: float = 0.0 # when current game started (seconds since epo
 @onready var _game_container: Node2D = $GameContainer
 @onready var _boot_screen: Control = $BootScreen
 @onready var _game_over_screen: Control = $GameOverScreen
+@onready var _music_player = $ArcadeMusic
 
 var _crt_controller: Node2D = null
 
@@ -53,6 +62,7 @@ func _ready() -> void:
 	_crt_controller.name = "CRTController"
 	_crt_controller.set_script(load("res://Scripts/Flow/crt_controller.gd"))
 	add_child(_crt_controller)
+	
 	_show_boot_screen()
 
 func _input(event: InputEvent) -> void:
@@ -85,6 +95,9 @@ func _show_boot_screen() -> void:
 	_state = OrchestratorState.BOOT
 	state_changed.emit(CommonEnums.State.ATTRACT)
 	_boot_screen.visible = true
+	# Start music at idle volume (MusicPlayer handles its own internals)
+	_music_player.start()
+	_music_player.fade_to(music_idle_volume_db, music_fade_out_duration)
 
 func _start_next_game() -> void:
 	if playlist.is_empty():
@@ -148,6 +161,9 @@ func _on_transition_to_game_over() -> void:
 		_current_game_instance = null
 	_current_interface = null
 	
+	# Dim music on game over
+	_music_player.fade_to(music_idle_volume_db, music_fade_out_duration)
+	
 	_state = OrchestratorState.GAME_OVER
 	state_changed.emit(CommonEnums.State.GAME_OVER)
 
@@ -167,6 +183,9 @@ func _restart_run() -> void:
 	var ugs = _get_current_ugs()
 	if ugs:
 		ugs.set_arcade_bonus(0.0)
+	
+	# Fade music to idle
+	_music_player.fade_to(music_idle_volume_db, music_fade_out_duration)
 	
 	# Scroll: GameOverScreen slides up, BootScreen slides in from below
 	_boot_screen.position.y = VIEWPORT_HEIGHT
@@ -235,6 +254,9 @@ func _finalize_game_start(instance: Node2D) -> void:
 		ugs.start_game()
 	
 	_state = OrchestratorState.PLAYING
+	
+	# Fade music up to gameplay volume
+	_music_player.fade_to(music_volume_db, music_fade_in_duration)
 	
 	# Emit PLAYING AFTER game is started so Interface can discover timers in the tree
 	state_changed.emit(CommonEnums.State.PLAYING)

@@ -14,7 +14,7 @@ collision_groups = Array[String](["balls"])
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="."]
 
-[node name="Paddle BallAcceleration" parent="." instance=ExtResource("3_o3brn")]
+[node name="PongAcceleration" parent="." instance=ExtResource("3_o3brn")]
 
 [node name="HitBox" type="Area2D" parent="."]
 

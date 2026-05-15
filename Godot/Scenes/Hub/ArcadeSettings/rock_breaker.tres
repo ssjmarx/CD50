@@ -1,8 +1,9 @@
-[gd_resource type="Resource" script_class="ArcadeGameEntry" load_steps=7 format=3 uid="uid://cu3ds5oe230om"]
+[gd_resource type="Resource" script_class="ArcadeGameEntry" load_steps=13 format=3 uid="uid://cu3ds5oe230om"]
 
 [ext_resource type="PackedScene" uid="uid://v3jmmfy6yptl" path="res://Scenes/Games/remixes/rock_breaker.tscn" id="1_0xvf2"]
 [ext_resource type="Script" uid="uid://cp0ni1lgml7c6" path="res://Scripts/Core/property_override.gd" id="2_jtgh6"]
 [ext_resource type="Script" uid="uid://bdsbfe65crnbu" path="res://Scripts/Hub/arcade_game_entry.gd" id="3_t7e4o"]
+[ext_resource type="PackedScene" uid="uid://b2m43dj14ygvn" path="res://Scenes/Bodies/generic/ball_combo_arcade.tscn" id="4_arcade"]
 
 [sub_resource type="Resource" id="Resource_8h1ts"]
 script = ExtResource("2_jtgh6")
@@ -25,8 +26,43 @@ property_name = "duration"
 value = 10.0
 metadata/_custom_type_script = "uid://cp0ni1lgml7c6"
 
+[sub_resource type="Resource" id="Resource_speed"]
+script = ExtResource("2_jtgh6")
+node_path = NodePath("WaveSpawner")
+property_name = "initial_velocity"
+value = Vector2(0, 200)
+metadata/_custom_type_script = "uid://cp0ni1lgml7c6"
+
+[sub_resource type="Resource" id="Resource_mute_a"]
+script = ExtResource("2_jtgh6")
+node_path = NodePath("MusicRamping/SoundSynth_A")
+property_name = "volume"
+value = 0.0
+metadata/_custom_type_script = "uid://cp0ni1lgml7c6"
+
+[sub_resource type="Resource" id="Resource_mute_b"]
+script = ExtResource("2_jtgh6")
+node_path = NodePath("MusicRamping/SoundSynth_B")
+property_name = "volume"
+value = 0.0
+metadata/_custom_type_script = "uid://cp0ni1lgml7c6"
+
+[sub_resource type="Resource" id="Resource_spawn1"]
+script = ExtResource("2_jtgh6")
+node_path = NodePath("Paddle/WaveSpawner")
+property_name = "spawn_scene"
+value = ExtResource("4_arcade")
+metadata/_custom_type_script = "uid://cp0ni1lgml7c6"
+
+[sub_resource type="Resource" id="Resource_spawn2"]
+script = ExtResource("2_jtgh6")
+node_path = NodePath("WaveSpawner")
+property_name = "spawn_scene"
+value = ExtResource("4_arcade")
+metadata/_custom_type_script = "uid://cp0ni1lgml7c6"
+
 [resource]
 script = ExtResource("3_t7e4o")
 game_scene = ExtResource("1_0xvf2")
-overrides = Array[ExtResource("2_jtgh6")]([SubResource("Resource_8h1ts"), SubResource("Resource_tvrsh"), SubResource("Resource_timer")])
+overrides = Array[ExtResource("2_jtgh6")]([SubResource("Resource_8h1ts"), SubResource("Resource_tvrsh"), SubResource("Resource_timer"), SubResource("Resource_speed"), SubResource("Resource_mute_a"), SubResource("Resource_mute_b"), SubResource("Resource_spawn1"), SubResource("Resource_spawn2")])
 metadata/_custom_type_script = "uid://bdsbfe65crnbu"

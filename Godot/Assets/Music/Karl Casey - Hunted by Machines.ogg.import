@@ -1,0 +1,19 @@
+[remap]
+
+importer="oggvorbisstr"
+type="AudioStreamOggVorbis"
+uid="uid://bxh38lkifww2p"
+path="res://.godot/imported/Karl Casey - Hunted by Machines.ogg-7e5ddf8fb9787916364da5f25334550d.oggvorbisstr"
+
+[deps]
+
+source_file="res://Assets/Music/Karl Casey - Hunted by Machines.ogg"
+dest_files=["res://.godot/imported/Karl Casey - Hunted by Machines.ogg-7e5ddf8fb9787916364da5f25334550d.oggvorbisstr"]
+
+[params]
+
+loop=false
+loop_offset=0
+bpm=0
+beat_count=0
+bar_beats=4

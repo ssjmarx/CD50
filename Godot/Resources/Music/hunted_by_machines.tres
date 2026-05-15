@@ -1,0 +1,11 @@
+[gd_resource type="Resource" script_class="MusicTrack" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://Scripts/Flow/music_track.gd" id="1_script"]
+[ext_resource type="AudioStreamOggVorbis" path="res://Assets/Music/Karl Casey - Hunted by Machines.ogg" id="2_stream"]
+
+[resource]
+script = ExtResource("1_script")
+stream = ExtResource("2_stream")
+song_title = "Hunted by Machines"
+song_credit = "Music by Karl Casey @ White Bat Audio"
+render_credit = ""

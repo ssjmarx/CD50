@@ -1,8 +1,7 @@
-[gd_scene load_steps=9 format=3 uid="uid://dhuojwtl418fn"]
+[gd_scene load_steps=8 format=3 uid="uid://dhuojwtl418fn"]
 
 [ext_resource type="Script" uid="uid://bu243h1ftpwmp" path="res://Scripts/Hub/polybius_face.gd" id="1_script"]
 [ext_resource type="Script" uid="uid://s0i81tsdtu5j" path="res://Scripts/Hub/polybius_eyes.gd" id="2_famy8"]
-[ext_resource type="Texture2D" uid="uid://bq3mc2o73ig86" path="res://temp/closed.webp" id="2_j7skl"]
 [ext_resource type="Script" uid="uid://d2getvbkf5jai" path="res://Scripts/Hub/polybius_mouth.gd" id="3_lc37n"]
 [ext_resource type="Script" uid="uid://3unnrlolfulm" path="res://Scripts/Hub/polybius_nose.gd" id="3_y2ofk"]
 
@@ -41,7 +40,6 @@ script = ExtResource("1_script")
 eye_frames = Array[ExtResource("2_famy8")]([SubResource("Resource_y2ofk")])
 nose_frames = Array[ExtResource("3_y2ofk")]([SubResource("Resource_l1csx")])
 mouth_frames = Array[ExtResource("3_lc37n")]([SubResource("Resource_xq7i8")])
-face_color = Color(0, 1, 0, 1)
-reference_image = ExtResource("2_j7skl")
+face_color = Color(1, 1, 1, 1)
 show_reference = false
 reference_offset = Vector2(40, -100)

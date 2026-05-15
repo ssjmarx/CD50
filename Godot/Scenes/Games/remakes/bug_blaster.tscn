@@ -192,7 +192,6 @@ timer_id = "ufo"
 [node name="SoundSynth" parent="." node_paths=PackedStringArray("source_node") instance=ExtResource("15_74c7c")]
 play_mode = 1
 note = 48
-volume = 0.4
 duration = 0.2
 source_node = NodePath("../SwarmController")
 source_signal = "swarm_move"

@@ -1,4 +1,4 @@
-[gd_scene load_steps=16 format=3 uid="uid://boo0jvdtkr4xv"]
+[gd_scene load_steps=19 format=3 uid="uid://boo0jvdtkr4xv"]
 
 [ext_resource type="Script" uid="uid://dt4uemfscl0x6" path="res://Scripts/Hub/arcade_orchestrator.gd" id="1_script"]
 [ext_resource type="FontFile" uid="uid://imm2iompf7sv" path="res://Assets/Fonts/Kenney Pixel.ttf" id="2_font"]
@@ -12,6 +12,9 @@
 [ext_resource type="Resource" uid="uid://bvgnffon2rxmn" path="res://Scenes/Hub/ArcadeSettings/meteor_rally.tres" id="8_hby7g"]
 [ext_resource type="Resource" uid="uid://cu3ds5oe230om" path="res://Scenes/Hub/ArcadeSettings/rock_breaker.tres" id="9_el0dv"]
 [ext_resource type="Resource" uid="uid://bnsuj1p7iiehg" path="res://Scenes/Hub/ArcadeSettings/bug_blaster.tres" id="10_s8yab"]
+[ext_resource type="Script" uid="uid://cfd1lio8bfym2" path="res://Scripts/Flow/music_track.gd" id="11_mtrack"]
+[ext_resource type="Resource" path="res://Resources/Music/hunted_by_machines.tres" id="12_music1"]
+[ext_resource type="PackedScene" uid="uid://c4ew4hmxod4e7" path="res://Scenes/Flow/music_player.tscn" id="14_hby7g"]
 
 [sub_resource type="LabelSettings" id="LabelSettings_title"]
 font = ExtResource("6_2j8et")
@@ -29,6 +32,17 @@ font_size = 20
 script = ExtResource("1_script")
 playlist = Array[ExtResource("2_u78ae")]([ExtResource("3_u78ae"), ExtResource("4_n0muh"), ExtResource("5_42jm0"), ExtResource("6_3qvvg"), ExtResource("7_k3wos"), ExtResource("8_hby7g"), ExtResource("9_el0dv"), ExtResource("10_s8yab")])
 playlist_mode = 1
+music_volume_db = -10.0
+
+[node name="ArcadeMusic" parent="." instance=ExtResource("14_hby7g")]
+playlist = Array[ExtResource("11_mtrack")]([ExtResource("12_music1")])
+volume_db = -20.0
+
+[node name="Background" type="ColorRect" parent="."]
+offset_right = 640.0
+offset_bottom = 360.0
+mouse_filter = 2
+color = Color(0, 0, 0, 1)
 
 [node name="GameContainer" type="Node2D" parent="."]
 
@@ -38,15 +52,6 @@ anchors_preset = 0
 offset_right = 640.0
 offset_bottom = 360.0
 mouse_filter = 2
-
-[node name="Background" type="ColorRect" parent="BootScreen"]
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
-color = Color(0, 0, 0, 1)
 
 [node name="TitleLabel" type="Label" parent="BootScreen"]
 layout_mode = 0
@@ -64,15 +69,6 @@ anchors_preset = 0
 offset_right = 640.0
 offset_bottom = 360.0
 mouse_filter = 2
-
-[node name="Background" type="ColorRect" parent="GameOverScreen"]
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
-color = Color(0, 0, 0, 1)
 
 [node name="GameOverLabel" type="Label" parent="GameOverScreen"]
 layout_mode = 0

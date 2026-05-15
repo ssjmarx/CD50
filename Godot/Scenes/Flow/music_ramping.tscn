@@ -9,7 +9,7 @@ script = ExtResource("1_s1wx4")
 [node name="SoundSynth_A" parent="." instance=ExtResource("2_funv2")]
 play_mode = 1
 note = 52
-volume = 0.5
+volume = 0.3
 duration = 0.2
 positional = false
 gameplay_only = true
@@ -17,7 +17,7 @@ gameplay_only = true
 [node name="SoundSynth_B" parent="." instance=ExtResource("2_funv2")]
 play_mode = 1
 note = 53
-volume = 0.5
+volume = 0.3
 duration = 0.2
 positional = false
 gameplay_only = true

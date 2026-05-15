@@ -15,7 +15,7 @@ glowcouldbealargersemi-transparentrectbehindthemainone.Isthatacceptable,orshould
 config/name="CD50"
 run/main_scene="uid://boo0jvdtkr4xv"
 config/features=PackedStringArray("4.5")
-run/max_fps=120
+run/max_fps=60
 config/icon="res://icon.svg"
 
 [autoload]
@@ -27,9 +27,8 @@ SoundBank="*res://Scripts/Core/sound_bank.gd"
 
 window/size/viewport_width=640
 window/size/viewport_height=360
-window/size/borderless=true
-window/size/extend_to_title=true
-window/stretch/mode="canvas_items"
+window/size/mode=2
+window/stretch/mode="viewport"
 window/stretch/scale_mode="integer"
 
 [editor]
@@ -273,5 +272,3 @@ viewport/transparent_background=true
 viewport/physics_ticks_per_second=60
 viewport/snap/snap_2d_vertices_to_pixel=true
 viewport/physics_interpolation=true
-viewport/size/mode=3
-viewport/size/resizable=true
