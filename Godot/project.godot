@@ -33,7 +33,9 @@ window/stretch/scale_mode="integer"
 
 [editor]
 
-movie_writer/movie_file="/home/ssjmarx/Videos/Screencasts/test.avi"
+movie_writer/video_quality=0.25
+movie_writer/ogv/encoding_speed=1
+movie_writer/movie_file="/home/ssjmarx/Videos/test.avi"
 
 [editor_plugins]
 
