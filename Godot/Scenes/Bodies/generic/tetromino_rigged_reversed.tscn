@@ -1,0 +1,33 @@
+[gd_scene load_steps=7 format=3 uid="uid://4lv2mse4uolj"]
+
+[ext_resource type="Script" uid="uid://vi07llk3m5n4" path="res://Scripts/Bodies/tetromino.gd" id="1_bqihp"]
+[ext_resource type="PackedScene" uid="uid://bn32q5kmricio" path="res://Scenes/Legs/grid_movement.tscn" id="3_skxco"]
+[ext_resource type="PackedScene" uid="uid://dixi6480rl8mn" path="res://Scenes/Legs/grid_rotation_advanced.tscn" id="4_564h8"]
+[ext_resource type="PackedScene" uid="uid://ddrjfhgq2iqyt" path="res://Scenes/Components/lock_detector.tscn" id="5_c658x"]
+[ext_resource type="PackedScene" path="res://Scenes/Components/ghost_piece.tscn" id="6_ui2w3"]
+[ext_resource type="PackedScene" path="res://Scenes/Components/t_spin_detector.tscn" id="7_qdk0v"]
+
+[node name="Tetromino" type="CharacterBody2D" groups=["tetrominos"]]
+script = ExtResource("1_bqihp")
+color = Color(0, 0, 1, 1)
+width = 18
+height = 18
+collision_groups = Array[String](["tetrominos"])
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+
+[node name="GridMovement" parent="." instance=ExtResource("3_skxco")]
+prevent_movement_up = false
+drop_direction = Vector2(0, -1)
+
+[node name="GridRotationAdvanced" parent="." instance=ExtResource("4_564h8")]
+
+[node name="LockDetector" parent="." instance=ExtResource("5_c658x")]
+lock_delay = 0.0
+fall_direction = Vector2(0, -1)
+max_lock_resets = 0
+
+[node name="GhostPiece" parent="." instance=ExtResource("6_ui2w3")]
+projection_direction = Vector2(0, -1)
+
+[node name="TSpinDetector" parent="." instance=ExtResource("7_qdk0v")]

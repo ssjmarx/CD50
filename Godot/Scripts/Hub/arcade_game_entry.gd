@@ -5,3 +5,4 @@ class_name ArcadeGameEntry extends Resource
 
 @export var game_scene: PackedScene
 @export var overrides: Array[PropertyOverride] = []
+@export var time_limit: float = 30.0  # seconds; 0 = no limit

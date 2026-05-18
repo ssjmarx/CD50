@@ -1,4 +1,4 @@
-[gd_scene load_steps=22 format=3 uid="uid://b1v4hc08l20lk"]
+[gd_scene load_steps=23 format=3 uid="uid://b1v4hc08l20lk"]
 
 [ext_resource type="Script" uid="uid://nx6wkwvymri1" path="res://Scripts/Bodies/triangle_ship.gd" id="1_xpqot"]
 [ext_resource type="PackedScene" uid="uid://bj81pr736k256" path="res://Scenes/Components/health.tscn" id="2_7taai"]
@@ -14,6 +14,7 @@
 [ext_resource type="PackedScene" uid="uid://c5h0r2rnmwe4k" path="res://Scenes/Effects/death_particles.tscn" id="13_ysd2f"]
 [ext_resource type="PackedScene" uid="uid://dewo285lx7p70" path="res://Scenes/Effects/death_broken_triangle_ship.tscn" id="14_0ovpv"]
 [ext_resource type="PackedScene" uid="uid://b5qnknhyvemd5" path="res://Scenes/Components/vector_engine_exhaust.tscn" id="15_ummt8"]
+[ext_resource type="PackedScene" path="res://Scenes/Components/vector_thruster_exhaust.tscn" id="22_vtex"]
 [ext_resource type="PackedScene" uid="uid://b2utyb8vjdhru" path="res://Scenes/Brains/aim_ai.tscn" id="16_xwb4j"]
 [ext_resource type="PackedScene" uid="uid://c8034ktag0uga" path="res://Scenes/Brains/shoot_ai.tscn" id="18_g2hj8"]
 [ext_resource type="PackedScene" uid="uid://duiftqhlo478k" path="res://Scenes/Brains/patrol_ai.tscn" id="19_4wtmv"]
@@ -63,6 +64,8 @@ independent_aim = true
 effect_scenes = Array[PackedScene]([ExtResource("13_ysd2f"), ExtResource("14_0ovpv")])
 
 [node name="VectorEngineExhaust" parent="." instance=ExtResource("15_ummt8")]
+
+[node name="VectorThrusterExhaust" parent="." instance=ExtResource("22_vtex")]
 
 [node name="AimAi" parent="." instance=ExtResource("16_xwb4j")]
 target_group = "players"

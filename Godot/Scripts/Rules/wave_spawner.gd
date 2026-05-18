@@ -37,6 +37,10 @@ extends UniversalComponent2D
 @export var grid_skip_chance: float = 0.0       # 0.0 = spawn all, 0.3 = skip ~30%
 @export var grid_min_skips_per_row: int = 0      # guarantee ≥N gaps per row
 
+# Telefrag: destroy overlapping entities at spawn position
+@export var telefrag: bool = false
+@export var telefrag_groups: Array[String] = []
+
 # Initial velocity configuration
 @export var initial_velocity: Vector2 = Vector2.ZERO
 @export var use_random_angle: bool = false
@@ -195,9 +199,49 @@ func _spawn_one(wave_num: int, index: int, total: int) -> void:
 	
 	game.add_child(enemy)
 	
+	# Telefrag: destroy any overlapping entities at the spawn position
+	if telefrag and not telefrag_groups.is_empty():
+		_telefrag_at(enemy.position, enemy)
+	
 	# Emit completion signal on last spawn
 	if index == total - 1:
 		game.spawning_wave_complete.emit(wave_num)
+
+# Destroy all bodies in telefrag_groups at the given position.
+# Uses Health component if available, otherwise queue_free.
+func _telefrag_at(pos: Vector2, exclude: Node) -> void:
+	var space_state = get_world_2d().direct_space_state
+	var query = PhysicsPointQueryParameters2D.new()
+	query.position = pos
+	query.collide_with_areas = false
+	query.collide_with_bodies = true
+	query.exclude = [exclude.get_rid()]
+	
+	var results = space_state.intersect_point(query)
+	for result in results:
+		var body = result["collider"]
+		if not body or not is_instance_valid(body):
+			continue
+		var in_group = false
+		for group in telefrag_groups:
+			if body.is_in_group(group):
+				in_group = true
+				break
+		if not in_group:
+			continue
+		# Try Health kill first (triggers death effects)
+		var health_comp = _find_health_component(body)
+		if health_comp:
+			health_comp.reduce_health(health_comp.current_health)
+		else:
+			body.queue_free()
+
+# Find a Health component on the given body
+func _find_health_component(body: Node) -> Node:
+	for child in body.get_children():
+		if child.has_signal("zero_health"):
+			return child
+	return null
 
 # Wait until no unsafe-group entities are within safety_radius of the spawner
 func _wait_for_safe_zone() -> void:

@@ -1,0 +1,287 @@
+[gd_scene load_steps=34 format=3 uid="uid://c3tevirkl2omn"]
+
+[ext_resource type="Script" uid="uid://bjdgpevhahi6d" path="res://Scripts/Core/universal_game_script.gd" id="1_wv1sa"]
+[ext_resource type="Script" uid="uid://bfkr4fdx316o5" path="res://Scripts/Core/collision_group.gd" id="2_m4j8u"]
+[ext_resource type="PackedScene" uid="uid://dwyyfxniivl1r" path="res://Scenes/Rules/wave_director.tscn" id="4_hpv1p"]
+[ext_resource type="PackedScene" uid="uid://fwma6hhojifp" path="res://Scenes/Bodies/generic/tetromino_single_swarm.tscn" id="4_mdnnx"]
+[ext_resource type="PackedScene" uid="uid://4lv2mse4uolj" path="res://Scenes/Bodies/generic/tetromino_rigged_reversed.tscn" id="4_xbeao"]
+[ext_resource type="PackedScene" uid="uid://q3xxo1hdrr4j" path="res://Scenes/Flow/tetromino_spawner.tscn" id="5_ts"]
+[ext_resource type="PackedScene" uid="uid://bq6cdrx340jp7" path="res://Scenes/Flow/interface.tscn" id="5_vhknf"]
+[ext_resource type="PackedScene" uid="uid://bycsf31pwnvgl" path="res://Scenes/Flow/swarm_controller.tscn" id="6_cy30m"]
+[ext_resource type="PackedScene" uid="uid://dhulxxtcsipl6" path="res://Scenes/Rules/group_monitor.tscn" id="7_3js6b"]
+[ext_resource type="PackedScene" uid="uid://vlbel76nqh5w" path="res://Scenes/Rules/wave_spawner.tscn" id="8_c1rra"]
+[ext_resource type="PackedScene" uid="uid://vn5qxka3iet4" path="res://Scenes/Bodies/nonplayer/nonplayer_invader.tscn" id="9_nwhxp"]
+[ext_resource type="Script" uid="uid://cp0ni1lgml7c6" path="res://Scripts/Core/property_override.gd" id="10_gur7k"]
+[ext_resource type="PackedScene" uid="uid://tre5p2x1bb2k" path="res://Scenes/Rules/lives_counter.tscn" id="11_knr0w"]
+[ext_resource type="PackedScene" uid="uid://r0kpsqukc75t" path="res://Scenes/Bodies/generic/mystery_ship.tscn" id="12_w06dk"]
+[ext_resource type="PackedScene" uid="uid://craitf0mklbon" path="res://Scenes/Rules/timer.tscn" id="13_ise4r"]
+[ext_resource type="PackedScene" uid="uid://dga83l4d2rwyv" path="res://Scenes/Flow/sound_synth.tscn" id="14_w37bp"]
+[ext_resource type="PackedScene" uid="uid://cspp2scxj8eku" path="res://Scenes/Bodies/generic/barrier.tscn" id="15_fge57"]
+[ext_resource type="PackedScene" uid="uid://6tweepbhleep" path="res://Scenes/Brains/player_control.tscn" id="15_pc"]
+[ext_resource type="PackedScene" uid="uid://dl63uuwsbx8qr" path="res://Scenes/Rules/line_clear_monitor.tscn" id="16_lcm"]
+[ext_resource type="PackedScene" path="res://Scenes/Rules/group_kill_on_signal.tscn" id="17_gkos"]
+[ext_resource type="PackedScene" uid="uid://bj81pr736k256" path="res://Scenes/Components/health.tscn" id="18_health"]
+[ext_resource type="PackedScene" path="res://Scenes/Components/death_effect_brick.tscn" id="19_death"]
+
+[sub_resource type="Resource" id="Resource_jwgp7"]
+script = ExtResource("2_m4j8u")
+group_name = "players"
+metadata/_custom_type_script = "uid://bfkr4fdx316o5"
+
+[sub_resource type="Resource" id="Resource_nacot"]
+script = ExtResource("2_m4j8u")
+group_name = "enemies"
+metadata/_custom_type_script = "uid://bfkr4fdx316o5"
+
+[sub_resource type="Resource" id="Resource_vcbdb"]
+script = ExtResource("2_m4j8u")
+group_name = "players_bullets"
+targets = Array[String](["enemies", "bricks"])
+metadata/_custom_type_script = "uid://bfkr4fdx316o5"
+
+[sub_resource type="Resource" id="Resource_6ogln"]
+script = ExtResource("2_m4j8u")
+group_name = "enemies_bullets"
+targets = Array[String](["players", "bricks"])
+metadata/_custom_type_script = "uid://bfkr4fdx316o5"
+
+[sub_resource type="Resource" id="Resource_jauks"]
+script = ExtResource("2_m4j8u")
+group_name = "bricks"
+targets = Array[String](["enemies"])
+metadata/_custom_type_script = "uid://bfkr4fdx316o5"
+
+[sub_resource type="Resource" id="Resource_j86sr"]
+script = ExtResource("2_m4j8u")
+group_name = "tetrominos"
+targets = Array[String](["enemies", "tetrominos", "settled_pieces"])
+metadata/_custom_type_script = "uid://bfkr4fdx316o5"
+
+[sub_resource type="Resource" id="Resource_sj50m"]
+script = ExtResource("2_m4j8u")
+group_name = "settled_pieces"
+targets = Array[String](["ufos"])
+metadata/_custom_type_script = "uid://bfkr4fdx316o5"
+
+[sub_resource type="Resource" id="Resource_ioc8k"]
+script = ExtResource("2_m4j8u")
+group_name = "ufos"
+metadata/_custom_type_script = "uid://bfkr4fdx316o5"
+
+[sub_resource type="Resource" id="Resource_74c7c"]
+script = ExtResource("10_gur7k")
+property_name = "shape"
+value = 2
+metadata/_custom_type_script = "uid://cp0ni1lgml7c6"
+
+[sub_resource type="Resource" id="Resource_step"]
+script = ExtResource("10_gur7k")
+node_path = NodePath("GridMovement")
+property_name = "step_size"
+value = 18.0
+metadata/_custom_type_script = "uid://cp0ni1lgml7c6"
+
+[sub_resource type="Resource" id="Resource_dbhjy"]
+script = ExtResource("10_gur7k")
+property_name = "shape"
+value = 1
+metadata/_custom_type_script = "uid://cp0ni1lgml7c6"
+
+[node name="BugDrop" type="Node2D"]
+script = ExtResource("1_wv1sa")
+game_title = "Bug Blaster"
+collision_groups = Array[ExtResource("2_m4j8u")]([SubResource("Resource_jwgp7"), SubResource("Resource_nacot"), SubResource("Resource_vcbdb"), SubResource("Resource_6ogln"), SubResource("Resource_jauks"), SubResource("Resource_j86sr"), SubResource("Resource_sj50m"), SubResource("Resource_ioc8k")])
+
+[node name="TetrominoSpawner" parent="." instance=ExtResource("5_ts")]
+position = Vector2(311, 311)
+bag = Array[PackedScene]([ExtResource("4_xbeao")])
+settled_cell_scene = ExtResource("4_mdnnx")
+settled_cell_components = Array[PackedScene]([ExtResource("18_health"), ExtResource("19_death")])
+settled_group = "settled_pieces"
+active_piece_components = Array[PackedScene]([ExtResource("15_pc")])
+preview_origin = Vector2(64, 64)
+hold_origin = Vector2(576, 320)
+
+[node name="WaveDirector" parent="." instance=ExtResource("4_hpv1p")]
+trigger_type = 3
+wave_delay = 0.0
+
+[node name="Interface" parent="." instance=ExtResource("5_vhknf")]
+display_mode = 1
+display_lives = true
+
+[node name="SwarmController" parent="." instance=ExtResource("6_cy30m")]
+min_tick_interval = 0.0
+speed_ramp_enabled = false
+step_down_distance = 6
+boundary_left = 40.0
+boundary_right = 600.0
+boundary_bottom = 296.0
+bottom_action = 1
+wave_speed_decrease = 0.02
+
+[node name="GroupMonitor" parent="." instance=ExtResource("7_3js6b")]
+target_group = "enemies"
+
+[node name="WaveDirector4" parent="." instance=ExtResource("4_hpv1p")]
+trigger_value = "enemies"
+
+[node name="WaveSpawner3" parent="." node_paths=PackedStringArray("director", "extra_directors") instance=ExtResource("8_c1rra")]
+position = Vector2(320, 23)
+spawn_scene = ExtResource("9_nwhxp")
+spawn_pattern = 2
+stagger_delay = 0.01
+director = NodePath("../WaveDirector")
+extra_directors = [NodePath("../WaveDirector4")]
+property_overrides = Array[ExtResource("10_gur7k")]([SubResource("Resource_74c7c"), SubResource("Resource_step")])
+spawn_groups = Array[String](["enemies", "invaders"])
+spawn_collision_groups = Array[String](["enemies"])
+grid_width = 18
+grid_height = 18
+grid_columns = 10
+grid_rows = 1
+grid_spacing = 0
+grid_health_values = Array[int]([])
+grid_score_values = Array[int]([3])
+grid_min_skips_per_row = 1
+
+[node name="WaveSpawner" parent="." node_paths=PackedStringArray("director", "extra_directors") instance=ExtResource("8_c1rra")]
+position = Vector2(320, 41)
+spawn_scene = ExtResource("9_nwhxp")
+spawn_pattern = 2
+stagger_delay = 0.01
+director = NodePath("../WaveDirector")
+extra_directors = [NodePath("../WaveDirector4")]
+property_overrides = Array[ExtResource("10_gur7k")]([SubResource("Resource_step")])
+spawn_groups = Array[String](["enemies", "invaders"])
+spawn_collision_groups = Array[String](["enemies"])
+grid_width = 18
+grid_height = 18
+grid_columns = 10
+grid_rows = 1
+grid_spacing = 0
+grid_health_values = Array[int]([])
+grid_score_values = Array[int]([2])
+grid_min_skips_per_row = 1
+telefrag = true
+telefrag_groups = Array[String](["settled_pieces"])
+
+[node name="WaveSpawner2" parent="." node_paths=PackedStringArray("director", "extra_directors") instance=ExtResource("8_c1rra")]
+position = Vector2(320, 59)
+spawn_scene = ExtResource("9_nwhxp")
+spawn_pattern = 2
+stagger_delay = 0.01
+director = NodePath("../WaveDirector")
+extra_directors = [NodePath("../WaveDirector4")]
+property_overrides = Array[ExtResource("10_gur7k")]([SubResource("Resource_dbhjy"), SubResource("Resource_step")])
+spawn_groups = Array[String](["enemies", "invaders"])
+spawn_collision_groups = Array[String](["enemies"])
+grid_width = 18
+grid_height = 18
+grid_columns = 10
+grid_rows = 1
+grid_spacing = 0
+grid_health_values = Array[int]([])
+grid_score_values = Array[int]([])
+grid_min_skips_per_row = 1
+telefrag = true
+telefrag_groups = Array[String](["settled_pieces"])
+
+[node name="WaveSpawner5" parent="." node_paths=PackedStringArray("director", "extra_directors") instance=ExtResource("8_c1rra")]
+position = Vector2(320, 77)
+spawn_scene = ExtResource("9_nwhxp")
+spawn_pattern = 2
+stagger_delay = 0.01
+director = NodePath("../WaveDirector")
+extra_directors = [NodePath("../WaveDirector4")]
+property_overrides = Array[ExtResource("10_gur7k")]([SubResource("Resource_dbhjy"), SubResource("Resource_step")])
+spawn_groups = Array[String](["enemies", "invaders"])
+spawn_collision_groups = Array[String](["enemies"])
+grid_width = 18
+grid_height = 18
+grid_columns = 10
+grid_rows = 1
+grid_spacing = 0
+grid_health_values = Array[int]([])
+grid_score_values = Array[int]([])
+grid_min_skips_per_row = 1
+telefrag = true
+telefrag_groups = Array[String](["settled_pieces"])
+
+[node name="LivesCounter" parent="." instance=ExtResource("11_knr0w")]
+
+[node name="GroupMonitor2" parent="." instance=ExtResource("7_3js6b")]
+target_group = "players"
+
+[node name="WaveDirector3" parent="." instance=ExtResource("4_hpv1p")]
+trigger_type = 1
+trigger_value = "ufo"
+wave_delay = 0.0
+
+[node name="WaveSpawner6" parent="." node_paths=PackedStringArray("director") instance=ExtResource("8_c1rra")]
+position = Vector2(-8, 16)
+spawn_scene = ExtResource("12_w06dk")
+spawn_pattern = 3
+spawn_count_equation = "1"
+stagger_delay = 0.0
+director = NodePath("../WaveDirector3")
+spawn_groups = Array[String](["ufos"])
+spawn_collision_groups = Array[String](["ufos"])
+telefrag_groups = Array[String](["settled_pieces"])
+
+[node name="Timer" parent="." instance=ExtResource("13_ise4r")]
+duration = 10.0
+loop_timer = true
+game_start = true
+timer_id = "ufo"
+
+[node name="SoundSynth" parent="." node_paths=PackedStringArray("source_node") instance=ExtResource("14_w37bp")]
+play_mode = 1
+note = 48
+duration = 0.2
+source_node = NodePath("../SwarmController")
+source_signal = "swarm_move"
+positional = false
+exclusive = true
+gameplay_only = true
+
+[node name="Barrier" parent="." instance=ExtResource("15_fge57")]
+modulate = Color(1, 1, 1, 0.39215687)
+position = Vector2(80, 272)
+scale = Vector2(0.667, 0.667)
+
+[node name="Barrier2" parent="." instance=ExtResource("15_fge57")]
+modulate = Color(1, 1, 1, 0.39215687)
+position = Vector2(240, 272)
+scale = Vector2(0.667, 0.667)
+
+[node name="Barrier3" parent="." instance=ExtResource("15_fge57")]
+modulate = Color(1, 1, 1, 0.39215687)
+position = Vector2(400, 272)
+scale = Vector2(0.667, 0.667)
+
+[node name="Barrier4" parent="." instance=ExtResource("15_fge57")]
+modulate = Color(1, 1, 1, 0.39215687)
+position = Vector2(560, 272)
+scale = Vector2(0.667, 0.667)
+
+[node name="LineClearMonitor" parent="." instance=ExtResource("16_lcm")]
+playfield_origin = Vector2(230, 14)
+rows = 18
+target_groups = Array[String](["settled_pieces", "enemies"])
+show_playfield_markers = true
+marker_color = Color(0.745, 0.745, 0.745, 0.392157)
+use_health_kill = true
+enable_line_flash = false
+collapse_direction = Vector2(0, -1)
+enable_combo = true
+enable_back_to_back = true
+enable_t_spin_scoring = true
+
+[node name="GroupKillOnSignal" parent="." instance=ExtResource("17_gkos")]
+listen_signal = "group_member_removed"
+trigger_group = "ufos"
+kill_delay = 0.1
+
+[node name="GroupMonitor3" parent="." instance=ExtResource("7_3js6b")]
+target_group = "ufos"

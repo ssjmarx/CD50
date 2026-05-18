@@ -21,6 +21,7 @@ extends UniversalComponent
 
 # Hard drop on shoot signal
 @export var enable_hard_drop: bool = true
+@export var drop_direction: Vector2 = Vector2.DOWN
 
 # DAS (Delayed Auto Shift) — transforms held input into auto-repeated steps
 @export var das_delay: float = 0.0       # Seconds before auto-repeat starts (0 = no DAS)
@@ -153,7 +154,7 @@ func _on_shoot() -> void:
 	if not enable_hard_drop:
 		return
 	
-	var drop_dir = Vector2.DOWN
+	var drop_dir = drop_direction
 	var total_displacement = Vector2.ZERO
 	var max_drops = 40
 	

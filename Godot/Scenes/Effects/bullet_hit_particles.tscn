@@ -1,13 +1,18 @@
-[gd_scene load_steps=2 format=3 uid="uid://c8x5k2qah0wbd"]
+[gd_scene load_steps=3 format=3 uid="uid://c8x5k2qah0wbd"]
 
 [ext_resource type="Script" uid="uid://dts8sibxoa388" path="res://Scripts/Effects/death_particles.gd" id="1_dp"]
+[ext_resource type="PackedScene" uid="uid://dga83l4d2rwyv" path="res://Scenes/Flow/sound_synth.tscn" id="2_2dvsm"]
 
 [node name="BulletHitParticles" type="Node2D"]
 script = ExtResource("1_dp")
 particle_count = 25
 spread_speed = 100.0
-lifetime = 0.25
 
 [node name="Timer" type="Timer" parent="."]
 one_shot = true
 autostart = true
+
+[node name="SoundSynth" parent="." instance=ExtResource("2_2dvsm")]
+effect = 3
+note = 57
+duration = 0.2

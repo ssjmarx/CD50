@@ -9,6 +9,9 @@ extends UniversalComponent
 # Physics check size (slightly < tile_size to avoid false positives)
 @export var cell_size: float = 17.9
 
+# Direction to project the ghost piece. Use Vector2.UP for reversed (Bug Drop) pieces.
+@export var projection_direction: Vector2 = Vector2.DOWN
+
 func _ready() -> void:
 	call_deferred("_connect_signals")
 
@@ -35,25 +38,27 @@ func _update_ghost() -> void:
 	parent.ghost_offsets = ghost
 	parent.queue_redraw()
 
-# Project the piece straight down until blocked
+# Project the piece in the configured direction until blocked
 func _project_landing() -> Array[Vector2i]:
 	var displacement = 0
+	var dir_sign: int = 1 if projection_direction.y >= 0 else -1
 	while _can_drop_one_more(displacement):
 		displacement += 1
 	# Convert landing position back to offsets relative to parent
 	var offsets: Array[Vector2i] = []
 	if "current_offsets" in parent:
 		for offset in parent.current_offsets:
-			offsets.append(Vector2i(offset.x, offset.y + displacement))
+			offsets.append(Vector2i(offset.x, offset.y + displacement * dir_sign))
 	return offsets
 
-# Test if piece can exist one step further down from current displacement
+# Test if piece can exist one step further in the projection direction
 func _can_drop_one_more(current_displacement: int) -> bool:
 	if not ("current_offsets" in parent and parent.current_offsets.size() > 0):
 		return false
 	
 	var space_state = parent.get_world_2d().direct_space_state
-	var test_y = parent.global_position.y + (current_displacement + 1) * step_size
+	var dir_sign: float = 1.0 if projection_direction.y >= 0 else -1.0
+	var test_y = parent.global_position.y + (current_displacement + 1) * step_size * dir_sign
 	
 	for offset in parent.current_offsets:
 		var cell_pos = Vector2(

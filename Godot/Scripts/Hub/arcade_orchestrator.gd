@@ -44,6 +44,8 @@ var _transition_tween: Tween = null
 var _game_count: int = 0          # games completed this run (drives per-game bonus)
 var _game_multiplier: float = 1.0  # current game's own multiplier (resets each game)
 var _game_start_time: float = 0.0 # when current game started (seconds since epoch)
+var _current_time_limit: float = 0.0  # time limit for current game (0 = no limit)
+var _timed_out: bool = false      # true when current game ended via time limit
 
 @onready var _game_container: Node2D = $GameContainer
 @onready var _boot_screen: Control = $BootScreen
@@ -82,6 +84,10 @@ func _input(event: InputEvent) -> void:
 				get_viewport().set_input_as_handled()
 
 func _physics_process(delta: float) -> void:
+	if _state == OrchestratorState.PLAYING and _current_time_limit > 0.0:
+		var elapsed = Time.get_ticks_msec() / 1000.0 - _game_start_time
+		if elapsed >= _current_time_limit:
+			_on_time_limit_reached()
 	if _state == OrchestratorState.RESULT:
 		_result_timer -= delta
 		if _result_timer <= 0.0:
@@ -117,6 +123,9 @@ func _start_next_game() -> void:
 		entry = playlist[_current_index]
 	
 	_state = OrchestratorState.TRANSITIONING
+	
+	# Store time limit from entry for this game
+	_current_time_limit = entry.time_limit
 	
 	# Setup new game instance (instantiate, configure, add to tree — but don't start)
 	var new_instance = _setup_game_instance(entry)
@@ -242,6 +251,7 @@ func _finalize_game_start(instance: Node2D) -> void:
 	# Reset per-game state
 	_game_multiplier = 1.0
 	_game_start_time = Time.get_ticks_msec() / 1000.0
+	_timed_out = false
 	
 	var ugs = _get_ugs_from(instance)
 	if ugs:
@@ -314,7 +324,7 @@ func _on_game_over_signal(final_score: int) -> void:
 	_running_score += final_score + time_bonus
 	on_points_changed.emit(_running_score)
 	
-	if not _last_game_won:
+	if not _last_game_won and not _timed_out:
 		_lives -= 1
 		lives_changed.emit(_lives)
 	
@@ -418,6 +428,38 @@ func _find_ugs(node: Node) -> UniversalGameScript:
 		if result:
 			return result
 	return null
+
+# Force-end the current game when time limit is reached.
+# Bypasses defeat/victory flow entirely: no life lost, no VFX, no time bonus.
+# Just collects whatever score the player earned and instantly swipes to next game.
+func _on_time_limit_reached() -> void:
+	if _state != OrchestratorState.PLAYING:
+		return
+	_timed_out = true
+	_last_game_won = false
+	
+	# Collect whatever score the player earned (no time bonus)
+	var ugs = _get_current_ugs()
+	if ugs:
+		_running_score += ugs.current_score
+		on_points_changed.emit(_running_score)
+		# Disconnect all UGS signals to prevent double-scoring or spurious callbacks
+		# during the slide-out transition
+		if ugs.victory.is_connected(_on_game_victory):
+			ugs.victory.disconnect(_on_game_victory)
+		if ugs.defeat.is_connected(_on_game_defeat):
+			ugs.defeat.disconnect(_on_game_defeat)
+		if ugs.on_game_over.is_connected(_on_game_over_signal):
+			ugs.on_game_over.disconnect(_on_game_over_signal)
+		if ugs.on_points_changed.is_connected(_on_game_points_changed):
+			ugs.on_points_changed.disconnect(_on_game_points_changed)
+		if ugs.on_multiplier_changed.is_connected(_on_game_multiplier_changed):
+			ugs.on_multiplier_changed.disconnect(_on_game_multiplier_changed)
+		if ugs.lives_changed.is_connected(_on_game_lives_changed):
+			ugs.lives_changed.disconnect(_on_game_lives_changed)
+	
+	# Instant swipe to next game — no result delay, no VFX
+	_start_next_game()
 
 func _calc_time_bonus(elapsed: float) -> int:
 	# 100 points at ≤10s, linearly to 0 at ≥30s

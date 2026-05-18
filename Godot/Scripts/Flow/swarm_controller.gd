@@ -19,6 +19,7 @@ enum BottomAction { NONE, DEFEAT, LOSE_LIFE, VICTORY }
 # Group and boundary configuration
 @export var invader_group: String = "invaders"
 @export var bus_group: String = "swarm_bus"
+@export var swarm_step_size: float = 18.0
 @export var boundary_left: float = 32.0
 @export var boundary_right: float = 608.0
 @export var boundary_bottom: float = 340.0
@@ -31,6 +32,7 @@ signal swarm_move(direction: Vector2)
 signal swarm_at_bottom
 
 # Runtime state
+var swarm_offset_x: float = 0.0
 var _tick_timer: float = 0.0
 var _direction: Vector2 = Vector2.RIGHT
 var _state: State = State.MOVING
@@ -79,9 +81,14 @@ func _get_current_interval() -> float:
 
 # Execute one tick: move horizontally or step down, based on current state
 func _execute_tick() -> void:
+	# Guard: skip ticks when no invaders exist (prevents phantom swarm_move
+	# signals that would desync LineClearMonitor's offset tracking between waves)
+	if get_group_count(invader_group) == 0:
+		return
 	match _state:
 		State.MOVING:
 			swarm_move.emit(_direction)
+			swarm_offset_x += swarm_step_size * signf(_direction.x)
 			if _is_at_edge():
 				_state = State.STEP_DOWN
 		
@@ -113,6 +120,7 @@ func reset_wave() -> void:
 	_tick_timer = 0.0
 	_total_members = 0
 	_bottom_triggered = false
+	swarm_offset_x = 0.0
 
 # Get the effective base interval, accounting for per-wave speed increase
 func _get_effective_base_interval() -> float:

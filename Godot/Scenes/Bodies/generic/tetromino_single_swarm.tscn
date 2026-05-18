@@ -1,0 +1,22 @@
+[gd_scene load_steps=4 format=3 uid="uid://fwma6hhojifp"]
+
+[ext_resource type="Script" uid="uid://vi07llk3m5n4" path="res://Scripts/Bodies/tetromino.gd" id="1_7d57b"]
+[ext_resource type="PackedScene" uid="uid://btpqd0s0vatc8" path="res://Scenes/Brains/swarm_ai.tscn" id="2_jaq06"]
+[ext_resource type="PackedScene" uid="uid://bn32q5kmricio" path="res://Scenes/Legs/grid_movement.tscn" id="3_a1yjc"]
+
+[node name="Tetromino" type="CharacterBody2D" groups=["tetrominos"]]
+script = ExtResource("1_7d57b")
+color = Color(1, 0.45, 0, 1)
+single_cell = true
+collision_groups = Array[String](["tetrominos", "settled_pieces"])
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+
+[node name="SwarmAi" parent="." instance=ExtResource("2_jaq06")]
+bus_group = "swarm_bus"
+
+[node name="GridMovement" parent="." instance=ExtResource("3_a1yjc")]
+block_on_collision = false
+prevent_movement_up = false
+enable_hard_drop = false
+use_input_queue = false
