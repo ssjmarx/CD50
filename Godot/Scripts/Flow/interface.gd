@@ -232,7 +232,7 @@ func _update_timer_labels() -> void:
 			continue
 		
 		var current_time: float = timer_node._current_time
-		label.text = "%d:%02d" % [int(current_time) / 60, int(current_time) % 60]
+		label.text = "%d:%02d" % [int(current_time / 60), int(current_time) % 60]
 
 # Show UI element by type
 func show_element(element: CommonEnums.Element) -> void:

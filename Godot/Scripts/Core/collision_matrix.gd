@@ -27,7 +27,8 @@ func _build_bit_mapping() -> void:
 		_group_to_bit[key] = bit_mask
 		current_bit += 1
 
-# Configure UniversalBody's collision layer and mask from its groups
+# Configure UniversalBody's collision layer and mask from its groups.
+# All collision groups are OR'd together so multi-group bodies get combined layers and masks.
 func _configure_body(body: UniversalBody) -> void:	
 	if _group_to_bit.is_empty():
 		return
@@ -39,22 +40,24 @@ func _configure_body(body: UniversalBody) -> void:
 	if body.collision_groups.is_empty():
 		return
 	
-	var primary_group = body.collision_groups[0]
-	if primary_group in _group_to_bit:
-		body.collision_layer = _group_to_bit[primary_group]
-	else:
-		print("Attempted to configure non-existent collision group '", primary_group, "' on body: ", body.name)
-		return
-	
-	var target_groups = _collision_groups[primary_group]
+	var collision_layer = 0
 	var collision_mask = 0
-	for target_group in target_groups:
-		if target_group in _group_to_bit:
-			var target_bit = _group_to_bit[target_group]
-			collision_mask = collision_mask | target_bit
-		else:
-			print("Attempted to configure non-existent collision target '", target_group, "' on body: ", body.name)
 	
+	for group in body.collision_groups:
+		if group in _group_to_bit:
+			collision_layer = collision_layer | _group_to_bit[group]
+		else:
+			print("Attempted to configure non-existent collision group '", group, "' on body: ", body.name)
+			continue
+		
+		var target_groups = _collision_groups[group]
+		for target_group in target_groups:
+			if target_group in _group_to_bit:
+				collision_mask = collision_mask | _group_to_bit[target_group]
+			else:
+				print("Attempted to configure non-existent collision target '", target_group, "' on body: ", body.name)
+	
+	body.collision_layer = collision_layer
 	body.collision_mask = collision_mask
 
 # Find and configure all existing bodies in the game tree
@@ -92,7 +95,8 @@ func _find_collision_marker(node: Node) -> CollisionMarker:
 			return child
 	return null
 
-# Configure non-UniversalBody using its CollisionMarker child
+# Configure non-UniversalBody using its CollisionMarker child.
+# All collision groups are OR'd together so multi-group bodies get combined layers and masks.
 func _configure_body_from_marker(body: Node, marker: CollisionMarker) -> void:
 	
 	if _group_to_bit.is_empty():
@@ -105,22 +109,24 @@ func _configure_body_from_marker(body: Node, marker: CollisionMarker) -> void:
 	if marker.collision_groups.is_empty():
 		return
 	
-	var primary_group = marker.collision_groups[0]
-	if primary_group in _group_to_bit:
-		body.collision_layer = _group_to_bit[primary_group]
-	else:
-		print("Attempted to configure non-existent collision group '", primary_group, "' on body: ", body.name)
-		return
-	
-	var target_groups = _collision_groups[primary_group]
+	var collision_layer = 0
 	var collision_mask = 0
-	for target_group in target_groups:
-		if target_group in _group_to_bit:
-			var target_bit = _group_to_bit[target_group]
-			collision_mask = collision_mask | target_bit
-		else:
-			print("Attempted to configure non-existent collision target '", target_group, "' on body: ", body.name)
 	
+	for group in marker.collision_groups:
+		if group in _group_to_bit:
+			collision_layer = collision_layer | _group_to_bit[group]
+		else:
+			print("Attempted to configure non-existent collision group '", group, "' on body: ", body.name)
+			continue
+		
+		var target_groups = _collision_groups[group]
+		for target_group in target_groups:
+			if target_group in _group_to_bit:
+				collision_mask = collision_mask | _group_to_bit[target_group]
+			else:
+				print("Attempted to configure non-existent collision target '", target_group, "' on body: ", body.name)
+	
+	body.collision_layer = collision_layer
 	body.collision_mask = collision_mask
 
 # Clear collision configuration when body is removed

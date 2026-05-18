@@ -139,9 +139,9 @@ func _build_nodes() -> void:
 	_noise_rect.modulate.a = noise_overlay_opacity
 	add_child(_noise_rect)
 
-func _create_overlay(name: String, texture_path: String, vp_size: Vector2) -> TextureRect:
+func _create_overlay(overlay_name: String, texture_path: String, vp_size: Vector2) -> TextureRect:
 	var rect := TextureRect.new()
-	rect.name = name
+	rect.name = overlay_name
 	rect.texture = load(texture_path)
 	rect.position = Vector2.ZERO
 	rect.size = vp_size

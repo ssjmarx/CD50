@@ -14,6 +14,7 @@
 
 [node name="UfoPlayer" type="CharacterBody2D" groups=["players"]]
 script = ExtResource("1_ttdb1")
+color = Color(0, 1, 1, 1)
 width = 16
 height = 16
 x_min = -100.0

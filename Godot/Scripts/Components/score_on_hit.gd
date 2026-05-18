@@ -21,6 +21,6 @@ func _on_collision(collider: Node, _normal: Vector2) -> void:
 			CommonEnums.ScoreType.P2_SCORE:
 				game.add_p2_score(score_amount)
 			CommonEnums.ScoreType.POINTS:
-				game.add_score(score_amount)
+				game.add_score(int(score_amount))
 			CommonEnums.ScoreType.MULTIPLIER:
 				game.add_multiplier(score_amount)

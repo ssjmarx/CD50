@@ -1,0 +1,46 @@
+[gd_scene load_steps=10 format=3 uid="uid://7i04qvmhxvhe"]
+
+[ext_resource type="Script" uid="uid://c7pmihw887om8" path="res://Scripts/Bodies/ufo.gd" id="1_gw5pc"]
+[ext_resource type="PackedScene" uid="uid://duiftqhlo478k" path="res://Scenes/Brains/patrol_ai.tscn" id="2_3rleg"]
+[ext_resource type="PackedScene" uid="uid://b3hvkyy38ihr1" path="res://Scenes/Components/screen_cleanup.tscn" id="4_cstss"]
+[ext_resource type="PackedScene" uid="uid://eketockdsssi" path="res://Scenes/Legs/direct_movement.tscn" id="5_txcev"]
+[ext_resource type="PackedScene" uid="uid://bj81pr736k256" path="res://Scenes/Components/health.tscn" id="6_7cdqh"]
+[ext_resource type="PackedScene" uid="uid://145njn1uody4" path="res://Scenes/Components/death_effect.tscn" id="7_txduk"]
+[ext_resource type="PackedScene" uid="uid://c5h0r2rnmwe4k" path="res://Scenes/Effects/death_particles.tscn" id="8_yu8xn"]
+[ext_resource type="PackedScene" uid="uid://dga83l4d2rwyv" path="res://Scenes/Flow/sound_synth.tscn" id="9_6xpxv"]
+[ext_resource type="PackedScene" uid="uid://ic3mj0x3ub4c" path="res://Scenes/Components/score_on_death.tscn" id="10_671rc"]
+
+[node name="UFO" type="CharacterBody2D" groups=["enemies"]]
+script = ExtResource("1_gw5pc")
+color = Color(1, 0, 0, 1)
+size = 1
+width = 16
+height = 16
+x_min = -100.0
+x_max = 740.0
+y_min = -100.0
+y_max = 460.0
+collision_groups = Array[String](["enemies"])
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+
+[node name="PatrolAi" parent="." instance=ExtResource("2_3rleg")]
+
+[node name="ScreenCleanup" parent="." instance=ExtResource("4_cstss")]
+margin = 8
+
+[node name="DirectMovement" parent="." instance=ExtResource("5_txcev")]
+speed = 75
+
+[node name="Health" parent="." instance=ExtResource("6_7cdqh")]
+
+[node name="DeathEffect" parent="." instance=ExtResource("7_txduk")]
+effect_scenes = Array[PackedScene]([ExtResource("8_yu8xn")])
+
+[node name="SoundSynth" parent="." instance=ExtResource("9_6xpxv")]
+effect = 1
+volume = 0.1
+exclusive = true
+
+[node name="ScoreOnDeath" parent="." instance=ExtResource("10_671rc")]
+base_score = 10

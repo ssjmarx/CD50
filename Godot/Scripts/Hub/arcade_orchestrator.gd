@@ -51,6 +51,7 @@ var _game_start_time: float = 0.0 # when current game started (seconds since epo
 @onready var _music_player = $ArcadeMusic
 
 var _crt_controller: Node2D = null
+var _effect_tween: Tween = null
 
 func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
@@ -270,6 +271,28 @@ func _on_game_victory() -> void:
 func _on_game_defeat() -> void:
 	_last_game_won = false
 
+func _apply_result_effects() -> void:
+	if not _current_game_instance:
+		return
+	
+	# Kill any previous effect tween
+	if _effect_tween and _effect_tween.is_valid():
+		_effect_tween.kill()
+	
+	var total_duration: float = _result_timer + transition_duration
+	
+	if _last_game_won:
+		# Victory: overbright modulate → CRT bloom picks up bright pixels and spreads them
+		_effect_tween = create_tween()
+		_effect_tween.tween_property(_current_game_instance, "modulate", Color(3.0, 3.0, 2.5, 1.0), total_duration)
+	else:
+		# Defeat: red tint + horizontal shake (15 loops ≈ 0.9s to cover result + transition)
+		_current_game_instance.modulate = Color(1.5, 0.2, 0.2, 1.0)
+		_effect_tween = create_tween()
+		_effect_tween.set_loops(15)
+		_effect_tween.tween_property(_current_game_instance, "position:x", 4.0, 0.03).set_trans(Tween.TRANS_SINE)
+		_effect_tween.tween_property(_current_game_instance, "position:x", -4.0, 0.03).set_trans(Tween.TRANS_SINE)
+
 func _on_game_over_signal(final_score: int) -> void:
 	# Increment game count only on victory (drives per-game multiplier bonus)
 	if _last_game_won:
@@ -295,6 +318,9 @@ func _on_game_over_signal(final_score: int) -> void:
 		_lives -= 1
 		lives_changed.emit(_lives)
 	
+	# Apply result effects to the outgoing game instance
+	_apply_result_effects()
+	
 	# Transition to RESULT state
 	_state = OrchestratorState.RESULT
 	_result_timer = 0.5
@@ -308,7 +334,7 @@ func _on_game_multiplier_changed(new_multiplier: float) -> void:
 	# Combine game's multiplier with per-game bonus
 	on_multiplier_changed.emit(_game_multiplier + _game_count)
 
-func _on_game_lives_changed(new_lives: int) -> void:
+func _on_game_lives_changed(_new_lives: int) -> void:
 	lives_changed.emit(_lives)
 
 # --- Scrolling Transition ---

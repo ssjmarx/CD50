@@ -1,4 +1,4 @@
-[gd_resource type="Resource" script_class="ArcadeGameEntry" load_steps=9 format=3 uid="uid://x1w7jhywtp3r"]
+[gd_resource type="Resource" script_class="ArcadeGameEntry" load_steps=10 format=3 uid="uid://x1w7jhywtp3r"]
 
 [ext_resource type="PackedScene" uid="uid://c4ttsm1qowkgo" path="res://Scenes/Games/remakes/brick_breaker.tscn" id="1_8h1ts"]
 [ext_resource type="Script" uid="uid://cp0ni1lgml7c6" path="res://Scripts/Core/property_override.gd" id="2_da73w"]

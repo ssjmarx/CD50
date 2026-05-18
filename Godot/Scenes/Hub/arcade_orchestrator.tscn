@@ -1,9 +1,9 @@
-[gd_scene load_steps=19 format=3 uid="uid://boo0jvdtkr4xv"]
+[gd_scene load_steps=20 format=3 uid="uid://boo0jvdtkr4xv"]
 
 [ext_resource type="Script" uid="uid://dt4uemfscl0x6" path="res://Scripts/Hub/arcade_orchestrator.gd" id="1_script"]
 [ext_resource type="FontFile" uid="uid://imm2iompf7sv" path="res://Assets/Fonts/Kenney Pixel.ttf" id="2_font"]
 [ext_resource type="Script" uid="uid://bdsbfe65crnbu" path="res://Scripts/Hub/arcade_game_entry.gd" id="2_u78ae"]
-[ext_resource type="Resource" uid="uid://wtj1l710dfsc" path="res://Scenes/Hub/ArcadeSettings/space_rocks.tres" id="3_u78ae"]
+[ext_resource type="Resource" uid="uid://brlrwh62hs1l0" path="res://Scenes/Hub/ArcadeSettings/space_rocks_inverted.tres" id="3_k3wos"]
 [ext_resource type="Resource" uid="uid://x1w7jhywtp3r" path="res://Scenes/Hub/ArcadeSettings/brick_breaker.tres" id="4_n0muh"]
 [ext_resource type="Resource" uid="uid://bcl4p542u027h" path="res://Scenes/Hub/ArcadeSettings/paddle_ball.tres" id="5_42jm0"]
 [ext_resource type="FontFile" uid="uid://71u6h0td0205" path="res://Assets/Fonts/Kenney Future Narrow.ttf" id="6_2j8et"]
@@ -15,6 +15,7 @@
 [ext_resource type="Script" uid="uid://cfd1lio8bfym2" path="res://Scripts/Flow/music_track.gd" id="11_mtrack"]
 [ext_resource type="Resource" path="res://Resources/Music/hunted_by_machines.tres" id="12_music1"]
 [ext_resource type="PackedScene" uid="uid://c4ew4hmxod4e7" path="res://Scenes/Flow/music_player.tscn" id="14_hby7g"]
+[ext_resource type="Resource" uid="uid://cqyqy7p7arlrl" path="res://Scenes/Hub/ArcadeSettings/space_bugs.tres" id="15_sbugs"]
 
 [sub_resource type="LabelSettings" id="LabelSettings_title"]
 font = ExtResource("6_2j8et")
@@ -30,7 +31,7 @@ font_size = 20
 
 [node name="ArcadeOrchestrator" type="Node2D"]
 script = ExtResource("1_script")
-playlist = Array[ExtResource("2_u78ae")]([ExtResource("3_u78ae"), ExtResource("4_n0muh"), ExtResource("5_42jm0"), ExtResource("6_3qvvg"), ExtResource("7_k3wos"), ExtResource("8_hby7g"), ExtResource("9_el0dv"), ExtResource("10_s8yab")])
+playlist = Array[ExtResource("2_u78ae")]([ExtResource("4_n0muh"), ExtResource("5_42jm0"), ExtResource("6_3qvvg"), ExtResource("7_k3wos"), ExtResource("8_hby7g"), ExtResource("9_el0dv"), ExtResource("10_s8yab"), ExtResource("3_k3wos"), ExtResource("3_k3wos"), ExtResource("15_sbugs")])
 playlist_mode = 1
 music_volume_db = -10.0
 

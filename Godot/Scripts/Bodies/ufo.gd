@@ -14,8 +14,8 @@ enum Size {
 # Scale child components for the small variant (faster, more accurate, higher pitch)
 func _ready() -> void:
 	if size == Size.SMALL:
-		self.width = width / 2
-		self.height = height / 2
+		self.width = int(width / 2.0)
+		self.height = int(height / 2.0)
 		var direct_movement = get_node_or_null("DirectMovement")
 		if direct_movement:
 			direct_movement.speed = direct_movement.speed * 2

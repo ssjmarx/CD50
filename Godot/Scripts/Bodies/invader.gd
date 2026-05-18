@@ -14,6 +14,7 @@ enum Shape {
 # Called when the node enters the scene tree for the first time.
 func _ready() -> void:
 	super._ready()
+	self.modulate = color
 	
 	match shape:
 		Shape.NAUTILUS:
