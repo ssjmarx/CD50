@@ -134,14 +134,20 @@ func _cleanup_body(node: Node) -> void:
 	node.collision_layer = 0
 	node.collision_mask = 0
 
-# Configure newly added child node
-func _on_child_added(node: Node) -> void:	
+# Configure newly added child node and all its descendants
+func _on_child_added(node: Node) -> void:
+	_configure_node_and_descendants(node)
+
+# Recursively configure a node and all its children
+func _configure_node_and_descendants(node: Node) -> void:
 	if node is UniversalBody:
 		_configure_body(node)
 	else:
 		var marker = _find_collision_marker(node)
 		if marker:
 			_configure_body_from_marker(node, marker)
+	for child in node.get_children():
+		_configure_node_and_descendants(child)
 
 # Clear collision configuration when child is removed
 func _on_child_removed(node: Node) -> void:

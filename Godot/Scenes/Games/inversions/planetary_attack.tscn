@@ -1,0 +1,106 @@
+[gd_scene load_steps=17 format=3 uid="uid://wr5gt2xr22hy"]
+
+[ext_resource type="Script" uid="uid://bjdgpevhahi6d" path="res://Scripts/Core/universal_game_script.gd" id="1"]
+[ext_resource type="Script" uid="uid://bfkr4fdx316o5" path="res://Scripts/Core/collision_group.gd" id="2"]
+[ext_resource type="PackedScene" uid="uid://bq6cdrx340jp7" path="res://Scenes/Flow/interface.tscn" id="3"]
+[ext_resource type="PackedScene" path="res://Scenes/Flow/swarm_controller_player.tscn" id="4"]
+[ext_resource type="PackedScene" path="res://Scenes/Bodies/player/player_invader.tscn" id="5"]
+[ext_resource type="PackedScene" uid="uid://dhulxxtcsipl6" path="res://Scenes/Rules/group_monitor.tscn" id="7"]
+[ext_resource type="PackedScene" uid="uid://dga83l4d2rwyv" path="res://Scenes/Flow/sound_synth.tscn" id="9"]
+[ext_resource type="PackedScene" uid="uid://48wddch25o8l" path="res://Scenes/Bodies/nonplayer/nonplayer_paddle_cannon_protected.tscn" id="9_j6c8x"]
+[ext_resource type="PackedScene" path="res://Scenes/Components/checkerboard_line.tscn" id="10"]
+[ext_resource type="PackedScene" uid="uid://dwyyfxniivl1r" path="res://Scenes/Rules/wave_director.tscn" id="11"]
+[ext_resource type="PackedScene" uid="uid://vlbel76nqh5w" path="res://Scenes/Rules/wave_spawner.tscn" id="12"]
+
+[sub_resource type="Resource" id="Resource_players"]
+script = ExtResource("2")
+group_name = "players"
+metadata/_custom_type_script = "uid://bfkr4fdx316o5"
+
+[sub_resource type="Resource" id="Resource_enemies"]
+script = ExtResource("2")
+group_name = "enemies"
+metadata/_custom_type_script = "uid://bfkr4fdx316o5"
+
+[sub_resource type="Resource" id="Resource_players_bullets"]
+script = ExtResource("2")
+group_name = "players_bullets"
+targets = Array[String](["enemies", "bricks"])
+metadata/_custom_type_script = "uid://bfkr4fdx316o5"
+
+[sub_resource type="Resource" id="Resource_enemies_bullets"]
+script = ExtResource("2")
+group_name = "enemies_bullets"
+targets = Array[String](["players", "bricks"])
+metadata/_custom_type_script = "uid://bfkr4fdx316o5"
+
+[sub_resource type="Resource" id="Resource_bricks"]
+script = ExtResource("2")
+group_name = "bricks"
+targets = Array[String](["players"])
+metadata/_custom_type_script = "uid://bfkr4fdx316o5"
+
+[node name="PlanetaryAttack" type="Node2D"]
+script = ExtResource("1")
+game_title = "Planetary Attack"
+collision_groups = Array[ExtResource("2")]([SubResource("Resource_players"), SubResource("Resource_enemies"), SubResource("Resource_players_bullets"), SubResource("Resource_enemies_bullets"), SubResource("Resource_bricks")])
+
+[node name="Interface" parent="." instance=ExtResource("3")]
+display_mode = 1
+
+[node name="SwarmControllerPlayer" parent="." instance=ExtResource("4")]
+invader_scene = ExtResource("5")
+swarm_step_size = 8.0
+boundary_left = 8.0
+boundary_right = 632.0
+boundary_bottom = 296.0
+checkerboard_left = NodePath("../CheckerboardLeft")
+checkerboard_right = NodePath("../CheckerboardRight")
+
+[node name="GroupMonitor" parent="." instance=ExtResource("7")]
+target_group = "players"
+defeat_on_clear = true
+
+[node name="GroupMonitorEnemies" parent="." instance=ExtResource("7")]
+target_group = "enemies"
+
+[node name="CannonStartDirector" parent="." instance=ExtResource("11")]
+trigger_type = 3
+wave_delay = 0.0
+
+[node name="CannonRespawnDirector" parent="." instance=ExtResource("11")]
+trigger_value = "enemies"
+
+[node name="CannonSpawner" parent="." node_paths=PackedStringArray("director", "extra_directors") instance=ExtResource("12")]
+position = Vector2(320, 312)
+spawn_scene = ExtResource("9_j6c8x")
+spawn_pattern = 3
+spawn_count_equation = "1 + wave_number / 3"
+spawn_spacing = 8.0
+stagger_delay = 0.3
+director = NodePath("../CannonStartDirector")
+extra_directors = [NodePath("../CannonRespawnDirector")]
+spawn_groups = Array[String](["enemies"])
+spawn_collision_groups = Array[String](["enemies"])
+
+[node name="SoundSynth" parent="." node_paths=PackedStringArray("source_node") instance=ExtResource("9")]
+play_mode = 1
+note = 48
+duration = 0.2
+source_node = NodePath("../SwarmControllerPlayer")
+source_signal = "swarm_move"
+positional = false
+exclusive = true
+gameplay_only = true
+
+[node name="CheckerboardLeft" parent="." instance=ExtResource("10")]
+visible = false
+position = Vector2(4, 0)
+rows = 90
+color_a = Color(0, 1, 1, 1)
+
+[node name="CheckerboardRight" parent="." instance=ExtResource("10")]
+visible = false
+position = Vector2(636, 0)
+rows = 90
+color_a = Color(0, 1, 1, 1)

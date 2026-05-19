@@ -24,7 +24,7 @@ extends UniversalComponent
 @export var drop_direction: Vector2 = Vector2.DOWN
 
 # DAS (Delayed Auto Shift) — transforms held input into auto-repeated steps
-@export var das_delay: float = 0.0       # Seconds before auto-repeat starts (0 = no DAS)
+@export var das_delay: float = 0.2       # Seconds before auto-repeat starts (0 = no DAS)
 @export var das_repeat: float = 0.05     # Seconds between repeated steps during DAS
 
 # Input queue configuration

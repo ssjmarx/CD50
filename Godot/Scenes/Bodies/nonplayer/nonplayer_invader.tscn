@@ -80,6 +80,7 @@ step_size = 8.0
 block_on_collision = false
 prevent_movement_up = false
 enable_hard_drop = false
+das_delay = 0.0
 use_input_queue = false
 
 [node name="ScoreOnDeath" parent="." instance=ExtResource("8_3ud85")]

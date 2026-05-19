@@ -19,4 +19,5 @@ bus_group = "swarm_bus"
 block_on_collision = false
 prevent_movement_up = false
 enable_hard_drop = false
+das_delay = 0.0
 use_input_queue = false
