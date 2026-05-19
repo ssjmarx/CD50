@@ -1,4 +1,4 @@
-[gd_scene load_steps=22 format=3 uid="uid://boo0jvdtkr4xv"]
+[gd_scene load_steps=23 format=3 uid="uid://boo0jvdtkr4xv"]
 
 [ext_resource type="Script" uid="uid://dt4uemfscl0x6" path="res://Scripts/Hub/arcade_orchestrator.gd" id="1_script"]
 [ext_resource type="FontFile" uid="uid://imm2iompf7sv" path="res://Assets/Fonts/Kenney Pixel.ttf" id="2_font"]
@@ -15,6 +15,7 @@
 [ext_resource type="Script" uid="uid://cfd1lio8bfym2" path="res://Scripts/Flow/music_track.gd" id="11_mtrack"]
 [ext_resource type="Resource" path="res://Resources/Music/hunted_by_machines.tres" id="12_music1"]
 [ext_resource type="PackedScene" uid="uid://c4ew4hmxod4e7" path="res://Scenes/Flow/music_player.tscn" id="14_hby7g"]
+[ext_resource type="Resource" uid="uid://wtj1l710dfsc" path="res://Scenes/Hub/ArcadeSettings/space_rocks.tres" id="14_nj6eo"]
 [ext_resource type="Resource" uid="uid://cqyqy7p7arlrl" path="res://Scenes/Hub/ArcadeSettings/space_bugs.tres" id="15_sbugs"]
 [ext_resource type="Resource" uid="uid://bye8mypx151o7" path="res://Scenes/Hub/ArcadeSettings/bug_drop.tres" id="16_bdrop"]
 [ext_resource type="Resource" uid="uid://cmnbe2c55rhv5" path="res://Scenes/Hub/ArcadeSettings/planetary_attack.tres" id="17_pattack"]
@@ -33,7 +34,7 @@ font_size = 20
 
 [node name="ArcadeOrchestrator" type="Node2D"]
 script = ExtResource("1_script")
-playlist = Array[ExtResource("2_u78ae")]([ExtResource("4_n0muh"), ExtResource("5_42jm0"), ExtResource("6_3qvvg"), ExtResource("7_k3wos"), ExtResource("8_hby7g"), ExtResource("9_el0dv"), ExtResource("10_s8yab"), ExtResource("3_k3wos"), ExtResource("3_k3wos"), ExtResource("15_sbugs"), ExtResource("16_bdrop"), ExtResource("17_pattack")])
+playlist = Array[ExtResource("2_u78ae")]([ExtResource("4_n0muh"), ExtResource("5_42jm0"), ExtResource("6_3qvvg"), ExtResource("7_k3wos"), ExtResource("8_hby7g"), ExtResource("9_el0dv"), ExtResource("10_s8yab"), ExtResource("3_k3wos"), ExtResource("15_sbugs"), ExtResource("16_bdrop"), ExtResource("17_pattack"), ExtResource("14_nj6eo")])
 playlist_mode = 1
 music_volume_db = -12.0
 
