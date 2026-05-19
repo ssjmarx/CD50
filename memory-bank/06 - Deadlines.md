@@ -1,6 +1,6 @@
 # Deadlines: CD50 — Arcade Cabinet
 
-**Last Updated:** 2026-05-14  
+**Last Updated:** 2026-05-18  
 **Source:** Commercial shipping schedule — itch.io demo + Steam Coming Soon + Next Fest
 
 ---
@@ -39,27 +39,56 @@
 
 ---
 
-## Phase 2 — Mid–Late May (May 12–31)
+## Phase 2 — Mid–Late May (May 12–31) — SHIP THE DEMO
 
-### Finalize Arcade Mode Content
+**Game roster FINALIZED at 12 games.** No more games will be built for the demo. Three features remain, then ship.
+
+### Demo Game Roster — FINAL
+
+| Type | Count | Games |
+|------|-------|-------|
+| Remakes | 5 | Paddle Ball, Brick Breaker, Space Rocks, Bug Blaster, Block Drop |
+| Remixes | 5 | Dogfight, Meteor Rally, Rock Breaker, Bug Drop, Space Bugs |
+| Inversions | 2 | Planetary Attack!, Space Rocks Inverted |
+
+### Remaining Work — 3 Features
+
+**1. Polybius Character (Plan 15 Phase 2)**
+- [ ] Complete facial frame drawing (Step 2b — in progress)
+- [ ] Record voice lines + bitcrush → export as .ogg (Step 2c)
+- [ ] Implement typewriter text + voice playback sync (Step 2d)
+- [ ] Implement face animations — roll up/down, quick flash (Step 2e)
+- [ ] Add INTRO state to AO + face integration on run start (Step 2f)
+- [ ] Add quick-comment integration on RESULT state (Step 2g)
+- [ ] Add game-over integration on GAME_OVER state (Step 2h)
+- [ ] Add random in-game taunt during PLAYING state (Step 2i)
+- [ ] Playtest full arcade run with Polybius (Step 2j)
+
+**2. 5 Balatro-like Modifiers**
+- [ ] Double Barrel — gun_simple fires 2 bullets with slight spread
+- [ ] Overclocked CPU — all Leg components: speed × 1.25
+- [ ] Feature Creep — all spawner components: entity_count × 2
+- [ ] Crunch Time — lives set to 1, all score values × 3.0
+- [ ] Scope Creep — all CollisionShape radii × 1.20
+- [ ] ModifierManager node on AO, applies property overrides on `node_added`
+
+**3. Mini Progression System**
+- [ ] `lifetime_score` persists across runs (JSON via `user://`)
+- [ ] Score thresholds unlock modifier slots: 100 / 1,000 / 10,000 / 100,000 / 1,000,000
+- [ ] Top 10 high scores saved with initials + date
+
+### Then: Ship
+- [ ] Flip itch page from private to public
+- [ ] Add "Wishlist on Steam" button on the itch page
+- [ ] Add teaser line: "This is just the arcade. The full game adds…" with Steam link
+
+### Already Complete
 - [x] Export web build
 - [x] Upload to itch via Butler
 - [x] Test web build on T480 browser target (60fps confirmed)
-- [ ] Complete Polybius integration (Plan 15 Phase 2 — in progress)
-- [ ] Flip itch page from private to public
-
-### itch.io Page Polish
-- [ ] Add "Wishlist on Steam" button on the itch page:
-  - Big CTA above the download/play button
-  - Use Steam widget or link to Coming Soon page
-
-### Optional (This Phase)
-- [ ] Implement simple local high scores
-- [ ] Add teaser line: "This is just the arcade. The full game adds…" with Steam link
-
-### Dev Plans Targeting This Phase
-- **Plan 14** — Arcade Juice & Attract Mode (pared down to essentials)
-- **Plan 15** — Arcade Orchestrator Juice (win/loss effects, rapid scoring juice)
+- [x] Plan 14 — Custom CRT Shader
+- [x] Plan 16 Phase 1 — 4 new games built (Bug Drop, Space Bugs, Planetary Attack!, Space Rocks Inverted)
+- [x] Game roster locked at 12 games
 
 **Note:** Can safely ship the itch demo without online leaderboards and without Steamworks integration. Keep it simple.
 
@@ -78,7 +107,8 @@ Focus on game content, not platforms.
 - [ ] Polish the core loop so a typical run is 20–30 seconds and feels snappy
 
 ### Dev Plans Targeting This Phase
-- **Plan 16** — Cambrian Remix Explosion (push to 5 remakes + 15 originals/remixes)
+- **Plan 16 Phase 2** — Remaining remix slots (expand roster beyond 12 for full release)
+- **Plan 15 remaining** — Post-launch Polybius polish (in-game taunts, deeper commentary)
 
 ---
 

@@ -1,6 +1,6 @@
 # End State: CD50 — Arcade Cabinet
 
-**Last Updated:** 2026-05-08
+**Last Updated:** 2026-05-18
 
 ---
 
@@ -38,21 +38,32 @@ Every game runs inside a simulated CRT monitor:
 | 4 | **Bug Blaster** | Invader swarm marching downward, player shoots upward | ✅ Built |
 | 5 | **Block Drop** | Modern tetromino stacking with ghost piece, hold, T-spin, combo/B2B scoring | ✅ Built |
 
-### Remixes & Originals (3/10 built, 3 designed, 9 TBD)
+### Remixes (4/10 built, 6 TBD)
 
 | # | Game | Type | Status |
 |---|------|------|--------|
 | 1 | **Dogfight** | Original — survive gauntlet of enemies, death is guaranteed | ✅ Built |
 | 2 | **Meteor Rally** | Paddle Ball + Space Rocks — paddle keeps ball alive while dodging asteroids | ✅ Built |
 | 3 | **Rock Breaker** | Brick Breaker + Space Rocks — bricks in a bouncing asteroid field | ✅ Built |
-| 4 | **Bug Drop** | Block Drop + Bug Blaster — invaders march upward, tetrominos drop downward, any complete row clears | 📐 Designed |
-| 5 | **Space Bugs** | Bug Blaster + Space Rocks — invaders AND Sdrifting asteroids simultaneously | 📐 Designed |
-| 6 | **Planetary Attack!** | Bug Blaster reversed — player controls the invader swarm, assaulting AI defenders | 📐 Designed |
-| 7–15 | *(TBD)* | — | 🔲 Blank |
+| 4 | **Bug Drop** | Block Drop + Bug Blaster — invaders march upward, tetrominos drop downward, any complete row clears | ✅ Built |
+| 5 | **Space Bugs** | Bug Blaster + Space Rocks — invaders AND drifting asteroids simultaneously | ✅ Built |
+| 6–15 | *(TBD)* | — | 🔲 Blank |
 
-### Total: 8 playable, targeting 20 for demo (5/15 split), and 50 for launch (10/40 split)
+### Inversions (2/10 built, 8 TBD)
 
-Game target is aspirational, but entirely achievable thanks to component architecture.  While some will be "first class" remixes with custom mechanics and unique design goals, necessity demands that many will be "second tier" remixes that change only one or two variables from the base game.
+| # | Game | Type | Status |
+|---|------|------|--------|
+| 1 | **Planetary Attack!** | Bug Blaster reversed — player controls the invader swarm, assaulting AI defenders | ✅ Built |
+| 2 | **Space Rocks Inverted** | Space Rocks reversed — player controls asteroids, ships are the threat | ✅ Built |
+| 3–10 | *(TBD)* | — | 🔲 Blank |
+
+### Total: 12 playable — FINAL DEMO ROSTER
+
+The demo ships with exactly these 12 games. The 5/10/5 remake/remix/inversion target is adjusted to 5/5/2 for the demo. Full release will expand toward 50 games (10/30/10 split).
+
+**Remaining demo work:** Polybius character, 5 Balatro-like modifiers, mini progression system. Then ship.
+
+Game target is aspirational for full release, but entirely achievable thanks to component architecture. While some will be "first class" remixes with custom mechanics and unique design goals, necessity demands that many will be "second tier" remixes that change only one or two variables from the base game.
 
 ### Arcade Rules
 
@@ -158,7 +169,7 @@ Polybius is the digital jailer. He judges, mocks, and demands more. When a new h
 
 ## Architecture
 
-- **88 components** across 10 categories (Core, Bodies, Brains, Legs, Arms, Components, Rules, Flow, Effects, Hub)
+- **108 components** across 11 categories (Core, Bodies, Brains, Legs, Arms, Components, Rules, Flow, Effects, Hub, Debug)
 - **Zero game scripts** — every game is a `UniversalGameScript` root with attached components
 - **Signal flow:** Brains → Body → Legs/Arms → Components/Rules/Flow → Effects
 - **UGS as event bus:** Components communicate through game-level signals (`hold_requested`, `t_spin_detected`, `piece_settled`)
@@ -176,9 +187,12 @@ Polybius is the digital jailer. He judges, mocks, and demands more. When a new h
 
 | Milestone | Timeline | Status |
 |-----------|----------|--------|
-| Steamworks setup + itch.io pipeline | May 6–11 | In progress |
-| Finalize arcade content + export to itch | May 12–31 | Upcoming |
-| Vertical slice content (modifiers + scoring + new games) | June–July | Planned |
+| Steamworks setup + itch.io pipeline | May 6–11 | ✅ Complete |
+| Plan 16 Phase 1: 4 new games | May 14–18 | ✅ Complete |
+| Game roster finalized at 12 games | May 18 | ✅ Complete |
+| Polybius + 5 modifiers + mini progression | May 18–31 | 🔲 In progress |
+| Ship itch.io demo | May 31 | 🔲 Target |
+| Vertical slice content (expand modifiers + more games) | June–July | Planned |
 | Steamworks integration (stats, leaderboards, achievements) | August 1–17 | Planned |
 | Next Fest registration + store page | August 18–31 | Planned |
 | Steam demo build + press preview | September | Planned |

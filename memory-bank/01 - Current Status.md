@@ -1,11 +1,11 @@
 # Current Status: CD50 — Arcade Cabinet
 
-**Last Updated:** 2026-05-14  
+**Last Updated:** 2026-05-18  
 **Engine:** Godot 4.5 (GDScript)  
 **Architecture:** Entity-Component (composition over inheritance)  
-**Playable Games:** Paddle Ball, Brick Breaker, Space Rocks, Meteor Rally, Dogfight, Bug Blaster, Block Drop (Modern), Rock Breaker — ALL componentized, zero game scripts
-**In Progress:** Plan 15 Phase 2 — Polybius Character (drawing facial frames); itch.io demo page private, build uploaded and tested
-**Recent Completed:** All 9 web perf optimizations (60fps on T480 browser target), SoundBank autoload, flag palette web fix, music system, Steamworks submitted (awaiting identity verification), itch.io pipeline live (deploy.sh → Butler → private page)
+**Playable Games:** Paddle Ball, Brick Breaker, Space Rocks, Meteor Rally, Dogfight, Bug Blaster, Block Drop (Modern), Rock Breaker, Bug Drop, Space Bugs, Planetary Attack!, Space Rocks Inverted — ALL componentized, zero game scripts
+**In Progress:** Plan 15 Phase 2 — Polybius Character; Plan 16 — Cambrian Remix Explosion (4 new games built)
+**Recent Completed:** Bug Drop, Space Bugs, Planetary Attack!, Space Rocks Inverted built (Plan 16), Karl Casey music tracks added, new Brains (clear_shot_ai, cover_ai, swarm_controller_player), new Components (hit_effect, vector_thruster_exhaust), new Rules (group_kill_on_signal), Polybius nose resource, expanded body scene variants
 
 ---
 
@@ -110,16 +110,16 @@ Scenes/Bodies/nonplayer/
 |----------|-------|------------|
 | Core | 11 | universal_body, universal_game_script, universal_component, universal_component_2d, collision_matrix, collision_group, group_cache, sound_bank, property_override, common_enums, flag_resource |
 | Bodies | 12 | ball, paddle, asteroid, brick, barrier, bullet_simple, bullet_wrapping, tetromino, triangle_ship, ufo, invader, paddle_cannon |
-| Brains | 8 | player_control, interceptor_ai, aim_ai, shoot_ai, shoot_ai_swarm, patrol_ai, falling_ai, swarm_ai |
-| Legs | 14 | direct_movement, direct_acceleration, engine_simple, engine_complex, friction_linear, friction_static, rotation_direct, rotation_target, grid_movement, grid_rotation, grid_gravity, grid_rotation_advanced, tetromino_formation, warp_space_rocks |
+| Brains | 11 | player_control, interceptor_ai, aim_ai, shoot_ai, shoot_ai_swarm, patrol_ai, falling_ai, swarm_ai, clear_shot_ai, cover_ai, swarm_controller_player |
+| Legs | 13 | direct_movement, direct_acceleration, engine_simple, engine_complex, friction_linear, friction_static, rotation_direct, rotation_target, grid_movement, grid_rotation, grid_gravity, grid_rotation_advanced, warp_asteroids |
 | Arms | 3 | gun_simple, damage_on_hit, damage_on_joust |
-| Components | 20 | angled_deflector, bounce_on_hit, checkerboard_line, collision_marker, death_effect, die_on_hit, die_on_timer, flag_palette (web-safe: explicit `flag_resources` array, no DirAccess scanning), ghost_piece, health, hold_relay, lock_detector, paddle_ball_acceleration, ring_spawner, score_on_death, score_on_hit, screen_cleanup, screen_wrap, split_on_death, t_spin_detector, vector_engine_exhaust |
-| Rules | 9 | goal, points_monitor, variable_tuner, variable_tuner_global, group_monitor, group_count_multiplier, lives_counter, timer, line_clear_monitor |
-| Flow | 13 | interface, sound_on_hit, sound_synth, music_ramping, sfx_ramping, music_player, music_track, beep, grid_basic, swarm_controller, tetromino_spawner, wave_director*, wave_spawner* |
+| Components | 22 | angled_deflector, bounce_on_hit, checkerboard_line, collision_marker, death_effect, die_on_hit, die_on_timer, flag_palette, ghost_piece, health, hit_effect, hold_relay, lock_detector, pong_acceleration, ring_spawner, score_on_death, score_on_hit, screen_cleanup, screen_wrap, split_on_death, t_spin_detector, vector_engine_exhaust, vector_thruster_exhaust |
+| Rules | 12 | goal, points_monitor, variable_tuner, variable_tuner_global, group_monitor, group_count_multiplier, group_kill_on_signal, lives_counter, timer, line_clear_monitor, wave_director*, wave_spawner* |
+| Flow | 10 | interface, sound_on_hit, sound_synth, music_ramping, sfx_ramping, music_player, music_track, swarm_controller, tetromino_spawner, crt_controller |
 | Effects | 3 | death_particles, death_broken_triangle_ship, death_brick_explode |
-| Hub | 2 | arcade_orchestrator, arcade_game_entry |
-| *Interface takeover + scrolling transitions are AO-only features — no changes to interface.gd or game scenes* |
-| **Total** | **95** | |
+| Hub | 6 | arcade_orchestrator, arcade_game_entry, polybius_face, polybius_eyes, polybius_mouth, polybius_nose |
+| Debug | 1 | crt_tuner |
+| **Total** | **108** | |
 
 *\* wave_director and wave_spawner scripts live in `Scripts/Rules/` but are categorized as Flow by function.*
 
@@ -130,11 +130,11 @@ Scenes/Bodies/nonplayer/
 ```
 INPUT (keyboard/mouse/gamepad)
   ↓
-BRAINS (player_control, interceptor_ai, aim_ai, patrol_ai, shoot_ai, shoot_ai_swarm, swarm_ai, falling_ai)
+BRAINS (player_control, interceptor_ai, aim_ai, patrol_ai, shoot_ai, shoot_ai_swarm, swarm_ai, falling_ai, clear_shot_ai, cover_ai, swarm_controller_player)
   ↓ emit on UniversalBody input signals
 UNIVERSAL BODY (routes input → output with axis locks)
   ↓ emit processed output signals
-LEGS (direct_movement, engine_simple, grid_movement, grid_rotation, grid_gravity, grid_rotation_advanced, etc.)
+LEGS (direct_movement, engine_simple, grid_movement, grid_rotation, grid_gravity, grid_rotation_advanced, warp_asteroids, etc.)
 ARMS (gun_simple, damage_on_hit, damage_on_joust)
   ↓
 COMPONENTS (angled_deflector, ghost_piece, hold_relay, lock_detector, t_spin_detector, etc.)
@@ -153,7 +153,7 @@ EFFECTS (death_particles, death_broken_triangle_ship)
 ## Assets
 
 - **Audio:** Procedural synthesis via SoundSynth component (all game audio generated at runtime) + pre-recorded OGG music tracks via MusicPlayer component with floating credit overlays
-- **Music:** 2 licensed OGG tracks (`el_manisero.ogg`, `son_de_la_loma.ogg`) with `MusicTrack` attribution resources. MusicPlayer shuffles playlist, fades in/out, shows credits, supports speed ramping (wired to Block Drop for Tetris-style tempo increase).
+- **Music:** 4 licensed OGG tracks — 2 public domain (`el_manisero.ogg`, `son_de_la_loma.ogg`) rendered with 8-bit NES soundfont + 2 by Karl Casey / White Bat Audio (`Hunted by Machines.ogg`, `The Devil's Eyes.ogg`) licensed CC-BY 4.0. All with `MusicTrack` attribution resources. MusicPlayer shuffles playlist, fades in/out, shows credits, supports speed ramping.
 - **Fonts:** Kenney retro fonts (Pixel, High, Mini, Rocket, Future, Blocks, Square — regular and narrow variants)
 - **CRT System:** Custom lightweight CRT shader (`Shaders/crt_light.gdshader`) + persistence shader (`Shaders/persistence.gdshader`) + `crt_controller.gd` (self-building Node2D with SubViewport frame accumulation) + PNG overlays (scanlines, phosphor grid, noise). Vector monitor mode uses SubViewport persistence with exponential decay for phosphor trails. Per-game display mode switching via `vector_monitor` export on UGS.
 - **Effects:** Self-destructing effect scenes (death_particles, death_broken_triangle_ship)

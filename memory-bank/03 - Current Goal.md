@@ -1,26 +1,59 @@
 # Current Goal
 
-**Last Updated:** 2026-05-14  
-**Status:** Active — Plan 15 Phase 2 (Polybius Character) + preparing itch.io demo for public launch
+**Last Updated:** 2026-05-18  
+**Status:** Active — Final push to ship the itch.io demo by May 31
 
 ---
 
-## Active Priority: Ship the Demo (May 2026)
+## Active Priority: Ship the Demo by May 31
 
-The project has pivoted from building new games to shipping what we have. The immediate goal is a public itch.io demo and a Steam "Coming Soon" page by end of May 2026.
+The game roster is **finalized at 12 games** — no more games will be built for the demo. The remaining work is three features, then flip the itch.io page to public.
 
 **Full deadline schedule:** `memory-bank/06 - Deadlines.md`
 
-### Completed This Phase (May 6–14)
+### Demo Game Roster — FINAL (12 games)
+
+| Type | Games |
+|------|-------|
+| Remakes (5) | Paddle Ball, Brick Breaker, Space Rocks, Bug Blaster, Block Drop |
+| Remixes (5) | Dogfight, Meteor Rally, Rock Breaker, Bug Drop, Space Bugs |
+| Inversions (2) | Planetary Attack!, Space Rocks Inverted |
+
+### Completed This Phase (May 6–18)
 - ✅ Steamworks: Fee paid, App ID created, tax/bank info submitted — awaiting identity verification
 - ✅ itch.io: Game page created (private), build uploaded and tested at 60fps on T480 browser target
 - ✅ Butler pipeline: `deploy.sh` fully operational (export → zip → push)
 - ✅ Web performance: All 9 optimizations implemented and verified
+- ✅ Plan 16 Phase 1: 4 new games built (Bug Drop, Space Bugs, Planetary Attack!, Space Rocks Inverted)
+- ✅ Karl Casey music tracks added (2 new licensed OGG + MusicTrack resources)
+- ✅ New components: clear_shot_ai, cover_ai, swarm_controller_player, hit_effect, vector_thruster_exhaust, group_kill_on_signal, polybius_nose
+- ✅ Game roster finalized — 12 games locked for demo
 
-### Current Focus (May 14–31)
-- **Plan 15 Phase 2:** Polybius Character — currently drawing facial frames
-- **Public itch launch:** Flip page to public once Polybius is integrated
-- **Steam Coming Soon:** Live as soon as identity verification completes
+### Remaining Work (May 18–31) — 3 features, then ship
+
+**1. Polybius Character (Plan 15 Phase 2)**
+- Currently drawing facial frames (Step 2b)
+- Remaining: voice lines, typewriter text, animations, AO integration (steps 2c–2j)
+- Scope: run intros, taunts between games, game-over commentary
+
+**2. 5 Balatro-like Modifiers**
+- Double Barrel — gun_simple fires 2 bullets with slight spread
+- Overclocked CPU — all Leg components: speed × 1.25
+- Feature Creep — all spawner components: entity_count × 2
+- Crunch Time — lives set to 1, all score values × 3.0
+- Scope Creep — all CollisionShape radii × 1.20
+- Technical approach: ModifierManager node on AO, applies property overrides on `node_added`
+- 5 modifiers freely selectable for demo
+
+**3. Mini Progression System**
+- `lifetime_score` persists across runs (JSON via `user://`)
+- Score thresholds unlock modifier slots: 100 / 1,000 / 10,000 / 100,000 / 1,000,000
+- Top 10 high scores saved with initials + date
+- Lite version for demo — full progression system deferred to launch
+
+**Then: Ship**
+- Flip itch.io page from private to public
+- Steam Coming Soon page live as soon as identity verification completes
 
 ---
 
@@ -41,14 +74,15 @@ The project has pivoted from building new games to shipping what we have. The im
 - Phase 1.8: All 9 web perf optimizations — 60fps on T480 browser target. SoundBank autoload, flag palette web fix.
 
 **Phase 2 IN PROGRESS — Polybius Character:**
-- Step 2a ✅: `polybius_face.gd`, `polybius_eyes.gd`, `polybius_mouth.gd`, `polybius_face.tscn` created
+- Step 2a ✅: `polybius_face.gd`, `polybius_eyes.gd`, `polybius_mouth.gd`, `polybius_nose.gd`, `polybius_face.tscn` created
 - **Step 2b (ACTIVE):** Drawing facial frames — filling in point data for expression/mouth resources
 - Remaining: voice lines, typewriter text, animations, AO integration (steps 2c–2j)
 
 ### Plan 16 — Cambrian Remix Explosion
-**Status:** Not started  
-**Timeline:** June–July 2026 (shifted from original mid-May target)  
-**Scope:** 3 new games (Bug Drop, Space Bugs, Planetary Attack!), 5 Balatro-like modifiers, semi-random playlist, local high score persistence
+**Status:** Phase 1 COMPLETE, Phase 2 (modifiers + progression) pulled into May ship window  
+**Phase 1 Completed:** 4 new games built (Bug Drop, Space Bugs, Planetary Attack!, Space Rocks Inverted) + 7 new scripts + 12 new body scene variants + 2 new music tracks + 4 new arcade settings
+**Phase 2 IN PROGRESS:** 5 Balatro-like modifiers + mini progression system — targeting May 31
+**Game roster locked:** No more games for demo. Expansion deferred to post-launch.
 
 ### Plan 17 — Arcade Juice Post-Launch
 **Status:** Not started  

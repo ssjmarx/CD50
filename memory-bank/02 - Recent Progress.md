@@ -1,6 +1,67 @@
 # Recent Progress
 
-**Last Updated:** 2026-05-14
+**Last Updated:** 2026-05-18
+
+---
+
+## Plan 16 — Cambrian Remix Explosion (Phase 1 COMPLETE)
+
+Four new remix/inversion games assembled from existing components. All pure scene assemblies — no new game scripts.
+
+### New Games Built
+
+| Game | Type | Scene | Description |
+|------|------|-------|-------------|
+| Bug Drop | Remix | `Scenes/Games/remixes/bug_drop.tscn` | Block Drop + Bug Blaster hybrid. Tetrominos fall while invaders shoot up at them. |
+| Space Bugs | Remix | `Scenes/Games/remixes/space_bugs.tscn` | Bug Blaster + Space Rocks hybrid. Invaders in formation, asteroids as additional hazards. |
+| Planetary Attack! | Inversion | `Scenes/Games/inversions/planetary_attack.tscn` | Space Invaders inverted — the player controls the invader swarm, paddle cannons defend below. |
+| Space Rocks Inverted | Inversion | `Scenes/Games/inversions/space_rocks_inverted.tscn` | Space Rocks inverted — player controls the asteroids, ships are the threat. |
+
+### New Arcade Settings
+
+4 new `.tres` entries in `Scenes/Hub/ArcadeSettings/` (total now 12):
+- `bug_drop.tres`, `space_bugs.tres`, `planetary_attack.tres`, `space_rocks_inverted.tres`
+
+### New Scripts Created
+
+| Script | Category | Purpose |
+|--------|----------|---------|
+| `clear_shot_ai.gd` | Brains | Clear shot AI for paddle cannons — only fires when line of sight to target is clear |
+| `cover_ai.gd` | Brains | Cover AI for paddle cannons — seeks bunker cover when under threat |
+| `swarm_controller_player.gd` | Brains | Player-driven swarm controller — DAS input for invader movement + broadside firing |
+| `hit_effect.gd` | Components | Spawns effect scenes at parent position when parent is removed from tree |
+| `vector_thruster_exhaust.gd` | Components | Four diagonal maneuvering thruster flames with noise audio |
+| `group_kill_on_signal.gd` | Rules | Kills all members of a target group on game signal, supports health-based sequential kills |
+| `polybius_nose.gd` | Hub | Custom resource for Polybius nose shape frame data |
+
+### New Body Scene Variants
+
+| Scene | Purpose |
+|-------|---------|
+| `ball_arcade.tscn` | Arcade ball variant |
+| `ball_combo_arcade.tscn` | Arcade combo ball variant |
+| `brick_barrier.tscn` | Barrier brick variant |
+| `mystery_ship_colliding.tscn` | Mystery ship with collision |
+| `mystery_ship_patrolling.tscn` | Mystery ship with patrol AI |
+| `tetromino_rigged_reversed.tscn` | Reverse-rigged tetromino |
+| `tetromino_single_swarm.tscn` | Swarm tetromino single |
+| `player_invader.tscn` | Player-controlled invader body |
+| `ufo_player.tscn` | Player-controlled UFO body |
+| `nonplayer_invader_independant.tscn` | Independent invader (non-formation) |
+| `nonplayer_paddle_cannon.tscn` | AI paddle cannon |
+| `nonplayer_paddle_cannon_protected.tscn` | AI paddle cannon with barrier protection |
+
+### New Music Added
+
+| Track | Artist | License |
+|-------|--------|---------|
+| `Karl Casey - Hunted by Machines.ogg` | Karl Casey / White Bat Audio | CC-BY 4.0 |
+| `Karl Casey - The Devil's Eyes.ogg` | Karl Casey / White Bat Audio | CC-BY 4.0 |
+
+With corresponding `MusicTrack` resources: `hunted_by_machines.tres`, `the_devils_eyes.tres`
+
+### Games Now: 12
+Paddle Ball, Brick Breaker, Space Rocks, Meteor Rally, Dogfight, Bug Blaster, Block Drop, Rock Breaker, Bug Drop, Space Bugs, Planetary Attack!, Space Rocks Inverted
 
 ---
 
@@ -79,8 +140,10 @@ Targeted visual/mechanical tweaks to make each remake look distinct from its ins
 #### Music System
 - **New `music_player.gd`:** Flow component that shuffles and plays through an array of `MusicTrack` resources with fade in/out and a floating credit overlay. Only plays in STANDALONE mode. Supports optional speed ramping (listens for a signal and increases `pitch_scale` per fire, capped at 3.0).
 - **New `music_track.gd`:** `MusicTrack` custom resource — pairs an OGG stream with `song_title`, `song_credit`, and `render_credit` attribution fields.
-- **2 OGG tracks:** `el_manisero.ogg` (Moisés Simons, 1928 — Public Domain) and `son_de_la_loma.ogg` — both rendered with 8-bit NES soundfont (CC-BY 3.0)
+- **2 OGG tracks (Phase 1.7):** `el_manisero.ogg` (Moisés Simons, 1928 — Public Domain) and `son_de_la_loma.ogg` — both rendered with 8-bit NES soundfont (CC-BY 3.0)
 - **2 MusicTrack resources:** `Resources/Music/el_manisero.tres`, `Resources/Music/son_de_la_loma.tres`
+- **2 OGG tracks (Plan 16):** `Karl Casey - Hunted by Machines.ogg` and `Karl Casey - The Devil's Eyes.ogg` by Karl Casey / White Bat Audio (CC-BY 4.0)
+- **2 MusicTrack resources:** `Resources/Music/hunted_by_machines.tres`, `Resources/Music/the_devils_eyes.tres`
 - **Block Drop integration:** MusicPlayer wired to Block Drop with speed ramping — `speed_ramp_source` connected to `LineClearMonitor`, `speed_per_level = 0.1`. Music speeds up with each line clear (Tetris-style).
 - **Credit overlay:** Floating text with song title + credit, fade in/hold/fade out animation. Black outline (2px) on labels for readability without blocking play area.
 
@@ -186,6 +249,7 @@ Vector CRT face that introduces runs, taunts between games, and delivers game-ov
 |------|---------|
 | `Scripts/Hub/polybius_eyes.gd` | Custom Resource — eye/expression frame data (`PolybiusEyes`) |
 | `Scripts/Hub/polybius_mouth.gd` | Custom Resource — mouth frame data (`PolybiusMouth`) |
+| `Scripts/Hub/polybius_nose.gd` | Custom Resource — nose frame data (`PolybiusNose`) |
 | `Scripts/Hub/polybius_face.gd` | `@tool` Control — vector face drawing, two-channel frame system |
 | `Scenes/Hub/polybius_face.tscn` | Face scene (Control + script) |
 
@@ -304,8 +368,8 @@ Rebuilt Rock Breaker (Brick Breaker + Space Rocks hybrid) as a new remix game. F
 |--------|---------|
 | `universal_body.gd` | `move_parent_physics()`: added separation nudge (`position += normal * 0.5`) and remainder re-application (`collision.get_remainder().bounce(normal)`) |
 
-### Games Now: 8
-Paddle Ball, Brick Breaker, Space Rocks, Meteor Rally, Dogfight, Bug Blaster, Block Drop, Rock Breaker
+### Games Now: 12
+Paddle Ball, Brick Breaker, Space Rocks, Meteor Rally, Dogfight, Bug Blaster, Block Drop, Rock Breaker, Bug Drop, Space Bugs, Planetary Attack!, Space Rocks Inverted
 
 ---
 
@@ -384,7 +448,7 @@ Full itch.io arcade cabinet architecture. All phases complete — Interface Take
 
 - **Paddle Ballout** removed from codebase — didn't turn out interesting enough
 - **Rock Breaker** was previously removed but has been rebuilt (see Rock Breaker section above)
-- Active game count: **8** (Paddle Ball, Brick Breaker, Space Rocks, Meteor Rally, Dogfight, Bug Blaster, Block Drop, Rock Breaker)
+- Active game count: **12** (Paddle Ball, Brick Breaker, Space Rocks, Meteor Rally, Dogfight, Bug Blaster, Block Drop, Rock Breaker, Bug Drop, Space Bugs, Planetary Attack!, Space Rocks Inverted)
 
 ### New Scripts Created
 

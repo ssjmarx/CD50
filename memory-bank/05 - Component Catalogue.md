@@ -1,7 +1,7 @@
 # Component Catalogue
 
-**Last Updated:** 2026-05-14  
-**Total Scripts:** 98 across 10 categories  
+**Last Updated:** 2026-05-18  
+**Total Scripts:** 108 across 11 categories  
 **Total Scene Variants:** 2 (no unique script)  
 **Total Shaders:** 2 (crt_light.gdshader, persistence.gdshader)
 
@@ -48,7 +48,7 @@ Body scripts contain **drawing code only** — visual shape, colors, and `_draw(
 
 ---
 
-## Brains (8)
+## Brains (11)
 
 Brains read input (player or AI) and emit signals on the parent body.
 
@@ -62,6 +62,9 @@ Brains read input (player or AI) and emit signals on the parent body.
 | `patrol_ai.gd` | `extends UniversalComponent` | AI brain that follows a path of baked waypoints. Supports looping, retracing, and random path generation. |
 | `falling_ai.gd` | `extends UniversalComponent` | AI brain that emits a move signal at regular intervals, used for Block Drop-style falling movement. |
 | `swarm_ai.gd` | `extends UniversalComponent` | Swarm AI brain. Connects to a swarm bus node and forwards movement commands to the parent body. |
+| `clear_shot_ai.gd` | `extends UniversalComponent` | Clear shot AI brain for paddle cannons. Only fires when there is a clear line of sight to the closest target — no intervening obstacles. |
+| `cover_ai.gd` | `extends UniversalComponent` | Cover AI brain for paddle cannons. Seeks cover under bunkers when bullets are incoming, otherwise tracks the closest invader horizontally. |
+| `swarm_controller_player.gd` | `extends UniversalComponent2D` | Player-driven variant of swarm_controller. Reads left/right/shoot input to drive invader swarm movement and broadside firing. Manages wave progression with scaling paddle cannon count. |
 
 ---
 
@@ -83,7 +86,7 @@ Legs listen to processed output signals and handle movement/rotation.
 | `grid_rotation.gd` | `extends UniversalComponent` | Grid rotation leg. Snaps facing direction to discrete rotation steps based on movement input or action button. |
 | `grid_gravity.gd` | `extends UniversalComponent` | Grid gravity leg. Timer-based downward movement as a direct force. Bypasses Brain→Body→Leg signal chain. |
 | `grid_rotation_advanced.gd` | `extends UniversalComponent` | Advanced grid rotation leg. Rotates multi-cell body offsets with wall kick support. Uses physics queries for validation. |
-| `warp_space_rocks.gd` | `extends UniversalComponent` | Emergency teleport with temporary intangibility for Space Rocks-style games. Warps to random position, hides briefly, then reappears. |
+| `warp_asteroids.gd` | `extends UniversalComponent` | Emergency teleport with temporary intangibility for Space Rocks-style games. Warps to random position, hides briefly, then reappears. |
 
 ---
 
@@ -105,7 +108,7 @@ Arms handle weapons and combat interactions.
 
 ---
 
-## Components (20)
+## Components (22)
 
 General-purpose gameplay modifier components.
 
@@ -123,7 +126,7 @@ General-purpose gameplay modifier components.
 | `health.gd` | `extends UniversalComponent` | Health component. Tracks HP, emits signals on change, and handles death by disabling colliders and freeing the parent. |
 | `hold_relay.gd` | `extends UniversalComponent` | Hold relay component. Forwards the body's action signal to the game's hold_requested signal. Pure signal relay — no game logic. |
 | `lock_detector.gd` | `extends UniversalComponent` | Lock detector component. Detects when a multi-cell body can't fall further, manages lock delay, and emits settlement signals. |
-| `paddle_ball_acceleration.gd` | `extends UniversalComponent` | Paddle Ball-style acceleration. Ramps velocity through discrete levels on paddle collision. |
+| `pong_acceleration.gd` | `extends UniversalComponent` | Paddle Ball-style acceleration. Ramps velocity through discrete levels on paddle collision. |
 | `ring_spawner.gd` | `extends UniversalComponent` | Spawns bodies in a ring pattern around the parent. Supports optional orbiting movement. |
 | `score_on_death.gd` | `extends UniversalComponent` | Awards score to the game when the parent's health reaches zero. |
 | `score_on_hit.gd` | `extends UniversalComponent` | Awards score to the game when the parent collides with a member of the target group. |
@@ -132,10 +135,12 @@ General-purpose gameplay modifier components.
 | `split_on_death.gd` | `extends UniversalComponent` | Spawns smaller fragments when parent dies. Reduces size enum if present (e.g., LARGE → MEDIUM). |
 | `t_spin_detector.gd` | `extends UniversalComponent` | T-spin detector component. Uses the SRS 3-corner rule to detect T-spins when a T-shaped piece locks after a rotation. |
 | `vector_engine_exhaust.gd` | `extends UniversalComponent2D` | Visual engine exhaust flame drawn as a flickering triangle behind the parent body. Shows/hides on thrust signals. |
+| `hit_effect.gd` | `extends UniversalComponent2D` | Spawns visual effect scenes at the parent's position when the parent is removed from the tree. Works with any death path (die_on_hit, die_on_timer, screen_cleanup, etc.). |
+| `vector_thruster_exhaust.gd` | `extends UniversalComponent2D` | Four small maneuvering thruster flames in an X pattern. Activates flames opposite to the parent's movement direction via the "move" signal. Includes subtle noise audio. |
 
 ---
 
-## Rules (11)
+## Rules (12)
 
 Game logic and condition components.
 
@@ -152,6 +157,7 @@ Game logic and condition components.
 | `line_clear_monitor.gd` | `extends UniversalComponent2D` | Line clear monitor. Physics-based line detection using world-space queries. Zero grid data structure dependency. |
 | `wave_director.gd` | `extends UniversalComponent2D` | Wave director. Connects to a game trigger signal and emits a wave-spawning signal after a configurable delay, with optional wave count limits. |
 | `wave_spawner.gd` | `extends UniversalComponent2D` | Wave spawner. Instantiates entities in patterns (screen edges, center, grid, position) with optional stagger timing, safe zones, and component/property attachment. |
+| `group_kill_on_signal.gd` | `extends UniversalComponent` | Kills all members of a target group when a game signal is received. Optionally filters by signal group name. Supports health-based sequential kills with death effects. |
 
 ---
 
@@ -174,7 +180,7 @@ Wave management, spawning, UI, audio, music, and CRT post-processing components.
 
 ---
 
-## Hub (5 scripts + 1 scene variant)
+## Hub (6 scripts + 1 scene variant)
 
 Meta-level scripts for the arcade orchestrator system and Polybius character.
 
@@ -185,6 +191,7 @@ Meta-level scripts for the arcade orchestrator system and Polybius character.
 | `polybius_face.gd` | `@tool extends Control` | Vector CRT face drawing with two-channel frame system. Eyes and mouth are independent — any expression at any mouth position for lip sync. Reads `PolybiusEyes` + `PolybiusMouth` resources and draws polylines via `_draw()`. |
 | `polybius_eyes.gd` | `PolybiusEyes extends Resource` | Custom resource holding eye/expression frame data: outline, eyes, pupils, eyebrows — all `PackedVector2Array`. One resource per expression state (neutral, displeased, etc.). Editable in Godot inspector. |
 | `polybius_mouth.gd` | `PolybiusMouth extends Resource` | Custom resource holding mouth shape frame data as `PackedVector2Array`. One resource per mouth position for lip sync. Editable in Godot inspector. |
+| `polybius_nose.gd` | `PolybiusNose extends Resource` | Custom resource holding nose shape frame data (left/right nostril) as `PackedVector2Array`. Editable in Godot inspector. |
 
 **Scene variants:**
 
