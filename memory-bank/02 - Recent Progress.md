@@ -1,6 +1,50 @@
 # Recent Progress
 
-**Last Updated:** 2026-05-18
+**Last Updated:** 2026-05-19
+
+---
+
+## Plan 16 Phase 2 — Arcade Modifiers (COMPLETE)
+
+Implemented 5 Balatro-like modifiers that apply across all arcade games. All toggled via editor exports on the ArcadeOrchestrator for now; player-selectable UI deferred to next step.
+
+### Modifier System Architecture
+
+- **New script:** `Scripts/Hub/modifier_manager.gd` — Node child of ArcadeOrchestrator. Receives orchestrator reference via `set_orchestrator()`.
+- **Two-phase application:** Setup-time modifiers run once after game instance is added to tree (`apply_setup_modifiers`). Runtime modifiers listen to `get_tree().node_added` during gameplay (`start_listening`/`stop_listening`).
+- **ArcadeOrchestrator changes:** Added `@export_group("Modifiers")` with 5 bool toggles. Creates ModifierManager in `_ready()`. Crunch Time affects initial lives and score multiplier. Manager lifecycle tied to game transitions.
+
+### The 5 Modifiers
+
+| Modifier | Implementation | Phase |
+|----------|---------------|-------|
+| **Shotgun Mode** — 3 bullets instead of 1 | Detects bullet CharacterBody2D nodes entering tree, clones with 15° spread and perpendicular offset | Runtime |
+| **Overclocked CPU** — 25% faster | Speeds up Leg components (speed/accel/top_speed × 1.25, hop_delay/fall_interval ÷ 1.25) and SwarmController (base_tick_interval ÷ 1.25). Timing-only for grid games to preserve alignment. | Setup + Runtime |
+| **Feature Creep** — Double enemies | Doubles wave_spawner grid_columns or spawn_count_equation, doubles ring_spawner spawn_count. Bug Drop special case: also doubles line_clear_monitor columns + repositions origin. | Setup |
+| **Crunch Time** — 1 life, ×3 score | Starting lives = 1, all score values multiplied by 3 via `get_score_multiplier()` in AO scoring callbacks | Setup (lives) + Runtime (multiplier) |
+| **Scope Creep** — Double player health | Doubles max_health on Health components, but only for player-controlled entities (checks sibling for player_control script) | Setup + Runtime |
+
+### Bug Fixes During Implementation
+
+| Issue | Fix |
+|-------|-----|
+| Overclocked CPU broke Bug Drop grid alignment | Removed `step_size` and `swarm_step_size` overclocking — only timing properties overclocked for grid-based games |
+| Feature Creep broke Bug Drop line detection | Added `_fix_bug_drop_line_clear()` — doubles line_clear_monitor columns + shifts origin left for Bug Drop only |
+| Scope Creep was anti-fun (doubled enemy health) | Added `_has_player_control()` check — only boosts health on player-controlled entities |
+| Shotgun spread too wide (45°) | Reduced to 15° (`PI / 12.0`) |
+
+### Files Created
+
+| File | Purpose |
+|------|---------|
+| `Scripts/Hub/modifier_manager.gd` | Modifier manager — all 5 modifiers, setup + runtime application |
+
+### Files Modified
+
+| File | Changes |
+|------|---------|
+| `Scripts/Hub/arcade_orchestrator.gd` | Added 5 modifier export toggles, ModifierManager creation in `_ready()`, Crunch Time lives/multiplier integration |
+| `README` | Updated modifiers section with actual names/descriptions, updated game list (removed COMING SOON, added Space Rocks Inverted) |
 
 ---
 

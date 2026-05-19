@@ -1,11 +1,11 @@
 # Current Status: CD50 — Arcade Cabinet
 
-**Last Updated:** 2026-05-18  
+**Last Updated:** 2026-05-19  
 **Engine:** Godot 4.5 (GDScript)  
 **Architecture:** Entity-Component (composition over inheritance)  
 **Playable Games:** Paddle Ball, Brick Breaker, Space Rocks, Meteor Rally, Dogfight, Bug Blaster, Block Drop (Modern), Rock Breaker, Bug Drop, Space Bugs, Planetary Attack!, Space Rocks Inverted — ALL componentized, zero game scripts
-**In Progress:** Plan 15 Phase 2 — Polybius Character; Plan 16 — Cambrian Remix Explosion (4 new games built)
-**Recent Completed:** Bug Drop, Space Bugs, Planetary Attack!, Space Rocks Inverted built (Plan 16), Karl Casey music tracks added, new Brains (clear_shot_ai, cover_ai, swarm_controller_player), new Components (hit_effect, vector_thruster_exhaust), new Rules (group_kill_on_signal), Polybius nose resource, expanded body scene variants
+**In Progress:** Plan 15 Phase 2 — Polybius Character; Plan 16 Phase 2 — Mini Progression System
+**Recent Completed:** 5 Balatro-like modifiers implemented (Shotgun Mode, Overclocked CPU, Feature Creep, Crunch Time, Scope Creep) via modifier_manager.gd + arcade_orchestrator integration
 
 ---
 
@@ -117,9 +117,9 @@ Scenes/Bodies/nonplayer/
 | Rules | 12 | goal, points_monitor, variable_tuner, variable_tuner_global, group_monitor, group_count_multiplier, group_kill_on_signal, lives_counter, timer, line_clear_monitor, wave_director*, wave_spawner* |
 | Flow | 10 | interface, sound_on_hit, sound_synth, music_ramping, sfx_ramping, music_player, music_track, swarm_controller, tetromino_spawner, crt_controller |
 | Effects | 3 | death_particles, death_broken_triangle_ship, death_brick_explode |
-| Hub | 6 | arcade_orchestrator, arcade_game_entry, polybius_face, polybius_eyes, polybius_mouth, polybius_nose |
+| Hub | 7 | arcade_orchestrator, arcade_game_entry, modifier_manager, polybius_face, polybius_eyes, polybius_mouth, polybius_nose |
 | Debug | 1 | crt_tuner |
-| **Total** | **108** | |
+| **Total** | **109** | |
 
 *\* wave_director and wave_spawner scripts live in `Scripts/Rules/` but are categorized as Flow by function.*
 

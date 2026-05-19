@@ -1,6 +1,6 @@
 # Current Goal
 
-**Last Updated:** 2026-05-18  
+**Last Updated:** 2026-05-19  
 **Status:** Active — Final push to ship the itch.io demo by May 31
 
 ---
@@ -19,7 +19,7 @@ The game roster is **finalized at 12 games** — no more games will be built for
 | Remixes (5) | Dogfight, Meteor Rally, Rock Breaker, Bug Drop, Space Bugs |
 | Inversions (2) | Planetary Attack!, Space Rocks Inverted |
 
-### Completed This Phase (May 6–18)
+### Completed This Phase (May 6–19)
 - ✅ Steamworks: Fee paid, App ID created, tax/bank info submitted — awaiting identity verification
 - ✅ itch.io: Game page created (private), build uploaded and tested at 60fps on T480 browser target
 - ✅ Butler pipeline: `deploy.sh` fully operational (export → zip → push)
@@ -28,22 +28,19 @@ The game roster is **finalized at 12 games** — no more games will be built for
 - ✅ Karl Casey music tracks added (2 new licensed OGG + MusicTrack resources)
 - ✅ New components: clear_shot_ai, cover_ai, swarm_controller_player, hit_effect, vector_thruster_exhaust, group_kill_on_signal, polybius_nose
 - ✅ Game roster finalized — 12 games locked for demo
+- ✅ 5 Balatro-like modifiers implemented (Shotgun Mode, Overclocked CPU, Feature Creep, Crunch Time, Scope Creep)
 
-### Remaining Work (May 18–31) — 3 features, then ship
+### Remaining Work (May 19–31) — 2 features, then ship
 
 **1. Polybius Character (Plan 15 Phase 2)**
 - Currently drawing facial frames (Step 2b)
 - Remaining: voice lines, typewriter text, animations, AO integration (steps 2c–2j)
 - Scope: run intros, taunts between games, game-over commentary
 
-**2. 5 Balatro-like Modifiers**
-- Double Barrel — gun_simple fires 2 bullets with slight spread
-- Overclocked CPU — all Leg components: speed × 1.25
-- Feature Creep — all spawner components: entity_count × 2
-- Crunch Time — lives set to 1, all score values × 3.0
-- Scope Creep — all CollisionShape radii × 1.20
-- Technical approach: ModifierManager node on AO, applies property overrides on `node_added`
-- 5 modifiers freely selectable for demo
+**2. ~~5 Balatro-like Modifiers~~ ✅ COMPLETE**
+- Shotgun Mode, Overclocked CPU, Feature Creep, Crunch Time, Scope Creep
+- Editor toggles working, player-selectable UI deferred to next step
+- See `Scripts/Hub/modifier_manager.gd`
 
 **3. Mini Progression System**
 - `lifetime_score` persists across runs (JSON via `user://`)
@@ -79,9 +76,10 @@ The game roster is **finalized at 12 games** — no more games will be built for
 - Remaining: voice lines, typewriter text, animations, AO integration (steps 2c–2j)
 
 ### Plan 16 — Cambrian Remix Explosion
-**Status:** Phase 1 COMPLETE, Phase 2 (modifiers + progression) pulled into May ship window  
+**Status:** Phase 1 COMPLETE, Phase 2 (modifiers COMPLETE, progression in progress)  
 **Phase 1 Completed:** 4 new games built (Bug Drop, Space Bugs, Planetary Attack!, Space Rocks Inverted) + 7 new scripts + 12 new body scene variants + 2 new music tracks + 4 new arcade settings
-**Phase 2 IN PROGRESS:** 5 Balatro-like modifiers + mini progression system — targeting May 31
+**Phase 2 Modifiers COMPLETE:** 5 Balatro-like modifiers via `modifier_manager.gd`
+**Phase 2 Progression IN PROGRESS:** Mini progression system — targeting May 31
 **Game roster locked:** No more games for demo. Expansion deferred to post-launch.
 
 ### Plan 17 — Arcade Juice Post-Launch

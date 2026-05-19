@@ -14,6 +14,14 @@ enum PlaylistMode { IN_ORDER, SHUFFLE }
 @export var playlist_mode: PlaylistMode = PlaylistMode.IN_ORDER
 @export var transition_duration: float = 0.4
 
+# --- Modifiers (editor toggles, manual override for now) ---
+@export_group("Modifiers")
+@export var shotgun_mode: bool = false
+@export var overclocked_cpu: bool = false
+@export var feature_creep: bool = false
+@export var crunch_time: bool = false
+@export var scope_creep: bool = false
+
 # --- Music volume control (delegates to MusicPlayer component) ---
 @export_group("Music")
 @export var music_volume_db: float = -6.0
@@ -41,7 +49,7 @@ var _current_interface: Control = null
 var _transition_tween: Tween = null
 
 # Per-game tracking
-var _game_count: int = 0          # games completed this run (drives per-game bonus)
+var _game_count: float = 0.0      # games completed this run (drives per-game bonus)
 var _game_multiplier: float = 1.0  # current game's own multiplier (resets each game)
 var _game_start_time: float = 0.0 # when current game started (seconds since epoch)
 var _current_time_limit: float = 0.0  # time limit for current game (0 = no limit)
@@ -54,10 +62,10 @@ var _timed_out: bool = false      # true when current game ended via time limit
 
 var _crt_controller: Node2D = null
 var _effect_tween: Tween = null
+var _modifier_manager: Node = null
 
 func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
-	_lives = starting_lives
 	# GameOverScreen starts off-screen below viewport
 	_game_over_screen.position.y = VIEWPORT_HEIGHT
 	# Create CRT controller programmatically (self-building Node2D with high z_index)
@@ -65,6 +73,16 @@ func _ready() -> void:
 	_crt_controller.name = "CRTController"
 	_crt_controller.set_script(load("res://Scripts/Flow/crt_controller.gd"))
 	add_child(_crt_controller)
+	
+	# Create modifier manager
+	_modifier_manager = Node.new()
+	_modifier_manager.name = "ModifierManager"
+	_modifier_manager.set_script(load("res://Scripts/Hub/modifier_manager.gd"))
+	add_child(_modifier_manager)
+	_modifier_manager.set_orchestrator(self)
+	
+	# Crunch Time overrides starting lives to 1
+	_lives = 1 if crunch_time else starting_lives
 	
 	_show_boot_screen()
 
@@ -147,6 +165,9 @@ func _on_transition_to_game(new_instance: Node2D) -> void:
 		_current_game_instance = null
 	_current_interface = null
 	
+	# Stop modifier listening for old game
+	_modifier_manager.stop_listening()
+	
 	# Boot screen is now off-screen, hide it to clean up
 	_boot_screen.visible = false
 	
@@ -180,8 +201,8 @@ func _on_transition_to_game_over() -> void:
 func _restart_run() -> void:
 	_state = OrchestratorState.TRANSITIONING
 	
-	# Reset all run state
-	_lives = starting_lives
+	# Reset all run state; Crunch Time overrides starting lives to 1
+	_lives = 1 if _modifier_manager.is_crunch_time() else starting_lives
 	_running_score = 0
 	_current_index = 0
 	_shuffle_bag.clear()
@@ -189,7 +210,7 @@ func _restart_run() -> void:
 	_game_multiplier = 1.0
 	lives_changed.emit(_lives)
 	on_points_changed.emit(0)
-	on_multiplier_changed.emit(1.0)
+	on_multiplier_changed.emit(1.0 * _modifier_manager.get_score_multiplier())
 	var ugs = _get_current_ugs()
 	if ugs:
 		ugs.set_arcade_bonus(0.0)
@@ -237,6 +258,9 @@ func _setup_game_instance(entry: ArcadeGameEntry) -> Node2D:
 	# Add to tree — _ready() runs here with overrides already applied
 	_game_container.add_child(instance)
 	
+	# Apply setup-time modifiers (Feature Creep, Overclocked CPU, Scope Creep)
+	_modifier_manager.apply_setup_modifiers(instance)
+	
 	# Take over Interface after it's in the tree and _ready has run
 	if ugs:
 		_takeover_interface(ugs)
@@ -253,10 +277,14 @@ func _finalize_game_start(instance: Node2D) -> void:
 	_game_start_time = Time.get_ticks_msec() / 1000.0
 	_timed_out = false
 	
+	# Start listening for runtime modifiers (Shotgun, Overclocked, Scope Creep)
+	_modifier_manager.start_listening()
+	
 	var ugs = _get_ugs_from(instance)
 	if ugs:
-		# Show combined multiplier (game's + per-game bonus)
-		on_multiplier_changed.emit(_game_multiplier + _game_count)
+		# Show combined multiplier (game's + per-game bonus), with Crunch Time ×3
+		var display_mult: float = (_game_multiplier + _game_count) * _modifier_manager.get_score_multiplier()
+		on_multiplier_changed.emit(display_mult)
 		
 		# Notify UGS of arcade bonus so scoring is affected
 		ugs.set_arcade_bonus(float(_game_count))
@@ -304,9 +332,12 @@ func _apply_result_effects() -> void:
 		_effect_tween.tween_property(_current_game_instance, "position:x", -4.0, 0.03).set_trans(Tween.TRANS_SINE)
 
 func _on_game_over_signal(final_score: int) -> void:
+	# Stop modifier listening before processing result
+	_modifier_manager.stop_listening()
+	
 	# Increment game count only on victory (drives per-game multiplier bonus)
 	if _last_game_won:
-		_game_count += 1
+		_game_count += _modifier_manager.get_game_count_increment()
 	
 	# Update UGS arcade bonus for scoring during this game
 	var ugs = _get_current_ugs()
@@ -320,8 +351,11 @@ func _on_game_over_signal(final_score: int) -> void:
 		var base_bonus = _calc_time_bonus(elapsed)
 		time_bonus = base_bonus * _game_count
 	
+	# Apply Crunch Time score multiplier
+	var crunch_mult: float = _modifier_manager.get_score_multiplier()
+	
 	# Apply time bonus and game score to running total
-	_running_score += final_score + time_bonus
+	_running_score += int((final_score + time_bonus) * crunch_mult)
 	on_points_changed.emit(_running_score)
 	
 	if not _last_game_won and not _timed_out:
@@ -337,12 +371,15 @@ func _on_game_over_signal(final_score: int) -> void:
 
 func _on_game_points_changed(new_score: int) -> void:
 	# Game emits its own score changes — update running total live
-	on_points_changed.emit(_running_score + new_score)
+	# Crunch Time: apply score multiplier to live display
+	var crunch_mult: float = _modifier_manager.get_score_multiplier()
+	on_points_changed.emit(_running_score + int(new_score * crunch_mult))
 
 func _on_game_multiplier_changed(new_multiplier: float) -> void:
 	_game_multiplier = new_multiplier
-	# Combine game's multiplier with per-game bonus
-	on_multiplier_changed.emit(_game_multiplier + _game_count)
+	# Combine game's multiplier with per-game bonus, apply Crunch Time ×3
+	var crunch_mult: float = _modifier_manager.get_score_multiplier()
+	on_multiplier_changed.emit((_game_multiplier + _game_count) * crunch_mult)
 
 func _on_game_lives_changed(_new_lives: int) -> void:
 	lives_changed.emit(_lives)
@@ -399,7 +436,7 @@ func _takeover_interface(ugs: UniversalGameScript) -> void:
 	# Set initial values (disable animation for instant snap)
 	iface.animate_score = false
 	iface.set_points(_running_score)
-	iface.set_multiplier(1.0 + _game_count)
+	iface.set_multiplier((1.0 + _game_count) * _modifier_manager.get_score_multiplier())
 	iface.set_lives(_lives)
 	iface.animate_score = true
 	
@@ -438,10 +475,14 @@ func _on_time_limit_reached() -> void:
 	_timed_out = true
 	_last_game_won = false
 	
+	# Stop modifier listening
+	_modifier_manager.stop_listening()
+	
 	# Collect whatever score the player earned (no time bonus)
 	var ugs = _get_current_ugs()
 	if ugs:
-		_running_score += ugs.current_score
+		var crunch_mult: float = _modifier_manager.get_score_multiplier()
+		_running_score += int(ugs.current_score * crunch_mult)
 		on_points_changed.emit(_running_score)
 		# Disconnect all UGS signals to prevent double-scoring or spurious callbacks
 		# during the slide-out transition
