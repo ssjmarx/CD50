@@ -22,6 +22,7 @@ config/icon="res://icon.svg"
 
 GroupCache="*res://Scripts/Core/group_cache.gd"
 SoundBank="*res://Scripts/Core/sound_bank.gd"
+SaveData="*res://Scripts/Core/save_data.gd"
 
 [display]
 

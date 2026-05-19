@@ -1,8 +1,10 @@
-[gd_scene load_steps=23 format=3 uid="uid://boo0jvdtkr4xv"]
+[gd_scene load_steps=28 format=3 uid="uid://boo0jvdtkr4xv"]
 
 [ext_resource type="Script" uid="uid://dt4uemfscl0x6" path="res://Scripts/Hub/arcade_orchestrator.gd" id="1_script"]
+[ext_resource type="Script" uid="uid://bsyy2vcrh2l1k" path="res://Scripts/Hub/boot_screen.gd" id="2_bootscreen"]
 [ext_resource type="FontFile" uid="uid://imm2iompf7sv" path="res://Assets/Fonts/Kenney Pixel.ttf" id="2_font"]
 [ext_resource type="Script" uid="uid://bdsbfe65crnbu" path="res://Scripts/Hub/arcade_game_entry.gd" id="2_u78ae"]
+[ext_resource type="Script" uid="uid://dbwux38cuqwad" path="res://Scripts/Hub/game_over_screen.gd" id="3_gameoverscreen"]
 [ext_resource type="Resource" uid="uid://brlrwh62hs1l0" path="res://Scenes/Hub/ArcadeSettings/space_rocks_inverted.tres" id="3_k3wos"]
 [ext_resource type="Resource" uid="uid://x1w7jhywtp3r" path="res://Scenes/Hub/ArcadeSettings/brick_breaker.tres" id="4_n0muh"]
 [ext_resource type="Resource" uid="uid://bcl4p542u027h" path="res://Scenes/Hub/ArcadeSettings/paddle_ball.tres" id="5_42jm0"]
@@ -19,26 +21,32 @@
 [ext_resource type="Resource" uid="uid://cqyqy7p7arlrl" path="res://Scenes/Hub/ArcadeSettings/space_bugs.tres" id="15_sbugs"]
 [ext_resource type="Resource" uid="uid://bye8mypx151o7" path="res://Scenes/Hub/ArcadeSettings/bug_drop.tres" id="16_bdrop"]
 [ext_resource type="Resource" uid="uid://cmnbe2c55rhv5" path="res://Scenes/Hub/ArcadeSettings/planetary_attack.tres" id="17_pattack"]
+[ext_resource type="Script" uid="uid://e8yavddp8wmg" path="res://Scripts/Flow/sound_synth.gd" id="18_synth"]
 
 [sub_resource type="LabelSettings" id="LabelSettings_title"]
 font = ExtResource("6_2j8et")
 font_size = 64
 
-[sub_resource type="LabelSettings" id="LabelSettings_gameover"]
+[sub_resource type="LabelSettings" id="LabelSettings_small"]
 font = ExtResource("2_font")
-font_size = 48
+font_size = 14
 
 [sub_resource type="LabelSettings" id="LabelSettings_gameover_small"]
 font = ExtResource("2_font")
 font_size = 20
 
+[sub_resource type="LabelSettings" id="LabelSettings_gameover"]
+font = ExtResource("2_font")
+font_size = 48
+
+[sub_resource type="LabelSettings" id="LabelSettings_initials"]
+font = ExtResource("2_font")
+font_size = 32
+
 [node name="ArcadeOrchestrator" type="Node2D"]
 script = ExtResource("1_script")
 playlist = Array[ExtResource("2_u78ae")]([ExtResource("4_n0muh"), ExtResource("5_42jm0"), ExtResource("6_3qvvg"), ExtResource("7_k3wos"), ExtResource("8_hby7g"), ExtResource("9_el0dv"), ExtResource("10_s8yab"), ExtResource("3_k3wos"), ExtResource("15_sbugs"), ExtResource("16_bdrop"), ExtResource("17_pattack"), ExtResource("14_nj6eo")])
 playlist_mode = 1
-overclocked_cpu = true
-crunch_time = true
-scope_creep = true
 music_volume_db = -12.0
 
 [node name="ArcadeMusic" parent="." instance=ExtResource("14_hby7g")]
@@ -59,50 +67,459 @@ anchors_preset = 0
 offset_right = 640.0
 offset_bottom = 360.0
 mouse_filter = 2
+script = ExtResource("2_bootscreen")
 
 [node name="TitleLabel" type="Label" parent="BootScreen"]
-layout_mode = 0
-offset_left = 80.0
-offset_top = 64.0
-offset_right = 576.0
-offset_bottom = 160.0
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -248.0
+offset_top = -140.0
+offset_right = 248.0
+offset_bottom = -44.0
+grow_horizontal = 2
+grow_vertical = 2
 text = "CD50 ARCADE"
 label_settings = SubResource("LabelSettings_title")
 horizontal_alignment = 1
 
+[node name="LifetimeLabel" type="Label" parent="BootScreen"]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -117.0
+offset_top = -36.0
+offset_right = 117.0
+offset_bottom = -16.0
+grow_horizontal = 2
+grow_vertical = 2
+text = "CAREER: 0"
+label_settings = SubResource("LabelSettings_small")
+horizontal_alignment = 1
+
+[node name="HSTitle" type="Label" parent="BootScreen"]
+visible = false
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -26.0
+offset_top = -5.5
+offset_right = 26.0
+offset_bottom = 5.5
+grow_horizontal = 2
+grow_vertical = 2
+text = "HIGH SCORES"
+label_settings = SubResource("LabelSettings_small")
+
+[node name="HS0" type="Label" parent="BootScreen"]
+visible = false
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -0.5
+offset_top = -5.5
+offset_right = 0.5
+offset_bottom = 5.5
+grow_horizontal = 2
+grow_vertical = 2
+label_settings = SubResource("LabelSettings_small")
+
+[node name="HS1" type="Label" parent="BootScreen"]
+visible = false
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -0.5
+offset_top = -5.5
+offset_right = 0.5
+offset_bottom = 5.5
+grow_horizontal = 2
+grow_vertical = 2
+label_settings = SubResource("LabelSettings_small")
+
+[node name="HS2" type="Label" parent="BootScreen"]
+visible = false
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -0.5
+offset_top = -5.5
+offset_right = 0.5
+offset_bottom = 5.5
+grow_horizontal = 2
+grow_vertical = 2
+label_settings = SubResource("LabelSettings_small")
+
+[node name="HS3" type="Label" parent="BootScreen"]
+visible = false
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -0.5
+offset_top = -5.5
+offset_right = 0.5
+offset_bottom = 5.5
+grow_horizontal = 2
+grow_vertical = 2
+label_settings = SubResource("LabelSettings_small")
+
+[node name="HS4" type="Label" parent="BootScreen"]
+visible = false
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -0.5
+offset_top = -5.5
+offset_right = 0.5
+offset_bottom = 5.5
+grow_horizontal = 2
+grow_vertical = 2
+label_settings = SubResource("LabelSettings_small")
+
+[node name="ModTitle" type="Label" parent="BootScreen"]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -120.0
+offset_top = 20.0
+offset_right = 120.0
+offset_bottom = 40.0
+grow_horizontal = 2
+grow_vertical = 2
+text = "MODIFIERS"
+label_settings = SubResource("LabelSettings_small")
+
+[node name="ModBtnScopeCreep" type="Button" parent="BootScreen"]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -120.0
+offset_top = 44.0
+offset_right = 120.0
+offset_bottom = 75.0
+grow_horizontal = 2
+grow_vertical = 2
+text = "[   ] SCOPE CREEP"
+alignment = 0
+
+[node name="ModBtnShotgunMode" type="Button" parent="BootScreen"]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -120.0
+offset_top = 68.0
+offset_right = 120.0
+offset_bottom = 99.0
+grow_horizontal = 2
+grow_vertical = 2
+text = "[   ] SHOTGUN MODE"
+alignment = 0
+
+[node name="ModBtnOverclockedCPU" type="Button" parent="BootScreen"]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -120.0
+offset_top = 92.0
+offset_right = 120.0
+offset_bottom = 123.0
+grow_horizontal = 2
+grow_vertical = 2
+text = "[   ] OVERCLOCKED CPU"
+alignment = 0
+
+[node name="ModBtnFeatureCreep" type="Button" parent="BootScreen"]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -120.0
+offset_top = 116.0
+offset_right = 120.0
+offset_bottom = 147.0
+grow_horizontal = 2
+grow_vertical = 2
+text = "[   ] FEATURE CREEP"
+alignment = 0
+
+[node name="ModBtnCrunchTime" type="Button" parent="BootScreen"]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -120.0
+offset_top = 140.0
+offset_right = 120.0
+offset_bottom = 171.0
+grow_horizontal = 2
+grow_vertical = 2
+text = "[   ] CRUNCH TIME"
+alignment = 0
+
+[node name="InsertCoinLabel" type="Label" parent="BootScreen"]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -248.0
+offset_top = -68.0
+offset_right = 248.0
+offset_bottom = -48.0
+grow_horizontal = 2
+grow_vertical = 2
+text = "PRESS START TO PLAY"
+label_settings = SubResource("LabelSettings_gameover_small")
+horizontal_alignment = 1
+
+[node name="DefeatSound" type="Node2D" parent="."]
+script = ExtResource("18_synth")
+play_mode = 1
+wave_shape = 2
+effect = 3
+note = 48
+volume = 1.0
+duration = 1.0
+source_signal = "game_defeat"
+positional = false
+
 [node name="GameOverScreen" type="Control" parent="."]
+visible = false
 layout_mode = 3
 anchors_preset = 0
 offset_right = 640.0
 offset_bottom = 360.0
 mouse_filter = 2
+script = ExtResource("3_gameoverscreen")
 
 [node name="GameOverLabel" type="Label" parent="GameOverScreen"]
-layout_mode = 0
-offset_left = 192.0
-offset_top = 100.0
-offset_right = 448.0
-offset_bottom = 148.0
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -128.0
+offset_top = -116.0
+offset_right = 128.0
+offset_bottom = -68.0
+grow_horizontal = 2
+grow_vertical = 2
 text = "GAME OVER"
 label_settings = SubResource("LabelSettings_gameover")
 horizontal_alignment = 1
 
 [node name="FinalScoreLabel" type="Label" parent="GameOverScreen"]
-layout_mode = 0
-offset_left = 192.0
-offset_top = 160.0
-offset_right = 448.0
-offset_bottom = 184.0
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -128.0
+offset_top = -76.0
+offset_right = 128.0
+offset_bottom = -52.0
+grow_horizontal = 2
+grow_vertical = 2
 text = "FINAL SCORE: 0"
 label_settings = SubResource("LabelSettings_gameover_small")
 horizontal_alignment = 1
 
-[node name="PlayAgainLabel" type="Label" parent="GameOverScreen"]
+[node name="CareerLabel" type="Label" parent="GameOverScreen"]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -117.0
+offset_top = -60.0
+offset_right = 117.0
+offset_bottom = -40.0
+grow_horizontal = 2
+grow_vertical = 2
+text = "CAREER: 0"
+label_settings = SubResource("LabelSettings_small")
+horizontal_alignment = 1
+
+[node name="UnlockLabel" type="Label" parent="GameOverScreen"]
 layout_mode = 0
-offset_left = 192.0
-offset_top = 220.0
-offset_right = 448.0
-offset_bottom = 244.0
+offset_left = 8.0
+offset_top = 272.0
+offset_right = 268.0
+offset_bottom = 352.0
+label_settings = SubResource("LabelSettings_small")
+autowrap_mode = 3
+
+[node name="InitialsPrompt" type="Label" parent="GameOverScreen"]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -130.0
+offset_top = 4.0
+offset_right = 130.0
+offset_bottom = 24.0
+grow_horizontal = 2
+grow_vertical = 2
+text = "NEW HIGH SCORE!"
+label_settings = SubResource("LabelSettings_small")
+horizontal_alignment = 1
+
+[node name="InitialsDisplay" type="Label" parent="GameOverScreen"]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -130.0
+offset_top = 20.0
+offset_right = 130.0
+offset_bottom = 58.0
+grow_horizontal = 2
+grow_vertical = 2
+text = "[A] A  A"
+label_settings = SubResource("LabelSettings_initials")
+horizontal_alignment = 1
+
+[node name="GOHS0" type="Label" parent="GameOverScreen"]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -130.0
+offset_top = 44.0
+offset_right = 130.0
+offset_bottom = 62.0
+grow_horizontal = 2
+grow_vertical = 2
+label_settings = SubResource("LabelSettings_small")
+horizontal_alignment = 1
+
+[node name="GOHS1" type="Label" parent="GameOverScreen"]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -130.0
+offset_top = 68.0
+offset_right = 130.0
+offset_bottom = 86.0
+grow_horizontal = 2
+grow_vertical = 2
+label_settings = SubResource("LabelSettings_small")
+horizontal_alignment = 1
+
+[node name="GOHS2" type="Label" parent="GameOverScreen"]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -130.0
+offset_top = 92.0
+offset_right = 130.0
+offset_bottom = 110.0
+grow_horizontal = 2
+grow_vertical = 2
+label_settings = SubResource("LabelSettings_small")
+horizontal_alignment = 1
+
+[node name="GOHS3" type="Label" parent="GameOverScreen"]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -130.0
+offset_top = 116.0
+offset_right = 130.0
+offset_bottom = 134.0
+grow_horizontal = 2
+grow_vertical = 2
+label_settings = SubResource("LabelSettings_small")
+horizontal_alignment = 1
+
+[node name="GOHS4" type="Label" parent="GameOverScreen"]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -130.0
+offset_top = 140.0
+offset_right = 130.0
+offset_bottom = 158.0
+grow_horizontal = 2
+grow_vertical = 2
+label_settings = SubResource("LabelSettings_small")
+horizontal_alignment = 1
+
+[node name="PlayAgainLabel" type="Label" parent="GameOverScreen"]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -128.0
+offset_top = -36.0
+offset_right = 128.0
+offset_bottom = -12.0
+grow_horizontal = 2
+grow_vertical = 2
 text = "PRESS START TO PLAY AGAIN"
 label_settings = SubResource("LabelSettings_gameover_small")
 horizontal_alignment = 1

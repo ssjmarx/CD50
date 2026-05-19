@@ -1,12 +1,11 @@
-# Arcade Orchestrator. State machine that manages the arcade run: BOOT → PLAYING → RESULT → GAME_OVER → RESTART.
-# Loads games from ArcadeGameEntry resources, tracks lives/score, detects game end, applies property overrides.
-# Emits Interface-compatible signals so a child Interface component can display score, lives, and multiplier.
-# Uses scrolling transitions between all screens (boot, games, game over).
-# Music is handled by the child MusicPlayer component; this script just controls volume via fade_to().
+# Arcade Orchestrator. State machine that manages the arcade run: BOOT → PLAYING → GAME_OVER → RESTART.
+# Games are isolated in SubViewports for complete physics/signal separation.
+# Win/loss VFX play simultaneously with the slide transition.
+# CRT effects are a sibling layer on top, independent of game viewports.
 
 extends Node2D
 
-enum OrchestratorState { BOOT, PLAYING, RESULT, GAME_OVER, TRANSITIONING }
+enum OrchestratorState { BOOT, PLAYING, GAME_OVER, TRANSITIONING }
 enum PlaylistMode { IN_ORDER, SHUFFLE }
 
 @export var playlist: Array[ArcadeGameEntry] = []
@@ -34,16 +33,19 @@ signal on_points_changed(new_score: int)
 signal on_multiplier_changed(new_multiplier: float)
 signal lives_changed(new_lives: int)
 signal state_changed(new_state: CommonEnums.State)
+signal game_defeat
+signal game_victory
 
 const VIEWPORT_HEIGHT: float = 360.0
+const GAME_SIZE := Vector2i(640, 360)
 
 var _state: OrchestratorState = OrchestratorState.BOOT
 var _lives: int
 var _running_score: int = 0
 var _current_index: int = 0
 var _current_game_instance: Node2D = null
+var _active_vpc: SubViewportContainer = null  # Current game's viewport container
 var _last_game_won: bool = false
-var _result_timer: float = 0.0
 var _shuffle_bag: Array[int] = []
 var _current_interface: Control = null
 var _transition_tween: Tween = null
@@ -63,6 +65,8 @@ var _timed_out: bool = false      # true when current game ended via time limit
 var _crt_controller: Node2D = null
 var _effect_tween: Tween = null
 var _modifier_manager: Node = null
+var _pending_unlocks: Array[String] = []
+var _last_run_score: int = 0
 
 func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
@@ -81,6 +85,15 @@ func _ready() -> void:
 	add_child(_modifier_manager)
 	_modifier_manager.set_orchestrator(self)
 	
+	# Hook up defeat synth — its _ready() ran before ours (children first),
+	# so source_node was null. Set it and connect the signal manually.
+	$DefeatSound.source_node = self
+	if not game_defeat.is_connected($DefeatSound._on_signal):
+		game_defeat.connect($DefeatSound._on_signal)
+	
+	# Read active modifiers from save data (overrides editor exports)
+	_apply_save_modifiers()
+	
 	# Crunch Time overrides starting lives to 1
 	_lives = 1 if crunch_time else starting_lives
 	
@@ -98,6 +111,9 @@ func _input(event: InputEvent) -> void:
 				get_viewport().set_input_as_handled()
 		OrchestratorState.GAME_OVER:
 			if event.is_action_pressed("start") or event.is_action_pressed("coin"):
+				# Block restart if game-over screen is in initials-entry phase
+				if _game_over_screen.has_method("is_entering_initials") and _game_over_screen.is_entering_initials():
+					return
 				_restart_run()
 				get_viewport().set_input_as_handled()
 
@@ -106,13 +122,6 @@ func _physics_process(delta: float) -> void:
 		var elapsed = Time.get_ticks_msec() / 1000.0 - _game_start_time
 		if elapsed >= _current_time_limit:
 			_on_time_limit_reached()
-	if _state == OrchestratorState.RESULT:
-		_result_timer -= delta
-		if _result_timer <= 0.0:
-			if _lives > 0:
-				_start_next_game()
-			else:
-				_show_game_over()
 
 # --- State transitions ---
 
@@ -128,6 +137,9 @@ func _start_next_game() -> void:
 	if playlist.is_empty():
 		push_error("ArcadeOrchestrator: playlist is empty")
 		return
+	
+	# Re-read modifiers from save data (player may have toggled on boot screen)
+	_apply_save_modifiers()
 		
 	var entry: ArcadeGameEntry
 	
@@ -145,24 +157,27 @@ func _start_next_game() -> void:
 	# Store time limit from entry for this game
 	_current_time_limit = entry.time_limit
 	
-	# Setup new game instance (instantiate, configure, add to tree — but don't start)
-	var new_instance = _setup_game_instance(entry)
+	# Setup new game in its own isolated SubViewport
+	var new_vpc: SubViewportContainer = _setup_game_viewport(entry)
 	
-	# Determine what's sliding out (old game or boot screen)
+	# Determine what's sliding out (old game viewport or boot screen)
 	var outgoing: CanvasItem
-	if _current_game_instance:
-		outgoing = _current_game_instance
+	if _active_vpc:
+		outgoing = _active_vpc
 	else:
 		outgoing = _boot_screen
 	
 	# Start scrolling transition: old slides up, new slides in from below
-	_scroll_transition(outgoing, new_instance, _on_transition_to_game.bind(new_instance))
+	_scroll_transition(outgoing, new_vpc, _on_transition_to_game.bind(new_vpc))
 
-func _on_transition_to_game(new_instance: Node2D) -> void:
-	# Free old game if any
-	if _current_game_instance:
-		_current_game_instance.queue_free()
-		_current_game_instance = null
+func _on_transition_to_game(new_vpc: SubViewportContainer) -> void:
+	# Free old game's viewport container (completely isolated, no physics leak)
+	if _active_vpc:
+		_active_vpc.queue_free()
+	_active_vpc = new_vpc
+	
+	# Extract game instance from the viewport
+	var new_instance := _get_game_from_vpc(new_vpc)
 	_current_interface = null
 	
 	# Stop modifier listening for old game
@@ -177,19 +192,32 @@ func _on_transition_to_game(new_instance: Node2D) -> void:
 func _show_game_over() -> void:
 	_state = OrchestratorState.TRANSITIONING
 	
+	# Report score to SaveData for progression
+	_last_run_score = _running_score
+	_pending_unlocks = SaveData.add_score(_running_score)
+	var is_new_hs: bool = SaveData.is_new_high_score(_running_score)
+	
+	# Notify game-over screen before slide
+	if _game_over_screen.has_method("setup"):
+		_game_over_screen.setup(_last_run_score, is_new_hs, _pending_unlocks)
+	
 	# Update final score label before slide
 	var final_score_label: Label = _game_over_screen.get_node_or_null("FinalScoreLabel")
 	if final_score_label:
 		final_score_label.text = "FINAL SCORE: %d" % _running_score
 	
-	# Scroll: current game slides up, GameOverScreen slides in from below
-	_scroll_transition(_current_game_instance, _game_over_screen, _on_transition_to_game_over)
+	# Apply VFX to outgoing game (plays during transition)
+	_apply_result_effects()
+	
+	# Scroll: current game viewport slides up, GameOverScreen slides in from below
+	_scroll_transition(_active_vpc, _game_over_screen, _on_transition_to_game_over)
 
 func _on_transition_to_game_over() -> void:
-	# Free the game instance
-	if _current_game_instance:
-		_current_game_instance.queue_free()
-		_current_game_instance = null
+	# Free the game viewport
+	if _active_vpc:
+		_active_vpc.queue_free()
+		_active_vpc = null
+	_current_game_instance = null
 	_current_interface = null
 	
 	# Dim music on game over
@@ -227,10 +255,24 @@ func _on_transition_to_boot() -> void:
 	_state = OrchestratorState.BOOT
 	state_changed.emit(CommonEnums.State.ATTRACT)
 
-# --- Game Setup & Start (split from old _load_and_start_game) ---
+# --- SubViewport Game Setup ---
 
-func _setup_game_instance(entry: ArcadeGameEntry) -> Node2D:
-	# Instance the game scene
+func _setup_game_viewport(entry: ArcadeGameEntry) -> SubViewportContainer:
+	# Create a SubViewportContainer + SubViewport to isolate the game
+	var vpc := SubViewportContainer.new()
+	vpc.name = "GameViewportContainer"
+	vpc.size = GAME_SIZE
+	vpc.position = Vector2.ZERO
+	vpc.stretch = true
+	
+	var sub_vp := SubViewport.new()
+	sub_vp.name = "GameViewport"
+	sub_vp.size = GAME_SIZE
+	sub_vp.render_target_update_mode = SubViewport.UPDATE_ALWAYS
+	sub_vp.transparent_bg = true
+	vpc.add_child(sub_vp)
+	
+	# Instantiate the game scene
 	var instance: Node2D = entry.game_scene.instantiate()
 	
 	# Get the UGS and configure for arcade mode BEFORE adding to tree
@@ -252,25 +294,45 @@ func _setup_game_instance(entry: ArcadeGameEntry) -> Node2D:
 		# Apply property overrides BEFORE adding to tree so @onready captures them
 		_apply_overrides(instance, entry.overrides)
 	
-	# Position below viewport for slide-in
-	instance.position.y = VIEWPORT_HEIGHT
-	
-	# Add to tree — _ready() runs here with overrides already applied
-	_game_container.add_child(instance)
+	# Add game to SubViewport — _ready() won't fire yet (VPC not in tree)
+	sub_vp.add_child(instance)
 	
 	# Apply setup-time modifiers (Feature Creep, Overclocked CPU, Scope Creep)
 	_modifier_manager.apply_setup_modifiers(instance)
 	
-	# Take over Interface after it's in the tree and _ready has run
+	# Position below viewport for slide-in
+	vpc.position.y = VIEWPORT_HEIGHT
+	
+	# Add viewport container to game container — NOW _ready() fires for all children
+	_game_container.add_child(vpc)
+	
+	# Take over Interface AFTER _ready() has connected UGS→Interface signals,
+	# so we can properly disconnect them and reconnect to AO signals instead
 	if ugs:
 		_takeover_interface(ugs)
 	
-	return instance
+	
+	return vpc
+
+# Extract the game Node2D from a SubViewportContainer
+func _get_game_from_vpc(vpc: SubViewportContainer) -> Node2D:
+	if not vpc:
+		return null
+	var sub_vp = vpc.get_child(0) as SubViewport
+	if not sub_vp:
+		return null
+	for child in sub_vp.get_children():
+		if child is Node2D:
+			return child
+	return null
+
+# --- Game Start ---
 
 func _finalize_game_start(instance: Node2D) -> void:
 	_current_game_instance = instance
-	# Ensure clean position
-	_current_game_instance.position.y = 0.0
+	# Game is at origin inside its SubViewport
+	if _current_game_instance:
+		_current_game_instance.position.y = 0.0
 	
 	# Reset per-game state
 	_game_multiplier = 1.0
@@ -305,9 +367,11 @@ func _finalize_game_start(instance: Node2D) -> void:
 
 func _on_game_victory() -> void:
 	_last_game_won = true
+	game_victory.emit()
 
 func _on_game_defeat() -> void:
 	_last_game_won = false
+	game_defeat.emit()
 
 func _apply_result_effects() -> void:
 	if not _current_game_instance:
@@ -317,19 +381,19 @@ func _apply_result_effects() -> void:
 	if _effect_tween and _effect_tween.is_valid():
 		_effect_tween.kill()
 	
-	var total_duration: float = _result_timer + transition_duration
+	var total_duration: float = transition_duration
 	
 	if _last_game_won:
 		# Victory: overbright modulate → CRT bloom picks up bright pixels and spreads them
 		_effect_tween = create_tween()
 		_effect_tween.tween_property(_current_game_instance, "modulate", Color(3.0, 3.0, 2.5, 1.0), total_duration)
 	else:
-		# Defeat: red tint + horizontal shake (15 loops ≈ 0.9s to cover result + transition)
+		# Defeat: red tint on game, horizontal shake on viewport container
 		_current_game_instance.modulate = Color(1.5, 0.2, 0.2, 1.0)
 		_effect_tween = create_tween()
 		_effect_tween.set_loops(15)
-		_effect_tween.tween_property(_current_game_instance, "position:x", 4.0, 0.03).set_trans(Tween.TRANS_SINE)
-		_effect_tween.tween_property(_current_game_instance, "position:x", -4.0, 0.03).set_trans(Tween.TRANS_SINE)
+		_effect_tween.tween_property(_active_vpc, "position:x", 4.0, 0.03).set_trans(Tween.TRANS_SINE)
+		_effect_tween.tween_property(_active_vpc, "position:x", -4.0, 0.03).set_trans(Tween.TRANS_SINE)
 
 func _on_game_over_signal(final_score: int) -> void:
 	# Stop modifier listening before processing result
@@ -362,12 +426,13 @@ func _on_game_over_signal(final_score: int) -> void:
 		_lives -= 1
 		lives_changed.emit(_lives)
 	
-	# Apply result effects to the outgoing game instance
+	# Apply VFX to outgoing game, then defer transition to avoid physics flush errors
 	_apply_result_effects()
 	
-	# Transition to RESULT state
-	_state = OrchestratorState.RESULT
-	_result_timer = 0.5
+	if _lives > 0:
+		call_deferred("_start_next_game")
+	else:
+		call_deferred("_show_game_over")
 
 func _on_game_points_changed(new_score: int) -> void:
 	# Game emits its own score changes — update running total live
@@ -484,23 +549,24 @@ func _on_time_limit_reached() -> void:
 		var crunch_mult: float = _modifier_manager.get_score_multiplier()
 		_running_score += int(ugs.current_score * crunch_mult)
 		on_points_changed.emit(_running_score)
-		# Disconnect all UGS signals to prevent double-scoring or spurious callbacks
-		# during the slide-out transition
-		if ugs.victory.is_connected(_on_game_victory):
-			ugs.victory.disconnect(_on_game_victory)
-		if ugs.defeat.is_connected(_on_game_defeat):
-			ugs.defeat.disconnect(_on_game_defeat)
-		if ugs.on_game_over.is_connected(_on_game_over_signal):
-			ugs.on_game_over.disconnect(_on_game_over_signal)
-		if ugs.on_points_changed.is_connected(_on_game_points_changed):
-			ugs.on_points_changed.disconnect(_on_game_points_changed)
-		if ugs.on_multiplier_changed.is_connected(_on_game_multiplier_changed):
-			ugs.on_multiplier_changed.disconnect(_on_game_multiplier_changed)
-		if ugs.lives_changed.is_connected(_on_game_lives_changed):
-			ugs.lives_changed.disconnect(_on_game_lives_changed)
+		_disconnect_ugs_signals(ugs)
 	
-	# Instant swipe to next game — no result delay, no VFX
-	_start_next_game()
+	# Defer to avoid physics flush errors (called from _physics_process)
+	call_deferred("_start_next_game")
+
+func _disconnect_ugs_signals(ugs: UniversalGameScript) -> void:
+	if ugs.victory.is_connected(_on_game_victory):
+		ugs.victory.disconnect(_on_game_victory)
+	if ugs.defeat.is_connected(_on_game_defeat):
+		ugs.defeat.disconnect(_on_game_defeat)
+	if ugs.on_game_over.is_connected(_on_game_over_signal):
+		ugs.on_game_over.disconnect(_on_game_over_signal)
+	if ugs.on_points_changed.is_connected(_on_game_points_changed):
+		ugs.on_points_changed.disconnect(_on_game_points_changed)
+	if ugs.on_multiplier_changed.is_connected(_on_game_multiplier_changed):
+		ugs.on_multiplier_changed.disconnect(_on_game_multiplier_changed)
+	if ugs.lives_changed.is_connected(_on_game_lives_changed):
+		ugs.lives_changed.disconnect(_on_game_lives_changed)
 
 func _calc_time_bonus(elapsed: float) -> int:
 	# 100 points at ≤10s, linearly to 0 at ≥30s
@@ -520,6 +586,16 @@ func _apply_overrides(game_instance: Node, overrides: Array[PropertyOverride]) -
 			target_node.set(prop_override.property_name, prop_override.value)
 		else:
 			push_warning("ArcadeOrchestrator: override node '%s' not found in game scene" % prop_override.node_path)
+
+# --- Save Data Integration ---
+
+func _apply_save_modifiers() -> void:
+	var mods: Dictionary = SaveData.get_active_modifiers()
+	shotgun_mode = mods.get("shotgun_mode", false)
+	overclocked_cpu = mods.get("overclocked_cpu", false)
+	feature_creep = mods.get("feature_creep", false)
+	crunch_time = mods.get("crunch_time", false)
+	scope_creep = mods.get("scope_creep", false)
 
 func _refill_shuffle_bag() -> void:
 	_shuffle_bag.clear()
