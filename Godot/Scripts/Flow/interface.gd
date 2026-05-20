@@ -23,6 +23,9 @@ var _connected_game: Node = null  # Track connected game's timer_tick for cleanu
 
 # Connect to game state signals (guard with has_signal for flexibility)
 func _ready() -> void:
+	# Stay pinned to viewport when camera scrolls (no effect without camera)
+	top_level = true
+	
 	if parent.has_signal("on_points_changed"):
 		parent.on_points_changed.connect(set_points)
 	if parent.has_signal("on_multiplier_changed"):
@@ -42,6 +45,13 @@ func _ready() -> void:
 	
 	# Discover result-timers after parent tree is ready
 	_discover_result_timers()
+
+# Follow the active camera so the HUD stays on screen during scrolling
+func _process(_delta: float) -> void:
+	var cam = get_viewport().get_camera_2d()
+	if cam:
+		var half_viewport = get_viewport().get_visible_rect().size / 2.0
+		global_position = cam.global_position - half_viewport
 
 func _on_state_changed(new_state: CommonEnums.State) -> void:
 	match new_state:

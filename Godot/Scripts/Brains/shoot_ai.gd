@@ -28,11 +28,12 @@ func _get_target_in_cone() -> Node2D:
 	for node in target_nodes:
 		if not is_instance_valid(node):
 			return null
-		else:
-			var angle_diff: float = angle_difference(parent.rotation, parent.global_position.angle_to_point(node.global_position))
-			if abs(angle_diff) <= deg_to_rad(vision_cone_angle / 2.0):
-				var dist: float = parent.global_position.distance_squared_to(node.global_position)
-				if vision_range <= 0 or dist <= vision_range * vision_range:
-					return node
+		if not node is Node2D:
+			continue
+		var angle_diff: float = angle_difference(parent.rotation, parent.global_position.angle_to_point(node.global_position))
+		if abs(angle_diff) <= deg_to_rad(vision_cone_angle / 2.0):
+			var dist: float = parent.global_position.distance_squared_to(node.global_position)
+			if vision_range <= 0 or dist <= vision_range * vision_range:
+				return node
 	
 	return null

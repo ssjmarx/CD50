@@ -1,4 +1,4 @@
-[gd_scene load_steps=18 format=3 uid="uid://cee4ekxw2bppk"]
+[gd_scene load_steps=19 format=3 uid="uid://cee4ekxw2bppk"]
 
 [ext_resource type="Script" uid="uid://nx6wkwvymri1" path="res://Scripts/Bodies/triangle_ship.gd" id="1_dbm8e"]
 [ext_resource type="PackedScene" uid="uid://bj81pr736k256" path="res://Scenes/Components/health.tscn" id="2_ri8sq"]
@@ -15,6 +15,7 @@
 [ext_resource type="PackedScene" uid="uid://c8034ktag0uga" path="res://Scenes/Brains/shoot_ai.tscn" id="14_ck0bw"]
 [ext_resource type="PackedScene" uid="uid://bgbc7os8sqieh" path="res://Scenes/Legs/rotation_target.tscn" id="14_qygri"]
 [ext_resource type="PackedScene" uid="uid://b2utyb8vjdhru" path="res://Scenes/Brains/aim_ai.tscn" id="15_qygri"]
+[ext_resource type="PackedScene" uid="uid://ic3mj0x3ub4c" path="res://Scenes/Components/score_on_death.tscn" id="16_ssd4l"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_533y8"]
 size = Vector2(8, 8)
@@ -27,6 +28,7 @@ rotation = -1.5707964
 script = ExtResource("1_dbm8e")
 width = 16
 height = 16
+bounds_margin = 16
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="."]
 shape = SubResource("RectangleShape2D_533y8")
@@ -68,3 +70,6 @@ independent_aim = true
 target_group = "players"
 turning_speed = 360
 aim_inaccuracy = 15
+
+[node name="ScoreOnDeath" parent="." instance=ExtResource("16_ssd4l")]
+base_score = 25

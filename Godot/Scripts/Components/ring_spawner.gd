@@ -41,7 +41,8 @@ func _ready() -> void:
 			body.add_to_group(group)
 			GroupCache.mark_dirty(group)
 		
-		game.add_child.call_deferred(body)
+		var target: Node = game if game else get_tree().current_scene
+		target.add_child.call_deferred(body)
 		_bricks.append({node = body, angle = angle})
 
 # Orbit all surviving bricks around the parent's position

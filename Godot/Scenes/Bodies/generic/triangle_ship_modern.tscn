@@ -26,6 +26,7 @@ metadata/__load_path__ = "res://Assets/Audio/zapThreeToneDown.ogg"
 [node name="TriangleShip" type="CharacterBody2D"]
 rotation = -1.5707964
 script = ExtResource("1_55ucc")
+bounds_margin = 16
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="."]
 shape = SubResource("RectangleShape2D_eeql7")

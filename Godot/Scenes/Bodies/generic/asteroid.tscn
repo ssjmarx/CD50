@@ -12,6 +12,7 @@
 
 [node name="Asteroid" type="CharacterBody2D" groups=["space_rocks"]]
 script = ExtResource("1_52jog")
+bounds_margin = 16
 collision_groups = Array[String](["space_rocks"])
 
 [node name="CollisionPolygon2D" type="CollisionPolygon2D" parent="."]

@@ -27,6 +27,7 @@ var radius: float:
 
 # Generate polygon, join space_rocks group, and defer collision setup
 func _ready() -> void:
+	super._ready()
 	add_to_group("space_rocks")
 	GroupCache.mark_dirty("space_rocks")
 	points = _generate_jagged_points()

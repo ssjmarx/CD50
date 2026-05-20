@@ -16,10 +16,7 @@ color = Color(1, 0, 0, 1)
 size = 1
 width = 16
 height = 16
-x_min = -100.0
-x_max = 740.0
-y_min = -100.0
-y_max = 460.0
+bounds_margin = 100
 collision_groups = Array[String](["enemies"])
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="."]

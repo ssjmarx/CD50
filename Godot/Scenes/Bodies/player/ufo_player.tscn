@@ -17,10 +17,7 @@ script = ExtResource("1_ttdb1")
 color = Color(0, 1, 1, 1)
 width = 16
 height = 16
-x_min = -100.0
-x_max = 740.0
-y_min = -100.0
-y_max = 460.0
+bounds_margin = 16
 collision_groups = Array[String](["players"])
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="."]

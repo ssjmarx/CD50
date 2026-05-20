@@ -20,6 +20,8 @@ func _physics_process(delta: float) -> void:
 	for node in nodes:
 		if not is_instance_valid(node):
 			continue
+		if not node is Node2D:
+			continue
 		var dist: float = parent.global_position.distance_squared_to(node.global_position)
 		if dist < closest_dist:
 			closest_dist = dist

@@ -97,11 +97,14 @@ signal end_number_0
 @export var width: int = 4
 @export var height: int = 4
 
-# Position constraints (clamping bounds)
-@export var x_min: float = 0.0
-@export var x_max: float = 640.0
-@export var y_min: float = 0.0
-@export var y_max: float = 360.0
+# Position constraints (clamping bounds). -1 = auto-detect from game playfield_size.
+@export var x_min: float = -1.0
+@export var x_max: float = -1.0
+@export var y_min: float = -1.0
+@export var y_max: float = -1.0
+
+# Extra margin added to auto-detected playfield bounds. Used by screen-wrapping entities and bullets.
+@export var bounds_margin: int = 0
 
 # Movement axis locks (enforced at end of physics frame, overrides all brains/legs)
 var _axis_lock_x_pos: float
@@ -133,6 +136,13 @@ func _ready() -> void:
 	process_priority = 100
 	process_physics_priority = 100
 	
+	# Resolve sentinel bounds from game playfield_size or viewport
+	var pf := _get_playfield()
+	if x_min < 0.0: x_min = 0.0 - bounds_margin
+	if x_max < 0.0: x_max = pf.x + bounds_margin
+	if y_min < 0.0: y_min = 0.0 - bounds_margin
+	if y_max < 0.0: y_max = pf.y + bounds_margin
+	
 	# Capture initial position for axis locks
 	_axis_lock_x_pos = position.x
 	_axis_lock_y_pos = position.y
@@ -140,12 +150,29 @@ func _ready() -> void:
 	var shape: RectangleShape2D = RectangleShape2D.new()
 	shape.size = Vector2(width, height)
 
-	if $CollisionShape2D:
-		$CollisionShape2D.shape = shape
+	var collision_shape = get_node_or_null("CollisionShape2D")
+	if collision_shape:
+		collision_shape.shape = shape
+
+# Get playfield dimensions from game or viewport fallback
+func _get_playfield() -> Vector2:
+	var game := UniversalGameScript.find_ancestor(self)
+	if game and "playfield_size" in game:
+		return game.playfield_size
+	return get_viewport().get_visible_rect().size
 
 func _physics_process(delta: float) -> void:
 	# Apply shared velocity to position (priority 100, runs after Legs)
 	move_parent_physics(velocity * delta)
+	
+	# Clamp position to movement bounds (use global_position for nested bodies)
+	global_position = global_position.clamp(Vector2(x_min, y_min), Vector2(x_max, y_max))
+	
+	# Zero velocity when hitting bounds (prevents accumulating acceleration against walls)
+	if global_position.x <= x_min or global_position.x >= x_max:
+		velocity.x = 0
+	if global_position.y <= y_min or global_position.y >= y_max:
+		velocity.y = 0
 	
 	# Enforce axis locks — final override, cannot be broken by any brain or leg
 	if lock_x:
@@ -157,13 +184,15 @@ func _physics_process(delta: float) -> void:
 
 # Move entity by displacement, clamp within bounds (instant, no physics)
 func move_parent(movement: Vector2) -> void:
-	position.x = clampf(position.x + movement.x, x_min + width / 2.0, x_max - width / 2.0)
-	position.y = clampf(position.y + movement.y, y_min + height / 2.0, y_max - height / 2.0)
+	var new_pos = global_position + movement
+	new_pos.x = clampf(new_pos.x, x_min + width / 2.0, x_max - width / 2.0)
+	new_pos.y = clampf(new_pos.y, y_min + height / 2.0, y_max - height / 2.0)
+	global_position = new_pos
 
 # Move entity toward target, clamp target within bounds (instant, no physics)
 func move_parent_toward(target: Vector2, max_distance: float) -> void:
 	var clamped_target = target.clamp(Vector2(x_min + width / 2.0, y_min + height / 2.0), Vector2(x_max - width / 2.0, y_max - height / 2.0))
-	position = position.move_toward(clamped_target, max_distance)
+	global_position = global_position.move_toward(clamped_target, max_distance)
 
 # Move entity by displacement with physics collision detection and signalling
 func move_parent_physics(movement: Vector2) -> KinematicCollision2D:

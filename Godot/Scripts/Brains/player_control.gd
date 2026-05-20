@@ -7,11 +7,12 @@ var using_mouse: bool = false
 
 # Track input source and forward mouse position to parent signals
 func _input(event: InputEvent) -> void:
-	# Mouse motion → enable mouse mode, emit position signals
+	# Mouse motion → enable mouse mode, emit world-space position signals
 	if event is InputEventMouseMotion:
 		using_mouse = true
-		parent.move_to.emit(event.position)
-		parent.aim_at.emit(event.position)
+		var mouse_world: Vector2 = parent.get_global_mouse_position()
+		parent.move_to.emit(mouse_world)
+		parent.aim_at.emit(mouse_world)
 	
 	# Joystick motion → disable mouse mode (gamepad takes over aiming)
 	if event is InputEventJoypadMotion:

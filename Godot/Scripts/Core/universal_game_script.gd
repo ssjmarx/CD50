@@ -1,3 +1,4 @@
+@tool
 # Master class for game coordinators. State machine, signal routing, score tracking, collision matrix setup.
 # Supports STANDALONE mode (self-contained with input handling) and ARCADE mode (orchestrator-controlled).
 
@@ -8,6 +9,11 @@ enum Mode { STANDALONE, ARCADE }
 @export var game_title: String
 @export var collision_groups: Array[CollisionGroup]
 @export var mode: Mode = Mode.STANDALONE
+@export var playfield_size: Vector2 = Vector2(640, 360):
+	set(value):
+		playfield_size = value
+		if Engine.is_editor_hint():
+			queue_redraw()
 
 var states = CommonEnums.State
 var collision_matrix: CollisionMatrix
@@ -86,6 +92,10 @@ signal on_p2_score(p2_score: int)
 
 # Initialize collision matrix and auto-configure all bodies
 func _ready() -> void:
+	# Don't run game logic in the editor
+	if Engine.is_editor_hint():
+		return
+	
 	# Keep this node alive during pause so it can detect start input
 	process_mode = Node.PROCESS_MODE_ALWAYS
 	
@@ -110,6 +120,8 @@ func _ready() -> void:
 
 # STANDALONE mode: route start/pause input to appropriate methods
 func _input(event: InputEvent) -> void:
+	if Engine.is_editor_hint():
+		return
 	if mode != Mode.STANDALONE:
 		return
 	
@@ -226,6 +238,15 @@ func add_p2_score(amount) -> void:
 # Receive arcade bonus from ArcadeOrchestrator
 func set_arcade_bonus(bonus: float) -> void:
 	arcade_bonus = bonus
+
+# Editor-only: draw a thick border showing the playfield bounds
+func _draw() -> void:
+	if not Engine.is_editor_hint():
+		return
+	var color = Color(1, 1, 0, 0.5) # Yellow, semi-transparent
+	var thickness = 4.0
+	var rect = Rect2(Vector2.ZERO, playfield_size)
+	draw_rect(rect, color, false, thickness)
 
 # Walk up the tree to find the nearest UniversalGameScript ancestor
 static func find_ancestor(node: Node) -> UniversalGameScript:

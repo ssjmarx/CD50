@@ -1,5 +1,5 @@
 # Screen cleanup. Destroys the parent body after an activation delay
-# if it moves outside the visible screen area with a margin.
+# if it moves outside the playfield area with a margin.
 
 extends UniversalComponent
 
@@ -7,11 +7,18 @@ extends UniversalComponent
 @export var margin: int = 16
 @export var activation_time: float = 3.0
 
-# Screen bounds
-@onready var bounds: Vector2 = get_viewport().get_visible_rect().size
+# Playfield bounds (from game.playfield_size, fallback to viewport)
+var bounds: Vector2
 
 # Time since spawn
 var _counter: float = 0.0
+
+# Initialize bounds from game playfield_size, fallback to viewport
+func _ready() -> void:
+	if game and "playfield_size" in game:
+		bounds = game.playfield_size
+	else:
+		bounds = get_viewport().get_visible_rect().size
 
 # Wait for activation delay, then free parent if off-screen
 func _physics_process(delta: float) -> void:

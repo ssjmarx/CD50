@@ -18,13 +18,17 @@ func _ready() -> void:
 
 # Compare velocities on collision — faster entity wins
 func _on_collision(collider: Node, _normal: Vector2) -> void:
+	var health: Node = collider.get_node_or_null("Health")
+	if health == null or health._is_dead:
+		return
+	
 	if parent.velocity.length() > collider.velocity.length():
-		collider.get_node("Health").reduce_health(damage_amount)
+		health.reduce_health(damage_amount)
 		return
 	elif parent.velocity.length() == collider.velocity.length():
 		match tie_breaker:
 			Tie.BOTH_DAMAGE:
-				collider.get_node("Health").reduce_health(damage_amount)
+				health.reduce_health(damage_amount)
 				return
 			Tie.NO_DAMAGE:
 				return

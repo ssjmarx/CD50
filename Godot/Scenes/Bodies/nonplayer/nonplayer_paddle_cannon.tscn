@@ -28,18 +28,20 @@ shape = SubResource("RectangleShape2D_868uc")
 
 [node name="GunSimple" parent="." instance=ExtResource("3")]
 ammo = ExtResource("4")
-max_bullets = 1
 muzzle_offset = 10
-initial_velocity = 400
 bullet_group = "enemies_bullets"
 
 [node name="DirectMovement" parent="." instance=ExtResource("5")]
 speed = 100
 
 [node name="ClearShotAi" parent="." instance=ExtResource("7")]
-fire_rate = 0.5
+fire_rate = 0.0
+vision_range = 1000.0
 
 [node name="CoverAi" parent="." instance=ExtResource("6")]
+threat_group = "invaders_bullets"
+vision_height = 1000.0
+bullet_speed = 800.0
 threat_margin = 32.0
 
 [node name="ScoreOnDeath" parent="." instance=ExtResource("8")]

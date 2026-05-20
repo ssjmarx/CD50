@@ -33,6 +33,7 @@ script = ExtResource("1_xpqot")
 color = Color(1, 0.64705884, 0, 1)
 width = 16
 height = 16
+bounds_margin = 16
 collision_groups = Array[String](["enemies"])
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="."]

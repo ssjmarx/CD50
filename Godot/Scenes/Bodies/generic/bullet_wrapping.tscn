@@ -11,10 +11,7 @@
 
 [node name="BulletWrapping" type="CharacterBody2D"]
 script = ExtResource("1_1lbvm")
-x_min = -20.0
-x_max = 660.0
-y_min = -20.0
-y_max = 380.0
+bounds_margin = 16
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="."]
 

@@ -63,7 +63,7 @@ script = ExtResource("1")
 color = Color(0, 1, 1, 1)
 width = 16
 height = 16
-collision_groups = Array[String](["players"])
+collision_groups = Array[String]([])
 
 [node name="Health" parent="." instance=ExtResource("2")]
 
@@ -89,7 +89,7 @@ ammo = ExtResource("6")
 max_bullets = 1
 initial_velocity = 200
 joy_input = true
-bullet_group = "players_bullets"
+bullet_group = "invaders_bullets"
 
 [node name="crab" type="AnimatedSprite2D" parent="."]
 visible = false
