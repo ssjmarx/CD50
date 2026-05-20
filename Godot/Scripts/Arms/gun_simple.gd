@@ -54,6 +54,8 @@ func _on_shoot() -> void:
 	bullet.global_position = parent.global_position + Vector2.from_angle(firing_angle) * muzzle_offset
 	if bullet_group != "":
 		bullet.collision_groups.append(bullet_group)
+		bullet.add_to_group(bullet_group)
+		GroupCache.mark_dirty(bullet_group)
 	
 	parent.get_parent().add_child(bullet)
 	active_bullets.push_back(bullet)

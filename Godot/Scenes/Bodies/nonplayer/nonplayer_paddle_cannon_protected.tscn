@@ -39,9 +39,10 @@ bullet_group = "enemies_bullets"
 speed = 100
 
 [node name="CoverAi" parent="." instance=ExtResource("6")]
+bullet_speed = 400.0
 
 [node name="ClearShotAi" parent="." instance=ExtResource("7")]
-fire_rate = 0.1
+fire_rate = 0.5
 vision_range = 400.0
 
 [node name="ScoreOnDeath" parent="." instance=ExtResource("8")]
