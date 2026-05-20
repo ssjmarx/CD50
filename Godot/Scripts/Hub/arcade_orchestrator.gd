@@ -6,7 +6,7 @@
 extends Node2D
 
 enum OrchestratorState { BOOT, PLAYING, GAME_OVER, TRANSITIONING }
-enum PlaylistMode { IN_ORDER, SHUFFLE }
+enum PlaylistMode { IN_ORDER, SHUFFLE, SEMI_RANDOM }
 
 @export var playlist: Array[ArcadeGameEntry] = []
 @export var starting_lives: int = 3
@@ -49,6 +49,13 @@ var _last_game_won: bool = false
 var _shuffle_bag: Array[int] = []
 var _current_interface: Control = null
 var _transition_tween: Tween = null
+
+# Semi-random playlist state
+# Phases: 0=REMAKE×2, 1=LITE_REMIX×2, 2=REMAKE+LITE×4, 3=HEAVY×2, 4=ALL(endless)
+var _sr_phase: int = 0
+var _sr_games_played_in_phase: int = 0
+var _sr_phase_bag: Array[int] = []  # indices into playlist for current phase
+var _last_similarity_tag: String = ""
 
 # Per-game tracking
 var _game_count: float = 0.0      # games completed this run (drives per-game bonus)
@@ -147,6 +154,8 @@ func _start_next_game() -> void:
 		if _shuffle_bag.is_empty():
 			_refill_shuffle_bag()
 		entry = playlist[_shuffle_bag.pop_front()]
+	elif playlist_mode == PlaylistMode.SEMI_RANDOM:
+		entry = _get_semi_random_entry()
 	else:
 		if _current_index >= playlist.size():
 			_current_index = 0
@@ -220,7 +229,7 @@ func _on_transition_to_game_over() -> void:
 	_current_game_instance = null
 	_current_interface = null
 	
-	# Dim music on game over
+	# Fade music to idle volume on game over
 	_music_player.fade_to(music_idle_volume_db, music_fade_out_duration)
 	
 	_state = OrchestratorState.GAME_OVER
@@ -234,6 +243,10 @@ func _restart_run() -> void:
 	_running_score = 0
 	_current_index = 0
 	_shuffle_bag.clear()
+	_sr_phase = 0
+	_sr_games_played_in_phase = 0
+	_sr_phase_bag.clear()
+	_last_similarity_tag = ""
 	_game_count = 0
 	_game_multiplier = 1.0
 	lives_changed.emit(_lives)
@@ -243,8 +256,8 @@ func _restart_run() -> void:
 	if ugs:
 		ugs.set_arcade_bonus(0.0)
 	
-	# Fade music to idle
-	_music_player.fade_to(music_idle_volume_db, music_fade_out_duration)
+	# Advance to next music track (shows credit, starts idle section)
+	_music_player.advance_track()
 	
 	# Scroll: GameOverScreen slides up, BootScreen slides in from below
 	_boot_screen.position.y = VIEWPORT_HEIGHT
@@ -596,6 +609,80 @@ func _apply_save_modifiers() -> void:
 	feature_creep = mods.get("feature_creep", false)
 	crunch_time = mods.get("crunch_time", false)
 	scope_creep = mods.get("scope_creep", false)
+
+# --- Semi-Random Playlist ---
+# Phases: 0=REMAKE×2, 1=LITE_REMIX×2, 2=REMAKE+LITE×4, 3=HEAVY×2, 4=ALL(endless)
+# Anti-repetition: blocks games with the same similarity_tag as the previous game.
+
+func _get_semi_random_entry() -> ArcadeGameEntry:
+	# If bag is empty, advance phase or refill
+	if _sr_phase_bag.is_empty():
+		_sr_advance_phase()
+		_sr_refill_phase_bag()
+	
+	# Pop entries until we find one that passes the similarity check
+	var set_aside: Array[int] = []
+	var result_idx: int = -1
+	
+	while not _sr_phase_bag.is_empty():
+		var idx: int = _sr_phase_bag.pop_front()
+		if not _is_too_similar(playlist[idx]):
+			result_idx = idx
+			break
+		else:
+			set_aside.append(idx)
+	
+	# If nothing passed the check, use the first set-aside entry (never hard-lock)
+	if result_idx == -1 and not set_aside.is_empty():
+		result_idx = set_aside.pop_front()
+	
+	# Put remaining set-aside entries back at the end of the bag
+	_sr_phase_bag.append_array(set_aside)
+	
+	var entry := playlist[result_idx]
+	_last_similarity_tag = entry.similarity_tag
+	_sr_games_played_in_phase += 1
+	return entry
+
+func _is_too_similar(entry: ArcadeGameEntry) -> bool:
+	return entry.similarity_tag != "" and entry.similarity_tag == _last_similarity_tag
+
+func _sr_advance_phase() -> void:
+	# Check if current phase is exhausted
+	var count := _sr_get_count_for_phase(_sr_phase)
+	if _sr_games_played_in_phase >= count:
+		_sr_phase += 1
+		_sr_games_played_in_phase = 0
+		# Phase 4 is endless — stays at 4 forever
+
+func _sr_refill_phase_bag() -> void:
+	_sr_phase_bag.clear()
+	var buckets := _sr_get_buckets_for_phase(_sr_phase)
+	for i in playlist.size():
+		if playlist[i].bucket in buckets:
+			_sr_phase_bag.append(i)
+	_sr_phase_bag.shuffle()
+
+func _sr_get_buckets_for_phase(phase: int) -> Array[int]:
+	match phase:
+		0:  # Remakes only
+			return [ArcadeGameEntry.GameBucket.REMAKE]
+		1:  # Lite remixes only
+			return [ArcadeGameEntry.GameBucket.LITE_REMIX]
+		2:  # Remakes + lite remixes combined
+			return [ArcadeGameEntry.GameBucket.REMAKE, ArcadeGameEntry.GameBucket.LITE_REMIX]
+		3:  # Heavy remixes / originals
+			return [ArcadeGameEntry.GameBucket.HEAVY_REMIX_ORIGINAL]
+		_:  # Phase 4+: all buckets (endless)
+			return [ArcadeGameEntry.GameBucket.REMAKE, ArcadeGameEntry.GameBucket.LITE_REMIX, ArcadeGameEntry.GameBucket.HEAVY_REMIX_ORIGINAL]
+
+func _sr_get_count_for_phase(phase: int) -> int:
+	match phase:
+		0: return 2   # 2 remakes
+		1: return 2   # 2 lite remixes
+		2: return 4   # 4 mixed (remakes + lite)
+		3: return 2   # 2 heavy
+		_: return 999 # Phase 4+: endless (never auto-advances)
 
 func _refill_shuffle_bag() -> void:
 	_shuffle_bag.clear()

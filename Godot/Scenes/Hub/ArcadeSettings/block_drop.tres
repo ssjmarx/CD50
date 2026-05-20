@@ -36,4 +36,5 @@ metadata/_custom_type_script = "uid://cp0ni1lgml7c6"
 script = ExtResource("2_ecjqk")
 game_scene = ExtResource("1_ecjqk")
 overrides = Array[ExtResource("1_l06m0")]([SubResource("Resource_ecjqk"), SubResource("Resource_780gg"), SubResource("Resource_junk"), SubResource("Resource_timer")])
+similarity_tag = "block_drop"
 metadata/_custom_type_script = "uid://bdsbfe65crnbu"

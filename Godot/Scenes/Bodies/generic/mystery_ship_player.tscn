@@ -49,6 +49,7 @@ acceleration = 200
 
 [node name="RingSpawner" parent="." instance=ExtResource("11_yn8fj")]
 spawn_scene = ExtResource("12_x64ad")
+ring_radius = 24.0
 component_health = 1
 orbit_speed = 100.0
 

@@ -1,7 +1,8 @@
 # Synthesized audio generator. Produces real-time waveforms (sine, square, sawtooth,
 # triangle, noise) with optional effects (warble, tremolo, sweep, decay).
 # Supports continuous playback or signal-triggered one-shots.
-# Voice limiting mimics arcade hardware polyphony caps.
+# All audio output routes through the SoundBank autoload to ensure
+# sounds are audible inside SubViewports (arcade mode).
 # Editor preview: check the "Preview Sound" toggle in the inspector to hear it.
 
 @tool
@@ -26,7 +27,7 @@ extends UniversalComponent2D
 @export var gameplay_only: bool = false
 
 # Enums
-enum PlayMode { CONTINUOUS, ON_SIGNAL }
+enum PlayMode { CONTINUOUS, ON_SIGNAL, ON_SPAWN }
 enum WaveShape { SINE, SQUARE, SAWTOOTH, TRIANGLE, NOISE }
 enum Effect { NONE, WARBLE, TREMOLO, SWEEP_DOWN, DECAY }
 enum Semitone {
@@ -41,31 +42,21 @@ enum Semitone {
 	F5 = 77, FS5 = 78, G5 = 79, GS5 = 80, A5 = 81, AS5 = 82, B5 = 83,
 }
 
-# Voice limiting (arcade hardware had 1-3 sound channels)
-const MIX_RATE: int = 11025
-const MAX_VOICES: int = 8
-const MAX_FILL_PER_FRAME: int = 256
-static var _active_voices: int = 0
-static var _continuous_registry: Dictionary = {}  # signature -> WeakRef to self
-var _voice_active: bool = false
+# Signature for voice dedup (same wave+effect+note = shared voice)
 var _signature: String = ""
+var _is_paused: bool = false
 
-# Runtime state
-var _stream: AudioStreamGenerator
-var _playback: AudioStreamGeneratorPlayback
-var _player: Node
+# Editor preview state
+var _preview_player: AudioStreamPlayer = null
 var _frame_pos: int = 0
 var _shot_end: int = 0
 var _phase: float = 0.0
 var _cached_freq: float = 0.0
-var _blocking_node: Node = null
 
-# Initial fill cap for play_one_shot — limits samples generated during collision
-# callbacks to prevent audio-gen spikes. Remaining samples fill via _process.
+# Audio constants (shared with SoundBank)
+const MIX_RATE: int = 11025
+const MAX_FILL_PER_FRAME: int = 256
 const MAX_INITIAL_FILL: int = 128
-
-# Editor preview state
-var _preview_player: AudioStreamPlayer = null
 
 # --- Property List for Editor Preview ---
 
@@ -131,9 +122,9 @@ func _editor_preview() -> void:
 				_preview_player = null
 		)
 
-# Create the audio stream, player, and connect signal source.
-# ON_SIGNAL mode: lightweight config holder — routes through SoundBank,
-# no audio nodes created locally. CONTINUOUS mode: unchanged.
+# Initialize: route audio through SoundBank autoload.
+# Both CONTINUOUS and ON_SIGNAL modes use SoundBank to ensure
+# sounds are audible inside SubViewports.
 func _ready() -> void:
 	if Engine.is_editor_hint():
 		return
@@ -143,107 +134,46 @@ func _ready() -> void:
 	
 	match play_mode:
 		PlayMode.ON_SIGNAL:
-			# Lightweight path: no audio node creation, just connect signal
+			# Connect signal source for one-shot triggers
 			if source_node != null:
 				source_node.connect(source_signal, _on_signal)
 			set_process(false)
+		PlayMode.ON_SPAWN:
+			# Fire a one-shot immediately when entering the tree
+			play_one_shot()
+			set_process(false)
 		PlayMode.CONTINUOUS:
-			_stream = AudioStreamGenerator.new()
-			_stream.mix_rate = MIX_RATE
-			
-			if positional:
-				_player = AudioStreamPlayer2D.new()
-			else:
-				_player = AudioStreamPlayer.new()
-
-			_player.stream = _stream
-			_player.volume_db = linear_to_db(volume)
-			add_child(_player)
-			_try_claim_continuous()
-
-# Try to register as the active CONTINUOUS synth for this signature
-func _try_claim_continuous() -> void:
-	var ref = _continuous_registry.get(_signature)
-	if ref != null and ref.get_ref() != null:
-		# Another synth already holds this slot — connect to its tree_exiting signal
-		# instead of polling every frame
-		_player.stop()
-		_voice_active = false
-		var blocking = ref.get_ref() as Node
-		if blocking and not blocking.tree_exiting.is_connected(_on_slot_freed):
-			blocking.tree_exiting.connect(_on_slot_freed)
-			_blocking_node = blocking
-		set_process(false)
-		return
-	# Slot is free — claim it
-	if _active_voices >= MAX_VOICES:
-		_player.stop()
-		set_process(false)
-		return
-	_active_voices += 1
-	_voice_active = true
-	_continuous_registry[_signature] = weakref(self)
-	_player.play()
-	_playback = _player.get_stream_playback()
+			# Route through SoundBank — no local audio nodes
+			SoundBank.start_continuous(_signature, wave_shape, effect,
+				note, volume, get_instance_id())
+			set_process(true)  # Needed for gameplay_only gating
 
 # Release voice when leaving the tree
 func _exit_tree() -> void:
-	# Clean up: disconnect from blocking synth if we were waiting
-	if _blocking_node and is_instance_valid(_blocking_node):
-		if _blocking_node.tree_exiting.is_connected(_on_slot_freed):
-			_blocking_node.tree_exiting.disconnect(_on_slot_freed)
-		_blocking_node = null
-	if _voice_active:
-		_active_voices -= 1
-		_voice_active = false
-	if play_mode == PlayMode.CONTINUOUS:
-		var ref = _continuous_registry.get(_signature)
-		if ref != null and ref.get_ref() == self:
-			_continuous_registry.erase(_signature)
+	if Engine.is_editor_hint():
+		return
+	if play_mode == PlayMode.CONTINUOUS and _signature != "":
+		SoundBank.stop_continuous(_signature, get_instance_id())
 
-# Fill the audio buffer each frame; continuous or one-shot mode
+# Handle gameplay_only gating for CONTINUOUS sounds.
+# Actual audio buffer fill is done by SoundBank's centralized _process.
 func _process(_delta: float) -> void:
 	# Editor preview: continue filling multi-frame previews
 	if Engine.is_editor_hint():
 		_process_editor_preview()
 		return
 	
-	match play_mode:
-		PlayMode.CONTINUOUS:
-			if gameplay_only and game != null and game.current_state != CommonEnums.State.PLAYING:
-				if _player.playing:
-					_player.stop()
-				return
-			# If stopped (was gated), restart when back to PLAYING
-			if not _player.playing and _voice_active:
-				_player.play()
-				_playback = _player.get_stream_playback()
-			# If not active, wait for signal-based slot notification
-			if not _voice_active:
-				return
-			var to_fill = mini(_playback.get_frames_available(), MAX_FILL_PER_FRAME)
-			for i in to_fill:
-				var t = float(_frame_pos) / _stream.mix_rate
-				var sample = _get_sample(t)
-				_playback.push_frame(Vector2(sample, sample))
-				_frame_pos += 1
-		
-		PlayMode.ON_SIGNAL:
-			# Fill remaining frames for the current one-shot
-			var to_fill = mini(_playback.get_frames_available(), MAX_FILL_PER_FRAME)
-			var remaining = _shot_end - _frame_pos
-			var to_push = mini(mini(to_fill, remaining), MAX_FILL_PER_FRAME)
-			for i in to_push:
-				var t = float(_frame_pos) / _stream.mix_rate
-				var sample = _get_sample(t)
-				_playback.push_frame(Vector2(sample, sample))
-				_frame_pos += 1
-			if _frame_pos >= _shot_end:
-				_player.stop()
-				set_process(false)
-				if _voice_active:
-					_active_voices -= 1
-					_voice_active = false
+	if play_mode != PlayMode.CONTINUOUS:
+		return
+	
+	if gameplay_only and game != null and game.current_state != CommonEnums.State.PLAYING:
+		if not _is_paused:
+			_is_paused = true
+			SoundBank.pause_continuous(_signature, get_instance_id())
+	else:
+		if _is_paused:
+			_is_paused = false
+			SoundBank.resume_continuous(_signature, get_instance_id())
 
 # Signal handler: play one-shot if filter matches (or no filter set)
 func _on_signal(arg1 = "", _arg2 = null) -> void:
@@ -251,75 +181,22 @@ func _on_signal(arg1 = "", _arg2 = null) -> void:
 		return
 	play_one_shot()
 
-# Start a one-shot playback.
-# ON_SIGNAL mode: routes through SoundBank pool (no local audio nodes).
-# CONTINUOUS mode: not used externally, but functional if called.
+# Start a one-shot playback via SoundBank.
 func play_one_shot() -> void:
 	if gameplay_only and game != null and game.current_state != CommonEnums.State.PLAYING:
 		return
 	
-	if play_mode == PlayMode.ON_SIGNAL:
-		# Route through SoundBank — no local node creation or buffer management
-		var pos: Vector2 = global_position if is_inside_tree() else Vector2.ZERO
-		SoundBank.play(wave_shape, effect, note, volume, duration,
-			pos, positional, exclusive, get_instance_id())
-		return
-	
-	# Legacy local path (only reached if a CONTINUOUS synth calls play_one_shot)
-	if _player == null:
-		return
-	if exclusive and _player.playing:
-		return
-	if _active_voices >= MAX_VOICES:
-		return
-	
-	# Only claim a new voice slot if we don't already have one
-	if not _voice_active:
-		_active_voices += 1
-		_voice_active = true
-	
-	_frame_pos = 0
-	_shot_end = int(duration * _stream.mix_rate)
-	_phase = 0.0
-	_update_cached_freq()
-	
-	if not _player.playing:
-		_player.play()
-		_playback = _player.get_stream_playback()
-	
-	# Cap initial fill to limit audio-gen work during collision callbacks.
-	# Remaining samples are generated in _process over subsequent frames.
-	var to_push = mini(mini(_playback.get_frames_available(), _shot_end), MAX_INITIAL_FILL)
-	for i in to_push:
-		var t = float(_frame_pos) / _stream.mix_rate
-		var sample = _get_sample(t)
-		_playback.push_frame(Vector2(sample, sample))
-		_frame_pos += 1
-	
-	# Continue in _process if there are more frames to fill
-	if _frame_pos < _shot_end:
-		set_process(true)
+	var pos: Vector2 = global_position if is_inside_tree() else Vector2.ZERO
+	SoundBank.play(wave_shape, effect, note, volume, duration,
+		pos, positional, exclusive, get_instance_id())
 
-# --- Audio Generation ---
+# --- Audio Generation (used only for editor preview) ---
 
-# Pre-compute frequency from current note (A4 = 440Hz reference).
-# Called once per note change instead of per-sample to avoid pow() in the hot loop.
 func _update_cached_freq() -> void:
 	_cached_freq = 440.0 * pow(2.0, (note - 69) / 12.0)
 
-# Signal handler: a blocking continuous synth is exiting the tree.
-# Clean up its registry entry so we can claim the freed slot.
-func _on_slot_freed() -> void:
-	if _blocking_node and is_instance_valid(_blocking_node):
-		var ref = _continuous_registry.get(_signature)
-		if ref != null and ref.get_ref() == _blocking_node:
-			_continuous_registry.erase(_signature)
-		_blocking_node = null
-	_try_claim_continuous()
-	if _voice_active:
-		set_process(true)
-
-# Generate a single audio sample at the given time, applying wave shape and effects
+# Generate a single audio sample at the given time, applying wave shape and effects.
+# Only used for editor preview — runtime audio is generated by SoundBank.
 func _get_sample(t: float) -> float:
 	var freq = _cached_freq
 	
@@ -355,8 +232,9 @@ func _get_sample(t: float) -> float:
 		Effect.TREMOLO:
 			sample *= 0.5 + 0.5 * sin(TAU * 4.0 * t)
 		Effect.DECAY:
-			var progress = float(_frame_pos) / float(_shot_end)
-			sample *= max(0.0, 1.0 - progress)
+			if _shot_end > 0:
+				var progress = float(_frame_pos) / float(_shot_end)
+				sample *= max(0.0, 1.0 - progress)
 	
 	return sample
 

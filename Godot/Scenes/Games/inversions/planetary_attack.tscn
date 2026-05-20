@@ -263,7 +263,7 @@ position = Vector2(560, 640)
 scale = Vector2(0.667, 0.667)
 
 [node name="TriangleTimer" parent="." instance=ExtResource("13_6cle6")]
-duration = 6.0
+duration = 4.0
 loop_timer = true
 game_start = true
 timer_id = "triangle_spawn"
@@ -288,7 +288,7 @@ initial_velocity = Vector2(100, 0)
 use_random_angle = true
 
 [node name="ModernTimer" parent="." instance=ExtResource("13_6cle6")]
-duration = 9.0
+duration = 7.0
 loop_timer = true
 game_start = true
 timer_id = "modern_spawn"

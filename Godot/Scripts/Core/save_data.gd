@@ -9,11 +9,11 @@ const MAX_HIGH_SCORES := 5
 
 # Modifier definitions: key = internal name, value = { threshold, display_name }
 const MODIFIER_DEFS := {
-	"scope_creep":     { "threshold": 100,     "display": "SCOPE CREEP" },
-	"shotgun_mode":    { "threshold": 1000,    "display": "SHOTGUN MODE" },
-	"overclocked_cpu": { "threshold": 10000,   "display": "OVERCLOCKED CPU" },
-	"feature_creep":   { "threshold": 50000,   "display": "FEATURE CREEP" },
-	"crunch_time":     { "threshold": 100000,  "display": "CRUNCH TIME" },
+	"scope_creep":     { "threshold": 100,     "display": "SCOPE CREEP",      "desc": "player health × 2" },
+	"shotgun_mode":    { "threshold": 1000,    "display": "SHOTGUN MODE",     "desc": "bullets and balls × 3" },
+	"overclocked_cpu": { "threshold": 10000,   "display": "OVERCLOCKED CPU",  "desc": "speed × 1.25, multiplier × 1.5" },
+	"feature_creep":   { "threshold": 50000,   "display": "FEATURE CREEP",    "desc": "spawns × 1.5" },
+	"crunch_time":     { "threshold": 100000,  "display": "CRUNCH TIME",      "desc": "score × 3, 1 life" },
 }
 
 # Ordered list of modifier keys (matches display order)
@@ -221,6 +221,11 @@ func get_modifier_threshold(key: String) -> int:
 	if key in MODIFIER_DEFS:
 		return MODIFIER_DEFS[key]["threshold"]
 	return 0
+
+func get_modifier_description(key: String) -> String:
+	if key in MODIFIER_DEFS:
+		return MODIFIER_DEFS[key]["desc"]
+	return ""
 
 # --- Internal ---
 

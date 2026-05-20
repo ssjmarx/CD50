@@ -23,4 +23,5 @@ script = ExtResource("3_ma15c")
 game_scene = ExtResource("1_xpktu")
 overrides = Array[ExtResource("2_3n8w6")]([SubResource("Resource_lives"), SubResource("Resource_bottom")])
 time_limit = 0.0
+bucket = 2
 metadata/_custom_type_script = "uid://bdsbfe65crnbu"

@@ -65,4 +65,5 @@ metadata/_custom_type_script = "uid://cp0ni1lgml7c6"
 script = ExtResource("3_m0dg5")
 game_scene = ExtResource("1_ehhlw")
 overrides = Array[ExtResource("2_snkw5")]([SubResource("Resource_tdlot"), SubResource("Resource_n0muh"), SubResource("Resource_42jm0"), SubResource("Resource_3qvvg"), SubResource("Resource_ehhlw"), SubResource("Resource_snkw5"), SubResource("Resource_spawn1"), SubResource("Resource_spawn2")])
+similarity_tag = "paddle_ball"
 metadata/_custom_type_script = "uid://bdsbfe65crnbu"

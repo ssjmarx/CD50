@@ -65,4 +65,6 @@ metadata/_custom_type_script = "uid://cp0ni1lgml7c6"
 script = ExtResource("3_t7e4o")
 game_scene = ExtResource("1_0xvf2")
 overrides = Array[ExtResource("2_jtgh6")]([SubResource("Resource_8h1ts"), SubResource("Resource_tvrsh"), SubResource("Resource_timer"), SubResource("Resource_speed"), SubResource("Resource_mute_a"), SubResource("Resource_mute_b"), SubResource("Resource_spawn1"), SubResource("Resource_spawn2")])
+bucket = 1
+similarity_tag = "brick_breaker"
 metadata/_custom_type_script = "uid://bdsbfe65crnbu"

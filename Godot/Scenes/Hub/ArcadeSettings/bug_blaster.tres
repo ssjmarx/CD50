@@ -64,4 +64,5 @@ metadata/_custom_type_script = "uid://cp0ni1lgml7c6"
 script = ExtResource("3_pp72w")
 game_scene = ExtResource("1_hl2w6")
 overrides = Array[ExtResource("2_83x8x")]([SubResource("Resource_hl2w6"), SubResource("Resource_83x8x"), SubResource("Resource_pp72w"), SubResource("Resource_gc1"), SubResource("Resource_gc2"), SubResource("Resource_gc3"), SubResource("Resource_gc5"), SubResource("Resource_timer")])
+similarity_tag = "bug_blaster"
 metadata/_custom_type_script = "uid://bdsbfe65crnbu"

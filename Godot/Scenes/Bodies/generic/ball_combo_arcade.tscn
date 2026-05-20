@@ -29,6 +29,7 @@ acceleration_levels = 4
 [node name="AngledDeflector" parent="." instance=ExtResource("4_bx6nc")]
 
 [node name="ScreenCleanup" parent="." instance=ExtResource("5_tsggo")]
+activation_time = 0.0
 
 [node name="SfxRamping" parent="." node_paths=PackedStringArray("source_node") instance=ExtResource("6_n8fuj")]
 source_node = NodePath("..")

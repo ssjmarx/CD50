@@ -92,4 +92,6 @@ metadata/_custom_type_script = "uid://cp0ni1lgml7c6"
 script = ExtResource("3_entry")
 game_scene = ExtResource("1_sbugs")
 overrides = Array[ExtResource("2_props")]([SubResource("Resource_lives"), SubResource("Resource_victory"), SubResource("Resource_firstwave"), SubResource("Resource_stagger1"), SubResource("Resource_stagger2"), SubResource("Resource_crab_timer"), SubResource("Resource_crab_loop"), SubResource("Resource_squid_timer"), SubResource("Resource_squid_loop"), SubResource("Resource_asteroids"), SubResource("Resource_mute_a"), SubResource("Resource_mute_b")])
+bucket = 1
+similarity_tag = "space_rocks"
 metadata/_custom_type_script = "uid://bdsbfe65crnbu"

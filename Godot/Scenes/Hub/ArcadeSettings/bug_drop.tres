@@ -15,4 +15,5 @@ metadata/_custom_type_script = "uid://cp0ni1lgml7c6"
 script = ExtResource("3_entry")
 game_scene = ExtResource("1_game")
 overrides = Array[ExtResource("2_prop")]([SubResource("Resource_victory")])
+bucket = 2
 metadata/_custom_type_script = "uid://bdsbfe65crnbu"

@@ -19,12 +19,15 @@ func set_orchestrator(ao: Node) -> void:
 
 # Apply setup-time modifiers (call after add_child, before game start)
 func apply_setup_modifiers(game_instance: Node) -> void:
+	if _ao.shotgun_mode:
+		_walk_and_shotgun_ball_spawners(game_instance)
+		_shotgun_pong_thresholds(game_instance)
 	if _ao.overclocked_cpu:
 		_walk_and_overclock(game_instance)
 	if _ao.feature_creep:
-		_walk_and_double_spawners(game_instance)
+		_walk_and_creep_spawners(game_instance, game_instance.scene_file_path)
 		_walk_and_feature_creep_splits(game_instance)
-		_fix_bug_drop_line_clear(game_instance)
+		_creep_bug_drop_bottom_spawner(game_instance)
 	if _ao.scope_creep:
 		_walk_and_scope_creep(game_instance)
 
@@ -108,6 +111,64 @@ func _apply_shotgun(bullet: CharacterBody2D) -> void:
 		clone.velocity = vel.rotated(SHOTGUN_SPREAD * dir)
 		parent_node.add_child(clone)
 
+# --- Shotgun Mode: Ball Spawners ---
+# Three balls instead of one. Chaos reigns.
+
+func _walk_and_shotgun_ball_spawners(node: Node) -> void:
+	var scr = node.get_script()
+	if scr:
+		var path: String = scr.resource_path
+		if path.find("wave_spawner") != -1 and path.find("tetromino") == -1:
+			if "spawn_scene" in node and node.spawn_scene:
+				var scene_path: String = node.spawn_scene.resource_path
+				if scene_path.find("ball") != -1:
+					_shotgun_ball_spawner(node)
+	for child in node.get_children():
+		_walk_and_shotgun_ball_spawners(child)
+
+func _shotgun_ball_spawner(spawner: Node) -> void:
+	if spawner.has_meta("_shotgun_balled"):
+		return
+	spawner.set_meta("_shotgun_balled", true)
+	if "spawn_count_equation" in spawner:
+		spawner.spawn_count_equation = "3"
+
+# --- Shotgun Mode: Pong Score Thresholds ---
+# First to 2 effective goals instead of first to 1 when 3 balls are in play.
+# Must account for arcade_bonus inflating score per goal: int(score_amount * (1 + game_count)).
+# Looks up actual score_amount per direction from Goal nodes, then sets
+# target_score = 2 × int(score_amount × effective_mult) per PointsMonitor.
+
+func _shotgun_pong_thresholds(game_instance: Node) -> void:
+	var scene_path: String = game_instance.scene_file_path
+	if scene_path.find("paddle_ball") == -1 and scene_path.find("meteor_rally") == -1:
+		return
+	var effective_mult: float = 1.0 + _ao._game_count
+	# Build map: score_type → score_amount from Goal nodes
+	var score_amounts: Dictionary = {}
+	_collect_goal_amounts(game_instance, score_amounts)
+	_walk_and_set_pong_thresholds(game_instance, effective_mult, score_amounts)
+
+func _collect_goal_amounts(node: Node, score_amounts: Dictionary) -> void:
+	var scr = node.get_script()
+	if scr and scr.resource_path.find("Scripts/Rules/goal.gd") != -1:
+		if "score_type" in node and "score_amount" in node:
+			score_amounts[node.score_type] = node.score_amount
+	for child in node.get_children():
+		_collect_goal_amounts(child, score_amounts)
+
+func _walk_and_set_pong_thresholds(node: Node, effective_mult: float, score_amounts: Dictionary) -> void:
+	var scr = node.get_script()
+	if scr and scr.resource_path.find("points_monitor") != -1:
+		if "target_score" in node and "score_type" in node:
+			var st = node.score_type
+			if score_amounts.has(st):
+				var amount: int = score_amounts[st]
+				var score_per_goal: int = int(amount * effective_mult)
+				node.target_score = 2 * score_per_goal
+	for child in node.get_children():
+		_walk_and_set_pong_thresholds(child, effective_mult, score_amounts)
+
 # --- Overclocked CPU ---
 # Everything moves 25% faster. Including the enemies.
 
@@ -151,60 +212,112 @@ func _walk_and_overclock(node: Node) -> void:
 		_apply_overclocked_to_leg(node)
 	if _is_swarm_controller(node):
 		_apply_overclocked_to_swarm(node)
+	# Overclock wave spawners with initial velocity
+	_overclock_spawner_velocity(node)
 	for child in node.get_children():
 		_walk_and_overclock(child)
 
-# --- Feature Creep ---
-# Double the enemies. Double the chaos. Double the score.
+func _overclock_spawner_velocity(node: Node) -> void:
+	var scr = node.get_script()
+	if not scr:
+		return
+	if scr.resource_path.find("wave_spawner") == -1:
+		return
+	if node.has_meta("_overclocked"):
+		return
+	if "initial_velocity" in node and node.initial_velocity != Vector2.ZERO:
+		node.set_meta("_overclocked", true)
+		node.initial_velocity = node.initial_velocity * OVERCLOCK_MULT
 
-func _walk_and_double_spawners(node: Node) -> void:
+# --- Feature Creep ---
+# 1.5x the enemies (rounded down). More chaos. More score.
+
+const CREEP_MULT := 1.5
+
+func _walk_and_creep_spawners(node: Node, scene_path: String) -> void:
 	var scr = node.get_script()
 	if scr:
 		var path: String = scr.resource_path
 		if path.find("wave_spawner") != -1 and path.find("tetromino") == -1:
-			_double_wave_spawner(node)
+			_creep_wave_spawner(node, scene_path)
 		if path.find("ring_spawner") != -1:
-			_double_ring_spawner(node)
+			_creep_ring_spawner(node)
 	for child in node.get_children():
-		_walk_and_double_spawners(child)
+		_walk_and_creep_spawners(child, scene_path)
 
-func _double_wave_spawner(spawner: Node) -> void:
+func _creep_wave_spawner(spawner: Node, scene_path: String) -> void:
 	if spawner.has_meta("_feature_creeped"):
 		return
+	
+	# Bug Drop: handled separately by _creep_bug_drop_bottom_spawner — skip entirely
+	if scene_path.find("bug_drop") != -1:
+		return
+	
 	spawner.set_meta("_feature_creeped", true)
 	
+	# Brick Breaker and remix: multiply height (rows) instead of width
+	# Block Drop: multiply rows AND adjust position so bottom edge stays pinned
+	var _is_brick_variant: bool = (
+		scene_path.find("brick_breaker") != -1 or
+		scene_path.find("rock_breaker") != -1
+	)
+	var _is_block_drop: bool = scene_path.find("block_drop") != -1
+	
 	if "spawn_pattern" in spawner and spawner.spawn_pattern == CommonEnums.SpawnPattern.GRID:
-		if "grid_columns" in spawner:
-			spawner.grid_columns *= 2
+		if (_is_brick_variant or _is_block_drop) and "grid_rows" in spawner:
+			var old_rows: int = spawner.grid_rows
+			spawner.grid_rows = int(spawner.grid_rows * CREEP_MULT)
+			# Block Drop: pin the bottom edge by shifting spawner position upward
+			if _is_block_drop and spawner.grid_rows > old_rows:
+				var delta_rows: int = spawner.grid_rows - old_rows
+				var step: int = spawner.grid_height + (spawner.grid_spacing if "grid_spacing" in spawner else 0)
+				spawner.position.y -= delta_rows * step / 2.0
+		elif "grid_columns" in spawner:
+			spawner.grid_columns = int(spawner.grid_columns * CREEP_MULT)
 	else:
 		if "spawn_count_equation" in spawner:
-			spawner.spawn_count_equation = "(%s) * 2" % spawner.spawn_count_equation
+			spawner.spawn_count_equation = "int((%s) * 1.5)" % spawner.spawn_count_equation
 
-func _double_ring_spawner(spawner: Node) -> void:
+func _creep_ring_spawner(spawner: Node) -> void:
 	if spawner.has_meta("_feature_creeped"):
 		return
 	spawner.set_meta("_feature_creeped", true)
 	if "spawn_count" in spawner:
-		spawner.spawn_count *= 2
+		spawner.spawn_count = int(spawner.spawn_count * CREEP_MULT)
 
-# Bug Drop fix: when Feature Creep doubles the invader grid, the line clear
-# monitor's detection columns must also double so tetrominos still "fill" rows.
-func _fix_bug_drop_line_clear(game_instance: Node) -> void:
+# Bug Drop: find the bottommost GRID wave_spawner, expand it vertically,
+# and shift it down so the top edge stays contiguous with the spawner above.
+func _creep_bug_drop_bottom_spawner(game_instance: Node) -> void:
 	var scene_path: String = game_instance.scene_file_path
 	if scene_path.find("bug_drop") == -1:
 		return
-	_walk_and_double_line_clear_columns(game_instance)
+	var spawners: Array[Node] = []
+	_collect_grid_spawners(game_instance, spawners)
+	if spawners.is_empty():
+		return
+	# Find the bottommost (highest y-position) grid spawner
+	var bottom: Node = spawners[0]
+	for s in spawners:
+		if s.global_position.y > bottom.global_position.y:
+			bottom = s
+	if bottom.has_meta("_feature_creeped"):
+		return
+	bottom.set_meta("_feature_creeped", true)
+	if "grid_rows" in bottom:
+		bottom.grid_rows = 3
+		# Shift down by 1 row height to pin the top edge
+		var step: float = float(bottom.grid_height + (bottom.grid_spacing if "grid_spacing" in bottom else 0))
+		bottom.position.y += step
 
-func _walk_and_double_line_clear_columns(node: Node) -> void:
+func _collect_grid_spawners(node: Node, out: Array[Node]) -> void:
 	var scr = node.get_script()
-	if scr and scr.resource_path.find("line_clear_monitor") != -1:
-		if "columns" in node and "playfield_origin" in node and "cell_size" in node:
-			var original_cols: int = node.columns
-			node.columns *= 2
-			# Shift origin left by half the added width to center the expanded detection area
-			node.playfield_origin.x -= original_cols * node.cell_size.x / 2.0
+	if scr:
+		var path: String = scr.resource_path
+		if path.find("wave_spawner") != -1 and path.find("tetromino") == -1:
+			if "spawn_pattern" in node and node.spawn_pattern == CommonEnums.SpawnPattern.GRID:
+				out.append(node)
 	for child in node.get_children():
-		_walk_and_double_line_clear_columns(child)
+		_collect_grid_spawners(child, out)
 
 # --- Scope Creep ---
 # Bigger healthbars for EVERYTHING.
@@ -241,7 +354,7 @@ func _walk_and_scope_creep(node: Node) -> void:
 		_walk_and_scope_creep(child)
 
 # --- Feature Creep: Split on Death ---
-# Double the fragments. Double the chaos.
+# 1.5x the fragments (rounded down). More chaos.
 
 func _is_split_on_death(node: Node) -> bool:
 	var scr = node.get_script()
@@ -254,7 +367,7 @@ func _apply_feature_creep_to_split(split: Node) -> void:
 		return
 	split.set_meta("_feature_creeped", true)
 	if "spawn_count" in split:
-		split.spawn_count *= 2
+		split.spawn_count = int(split.spawn_count * CREEP_MULT)
 
 func _walk_and_feature_creep_splits(node: Node) -> void:
 	if _is_split_on_death(node):

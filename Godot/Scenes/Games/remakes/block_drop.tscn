@@ -17,7 +17,7 @@
 [ext_resource type="PackedScene" path="res://Scenes/Components/death_effect_brick.tscn" id="15_death"]
 [ext_resource type="PackedScene" path="res://Scenes/Components/flag_palette.tscn" id="16_flag"]
 [ext_resource type="Resource" path="res://Resources/Flags/cuba_10x5.tres" id="17_cuba"]
-[ext_resource type="PackedScene" path="res://Scenes/Flow/music_player.tscn" id="18_music"]
+[ext_resource type="PackedScene" uid="uid://c4ew4hmxod4e7" path="res://Scenes/Flow/music_player.tscn" id="18_music"]
 [ext_resource type="Script" uid="uid://cfd1lio8bfym2" path="res://Scripts/Flow/music_track.gd" id="19_mtrack"]
 [ext_resource type="Resource" path="res://Resources/Music/el_manisero.tres" id="20_track1"]
 [ext_resource type="Resource" path="res://Resources/Music/son_de_la_loma.tres" id="21_track2"]
@@ -101,7 +101,7 @@ trigger_type = 3
 wave_delay = 0.0
 
 [node name="JunkSpawner" parent="." node_paths=PackedStringArray("director") instance=ExtResource("23_junks")]
-position = Vector2(329, 324)
+position = Vector2(329, 306)
 spawn_scene = ExtResource("4_cqxkq")
 spawn_pattern = 2
 spawn_count_equation = "1"
@@ -116,7 +116,6 @@ grid_rows = 0
 grid_spacing = 0
 grid_health_values = Array[int]([])
 grid_score_values = Array[int]([])
-grid_skip_chance = 0.3
 grid_min_skips_per_row = 1
 
 [node name="TetrominoSpawner" parent="." instance=ExtResource("3_ubbxl")]
