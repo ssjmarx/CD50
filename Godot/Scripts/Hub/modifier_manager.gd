@@ -101,11 +101,11 @@ func _apply_shotgun(bullet: CharacterBody2D) -> void:
 		return
 	
 	var perp := vel.orthogonal().normalized() * SHOTGUN_OFFSET
-	for sign: float in [-1.0, 1.0]:
+	for dir: float in [-1.0, 1.0]:
 		var clone: CharacterBody2D = bullet.duplicate()
 		clone.set_meta("_shotgun_clone", true)
-		clone.global_position = bullet.global_position + perp * sign
-		clone.velocity = vel.rotated(SHOTGUN_SPREAD * sign)
+		clone.global_position = bullet.global_position + perp * dir
+		clone.velocity = vel.rotated(SHOTGUN_SPREAD * dir)
 		parent_node.add_child(clone)
 
 # --- Overclocked CPU ---

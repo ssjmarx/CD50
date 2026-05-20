@@ -110,19 +110,19 @@ func _find_health(node: Node) -> Node:
 			return child
 	return null
 
-func _set_monitor_active(name: String, active: bool) -> void:
-	var monitor = get_node_or_null("../" + name)
+func _set_monitor_active(node_name: String, active: bool) -> void:
+	var monitor = get_node_or_null("../" + node_name)
 	if monitor:
 		monitor.set_physics_process(active)
 
-func _reenable_monitor(name: String) -> void:
-	var monitor = get_node_or_null("../" + name)
+func _reenable_monitor(node_name: String) -> void:
+	var monitor = get_node_or_null("../" + node_name)
 	if monitor:
 		monitor._previous_count = -1
 		monitor.set_physics_process(true)
 
-func _set_timer_active(name: String, active: bool) -> void:
-	var timer_node = get_node_or_null("../" + name)
+func _set_timer_active(node_name: String, active: bool) -> void:
+	var timer_node = get_node_or_null("../" + node_name)
 	if timer_node:
 		if active:
 			timer_node.start_timer()

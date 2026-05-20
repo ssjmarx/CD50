@@ -182,20 +182,20 @@ func is_new_high_score(score: int) -> bool:
 
 # --- Modifiers ---
 
-func is_modifier_unlocked(name: String) -> bool:
-	return name in modifiers_unlocked
+func is_modifier_unlocked(modifier_name: String) -> bool:
+	return modifier_name in modifiers_unlocked
 
-func is_modifier_active(name: String) -> bool:
-	return name in modifiers_active
+func is_modifier_active(modifier_name: String) -> bool:
+	return modifier_name in modifiers_active
 
-func toggle_modifier(name: String) -> void:
-	if not is_modifier_unlocked(name):
+func toggle_modifier(modifier_name: String) -> void:
+	if not is_modifier_unlocked(modifier_name):
 		return
-	var idx := modifiers_active.find(name)
+	var idx := modifiers_active.find(modifier_name)
 	if idx >= 0:
 		modifiers_active.remove_at(idx)
 	else:
-		modifiers_active.append(name)
+		modifiers_active.append(modifier_name)
 	_save_data()
 	save_data_changed.emit()
 

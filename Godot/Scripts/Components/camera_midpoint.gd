@@ -17,6 +17,7 @@ var _camera: Camera2D
 func _ready() -> void:
 	_camera = Camera2D.new()
 	_camera.name = "MidpointCamera"
+	_camera.physics_interpolation_mode = Node.PHYSICS_INTERPOLATION_MODE_OFF
 	add_child(_camera)
 
 # Each frame: position camera so player and mouse are always both on screen.

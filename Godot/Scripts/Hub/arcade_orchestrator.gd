@@ -117,7 +117,7 @@ func _input(event: InputEvent) -> void:
 				_restart_run()
 				get_viewport().set_input_as_handled()
 
-func _physics_process(delta: float) -> void:
+func _physics_process(_delta: float) -> void:
 	if _state == OrchestratorState.PLAYING and _current_time_limit > 0.0:
 		var elapsed = Time.get_ticks_msec() / 1000.0 - _game_start_time
 		if elapsed >= _current_time_limit:
@@ -413,7 +413,7 @@ func _on_game_over_signal(final_score: int) -> void:
 	if _last_game_won:
 		var elapsed: float = Time.get_ticks_msec() / 1000.0 - _game_start_time
 		var base_bonus = _calc_time_bonus(elapsed)
-		time_bonus = base_bonus * _game_count
+		time_bonus = int(base_bonus * _game_count)
 	
 	# Apply Crunch Time score multiplier
 	var crunch_mult: float = _modifier_manager.get_score_multiplier()
