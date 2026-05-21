@@ -64,10 +64,6 @@ They march. They descend. They will not stop until they have reached the ground 
 
 Every game in CD50 runs inside a simulated CRT monitor. Barrel distortion bends the screen at the edges. Chromatic aberration splits light at the seams. Scanlines sweep across raster displays. A rolling hum bar crawls upward, because that's what real hardware does.
 
-Some games run in **vector monitor mode** — the same technology that powered Space Rocks and Dogfight in the arcades of 197■. Bright phosphor lines cut through blackness. Moving objects leave glowing afterimages that fade like ghostly trails. No pixels. No scanlines. Just pure vector light.
-
-Switch between raster and vector modes and watch the cabinet transform.
-
 # The Modifiers
 
 Before each run, select from a locker of ILLEGAL MODIFICATIONS that rewrite the rules of every game:
@@ -94,7 +90,6 @@ Fonts by [Kenney](https://kenney.nl), used under the terms in `LICENSE.ASSETS`.
 Rendered with [RoyTheRailfanner's 8-Bit NES Soundfont](https://musical-artifacts.com/artifacts/2759) by RoyTheRailfanner, licensed under [CC-BY 3.0](https://creativecommons.org/licenses/by/3.0/).
 
 - **Hunted by Machines** — Music by [Karl Casey](https://www.youtube.com/@WhiteBatAudio) @ [White Bat Audio](https://whitebataudio.com/), licensed under [CC-BY 4.0](https://creativecommons.org/licenses/by/4.0/).
-- **The Devil's Eyes** — Music by [Karl Casey](https://www.youtube.com/@WhiteBatAudio) @ [White Bat Audio](https://whitebataudio.com/), licensed under [CC-BY 4.0](https://creativecommons.org/licenses/by/4.0/).
 
 ## Audio
 
