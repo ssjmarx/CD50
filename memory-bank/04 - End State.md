@@ -1,6 +1,6 @@
 # End State: CD50 — Arcade Cabinet
 
-**Last Updated:** 2026-05-18
+**Last Updated:** 2026-05-20
 
 ---
 
@@ -38,7 +38,7 @@ Every game runs inside a simulated CRT monitor:
 | 4 | **Bug Blaster** | Invader swarm marching downward, player shoots upward | ✅ Built |
 | 5 | **Block Drop** | Modern tetromino stacking with ghost piece, hold, T-spin, combo/B2B scoring | ✅ Built |
 
-### Remixes (4/10 built, 6 TBD)
+### Remixes (5/10 built, 5 TBD)
 
 | # | Game | Type | Status |
 |---|------|------|--------|
@@ -61,7 +61,7 @@ Every game runs inside a simulated CRT monitor:
 
 The demo ships with exactly these 12 games. The 5/10/5 remake/remix/inversion target is adjusted to 5/5/2 for the demo. Full release will expand toward 50 games (10/30/10 split).
 
-**Remaining demo work:** Polybius character, 5 Balatro-like modifiers, mini progression system. Then ship.
+**Remaining demo work:** Polybius character (only feature left). ~~5 Balatro-like modifiers~~ ✅ ~~mini progression system~~ ✅ Then ship.
 
 Game target is aspirational for full release, but entirely achievable thanks to component architecture. While some will be "first class" remixes with custom mechanics and unique design goals, necessity demands that many will be "second tier" remixes that change only one or two variables from the base game.
 
@@ -169,7 +169,7 @@ Polybius is the digital jailer. He judges, mocks, and demands more. When a new h
 
 ## Architecture
 
-- **108 components** across 11 categories (Core, Bodies, Brains, Legs, Arms, Components, Rules, Flow, Effects, Hub, Debug)
+- **113 components** across 11 categories (Core, Bodies, Brains, Legs, Arms, Components, Rules, Flow, Effects, Hub, Debug)
 - **Zero game scripts** — every game is a `UniversalGameScript` root with attached components
 - **Signal flow:** Brains → Body → Legs/Arms → Components/Rules/Flow → Effects
 - **UGS as event bus:** Components communicate through game-level signals (`hold_requested`, `t_spin_detected`, `piece_settled`)
@@ -190,7 +190,8 @@ Polybius is the digital jailer. He judges, mocks, and demands more. When a new h
 | Steamworks setup + itch.io pipeline | May 6–11 | ✅ Complete |
 | Plan 16 Phase 1: 4 new games | May 14–18 | ✅ Complete |
 | Game roster finalized at 12 games | May 18 | ✅ Complete |
-| Polybius + 5 modifiers + mini progression | May 18–31 | 🔲 In progress |
+| ~~5 modifiers + mini progression~~ | May 18–20 | ✅ Complete |
+| Polybius character | May 20–31 | 🔲 In progress |
 | Ship itch.io demo | May 31 | 🔲 Target |
 | Vertical slice content (expand modifiers + more games) | June–July | Planned |
 | Steamworks integration (stats, leaderboards, achievements) | August 1–17 | Planned |

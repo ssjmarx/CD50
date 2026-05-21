@@ -1,0 +1,99 @@
+[gd_resource type="Resource" script_class="PolybiusPhrase" load_steps=25 format=3 uid="uid://c3lna81f4pxj"]
+
+[ext_resource type="Script" uid="uid://dhedxsgfef3oa" path="res://Scripts/Hub/polybius_beat.gd" id="1_i04bj"]
+[ext_resource type="Script" uid="uid://bgl8x63h46yyf" path="res://Scripts/Hub/polybius_line.gd" id="2_pt4we"]
+[ext_resource type="AudioStream" uid="uid://bf78jhdikxcwf" path="res://Assets/Voice/pathetic.ogg" id="3_xh5ow"]
+[ext_resource type="AudioStream" uid="uid://b1qxnuimcvr28" path="res://Assets/Voice/leaderboard.ogg" id="4_8in26"]
+[ext_resource type="AudioStream" uid="uid://crg4bkn5ab15l" path="res://Assets/Voice/again.ogg" id="5_kbjy4"]
+[ext_resource type="Script" uid="uid://dpq8p2u62h7ju" path="res://Scripts/Hub/polybius_phrase.gd" id="6_f1335"]
+
+[sub_resource type="Resource" id="Resource_hdk7y"]
+script = ExtResource("1_i04bj")
+
+[sub_resource type="Resource" id="Resource_1wnux"]
+script = ExtResource("1_i04bj")
+start_time = 0.24
+
+[sub_resource type="Resource" id="Resource_mhab1"]
+script = ExtResource("1_i04bj")
+start_time = 0.5
+hold_time = 0.24
+
+[sub_resource type="Resource" id="Resource_ggdl8"]
+script = ExtResource("2_pt4we")
+text = "Pathetic."
+voice_clip = ExtResource("3_xh5ow")
+beats = [SubResource("Resource_hdk7y"), SubResource("Resource_1wnux"), SubResource("Resource_mhab1")]
+end_pause = 0.6
+
+[sub_resource type="Resource" id="Resource_idsek"]
+script = ExtResource("1_i04bj")
+hold_time = 0.25
+
+[sub_resource type="Resource" id="Resource_e3t15"]
+script = ExtResource("1_i04bj")
+start_time = 0.5
+
+[sub_resource type="Resource" id="Resource_6gb3a"]
+script = ExtResource("1_i04bj")
+start_time = 0.7
+
+[sub_resource type="Resource" id="Resource_a2dqr"]
+script = ExtResource("1_i04bj")
+start_time = 0.9
+
+[sub_resource type="Resource" id="Resource_en0sg"]
+script = ExtResource("1_i04bj")
+start_time = 1.1
+hold_time = 0.25
+
+[sub_resource type="Resource" id="Resource_kr1rr"]
+script = ExtResource("1_i04bj")
+start_time = 1.5
+
+[sub_resource type="Resource" id="Resource_eticm"]
+script = ExtResource("1_i04bj")
+start_time = 1.7
+
+[sub_resource type="Resource" id="Resource_ag24b"]
+script = ExtResource("1_i04bj")
+start_time = 1.9
+
+[sub_resource type="Resource" id="Resource_ukoak"]
+script = ExtResource("1_i04bj")
+start_time = 2.1
+hold_time = 0.48
+
+[sub_resource type="Resource" id="Resource_2g0jt"]
+script = ExtResource("2_pt4we")
+text = "You're not even on the leaderboard."
+voice_clip = ExtResource("4_8in26")
+beats = [SubResource("Resource_idsek"), SubResource("Resource_e3t15"), SubResource("Resource_6gb3a"), SubResource("Resource_a2dqr"), SubResource("Resource_en0sg"), SubResource("Resource_kr1rr"), SubResource("Resource_eticm"), SubResource("Resource_ag24b"), SubResource("Resource_ukoak")]
+end_pause = 0.5
+
+[sub_resource type="Resource" id="Resource_epxny"]
+script = ExtResource("1_i04bj")
+hold_time = 0.24
+
+[sub_resource type="Resource" id="Resource_4cara"]
+script = ExtResource("1_i04bj")
+start_time = 0.3
+hold_time = 0.24
+
+[sub_resource type="Resource" id="Resource_fbe2h"]
+script = ExtResource("1_i04bj")
+start_time = 0.6
+hold_time = 0.48
+metadata/_custom_type_script = "uid://dhedxsgfef3oa"
+
+[sub_resource type="Resource" id="Resource_2eaa5"]
+script = ExtResource("2_pt4we")
+text = "PLAY AGAIN!"
+eye_frame = 1
+voice_clip = ExtResource("5_kbjy4")
+beats = [SubResource("Resource_epxny"), SubResource("Resource_4cara"), SubResource("Resource_fbe2h")]
+end_pause = 0.6
+
+[resource]
+script = ExtResource("6_f1335")
+lines = [SubResource("Resource_ggdl8"), SubResource("Resource_2g0jt"), SubResource("Resource_2eaa5")]

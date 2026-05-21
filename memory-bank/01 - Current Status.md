@@ -1,11 +1,11 @@
 # Current Status: CD50 — Arcade Cabinet
 
-**Last Updated:** 2026-05-19  
+**Last Updated:** 2026-05-20  
 **Engine:** Godot 4.5 (GDScript)  
 **Architecture:** Entity-Component (composition over inheritance)  
 **Playable Games:** Paddle Ball, Brick Breaker, Space Rocks, Meteor Rally, Dogfight, Bug Blaster, Block Drop (Modern), Rock Breaker, Bug Drop, Space Bugs, Planetary Attack!, Space Rocks Inverted — ALL componentized, zero game scripts
-**In Progress:** Plan 15 Phase 2 — Polybius Character; Plan 16 Phase 2 — Mini Progression System
-**Recent Completed:** 5 Balatro-like modifiers implemented (Shotgun Mode, Overclocked CPU, Feature Creep, Crunch Time, Scope Creep) via modifier_manager.gd + arcade_orchestrator integration
+**In Progress:** Plan 15 Phase 2 — Polybius Character
+**Recent Completed:** Plan 18 (Planetary Attack Remake — scrolling playfield + camera_midpoint); Plan 16 Phase 2b (Mini Progression System — save_data.gd autoload with high scores + modifier unlocks); 5 Balatro-like modifiers
 
 ---
 
@@ -29,6 +29,7 @@ CD50 is a modular arcade game collection built around a composable component arc
 - Master class for game coordinators. Generic container with **zero game-specific logic**. State machine (ATTRACT/PLAYING/PAUSED/GAME_OVER), P1/P2 + generic score tracking, collision matrix setup. All game behavior comes from attached Rule/Flow/Component nodes.
 - **Mode enum:** `STANDALONE` (self-contained with input handling) vs `ARCADE` (orchestrator-controlled, no direct input)
 - **Arcade bonus:** `arcade_bonus` float — set by orchestrator via `set_arcade_bonus()`, added to `current_multiplier` during scoring
+- **Playfield size:** `playfield_size: Vector2 = Vector2(640, 360)` — default matches viewport. Larger playfields enable scrolling cameras (e.g., Planetary Attack uses 1280×720).
 - **Auto-emit property setters:** `current_score`, `current_multiplier` — emit signals on change
 - **Signals FROM components:** `victory`, `defeat`, `group_cleared`, `group_member_removed`, `lives_changed`, `lives_depleted`, `timer_tick`, `timer_expired`, `spawning_wave`, `spawning_wave_complete`, `piece_settled`, `hold_requested`, `t_spin_detected(is_t_spin, is_mini)`
 - **Signals TO components/UI:** `on_game_start`, `on_game_end`, `on_game_over`, `on_points_changed`, `on_multiplier_changed`, `state_changed`, `on_p1_score`, `on_p2_score`
@@ -108,18 +109,18 @@ Scenes/Bodies/nonplayer/
 
 | Category | Count | Components |
 |----------|-------|------------|
-| Core | 11 | universal_body, universal_game_script, universal_component, universal_component_2d, collision_matrix, collision_group, group_cache, sound_bank, property_override, common_enums, flag_resource |
+| Core | 12 | universal_body, universal_game_script, universal_component, universal_component_2d, collision_matrix, collision_group, group_cache, sound_bank, save_data, property_override, common_enums, flag_resource |
 | Bodies | 12 | ball, paddle, asteroid, brick, barrier, bullet_simple, bullet_wrapping, tetromino, triangle_ship, ufo, invader, paddle_cannon |
 | Brains | 11 | player_control, interceptor_ai, aim_ai, shoot_ai, shoot_ai_swarm, patrol_ai, falling_ai, swarm_ai, clear_shot_ai, cover_ai, swarm_controller_player |
 | Legs | 13 | direct_movement, direct_acceleration, engine_simple, engine_complex, friction_linear, friction_static, rotation_direct, rotation_target, grid_movement, grid_rotation, grid_gravity, grid_rotation_advanced, warp_asteroids |
 | Arms | 3 | gun_simple, damage_on_hit, damage_on_joust |
-| Components | 22 | angled_deflector, bounce_on_hit, checkerboard_line, collision_marker, death_effect, die_on_hit, die_on_timer, flag_palette, ghost_piece, health, hit_effect, hold_relay, lock_detector, pong_acceleration, ring_spawner, score_on_death, score_on_hit, screen_cleanup, screen_wrap, split_on_death, t_spin_detector, vector_engine_exhaust, vector_thruster_exhaust |
+| Components | 24 | angled_deflector, bounce_on_hit, camera_midpoint, checkerboard_line, collision_marker, death_effect, die_on_hit, die_on_timer, flag_palette, ghost_piece, health, hit_effect, hold_relay, lock_detector, pong_acceleration, ring_spawner, score_on_death, score_on_hit, screen_cleanup, screen_wrap, split_on_death, t_spin_detector, vector_engine_exhaust, vector_thruster_exhaust |
 | Rules | 12 | goal, points_monitor, variable_tuner, variable_tuner_global, group_monitor, group_count_multiplier, group_kill_on_signal, lives_counter, timer, line_clear_monitor, wave_director*, wave_spawner* |
 | Flow | 10 | interface, sound_on_hit, sound_synth, music_ramping, sfx_ramping, music_player, music_track, swarm_controller, tetromino_spawner, crt_controller |
 | Effects | 3 | death_particles, death_broken_triangle_ship, death_brick_explode |
-| Hub | 7 | arcade_orchestrator, arcade_game_entry, modifier_manager, polybius_face, polybius_eyes, polybius_mouth, polybius_nose |
+| Hub | 9 | arcade_orchestrator, arcade_game_entry, modifier_manager, boot_screen, game_over_screen, polybius_face, polybius_eyes, polybius_mouth, polybius_nose |
 | Debug | 1 | crt_tuner |
-| **Total** | **109** | |
+| **Total** | **113** | |
 
 *\* wave_director and wave_spawner scripts live in `Scripts/Rules/` but are categorized as Flow by function.*
 

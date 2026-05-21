@@ -1,6 +1,94 @@
 # Recent Progress
 
-**Last Updated:** 2026-05-19
+**Last Updated:** 2026-05-20
+
+---
+
+## Plan 18 — Planetary Attack Remake (COMPLETE)
+
+Major upgrade to the existing `planetary_attack.tscn` inversion game. The player now controls a Mystery Ship protecting an advancing invader formation on a scrolling playfield with opposing cannons, triangle ship hunters, and asteroid fields.
+
+### New Foundation: Playfield Size
+
+- **New export on UGS:** `playfield_size: Vector2 = Vector2(640, 360)` — default matches viewport, zero behavioral change for existing games
+- **`universal_body.gd`** updated: resolves `-1` sentinel bounds from `game.playfield_size` or viewport fallback
+- **`screen_cleanup.gd`** updated: uses `game.playfield_size` instead of viewport size
+- **`screen_wrap.gd`** updated: uses `game.playfield_size` instead of viewport size
+
+### New Component: Scrolling Camera
+
+- **New `camera_midpoint.gd`:** UniversalComponent2D that tracks midpoint between player entity and mouse position. Configurable lerp speed, clamped to playfield bounds. Finds tracked entity via group name.
+- **New scene:** `Scenes/Components/camera_midpoint.tscn`
+
+### Planetary Attack Rebuild
+
+- **Playfield:** 2× viewport size (1280×720), scrolling camera
+- **Player:** UFO body with player_control, direct_acceleration, gun_simple (mouse aiming), ring_spawner shield, health
+- **Invaders:** Auto-marching swarm with `bottom_action = VICTORY`
+- **Opposition:** Paddle cannons with AI, barriers, triangle ship hunters (targeting invaders), asteroid field
+- **Friendly fire ON:** Player can accidentally shoot own invaders — skill element
+- **No game script changes:** Pure scene assembly from existing + 1 new component
+
+### Files Created
+
+| File | Purpose |
+|------|---------|
+| `Scripts/Components/camera_midpoint.gd` | Scrolling camera — midpoint of ship + mouse, clamped to playfield |
+| `Scenes/Components/camera_midpoint.tscn` | Scene wrapper for camera_midpoint |
+
+### Files Modified
+
+| File | Changes |
+|------|---------|
+| `Scripts/Core/universal_game_script.gd` | Added `playfield_size` export with editor redraw |
+| `Scripts/Core/universal_body.gd` | Resolves sentinel bounds from `game.playfield_size` |
+| `Scripts/Components/screen_cleanup.gd` | Uses `game.playfield_size` with viewport fallback |
+| `Scripts/Components/screen_wrap.gd` | Uses `game.playfield_size` with viewport fallback |
+| `Scenes/Games/inversions/planetary_attack.tscn` | Major rebuild — scrolling playfield, mystery ship, cannons, hunters, asteroids |
+
+---
+
+## Plan 16 Phase 2b — Mini Progression System (COMPLETE)
+
+Persistent progression system using JSON save/load. Modifiers unlock as the player's best run score crosses thresholds. Top 5 high scores with initials entry. Works on both desktop and web (IndexedDB).
+
+### Architecture
+
+- **New autoload:** `SaveData` (`Scripts/Core/save_data.gd`) — manages persistent data via `user://cd50_save.json`
+- **Score-gated unlocks:** Best run score compared against hardcoded thresholds. New modifiers unlock when thresholds are crossed.
+- **High scores:** Top 5 with initials + date. Default entries at each threshold (set by "PLY"). Sorted descending.
+- **Modifier state:** Three-tier system — defined → unlocked (by score) → active (player toggle). Save/load persists all three tiers.
+
+### Modifier Unlock Thresholds
+
+| Modifier | Threshold | Description |
+|----------|-----------|-------------|
+| Scope Creep | 100 | Player health × 2 |
+| Shotgun Mode | 1,000 | Bullets and balls × 3 |
+| Overclocked CPU | 10,000 | Speed × 1.25, multiplier × 1.5 |
+| Feature Creep | 50,000 | Spawns × 1.5 |
+| Crunch Time | 100,000 | Score × 3, 1 life |
+
+### Integration Points
+
+- **Boot screen:** Displays top 5 high scores + modifier toggle buttons (greyed out if locked)
+- **Game over screen:** Initials entry when new high score achieved, displays unlock notifications
+- **Arcade orchestrator:** Reports `_running_score` to `SaveData.add_score()` on run end, checks for new unlocks, passes `is_new_high_score` to game over screen
+
+### Files Created
+
+| File | Purpose |
+|------|---------|
+| `Scripts/Core/save_data.gd` | SaveData autoload — JSON persistence, high scores, modifier unlocks |
+
+### Files Modified
+
+| File | Changes |
+|------|---------|
+| `Scripts/Hub/boot_screen.gd` | High score display, modifier toggle buttons, lifetime score label |
+| `Scripts/Hub/game_over_screen.gd` | Initials entry for new high scores, unlock notification display |
+| `Scripts/Hub/arcade_orchestrator.gd` | Score reporting to SaveData, unlock detection, new high score check |
+| `project.godot` | SaveData autoload registration |
 
 ---
 

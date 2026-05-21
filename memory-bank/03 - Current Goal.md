@@ -1,13 +1,13 @@
 # Current Goal
 
-**Last Updated:** 2026-05-19  
+**Last Updated:** 2026-05-20  
 **Status:** Active — Final push to ship the itch.io demo by May 31
 
 ---
 
 ## Active Priority: Ship the Demo by May 31
 
-The game roster is **finalized at 12 games** — no more games will be built for the demo. The remaining work is three features, then flip the itch.io page to public.
+The game roster is **finalized at 12 games** — no more games will be built for the demo. Only **one feature remains** (Polybius Character), then flip the itch.io page to public.
 
 **Full deadline schedule:** `memory-bank/06 - Deadlines.md`
 
@@ -29,24 +29,31 @@ The game roster is **finalized at 12 games** — no more games will be built for
 - ✅ New components: clear_shot_ai, cover_ai, swarm_controller_player, hit_effect, vector_thruster_exhaust, group_kill_on_signal, polybius_nose
 - ✅ Game roster finalized — 12 games locked for demo
 - ✅ 5 Balatro-like modifiers implemented (Shotgun Mode, Overclocked CPU, Feature Creep, Crunch Time, Scope Creep)
+- ✅ Mini Progression System — SaveData autoload with high scores, modifier unlocks, JSON persistence (May 20)
+- ✅ Planetary Attack Remake — scrolling playfield, camera_midpoint component, playfield_size on UGS (May 20)
 
-### Remaining Work (May 19–31) — 2 features, then ship
+### Remaining Work (May 20–31) — 1 feature, then ship
 
 **1. Polybius Character (Plan 15 Phase 2)**
 - Currently drawing facial frames (Step 2b)
 - Remaining: voice lines, typewriter text, animations, AO integration (steps 2c–2j)
 - Scope: run intros, taunts between games, game-over commentary
 
-**2. ~~5 Balatro-like Modifiers~~ ✅ COMPLETE**
-- Shotgun Mode, Overclocked CPU, Feature Creep, Crunch Time, Scope Creep
-- Editor toggles working, player-selectable UI deferred to next step
-- See `Scripts/Hub/modifier_manager.gd`
+**~~2. 5 Balatro-like Modifiers~~ ✅ COMPLETE**
 
-**3. Mini Progression System**
-- `lifetime_score` persists across runs (JSON via `user://`)
-- Score thresholds unlock modifier slots: 100 / 1,000 / 10,000 / 100,000 / 1,000,000
-- Top 10 high scores saved with initials + date
-- Lite version for demo — full progression system deferred to launch
+**~~3. Mini Progression System~~ ✅ COMPLETE** (May 20)
+- `SaveData` autoload (`Scripts/Core/save_data.gd`) — JSON persistence via `user://cd50_save.json`
+- Best run score gates modifier unlocks at 5 thresholds (100 → 100,000)
+- Top 5 high scores with initials entry + date
+- Boot screen: high score display + modifier toggle buttons
+- Game over screen: initials entry + unlock notifications
+- AO integration: score reporting + new high score detection
+
+**~~4. Planetary Attack Remake~~ ✅ COMPLETE** (May 20)
+- Scrolling 2× playfield (1280×720) with `camera_midpoint` component
+- Player controls Mystery Ship protecting invader formation
+- Opposing paddle cannons, triangle ship hunters, asteroid field
+- `playfield_size` export on UGS — backward-compatible, zero change to existing games
 
 **Then: Ship**
 - Flip itch.io page from private to public
@@ -76,10 +83,10 @@ The game roster is **finalized at 12 games** — no more games will be built for
 - Remaining: voice lines, typewriter text, animations, AO integration (steps 2c–2j)
 
 ### Plan 16 — Cambrian Remix Explosion
-**Status:** Phase 1 COMPLETE, Phase 2 (modifiers COMPLETE, progression in progress)  
+**Status:** COMPLETE  
 **Phase 1 Completed:** 4 new games built (Bug Drop, Space Bugs, Planetary Attack!, Space Rocks Inverted) + 7 new scripts + 12 new body scene variants + 2 new music tracks + 4 new arcade settings
 **Phase 2 Modifiers COMPLETE:** 5 Balatro-like modifiers via `modifier_manager.gd`
-**Phase 2 Progression IN PROGRESS:** Mini progression system — targeting May 31
+**Phase 2 Progression COMPLETE:** SaveData autoload with high scores + modifier unlocks (May 20)
 **Game roster locked:** No more games for demo. Expansion deferred to post-launch.
 
 ### Plan 17 — Arcade Juice Post-Launch
@@ -131,5 +138,7 @@ The following plans have been **deleted** from the active pipeline:
 
 | Plan | Description | Completed |
 |------|-------------|-----------|
+| 18 | Planetary Attack Remake (scrolling playfield, camera_midpoint, playfield_size) | 2026-05-20 |
+| 16 | Cambrian Remix Explosion (4 games, 5 modifiers, progression system) | 2026-05-20 |
 | 14 | Arcade Juice Part 1 (Custom CRT Shader, Vector Monitor, Phosphor Trails) | 2026-05-06 |
 | 13 | Arcade Orchestrator (Interface Takeover, Scrolling Transitions, Fast Rules) | 2026-05-05 |

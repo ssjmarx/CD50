@@ -5,13 +5,14 @@
 
 extends Node2D
 
-enum OrchestratorState { BOOT, PLAYING, GAME_OVER, TRANSITIONING }
+enum OrchestratorState { BOOT, PLAYING, GAME_OVER, TRANSITIONING, POLYBIUS }
 enum PlaylistMode { IN_ORDER, SHUFFLE, SEMI_RANDOM }
 
 @export var playlist: Array[ArcadeGameEntry] = []
 @export var starting_lives: int = 3
 @export var playlist_mode: PlaylistMode = PlaylistMode.IN_ORDER
 @export var transition_duration: float = 0.4
+@export var polybius_scene: PackedScene  # PolybiusFace scene for intro/outro screens
 
 # --- Modifiers (editor toggles, manual override for now) ---
 @export_group("Modifiers")
@@ -74,6 +75,7 @@ var _effect_tween: Tween = null
 var _modifier_manager: Node = null
 var _pending_unlocks: Array[String] = []
 var _last_run_score: int = 0
+var _polybius_vpc: SubViewportContainer = null  # Active Polybius viewport (intro/outro)
 
 func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
@@ -114,7 +116,7 @@ func _input(event: InputEvent) -> void:
 	match _state:
 		OrchestratorState.BOOT:
 			if event.is_action_pressed("start") or event.is_action_pressed("coin"):
-				_start_next_game()
+				_show_polybius_screen("intro", _on_polybius_intro_done)
 				get_viewport().set_input_as_handled()
 		OrchestratorState.GAME_OVER:
 			if event.is_action_pressed("start") or event.is_action_pressed("coin"):
@@ -445,7 +447,7 @@ func _on_game_over_signal(final_score: int) -> void:
 	if _lives > 0:
 		call_deferred("_start_next_game")
 	else:
-		call_deferred("_show_game_over")
+		call_deferred("_show_polybius_outro")
 
 func _on_game_points_changed(new_score: int) -> void:
 	# Game emits its own score changes — update running total live
@@ -683,6 +685,135 @@ func _sr_get_count_for_phase(phase: int) -> int:
 		2: return 4   # 4 mixed (remakes + lite)
 		3: return 2   # 2 heavy
 		_: return 999 # Phase 4+: endless (never auto-advances)
+
+# --- Polybius Face Integration ---
+
+# Show Polybius face between screens (intro before first game, outro before game over)
+# Creates a SubViewport, slides it in, plays the phrase, slides it out, then calls callback.
+func _show_polybius_screen(phrase_type: String, on_phrase_done: Callable) -> void:
+	if not polybius_scene:
+		on_phrase_done.call()
+		return
+	
+	_state = OrchestratorState.POLYBIUS
+	
+	# Create Polybius viewport
+	_polybius_vpc = SubViewportContainer.new()
+	_polybius_vpc.name = "PolybiusViewport"
+	_polybius_vpc.size = GAME_SIZE
+	_polybius_vpc.stretch = true
+	
+	var sub_vp := SubViewport.new()
+	sub_vp.name = "PolybiusSubVP"
+	sub_vp.size = GAME_SIZE
+	sub_vp.render_target_update_mode = SubViewport.UPDATE_ALWAYS
+	sub_vp.transparent_bg = true
+	_polybius_vpc.add_child(sub_vp)
+	
+	var face: Control = polybius_scene.instantiate()
+	sub_vp.add_child(face)
+	
+	# Position below viewport for slide-in
+	_polybius_vpc.position.y = VIEWPORT_HEIGHT
+	_game_container.add_child(_polybius_vpc)
+	
+	# Determine what's sliding out
+	var outgoing: CanvasItem
+	if _active_vpc:
+		outgoing = _active_vpc
+	elif _boot_screen.visible:
+		outgoing = _boot_screen
+	else:
+		outgoing = _game_over_screen
+	
+	# Slide Polybius in
+	_scroll_transition(outgoing, _polybius_vpc, func() -> void:
+		# Cleanup outgoing
+		if outgoing == _active_vpc:
+			_active_vpc.queue_free()
+			_active_vpc = null
+		elif outgoing == _boot_screen:
+			_boot_screen.visible = false
+		
+		# Play the phrase; on_phrase_done handles slide-out + next screen
+		if phrase_type == "intro":
+			face.play_intro(on_phrase_done)
+		else:
+			face.play_outro(on_phrase_done)
+	)
+
+# Show Polybius outro after final game defeat → slide to Polybius, play outro, then game over
+func _show_polybius_outro() -> void:
+	# Fade music to idle
+	_music_player.fade_to(music_idle_volume_db, music_fade_out_duration)
+	_show_polybius_screen("outro", _on_polybius_outro_done)
+
+# Called after Polybius intro phrase finishes → slide Polybius out, start first game
+func _on_polybius_intro_done() -> void:
+	if playlist.is_empty():
+		push_error("ArcadeOrchestrator: playlist is empty")
+		if _polybius_vpc:
+			_polybius_vpc.queue_free()
+		_polybius_vpc = null
+		return
+
+	# Pick the next game entry (same logic as _start_next_game)
+	_apply_save_modifiers()
+	var entry: ArcadeGameEntry
+	if playlist_mode == PlaylistMode.SHUFFLE:
+		if _shuffle_bag.is_empty():
+			_refill_shuffle_bag()
+		entry = playlist[_shuffle_bag.pop_front()]
+	elif playlist_mode == PlaylistMode.SEMI_RANDOM:
+		entry = _get_semi_random_entry()
+	else:
+		if _current_index >= playlist.size():
+			_current_index = 0
+		entry = playlist[_current_index]
+	
+	_current_time_limit = entry.time_limit
+	_state = OrchestratorState.TRANSITIONING
+	
+	# Create the game viewport (positioned below screen for slide-in)
+	var new_vpc: SubViewportContainer = _setup_game_viewport(entry)
+	
+	if not _polybius_vpc or not is_instance_valid(_polybius_vpc):
+		# No Polybius to slide out — just go straight to game
+		_on_transition_to_game(new_vpc)
+		return
+	
+	# Slide directly from Polybius → first game
+	_scroll_transition(_polybius_vpc, new_vpc, func() -> void:
+		_polybius_vpc.queue_free()
+		_polybius_vpc = null
+		_boot_screen.visible = false
+		_on_transition_to_game(new_vpc)
+	)
+
+# Called after Polybius outro phrase finishes → report score, slide to game over
+func _on_polybius_outro_done() -> void:
+	# Report score (normally done in _show_game_over)
+	_last_run_score = _running_score
+	_pending_unlocks = SaveData.add_score(_running_score)
+	var is_new_hs: bool = SaveData.is_new_high_score(_running_score)
+	if _game_over_screen.has_method("setup"):
+		_game_over_screen.setup(_last_run_score, is_new_hs, _pending_unlocks)
+	var final_score_label: Label = _game_over_screen.get_node_or_null("FinalScoreLabel")
+	if final_score_label:
+		final_score_label.text = "FINAL SCORE: %d" % _running_score
+	
+	if not _polybius_vpc or not is_instance_valid(_polybius_vpc):
+		_show_game_over()
+		return
+	
+	_game_over_screen.position.y = VIEWPORT_HEIGHT
+	_game_over_screen.visible = true
+	
+	_scroll_transition(_polybius_vpc, _game_over_screen, func() -> void:
+		_polybius_vpc.queue_free()
+		_polybius_vpc = null
+		_on_transition_to_game_over()
+	)
 
 func _refill_shuffle_bag() -> void:
 	_shuffle_bag.clear()

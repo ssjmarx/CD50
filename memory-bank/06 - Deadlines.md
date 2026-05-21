@@ -1,6 +1,6 @@
 # Deadlines: CD50 — Arcade Cabinet
 
-**Last Updated:** 2026-05-18  
+**Last Updated:** 2026-05-20  
 **Source:** Commercial shipping schedule — itch.io demo + Steam Coming Soon + Next Fest
 
 ---
@@ -41,7 +41,7 @@
 
 ## Phase 2 — Mid–Late May (May 12–31) — SHIP THE DEMO
 
-**Game roster FINALIZED at 12 games.** No more games will be built for the demo. Three features remain, then ship.
+**Game roster FINALIZED at 12 games.** No more games will be built for the demo. **One feature remains** (Polybius), then ship.
 
 ### Demo Game Roster — FINAL
 
@@ -51,7 +51,7 @@
 | Remixes | 5 | Dogfight, Meteor Rally, Rock Breaker, Bug Drop, Space Bugs |
 | Inversions | 2 | Planetary Attack!, Space Rocks Inverted |
 
-### Remaining Work — 3 Features
+### Remaining Work — 1 Feature
 
 **1. Polybius Character (Plan 15 Phase 2)**
 - [ ] Complete facial frame drawing (Step 2b — in progress)
@@ -64,18 +64,20 @@
 - [ ] Add random in-game taunt during PLAYING state (Step 2i)
 - [ ] Playtest full arcade run with Polybius (Step 2j)
 
-**2. 5 Balatro-like Modifiers**
-- [ ] Double Barrel — gun_simple fires 2 bullets with slight spread
-- [ ] Overclocked CPU — all Leg components: speed × 1.25
-- [ ] Feature Creep — all spawner components: entity_count × 2
-- [ ] Crunch Time — lives set to 1, all score values × 3.0
-- [ ] Scope Creep — all CollisionShape radii × 1.20
-- [ ] ModifierManager node on AO, applies property overrides on `node_added`
+**~~2. 5 Balatro-like Modifiers~~ ✅ COMPLETE (May 19)**
+- [x] Shotgun Mode — gun_simple fires 3 bullets with 15° spread
+- [x] Overclocked CPU — all Leg components: speed × 1.25, SwarmController timing × 1.25
+- [x] Feature Creep — all spawner components: entity_count × 2 (Bug Drop special-cased)
+- [x] Crunch Time — lives set to 1, all score values × 3.0
+- [x] Scope Creep — player health × 2 (player-only, not enemies)
+- [x] ModifierManager node on AO, setup + runtime application
 
-**3. Mini Progression System**
-- [ ] `lifetime_score` persists across runs (JSON via `user://`)
-- [ ] Score thresholds unlock modifier slots: 100 / 1,000 / 10,000 / 100,000 / 1,000,000
-- [ ] Top 10 high scores saved with initials + date
+**~~3. Mini Progression System~~ ✅ COMPLETE (May 20)**
+- [x] `best_run_score` persists across runs (JSON via `user://cd50_save.json`)
+- [x] Score thresholds unlock modifiers: 100 / 1,000 / 10,000 / 50,000 / 100,000
+- [x] Top 5 high scores saved with initials + date
+- [x] Boot screen: high score display + modifier toggle buttons
+- [x] Game over screen: initials entry + unlock notifications
 
 ### Then: Ship
 - [ ] Flip itch page from private to public
@@ -89,6 +91,9 @@
 - [x] Plan 14 — Custom CRT Shader
 - [x] Plan 16 Phase 1 — 4 new games built (Bug Drop, Space Bugs, Planetary Attack!, Space Rocks Inverted)
 - [x] Game roster locked at 12 games
+- [x] 5 Balatro-like modifiers implemented (Plan 16 Phase 2)
+- [x] Mini progression system — SaveData autoload (Plan 16 Phase 2b)
+- [x] Planetary Attack Remake — scrolling playfield + camera_midpoint (Plan 18)
 
 **Note:** Can safely ship the itch demo without online leaderboards and without Steamworks integration. Keep it simple.
 
