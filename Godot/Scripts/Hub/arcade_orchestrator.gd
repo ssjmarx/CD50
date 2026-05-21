@@ -5,7 +5,7 @@
 
 extends Node2D
 
-enum OrchestratorState { BOOT, PLAYING, GAME_OVER, TRANSITIONING, POLYBIUS }
+enum OrchestratorState { BOOT, PLAYING, GAME_OVER, TRANSITIONING, POLYBIUS, LOGO }
 enum PlaylistMode { IN_ORDER, SHUFFLE, SEMI_RANDOM }
 
 @export var playlist: Array[ArcadeGameEntry] = []
@@ -13,6 +13,7 @@ enum PlaylistMode { IN_ORDER, SHUFFLE, SEMI_RANDOM }
 @export var playlist_mode: PlaylistMode = PlaylistMode.IN_ORDER
 @export var transition_duration: float = 0.4
 @export var polybius_scene: PackedScene  # PolybiusFace scene for intro/outro screens
+@export var godot_logo_scene: PackedScene  # GodotLogo splash screen shown at boot
 
 # --- Modifiers (editor toggles, manual override for now) ---
 @export_group("Modifiers")
@@ -76,6 +77,7 @@ var _modifier_manager: Node = null
 var _pending_unlocks: Array[String] = []
 var _last_run_score: int = 0
 var _polybius_vpc: SubViewportContainer = null  # Active Polybius viewport (intro/outro)
+var _godot_logo_vpc: SubViewportContainer = null  # Active Godot logo viewport
 
 func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
@@ -106,7 +108,7 @@ func _ready() -> void:
 	# Crunch Time overrides starting lives to 1
 	_lives = 1 if crunch_time else starting_lives
 	
-	_show_boot_screen()
+	_show_godot_logo()
 
 func _input(event: InputEvent) -> void:
 	# Ignore all input during transitions
@@ -114,6 +116,10 @@ func _input(event: InputEvent) -> void:
 		return
 
 	match _state:
+		OrchestratorState.LOGO:
+			if event.is_action_pressed("start") or event.is_action_pressed("coin") or event.is_action_pressed("ui_accept"):
+				_skip_godot_logo()
+				get_viewport().set_input_as_handled()
 		OrchestratorState.BOOT:
 			if event.is_action_pressed("start") or event.is_action_pressed("coin"):
 				_show_polybius_screen("intro", _on_polybius_intro_done)
@@ -133,6 +139,79 @@ func _physics_process(_delta: float) -> void:
 			_on_time_limit_reached()
 
 # --- State transitions ---
+
+# --- Godot Logo Splash ---
+
+func _show_godot_logo() -> void:
+	if not godot_logo_scene:
+		_show_boot_screen()
+		return
+	
+	_state = OrchestratorState.LOGO
+	
+	# Create SubViewport for the logo (same pattern as Polybius)
+	_godot_logo_vpc = SubViewportContainer.new()
+	_godot_logo_vpc.name = "GodotLogoViewport"
+	_godot_logo_vpc.size = GAME_SIZE
+	_godot_logo_vpc.stretch = true
+	
+	var sub_vp := SubViewport.new()
+	sub_vp.name = "GodotLogoSubVP"
+	sub_vp.size = GAME_SIZE
+	sub_vp.render_target_update_mode = SubViewport.UPDATE_ALWAYS
+	sub_vp.transparent_bg = true
+	_godot_logo_vpc.add_child(sub_vp)
+	
+	var logo: Control = godot_logo_scene.instantiate()
+	sub_vp.add_child(logo)
+	
+	# Start at origin (logo handles its own fade-in)
+	_godot_logo_vpc.position.y = 0.0
+	_game_container.add_child(_godot_logo_vpc)
+	
+	# Hide boot screen behind the logo
+	_boot_screen.visible = false
+	
+	# Connect to logo's boot_complete signal
+	logo.boot_complete.connect(_on_godot_logo_done)
+
+func _skip_godot_logo() -> void:
+	# Guard: already transitioning or logo already gone
+	if _state == OrchestratorState.TRANSITIONING:
+		return
+	if not _godot_logo_vpc or not is_instance_valid(_godot_logo_vpc):
+		return
+	
+	# Kill the logo's internal tween so it won't emit boot_complete later
+	var sub_vp = _godot_logo_vpc.get_child(0) as SubViewport
+	if sub_vp:
+		for child in sub_vp.get_children():
+			if child.has_method("kill_tween"):
+				child.kill_tween()
+			# Disconnect signal to prevent double-fire
+			if child.is_connected("boot_complete", _on_godot_logo_done):
+				child.boot_complete.disconnect(_on_godot_logo_done)
+	
+	_on_godot_logo_done()
+
+func _on_godot_logo_done() -> void:
+	if not _godot_logo_vpc or not is_instance_valid(_godot_logo_vpc):
+		_godot_logo_vpc = null
+		_show_boot_screen()
+		return
+	
+	# Position boot screen below for slide-in
+	_boot_screen.position.y = VIEWPORT_HEIGHT
+	_boot_screen.visible = true
+	
+	# Scroll: Godot logo slides up, boot screen slides in
+	_scroll_transition(_godot_logo_vpc, _boot_screen, func() -> void:
+		_godot_logo_vpc.queue_free()
+		_godot_logo_vpc = null
+		_show_boot_screen()
+	)
+
+# --- Boot Screen ---
 
 func _show_boot_screen() -> void:
 	_state = OrchestratorState.BOOT
