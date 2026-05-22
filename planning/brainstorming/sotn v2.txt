@@ -1,0 +1,262 @@
+This is a great pivot. Symphony of the Night (Igavania) style combat is much more about rhythm, spacing, and exploration than the frame-tight cancel routes of a fighting game.
+
+The two big mechanical shifts here are:
+1.  **Hit-Confirm Combos:** You only advance the combo if you actually connect with the enemy. Whiffing stops the chain.
+2.  **The Item System:** Special attacks are defined by equipped items, which can range from simple stat buffs to complex, physics-driven projectiles (like a bouncing Holy Water vial or a spinning cross boomerang).
+
+Let's break down how V2 handles both, starting with the big question: **How do we do Items?**
+
+### The Item Architecture: The Command Pattern
+
+Your intuition was split between "Items as code (Resources)" and "Items as spawned Entities." The V2 answer is **both, using the Command Pattern.**
+
+We use a `CDItemResource` (extending Godot's `Resource`). It holds the static data (MP cost, damage multiplier) AND an `execute()` method. However, that `execute()` method doesn't contain the physics loop for a bouncing axe—it simply *spawns the Axe Entity* and lets V2's composition take over.
+
+This keeps the player's `SpecialArm` perfectly clean. It doesn't know what a "Cross" or "Holy Water" is. It just grants the state, pays the MP cost, and calls `item.execute()`.
+
+---
+
+### 1. The Hit-Confirm Combo System
+
+We must modify the `MeleeComboArm` so it only advances the combo index if it registers a hit during its Active frames.
+
+#### MeleeComboArm (SotN Variant)
+**Role:** Executes attacks, but only chains if it connects.
+
+| Aspect | Detail |
+|---|---|
+| **Consumes** | Entity Bus: `"melee_light"`, `"action_state_changed"`. |
+| **Generates** | Target Bus: `"take_damage"`. Entity Bus: `"attack_hit_confirmed"`, `"attack_whiffed"`. |
+| **Process Difference** | During the Active phase, if `intersect_shape()` hits an enemy, it sets an internal flag `_hit_confirmed = true`. When the attack finishes its Recovery phase, it checks the flag. If true, and the Brain emits another `"melee_light"` before recovery ends, it advances the combo step. If false (whiff), it drops the combo back to step 1 on the next input. |
+
+#### PlayerBrawlerBrain (SotN Variant)
+**Role:** Listens for the hit confirm to allow buffered inputs.
+
+| Aspect | Detail |
+|---|---|
+| **Process** | If the player presses attack while in `light_attack` state, the Brain buffers the input. It *only* emits the next `"request_action(&"light_attack_2")"` if it hears `"attack_hit_confirmed"` from the Arm. If it hears `"attack_whiffed"`, it clears the buffer. |
+
+---
+
+### 2. The Item & Special Attack System
+
+#### CDItemResource (The Base Resource)
+**Role:** Pure data + a Command Pattern `execute` function.
+
+```gdscript
+class_name CDItemResource extends Resource
+
+@export var item_name: String = ""
+@export var mp_cost: int = 0
+@export var damage_multiplier: float = 1.0
+@export var projectile_scene: PackedScene = null
+
+func execute(player_entity: CDEntity, facing_direction: Vector2) -> void:
+    # Override in specific item scripts for custom logic
+    if projectile_scene:
+        var proj = projectile_scene.instantiate()
+        player_entity.get_game().add_child(proj)
+        proj.global_position = player_entity.global_position
+        # Pass the player's facing direction and damage multiplier to the projectile
+        proj.emit_signal("initialize_projectile", facing_direction, damage_multiplier)
+```
+
+#### InventoryGuts
+**Role:** The single source of truth for what the player has equipped.
+
+| Aspect | Detail |
+|---|---|
+| **Exports** | `equipped_special: CDItemResource` <br> `current_mp: int = 100` <br> `max_mp: int = 100`. |
+| **Generates** | Entity Bus: `"mp_changed"`, `"mp_depleted"`. |
+| **Process** | Holds the resource. Has a public method `try_spend_mp(amount: int) -> bool`. Returns true if MP was available and subtracted. |
+
+#### SpecialArm
+**Role:** The interpreter. Hears the input, checks the MP, reads the item, and executes it.
+
+| Aspect | Detail |
+|---|---|
+| **Consumes** | Entity Bus: `"special_attack"`. |
+| **Generates** | Calls `CDItemResource.execute()`. |
+| **Process** | 1. Hears `"special_attack"`. <br> 2. Reads `InventoryGuts.equipped_special`. <br> 3. Calls `InventoryGuts.try_spend_mp(item.mp_cost)`. <br> 4. If successful, requests `"special_attack"` state from Arbitrator. <br> 5. Calls `item.execute(player_entity, facing_direction)`. |
+
+---
+
+### 3. The Projectile Entities (The "Spawned Code")
+
+When the `SpecialArm` calls `item.execute()`, it spawns an Entity. Because V2 is fully componentized, these projectiles are incredibly easy to make.
+
+#### The Thrown Axe (Sub-Arc Trajectory)
+*   **Brain:** None (dumb projectile).
+*   **Legs:** `PlatformerLeg` (Handles the upward then gravity-downward arc), `DirectMovementLeg` (moves forward slowly).
+*   **Arms:** `DamageOnHitArm` (Destroys on enemy contact).
+*   **Guts:** `DieOnTimerGuts`, `DepthGuts` (If 2.5D, Z moves forward like a bullet).
+
+#### The Holy Water (Thrown, Shatters on Floor)
+*   **Brain:** None.
+*   **Legs:** `PlatformerLeg` (Arcs through air).
+*   **Guts:** `FloorDetectorGuts` (Emits `"hit_floor"`).
+*   **Arms:** `SpawnOnFloorArm` (Listens for `"hit_floor"`, spawns a `HolyFirePuddle` entity, then deactivates the vial).
+
+#### The Holy Fire Puddle (Static Damage Over Time)
+*   **Brain:** None.
+*   **Legs:** None.
+*   **Arms:** `DamageOnHitArm` (Continuous collision detection while enemy stands in it).
+*   **Guts:** `DieOnTimerGuts` (Burns out after 2 seconds).
+
+---
+
+### 4. The Dodge & Aerial Attacks
+
+#### DodgeLeg (Backdash)
+**Role:** Applies a quick impulse away from the facing direction.
+
+| Aspect | Detail |
+|---|---|
+| **Consumes** | Entity Bus: `"action_state_changed"`. |
+| **Generates** | `entity.request_velocity_add()`. |
+| **Process** | When state changes to `"dodge"`, calculates direction `= -facing_vector`. Applies a single massive burst of velocity (e.g., 400) and triggers `InvincibilityGuts` for 0.2 seconds. Friction naturally slows the slide.
+
+#### JumpAttackArm
+**Role:** Replaces the grounded combo if the player is in the air. Usually a single, wide downward swing.
+
+| Aspect | Detail |
+|---|---|
+| **Consumes** | Entity Bus: `"melee_light"`, `"action_state_changed"`. |
+| **Generates** | Target Bus: `"take_damage"`. Entity Bus: `"attack_hit_confirmed"`. |
+| **Process** | If the Arbitrator grants `"jump_attack"`, runs the standard Startup/Active/Recovery loop. On hit confirm, it does *not* combo into another attack, but instead emits a signal that allows the `PlatformerLeg` to bounce the player slightly upward (the classic "enemy bounce" mechanic).
+
+---
+
+### The Signal Flow: Throwing Holy Water
+
+Let's trace the V2 signal flow for the player using a Holy Water special attack.
+
+1.  **Priority 10 (Brain):** Player presses Special Button. `PlayerBrawlerBrain` emits `"special_attack"`.
+2.  **Priority 40 (SpecialArm):** Hears `"special_attack"`.
+    *   Reads `InventoryGuts.equipped_special` (which is the Holy Water Resource).
+    *   Calls `InventoryGuts.try_spend_mp(15)`. MP is sufficient.
+    *   Emits `"request_action(&"special_attack", 70)"`.
+3.  **Priority 50 (Arbitrator):** Grants `"special_attack"`. Emits `"action_state_changed"`.
+4.  **Priority 40 (SpecialArm Execution):** Calls `holy_water_resource.execute(self, facing_right)`.
+5.  **The Resource:** Instantiates `HolyWaterVial.tscn` and adds it to the Game tree. Passes the player's position and facing direction via a signal.
+6.  **The Vial Entity:** Its `PlatformerLeg` and `DirectMovementLeg` take over. It arcs through the air.
+7.  **The Impact:** The Vial's `FloorDetectorGuts` detects the ground. Emits `"hit_floor"`.
+8.  **The Shatter:** The Vial's `SpawnOnFloorArm` hears `"hit_floor"`. Spawns `HolyFirePuddle.tscn` at its current position. Emits `"request_deactivate"` on the Vial's bus.
+9.  **The Damage:** The Puddle sits on the floor. An enemy walks into it. 2D overlap occurs. Puddle's `DamageOnHitArm` deals damage every few frames until the Puddle's `DieOnTimerGuts` expires.
+
+By using the Command Pattern for `CDItemResource`, we achieve total separation. The player's architecture doesn't bloat just because they found a new weapon. The weapon *is* the architecture!
+
+This is the ultimate test of the V2 Architecture. Moving from single-screen arcade games to a seamless, interconnected Metroidvania world fundamentally changes how we handle the game space.
+
+Your instinct to use the Orchestrator and sub-viewports is close, but if we use multiple `CDGame` instances (one per screen), we hit a massive wall: **Isolation**. If an enemy chases the player across a screen boundary, it leaves its `CDGame` physics space and signal bus, breaking instantly.
+
+**The V2 Solution:** We use a *single* `CDGame` instance with a *single* global physics space and Game Bus. The `CDOrchestrator` handles the high-level game state (menu -> gameplay -> game over), but inside the `CDGame`, we use a **CDWorldManager** to stream chunks of the world in and out of the active scene tree. No sub-viewports. Just one massive, seamless coordinate space where chunks dynamically load around the player.
+
+Here is the V2 Metroidvania World Architecture.
+
+---
+
+### 1. The World Architecture: Seamless Streaming
+
+#### CDWorldMap (Resource)
+**Role:** Pure data resource mapping out the grid of the entire game world.
+*   **Exports:** `chunk_grid: Dictionary` mapping `Vector2i` (grid coordinates) to `PackedScene` (e.g., `Chunk_0_0.tscn`, `Chunk_1_0.tscn`).
+
+#### CDWorldManager (Stage Component, Child of CDGame)
+**Role:** The streaming engine. Maintains the illusion of a massive world by only keeping the 3x3 grid of chunks around the player loaded.
+
+| Aspect | Detail |
+|---|---|
+| **Consumes** | Game Bus: `"player_moved"`, `"request_chunk_transition(target_grid: Vector2i, target_door_id: StringName)"`. |
+| **Generates** | Game Tree: Instantiates/queue_frees `CDChunk` scenes. |
+| **Process** | 1. Tracks player position -> calculates current grid coordinate. <br> 2. If the player crosses into a new grid cell, calculates the 3x3 area around them. <br> 3. Instantiates any missing `CDChunk` scenes at their appropriate world positions (Grid Coord * Chunk Size). <br> 4. Unloads chunks that are now outside the 3x3 radius. <br> 5. Because they all share the `CDGame` physics space, the player simply walks from one chunk to the next with zero loading screens. |
+
+#### CDChunk (Node2D Scene)
+**Role:** A piece of the world. Contains tilemaps, static collision shapes, enemy spawn points, and interactables.
+*   **Rule:** No logic scripts. Just a container for `CDEntity` nodes and geometry. When instantiated by `CDWorldManager`, it seamlessly joins the `CDGame` tree.
+
+---
+
+### 2. The Interactables: NPCs, Secrets, and Puzzles
+
+We introduce a new universal entity state to `CDEnums`: `INTERACTING`. When the player talks to an NPC, their `ActionStateGuts` moves to `INTERACTING` (Priority 110—beats Hitstun!), freezing their movement and combat brains.
+
+#### The Interaction Flow (Player -> NPC)
+1.  **PlayerBrain:** Player presses "Interact" (e.g., Up on D-pad). Emits `"interact_requested"` on Player's Entity Bus.
+2.  **InteractRadiusArm (Player):** Hears `"interact_requested"`. Runs an `intersect_shape` query in front of the player. Finds an entity in the `"npc"` group. Emits `"begin_dialogue(npc_entity)"` on the Game Bus, and requests `"INTERACTING"` state for the Player.
+3.  **DialogueBrain (NPC):** Hears `"begin_dialogue"` on the Game Bus. If it's the target, it requests `"INTERACTING"` state for itself, and emits `"advance_dialogue(portrait, text)"` on the Game Bus.
+4.  **DialogueFace (Stage Component):** Hears `"advance_dialogue"`. Draws the text box. Waits for input. Emits `"dialogue_finished"` when done.
+5.  **Resolution:** Player and NPC brains hear `"dialogue_finished"`, drop back to `"idle"`.
+
+#### The Puzzle Flow: The Push Block & Switch
+1.  **PushBlock (Entity):** Standard entity, but `EightWayWalkLeg` is only activated when it receives `"push_start(direction)"`.
+2.  **InteractRadiusArm (Player):** Player presses "Interact" while touching the block. Emits `"push_start"` on the Block's Entity Bus.
+3.  **PressurePlate (Entity):** An Area2D entity. When a `"push_block"` or `"player"` overlaps it, its `CollisionAnnouncer` emits `"plate_activated(plate_id)"` on the Game Bus.
+4.  **LockedDoor (Entity):** Has `DoorGuts`. Listens for `"plate_activated"` matching its `required_plate_id`. On match, plays open animation (Face) and changes its collision group from `"walls"` to `"background"` (Guts), allowing the player to pass.
+
+---
+
+### 3. Screen Transitions (The Castlevania Door)
+
+Sometimes you want a hard transition (like entering Dracula's castle) that the 3x3 streaming can't handle, or a room that exists outside the main grid (like a save room).
+
+#### TransitionZone (Entity)
+**Role:** An invisible Area2D. When the player touches it, it teleports them to a new chunk/map.
+
+| Aspect | Detail |
+|---|---|
+| **Arms** | `ZoneTriggerArm`: Emits `"request_chunk_transition(target_map, target_door_id)"` on Game Bus when player overlaps. |
+| **Guts** | `TransitionDirectionGuts`: Defines which direction the player must be moving to trigger it (prevents accidental backtracking). |
+
+#### CDWorldManager Transition Handling
+1.  Hears `"request_chunk_transition"`.
+2.  Fades screen to black (via Stage `TransitionFace`).
+3.  Unloads all current chunks.
+4.  Loads the specific `target_map` chunk.
+5.  Finds the `SpawnPoint` entity with matching `target_door_id`.
+6.  Teleports the Player entity to that SpawnPoint's global position.
+7.  Fades screen in.
+
+---
+
+### 4. Persistence: The CDRunState (Autoload)
+
+In an arcade game, when you die, the game resets. In a Metroidvania, if you kill a boss and leave the room, the boss stays dead.
+
+We cannot put this state on the `CDGame` or the entities, because they are destroyed when you quit. We need a persistent data store.
+
+#### CDRunState (Autoload)
+**Role:** A global save-RAM dictionary that survives scene reloads and game overs.
+
+| Aspect | Detail |
+|---|---|
+| **Consumes** | Game Bus: `"entity_died(entity_id)"`, `"item_collected(item_id)"`, `"flag_set(flag_name)"`. |
+| **Generates** | Game Bus: `"run_state_updated"`. |
+| **Public Methods** | `is_dead(id) -> bool`, `has_item(id) -> bool`, `set_flag(name)`. |
+| **Process** | When a boss dies, its `DeathAnnouncer` emits `"entity_died(boss_01)"`. `CDRunState` records it. When the chunk loads, a `SpawnGuts` component on the boss entity checks `CDRunState.is_dead("boss_01")`. If true, the entity instantly deactivates itself. |
+
+---
+
+### 5. The SotN Character in the World
+
+How does our complex, combo-driven character survive in a chunk-streaming world?
+
+**Beautifully.** Because the Player is a single `CDEntity` that is *never* unloaded (the `CDWorldManager` treats it as the anchor), all of their state (Inventory, Health, Combo Arms) persists naturally across chunk boundaries.
+
+*   **Exploring:** `PlayerControllerBrain` (Move/Jump). `DepthWalkerLeg` (for 2.5D castle hallways).
+*   **Combat:** `MeleeComboArm` (Hit-confirm combos). `SpecialArm` + `CDItemResource` (Spawns Holy Water, which is just another entity that loads into the current chunk's physics space).
+*   **Interacting:** `InteractRadiusArm` (Talks to NPCs, pushes blocks).
+
+### The V2 Metroidvania Flow
+
+1.  Player walks right in `Chunk_1_0`. `CDWorldManager` unloads `Chunk_0_0` and loads `Chunk_2_0` seamlessly.
+2.  Player enters a Transition Zone in `Chunk_2_0` (a castle door).
+3.  Zone emits `"request_chunk_transition(Alchemy_Lab, door_A)"`.
+4.  `CDWorldManager` fades to black, loads the Alchemy Lab chunk, teleports the Player to `door_A`.
+5.  Player finds a `PushBlock`, pushes it onto a `PressurePlate`.
+6.  Plate emits `"plate_activated"`. A gate opens.
+7.  Player walks through, picks up a `CDItemResource` ("Holy Water").
+8.  `InventoryGuts` on the Player adds it. `CDRunState` records `has_item(holy_water)`.
+9.  Player walks back out to the main castle. The chunk loads. The gate they opened earlier is still open because a `DoorGuts` component checked `CDRunState` on spawn.
+
+No monolithic world scripts. No isolated sub-viewports. Just pure, seamless signal routing and component composition on a massive scale.

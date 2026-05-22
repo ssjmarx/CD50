@@ -1,0 +1,202 @@
+Here is the design for the V2 Brain components.
+
+In accordance with V2 principles, Brains are strictly **intent generators**. They take input (from the `CDInputRouter` or world state queries) and emit semantic signals on the entity's local bus. They never touch `velocity`, never move the entity, and never affect other entities directly.
+
+All Brains extend `CDComponent2D` and set `component_category = ComponentCategory.BRAIN` (which automatically assigns them Process Priority 10, ensuring they always fire before Legs).
+
+---
+
+## Brain Components
+
+### PlayerControllerBrain
+**Role:** The "dumb antenna." Listens to the `CDInputRouter` autoload and re-emits input events as semantic entity signals.
+
+| Aspect | Detail |
+|---|---|
+| **Consumes** | `CDInputRouter` global signals: `input_move`, `input_aim`, `input_action_pressed`, `input_action_released`. |
+| **Generates** | Entity local signals: `move(direction: Vector2)`, `aim(direction: Vector2)`, `<action_signal>( )`, `<end_action_signal>( )`. |
+| **Exports** | `move_action: StringName = &"move"` <br> `aim_action: StringName = &"aim"` <br> `action_mappings: Array[StringName] = [&"shoot", &"thrust"]` <br> `player_id: int = 0` |
+| **Setup** | Connects to `CDInputRouter` signals, filtering by `player_id`. Dynamically ensures and connects local entity signals based on `action_mappings` (e.g., ensures `shoot` and `end_shoot` exist). |
+
+---
+
+### ChaseNearestBrain
+**Role:** AI that calculates the direction to the closest entity in a target group and emits a move signal toward it.
+
+| Aspect | Detail |
+|---|---|
+| **Consumes** | World state via `CDGroupRegistry.get_nearest()`. |
+| **Generates** | Entity local signal: `move(direction: Vector2)`. |
+| **Exports** | `target_group: StringName = &"enemies"` <br> `stop_distance: float = 10.0` <br> `move_signal_name: StringName = &"move"` |
+| **Process** | Polls `get_game().group_registry.get_nearest()` for the `target_group`. If a target exists and distance > `stop_distance`, normalizes the vector and emits `move_signal_name`. |
+
+---
+
+### AimAtNearestBrain
+**Role:** AI that calculates the direction to the closest entity in a target group and emits an aim signal toward it.
+
+| Aspect | Detail |
+|---|---|
+| **Consumes** | World state via `CDGroupRegistry.get_nearest()`. |
+| **Generates** | Entity local signal: `aim(direction: Vector2)`. |
+| **Exports** | `target_group: StringName = &"enemies"` <br> `aim_signal_name: StringName = &"aim"` |
+| **Process** | Polls `get_game().group_registry.get_nearest()`. If a target exists, calculates the direction vector from the entity's global position and emits `aim_signal_name`. |
+
+---
+
+### ShootWhenAimedBrain
+**Role:** AI that monitors the entity's current facing direction (or aim vector) and fires when a target falls within a vision cone.
+
+| Aspect | Detail |
+|---|---|
+| **Consumes** | World state via `CDGroupRegistry.get_nearest()`. |
+| **Generates** | Entity local signals: `action_pressed(action_name: StringName)`, `action_released(action_name: StringName)`. |
+| **Exports** | `target_group: StringName = &"player"` <br> `vision_cone_angle: float = 15.0` (degrees) <br> `fire_signal: StringName = &"shoot"` <br> `end_fire_signal: StringName = &"end_shoot"` |
+| **Process** | Finds nearest target. Calculates angle between entity's forward vector and direction to target. If angle < `vision_cone_angle`, emits `action_pressed(fire_signal)`, else emits `action_released(end_fire_signal)`. |
+
+---
+
+### SwarmMemberBrain
+**Role:** Listens for broadcasted step commands from a stage-level SwarmController and translates them into local movement signals. Handles formation edge detection.
+
+| Aspect | Detail |
+|---|---|
+| **Consumes** | Game bus signal: `<swarm_signal_prefix>` (e.g., `invader_step`). |
+| **Generates** | Entity local signals: `move(direction: Vector2)`, `action_pressed(action_name: StringName)`. |
+| **Exports** | `swarm_signal_prefix: StringName = &"invader"` <br> `step_signal_name: StringName = &"move"` <br> `shoot_chance: float = 0.1` (chance to fire on step) <br> `shoot_signal: StringName = &"shoot"` |
+| **Setup** | Connects to game bus for `swarm_signal_prefix + "_step_left"`, `"_step_right"`, `"_step_down"`. |
+| **Process** | On receiving step signals, emits `move_signal_name` with the corresponding Vector2. If `shoot_chance` passes random check, also emits `shoot_signal`. |
+
+---
+
+### PatrolPathBrain
+**Role:** AI that follows a series of waypoints, emitting movement targets.
+
+| Aspect | Detail |
+|---|---|
+| **Consumes** | Internal state (current waypoint index). |
+| **Generates** | Entity local signals: `move_to(position: Vector2)`, `patrol_advanced`, `patrol_complete`. |
+| **Exports** | `waypoints: Array[Vector2]` (local to entity start position or global) <br> `use_global_coords: bool = false` <br> `loop: bool = true` <br> `retrace: bool = false` <br> `arrival_distance: float = 5.0` <br> `idle_time: float = 0.0` (seconds to wait at waypoint) |
+| **Process** | Emits `move_to` for the current waypoint. Checks distance. If within `arrival_distance`, increments index, waits `idle_time`, and emits next `move_to`. Handles loop/retrace logic at array boundaries. |
+
+---
+
+### TimedStepBrain
+**Role:** Emits a discrete movement vector at a regular interval. Used for Block Drop / Tetris-style gravity.
+
+| Aspect | Detail |
+|---|---|
+| **Consumes** | Internal timer state. Game bus signals for speed adjustments. |
+| **Generates** | Entity local signal: `move(direction: Vector2)`. |
+| **Exports** | `step_interval: float = 1.0` (seconds between steps) <br> `step_direction: Vector2 = Vector2.DOWN` <br> `step_signal_name: StringName = &"move"` <br> `speed_up_signal: StringName = &"speed_up"` |
+| **Process** | Counts down `step_interval`. On zero, emits `step_signal_name` with `step_direction` and resets timer. Listens to game bus `speed_up_signal` to decrease `step_interval` dynamically. |
+
+---
+
+### FormationBrain
+**Role:** Calculates a target position based on an offset from a "leader" entity and emits movement to maintain that formation.
+
+| Aspect | Detail |
+|---|---|
+| **Consumes** | World state (leader position). |
+| **Generates** | Entity local signal: `move_to(position: Vector2)`. |
+| **Exports** | `leader_group: StringName = &"leader"` <br> `offset: Vector2 = Vector2(20, 0)` <br> `move_signal_name: StringName = &"move_to"` |
+| **Process** | Queries `CDGroupRegistry` for the first entity in `leader_group`. Calculates leader position + offset (rotated by leader's facing if desired). Emits `move_to` with the calculated global position. |
+
+---
+
+## V1 to V2 Brain Migration Notes
+
+1. **No More Direct Input:** V1's `player_control.gd` called `Input.get_vector()` directly. V2's `PlayerControllerBrain` strictly routes through the `CDInputRouter` Autoload.
+2. **No Hardcoded Body Signals:** V1 hardcoded signals like `shoot` and `thrust` into `UniversalBody`. V2 Brains dynamically ensure and emit these signals based on exported `StringName` configurations, making them infinitely rewirable without code changes.
+3. **World State via Registry, Not Groups:** V1 AI scripts used `get_tree().get_nodes_in_group()`. V2 Brains use `get_game().group_registry.get_nearest()`, which is frame-cached and type-safe, returning `CDEntity` directly.
+4. **Pure Output:** V1 brains occasionally mixed concerns (e.g., `swarm_ai.gd` directly connected to a bus node). V2 Brains are math/input routers only; they output intent signals, and Legs/Arms handle the execution.
+
+Let's break this down. The V2 philosophy of "self-documenting, single-purpose components" gives us a clear lens to evaluate these three approaches.
+
+First, let's design the baseline V2 `PatrolPathBrain` using `Curve2D`, and then we'll compare the three ways to handle the "random into the screen and out" behavior.
+
+---
+
+### The Baseline: PatrolPathBrain (V2)
+
+This component strictly follows a pre-defined `Curve2D` resource.
+
+| Aspect | Detail |
+|---|---|
+| **Consumes** | `Curve2D` resource data. Internal timer/state for path progress. |
+| **Generates** | Entity local signal: `move_to(position: Vector2)`. `patrol_complete` on finish. |
+| **Exports** | `path_curve: Curve2D` <br> `use_global_coords: bool = false` <br> `loop: bool = true` <br> `retrace: bool = false` (ping-pong) <br> `speed: float = 100.0` <br> `arrival_distance: float = 5.0` |
+| **Process** | Calculates the target point on the `Curve2D` based on `speed` and delta time. Emits `move_to` with the target coordinate. Advances the internal offset. If the end is reached, handles `loop`, `retrace`, or emits `patrol_complete`. |
+
+---
+
+### Comparing the Random Path Approaches
+
+#### Option A: Add Random Generation to PatrolPathBrain
+
+You add an enum like `PathMode { CURVE, RANDOM_SWEEP }` and a bunch of conditional exports (`random_entry_edge`, `random_exit_edge`, `random_depth`).
+
+**Pros:**
+* Only one component to manage.
+
+**Cons:**
+* **Violates Single-Purpose:** The component is now doing two distinct things: interpolating a curve, *or* calculating random screen vectors.
+* **Violates Self-Documenting:** The inspector becomes a mess of conditional exports. A creator has to understand that half the settings disappear based on a dropdown.
+* **Godot Anti-Pattern:** A `Curve2D` resource is inherently editor-friendly. You draw the path on the entity. Random generation happens at runtime. Merging the runtime math into the editor-centric component muddies the water.
+
+#### Option B: Create a Separate `RandomSweepBrain`
+
+A new component specifically for the "fly into the screen and out" behavior.
+
+| Aspect | Detail |
+|---|---|
+| **Consumes** | Viewport bounds (from CDGame/Project Settings). Internal state. |
+| **Generates** | Entity local signal: `move_to(position: Vector2)`. |
+| **Exports** | `entry_edge: Edge` (TOP, LEFT, RIGHT) <br> `exit_edge: Edge` <br> `entry_depth: float` (how far into the screen to fly) <br> `entry_speed: float` <br> `sweep_speed: float` <br> `exit_speed: float` |
+
+**Pros:**
+* **Perfectly aligns with V2 philosophy:** It is highly specialized. The name tells you exactly what it does.
+* **Clean Inspector:** Only the variables relevant to a random sweep are visible.
+* **State Machine Friendly:** A sweep inherently has three phases (enter, sweep across, exit). This component manages that state machine internally, emitting `move_to` targets for each phase.
+
+**Cons:**
+* Slight duplication of "move towards a point" logic, but since Brains just emit `move_to` signals, the duplication is trivial.
+
+#### Option C: Create a `SweepController` (Stage Component)
+
+A stage component that listens for a game bus signal (e.g., `spawn_sweep`), picks random entities from a group, calculates the entry/sweep/exit vectors, and emits `move_to` directly onto those entities' local buses.
+
+**Pros:**
+* Offloads the math from the entity entirely. The entity is completely dumb.
+* Great for orchestrating complex, synchronized wave patterns (e.g., "5 enemies sweep from the left, staggered by 0.5 seconds").
+
+**Cons:**
+* **Breaks Entity Autonomy:** If a single UFO just wants to randomly sweep across the screen occasionally, forcing it to rely on a stage-level controller is over-engineering.
+* **Controller Overhead:** Controllers are meant to bridge the Game Bus to the Entity Bus. If the sweep behavior is intrinsic to the entity's existence (like a UFO that just flies back and forth), it belongs in a Brain.
+
+---
+
+### The Verdict
+
+**Option B (`RandomSweepBrain`) is the clear winner for standard V2 architecture.**
+
+It strictly adheres to the V2 mandate: *"The system favors a large catalog of specialized components over a small number of highly configurable ones."*
+
+However, **Option C (`SweepController`) is also incredibly valuable**, but for a *different use case*.
+
+Here is how they coexist in the V2 ecosystem:
+
+1. **Use `RandomSweepBrain`** when an entity spawns and *always* sweeps across the screen under its own volition. (e.g., the classic Space Invaders UFO that randomly flies across the top). It generates its own intent.
+
+2. **Use `SweepController`** when the *game* decides to fling entities across the screen as a wave pattern. (e.g., Bug Blaster where the game logic dictates "spawn 5 bees on the left edge and make them sweep right"). The entities in this case might only have a `Legs` component listening for `move_to`, and no Brain at all—the Controller *is* their brain.
+
+### Final Design for RandomSweepBrain
+
+| Aspect | Detail |
+|---|---|
+| **Role** | AI that generates a three-phase "enter, sweep, exit" flight path across the screen. |
+| **Consumes** | CDGame bounds (via `get_game()`). |
+| **Generates** | Entity local signals: `move_to(position: Vector2)`, `sweep_complete`. |
+| **Exports** | `entry_edge: CDEnums.Edge` (TOP, LEFT, RIGHT, BOTTOM) <br> `exit_edge: CDEnums.Edge` <br> `entry_depth: float = 100.0` <br> `sweep_lateral_offset: float = 0.0` <br> `speed: float = 100.0` <br> `loop: bool = false` |
+| **Process** | On `_on_setup`, calculates 3 waypoints: 1) Just inside the `entry_edge` at `entry_depth`, 2) The lateral sweep point, 3) Just outside the `exit_edge`. Emits `move_to` for the current target. When entity reaches target, advances to next phase. On reaching phase 3 (or if entity goes off-screen), emits `sweep_complete` and either deactivates the entity or loops. |

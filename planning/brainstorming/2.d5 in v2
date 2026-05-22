@@ -1,0 +1,208 @@
+Your intuition on how to handle 2.5D is absolutely spot-on. The "Safe Zone" pattern—where 2D overlap triggers a monitoring state that only fires a true collision signal when the Z-axis aligns—is the exact right way to bypass Godot's 2D physics limitations without eating CPU cycles checking Z every frame.
+
+However, when it comes to how we store and access that Z data, we must strictly adhere to the V2 philosophy: **Composition over Inheritance**.
+
+Creating `CDEntity2Point5D` and `CDComponent2Point5D` violates the core rule that "Entities have no scripts" and creates a parallel class hierarchy. If an entity needs Z-data, we don't subclass it; we plug a component into it. This ensures maximum compatibility: *any* standard `CDEntity` becomes 2.5D the moment you drop a `DepthGuts` component onto it.
+
+Here is the V2 2.5D Architecture.
+
+---
+
+### The Z-Data Source: DepthGuts
+
+**Role:** The single source of truth for an entity's Z-position and physical depth (thickness on the Z-axis). Extends `CDComponent2D` (Category: GUT).
+
+| Aspect | Detail |
+|---|---|
+| **Consumes** | Engine delta. Entity Bus: `"set_z_position(z: float)"`, `"modify_z_velocity(vel: float)"`. |
+| **Generates** | Entity Bus: `"z_position_changed(new_z: float)"`, `"z_velocity_changed(new_vel: float)"`. |
+| **Exports** | `z_position: float = 0.0` <br> `z_depth: float = 10.0` (The "thickness" of the entity on the Z axis for collision math) <br> `z_gravity: float = 0.0` <br> `z_min: float = 0.0` <br> `z_max: float = 1000.0` |
+| **Process** | Applies `z_velocity` and `z_gravity` to `z_position` every frame. Clamps to bounds. Emits update signals. |
+
+**Why this is better than a subclass:** Standard 2D components (like `HealthPoolGuts` or `ScoreOnDeathArm`) don't care about Z. They work perfectly on a 2.5D entity without modification. Only components that explicitly need Z-data will query `DepthGuts`.
+
+---
+
+### The Visuals: DepthProjectionFace
+
+**Role:** Handles the WYSIWYG editor requirement. Reads `DepthGuts` and modifies the entity's 2D `position`, `scale`, and `z_index` to simulate 3D projection.
+
+| Aspect | Detail |
+|---|---|
+| **Consumes** | `DepthGuts` data (`z_position`). |
+| **Generates** | Modifies `entity.scale`, `entity.z_index`, and offsets `entity.position.y`. |
+| **Exports** | `vanishing_point_y: float = 180.0` (The horizon line) <br> `ground_y: float = 360.0` (Where Z=0 sits on screen) <br> `max_depth: float = 1000.0` <br> `min_scale: float = 0.2` <br> `projection_style: Enum { PERSPECTIVE, ISOMETRIC }` |
+| **Process** | Every frame, calculates a `depth_ratio` (0.0 at ground, 1.0 at max depth). Interpolates Y position between `ground_y` and `vanishing_point_y`. Interpolates scale between 1.0 and `min_scale`. Sets `z_index` inversely so closer entities draw on top. |
+
+---
+
+### The Collision: ZCollisionArm (The Safe Zone Pattern)
+
+**Role:** Replaces the standard 2D `DamageOnHitArm` for 2.5D games. Uses the user's proposed "Safe Zone" pattern: monitors 2D Area2D overlaps and only emits a collision signal when Z-bounding boxes intersect.
+
+| Aspect | Detail |
+|---|---|
+| **Consumes** | Godot `body_entered` / `body_exited` signals (from a child Area2D). `DepthGuts` on self and target. |
+| **Generates** | Entity Bus: `"z_collision(target: CDEntity)"`. |
+| **Exports** | `target_group: StringName = &"enemies"` <br> `z_tolerance: float = 2.0` (Extra padding for Z-intersection) |
+| **Process** | 1. Maintains an internal array of "2D Overlapping Entities". <br> 2. On `body_entered`, if valid target group, adds to array. <br> 3. On `body_exited`, removes from array. <br> 4. In `_physics_process`, iterates the array. Calculates Z-intersection: `abs(self.z - target.z) <= (self.z_depth/2 + target.z_depth/2 + z_tolerance)`. <br> 5. If true, emits `"z_collision"` and removes from array (preventing repeat firing until they separate and overlap again). |
+
+*Why this is efficient:* Godot's C++ physics engine handles the broad-phase 2D overlap. GDScript only runs a simple subtraction and division on the *tiny* subset of entities currently overlapping in 2D.
+
+---
+
+### The Movement: 2.5D Legs
+
+These plug perfectly into the existing V2 Brain/Leg pipeline. A Brain emits `"move"` or `"z_move"`, and we just route it to the appropriate Leg.
+
+#### DepthWalkerLeg (Beat 'em Up Style)
+**Role:** Maps a 2D movement vector into a combined X (horizontal) and Z (depth) movement.
+
+| Aspect | Detail |
+|---|---|
+| **Consumes** | Entity Bus: `"move(direction: Vector2)"`. (Where Y maps to Z-movement). |
+| **Generates** | Calls `entity.request_velocity_add()` for X. Calls `DepthGuts.modify_z_velocity()` for Z. |
+| **Exports** | `horizontal_speed: float = 150.0` <br> `depth_speed: float = 100.0` (Usually slower than horizontal). |
+| **Process** | Takes `direction.y`, multiplies by `depth_speed`, emits `"modify_z_velocity"`. Takes `direction.x`, multiplies by `horizontal_speed`, adds to 2D velocity accumulator. |
+
+#### AutoRunnerLeg (Space Harrier Style)
+**Role:** Constantly increments the Z-position to simulate flying/running forward into the screen.
+
+| Aspect | Detail |
+|---|---|
+| **Consumes** | Engine delta. |
+| **Generates** | Emits `"modify_z_velocity"` on Entity Bus. |
+| **Exports** | `forward_speed: float = 200.0` <br> `accelerate_signal: StringName = &"thrust"` |
+| **Process** | Constantly pushes Z positive. Player's standard 2D `EightWayWalkLeg` handles the X and Y (altitude) screen movement independently! |
+
+---
+
+### How to build Space Harrier in V2
+
+1.  **Entity: Player**
+    *   `PlayerControllerBrain` (Move X/Y, Shoot).
+    *   `EightWayWalkLeg` (Moves the sprite up/down/left/right on screen).
+    *   `AutoRunnerLeg` (Moves the Z-position forward constantly).
+    *   `DepthGuts` (Tracks Z).
+    *   `DepthProjectionFace` (Scales sprite down as Z increases).
+    *   `GunArm` (Spawns bullets at `global_position` + `DepthGuts.z_position`).
+2.  **Entity: Enemy**
+    *   `AutoRunnerLeg` (Moves Z forward).
+    *   `DepthGuts`.
+    *   `DepthProjectionFace`.
+    *   `ZCollisionArm` (Monitors 2D overlap with Player/Bullets, only fires when Z-aligns).
+3.  **Stage:**
+    *   `GroundScrollerFace`: A shader/controller that scrolls a ground texture based on the Player's `DepthGuts.z_position`.
+
+**The V2 Magic:** The Player's `EightWayWalkLeg` doesn't know it's in a 2.5D game. It just moves the 2D transform. The `DepthProjectionFace` handles the visual projection. The `ZCollisionArm` handles the physics. Perfect separation of concerns, zero engine hacks, pure component composition.
+
+Your intuition is absolutely correct, and that is actually the standard way most on-rails or pseudo-3D arcade games (like Space Harrier, Star Fox, and beat 'em ups) handle the math under the hood!
+
+Keeping the player at **Z = 0** (the camera plane) and moving the world/enemies *towards* the player is vastly superior for several architectural reasons:
+
+### Why Player at Z=0 is Better
+
+1.  **Pure 2D Input:** If the player is at Z=0, their input is purely 2D (X = strafe, Y = altitude). You can use the standard `PlayerControllerBrain` and `EightWayWalkLeg` without any weird input mapping. The player's Y position on screen *is* their altitude.
+2.  **Fixed Spawn Math:** If the player is moving Z++, enemies have to spawn at `Player.Z + 1000`, which constantly scales. If the player is at Z=0, enemies *always* spawn at `Z = 1000` (or whatever your max depth is). The math is static and deterministic.
+3.  **Easier State Management:** If the player dies and respawns, the world doesn't need to reset its Z-coordinate. The camera (Z=0) is the anchor.
+4.  **Collision is Easier:** Enemies moving towards Z=0 will naturally cross the player's Z-plane and trigger the `ZCollisionArm`. If they pass behind the player (Z < 0), a `ZCleanupGuts` can easily destroy them.
+
+### How the Components Shift
+
+With this paradigm, here is how the components adapt:
+
+#### The Player Entity
+*   **No Z-Legs needed!** Just standard `EightWayWalkLeg`.
+*   `DepthGuts`: `z_position = 0.0`, `z_depth = 10.0`. (Always stays at 0).
+*   `DepthProjectionFace`: Since Z=0, the player's scale is always 1.0, drawn at maximum size.
+
+#### The Enemy Entities
+*   `SpawnAtDepthGuts`: On `_ready`, sets `DepthGuts.z_position = 1000.0`.
+*   **ApproachTargetLeg** (New Name for AutoRunnerLeg): Moves the enemy's Z-position towards 0 at a constant speed.
+    *   **Consumes:** Engine delta.
+    *   **Generates:** Modifies `DepthGuts.z_position`.
+    *   **Process:** Subtracts `speed * delta` from Z.
+*   `ZCleanupGuts`: If `DepthGuts.z_position < -50` (passed behind the camera), emits `"request_deactivate"`.
+
+#### The Ground / Environment (The Illusion of Forward Movement)
+If the player isn't moving forward, how does the ground scroll? We use a **Stage Component** to drive the environment.
+
+*   **LevelDepthCard** (Cue Card): A stage component that simply increments a virtual Z-value over time (`virtual_z += speed * delta`). It emits `"level_depth_changed(new_z: float)"`.
+*   **GroundScrollerFace** (Stage Face): Listens to `"level_depth_changed"`. Applies that delta to a shader uniform or directly offsets `TextureRect.uv` to make the ground texture scroll towards the camera.
+*   **SpawnDirector** (Controller): Listens to `"level_depth_changed"`. Every X units of virtual Z traveled, it spawns a wave of enemies at `Z = 1000`.
+
+### The Signal Flow (Space Harrier V2)
+
+1.  **Stage:** `LevelDepthCard` ticks up, emitting `"level_depth_changed"`. `GroundScrollerFace` scrolls the floor texture.
+2.  **Spawn:** `SpawnDirector` hears the tick, sees 100 units have passed, spawns an Enemy at screen center (2D) but with `DepthGuts.z_position = 1000`.
+3.  **Visuals:** Enemy's `DepthProjectionFace` reads Z=1000. Scales enemy down to 0.2 and places it near the vanishing point.
+4.  **Movement:** Enemy's `ApproachTargetLeg` reduces Z by 300/sec. The enemy visually grows and moves down the screen towards the player.
+5.  **Action:** Player uses standard 2D controls (`EightWayWalkLeg`) to line up with the enemy. Player's `GunArm` fires a bullet (Bullet also has `DepthGuts.z_position = 0` and an `ApproachTargetLeg` so it flies "into" the screen).
+6.  **Collision:** Bullet and Enemy overlap in 2D. `ZCollisionArm` checks: Is Bullet's Z close enough to Enemy's Z? Yes! Emits `"z_collision"`. Enemy takes damage.
+7.  **Cleanup:** Enemy passes the player (Z < 0). `ZCleanupGuts` destroys it.
+
+By moving the world instead of the player, your 2.5D game leverages 90% of the standard 2D V2 ecosystem with zero hacks!
+
+You hit the nail on the head. This is the exact "aha!" moment required to make 2.5D shooters work in a 2D engine. If the player stays at Z=0 and the enemies are at Z=500, a standard 2D bullet will just fly *under* or *over* them on the screen unless the bullet also has a Z-coordinate traveling "into" the screen.
+
+The beauty of the V2 architecture is that **we don't need a new GunArm**. We just need a new Bullet Entity scene composed of the right 2.5D components, and the standard `GunArm` will spawn it perfectly.
+
+Here is how we build the Depth Bullet and make 2.5D shooting fully deterministic.
+
+---
+
+### The DepthBullet Entity
+
+Instead of a standard 2D bullet, we create a `DepthBullet.tscn` which is just a `CDEntity` packed with 2.5D components.
+
+| Component | Category | Role in the Depth Bullet |
+|---|---|---|
+| **DepthGuts** | Guts | Spawns at Z=0 (the player's plane). Tracks Z-position as it travels "into" the screen. |
+| **DepthTravelLeg** | Legs | Constantly adds to `DepthGuts.z_position` every frame, simulating forward momentum into the screen. |
+| **DirectMovementLeg** | Legs | Standard 2D leg. If the player was strafing when they fired, and `GunArm` passed `inherit_velocity = true`, this leg handles the bullet's lateral drift. |
+| **ZCollisionArm** | Arm | The 2.5D collision pattern. Monitors 2D overlap with enemies, but *only* emits `"z_collision"` when the bullet's Z matches the enemy's Z. |
+| **DamageOnHitArm** | Arm | Listens for `"z_collision"` and emits `"take_damage"` on the target. |
+| **DieOffscreenGuts** | Guts | Destroys the bullet if it goes off the screen edges. |
+| **DepthMaxGuts** | Guts | Destroys the bullet if `DepthGuts.z_position > max_depth` (e.g., 1000), so bullets don't fly forever into the fog. |
+| **DepthProjectionFace**| Face | Shrinks the bullet's scale and updates its `z_index` as it travels into the screen, matching the visual perspective of the enemies. |
+
+---
+
+### The DepthTravelLeg
+
+This is the only new Leg component we need for the bullet. It is incredibly simple, but it drives the core 2.5D illusion.
+
+| Aspect | Detail |
+|---|---|
+| **Role** | Moves an entity along the Z-axis at a constant speed. |
+| **Consumes** | Engine delta. |
+| **Generates** | Modifies `DepthGuts.z_position`. |
+| **Exports** | `z_speed: float = 800.0` (How fast the bullet travels "into" the screen). |
+| **Process** | Every frame, fetches `DepthGuts` and adds `z_speed * delta`. |
+
+---
+
+### How the GunArm Fires it (No Changes Needed!)
+
+Let's look at how the standard `GunArm` (designed for 2D) perfectly fires a 2.5D bullet:
+
+1.  **Player presses fire.** `PlayerControllerBrain` emits `"shoot"`.
+2.  **GunArm hears `"shoot"`.** It instantiates `bullet_scene` (which is our `DepthBullet.tscn`).
+3.  **GunArm sets transform.** It places the bullet at `global_position` and `global_rotation` (pointing at the crosshair).
+4.  **GunArm applies velocity.** It applies `muzzle_velocity` in the 2D direction the gun is pointing.
+5.  **The V2 Magic:**
+    *   The bullet's `DirectMovementLeg` takes that 2D velocity and moves it laterally across the screen.
+    *   Simultaneously, the bullet's `DepthTravelLeg` starts incrementing its `DepthGuts.z_position` at `z_speed`.
+    *   The bullet's `DepthProjectionFace` reads the rising Z-position and visually shrinks the bullet, making it look like it's flying away from the camera towards the crosshair!
+
+### The Collision Intersection (The 2.5D Money Shot)
+
+1.  Enemy is flying towards the player. Its current Z is `400`.
+2.  Player fires. DepthBullet spawns at Z=`0`.
+3.  Over the next half-second, the DepthBullet travels laterally towards the enemy, while its Z-position rapidly climbs: `100... 200... 300...`
+4.  Godot's 2D physics detects the bullet's sprite overlapping the enemy's sprite. The `ZCollisionArm` wakes up and adds the enemy to its monitoring array.
+5.  **Frame X:** Bullet Z is `390`, Enemy Z is `410`. The Z-distance is 20. `ZCollisionArm`'s tolerance is 10. *No collision.*
+6.  **Frame Y:** Bullet Z is `405`, Enemy Z is `408`. The Z-distance is 3. Tolerance met! `ZCollisionArm` emits `"z_collision"`.
+7.  `DamageOnHitArm` deals damage. `DieAtZeroHealthGuts` kills the enemy. The bullet deactivates.
+
+By just swapping the Bullet Entity scene, a standard 2D arcade game becomes Space Harrier. The V2 compositional pipeline makes what is normally a nightmare of 3D math in a 2D engine into a simple, clean signal flow.

@@ -1,0 +1,141 @@
+Let's break down exactly what happens at Priority 35. This is the linchpin of V2's deterministic physics, ensuring that all movement resolves before a single piece of game logic reacts to it.
+
+Here is the precise, frame-by-frame execution flow.
+
+---
+
+### The Setup (During `_ready`)
+
+1.  **CDEntity** sets `process_physics_priority = 30`.
+2.  **CDCollisionBuffer** (a child node of `CDGame`) sets `process_physics_priority = 35`.
+3.  **CDEntity** creates an internal array: `var _pending_collisions: Array[Dictionary] = []`.
+
+---
+
+### Priority 30: The Movement Phase
+
+Godot iterates through all CDEntities. Because they all share Priority 30, their execution order is the Godot tree order, but *it doesn't matter* because they are only moving and buffering, not reacting.
+
+Inside `CDEntity._physics_process(delta)`:
+
+```gdscript
+func _physics_process(delta: float) -> void:
+    # 1. Apply accumulated velocity from Legs (Priority 20)
+    var collision = move_and_collide(_accumulated_velocity * delta)
+
+    # 2. Clear the accumulator for the next frame
+    _accumulated_velocity = Vector2.ZERO
+
+    # 3. Enforce axis locks and clamping
+    if lock_x: position.x = _axis_lock_x_pos; velocity.x = 0
+    if lock_y: position.y = _axis_lock_y_pos; velocity.y = 0
+    position = position.clamp(Vector2(x_min, y_min), Vector2(x_max, y_max))
+
+    # 4. Buffer the collision, DO NOT emit signals
+    if collision:
+        var collider = collision.get_collider()
+        var normal = collision.get_normal()
+
+        _pending_collisions.append({
+            "collider": collider,
+            "normal": normal
+        })
+
+        # Tell the Game's buffer to flush us this frame
+        get_game().collision_buffer.register_entity(self)
+
+        # Nudge away from surface (prevents sticking)
+        position += normal * 0.5
+```
+
+*Result of Priority 30:* Every entity has moved to its final position for the frame. The physics world is completely settled. However, no component knows a collision happened yet.
+
+---
+
+### Priority 35: The Flush Phase
+
+Godot now runs `CDCollisionBuffer._physics_process(delta)`.
+
+```gdscript
+class_name CDCollisionBuffer extends Node
+
+var _entities_to_flush: Array[CDEntity] = []
+
+func register_entity(entity: CDEntity) -> void:
+    if entity not in _entities_to_flush:
+        _entities_to_flush.append(entity)
+
+func _physics_process(_delta: float) -> void:
+    # Iterate all entities that had collisions
+    for entity in _entities_to_flush:
+        if is_instance_valid(entity):
+            entity.flush_collisions()
+
+    # Clear the list for the next frame
+    _entities_to_flush.clear()
+```
+
+Inside `CDEntity.flush_collisions()`:
+
+```gdscript
+func flush_collisions() -> void:
+    for c in _pending_collisions:
+        var collider: CDEntity = c["collider"]
+        var normal: Vector2 = c["normal"]
+
+        # 1. Emit on own bus (I hit something)
+        emit_signal("collision", collider, normal)
+
+        # 2. The Physics Exception: Emit on THEIR bus (They were hit by me)
+        if is_instance_valid(collider):
+            collider.emit_signal("collided_by", self, -normal)
+
+    # Clear the buffer
+    _pending_collisions.clear()
+```
+
+*Result of Priority 35:* All collision signals are now emitted synchronously. Because this happens in a distinct phase *after* all entities have moved, we avoid all mid-step mutation bugs.
+
+---
+
+### The Crucial Safety Net: Deferred Death
+
+You might ask: *"Wait, if Arms (Priority 40) react to the `collision` signal and kill the collider, won't the loop in `flush_collisions` crash when it tries to emit `collided_by` to a dead entity?"*
+
+This is where V2's **Entity State Machine** saves the day.
+
+When an Arm (Priority 40) hears `"collision"` and decides the target must die, it calls `target.deactivate()`.
+
+Inside `CDEntity.deactivate()`:
+
+```gdscript
+func deactivate() -> void:
+    if _state == EntityState.CLEANING_UP: return
+
+    _state = EntityState.CLEANING_UP
+
+    # 1. Immediately disable collision shapes so nothing else hits it this frame
+    for child in get_children():
+        if child is CollisionShape2D or child is CollisionPolygon2D:
+            child.set_deferred("disabled", true)
+
+    # 2. Emit the deactivating signal for cleanup components
+    emit_signal("entity_deactivating")
+
+    # 3. DEFER the actual destruction to the end of the physics frame
+    call_deferred("queue_free")
+```
+
+**Why this guarantees safety:**
+1.  Even if an entity is marked for death during the Priority 35 flush loop, it is **not freed from memory** until the end of the frame.
+2.  Therefore, `is_instance_valid(collider)` will still return `true`, and emitting `collided_by` onto its bus is perfectly safe (even if its components ignore it because the entity is `CLEANING_UP`).
+3.  By disabling the `CollisionShape2D` via `set_deferred`, we guarantee the engine won't register *new* collisions with the dying entity in subsequent processing steps of the same frame.
+
+### Summary of the Frame
+
+1.  **Priority 20 (Legs):** Calculate intent, add to `_accumulated_velocity`.
+2.  **Priority 30 (Entity):** `move_and_collide`. World state is final. Collisions are buffered.
+3.  **Priority 35 (Buffer):** Flush buffers. Emit `collision` and `collided_by` signals. The game logic "wakes up" to the physics state.
+4.  **Priority 40 (Arms):** Deal damage, spawn effects based on collisions. Entities may be marked `CLEANING_UP`.
+5.  **Priority 50 (Guts):** Process damage, update health, confirm deaths.
+6.  **End of Frame:** `queue_free()` executes. Dead entities are removed from the tree.

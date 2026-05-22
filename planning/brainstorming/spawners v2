@@ -1,0 +1,121 @@
+You are absolutely right to target the V1 WaveSpawner—it was a monolith that violated almost every V2 principle. It handled trigger routing, math equations, positioning, grid layouts, safety checks, and dynamic property injection.
+
+Dropping the `WaveDirector` is the correct move. In V2, components subscribe directly to the signals they care about. If a spawner needs to fire on a timer, it listens to the `TimerCard`'s `"timer_expired"` signal. If it needs to fire on game start, it listens to `CDGame`'s `"game_play"` signal.
+
+Here is the spec for the V2 Spawner family, starting with the Grid debate and moving into the specific component designs.
+
+---
+
+### The Grid Debate: Monolith vs. Data-Driven
+
+**V1 Approach: The Fully-Featured Grid Spawner**
+The spawner had exports for `grid_columns`, `grid_rows`, `grid_skip_chance`, `grid_health_values`, etc.
+*Problem:* It violates the V2 rule of "explicitly named and purposed CDEntity scenes over overrides." If row 1 needs 7 HP and row 2 needs 5 HP, V1 dynamically overrode properties at runtime. This is fragile and hides game logic in the spawner.
+
+**V2 Approach: The Data-Driven Grid + Explicit Scenes**
+Instead of the spawner calculating health and skips via code, we use a `CDGridLayout` resource. This resource is a 2D array where each cell is either `null` (a skip/empty space) or a specific `PackedScene` (e.g., `HardBrick.tscn`, `WeakBrick.tscn`).
+
+*Why this is better:*
+1. **Visual Editing:** You can build grid layouts in the editor exactly as they will appear in-game.
+2. **No Property Overrides:** `HardBrick.tscn` already has its `HealthPool` set to 7. The spawner just instantiates the scene.
+3. **Randomization is Data:** If you want a "junk block" pattern, you don't use math. You create 5 different `CDGridLayout` resources with different holes, and tell the spawner to pick one at random.
+
+---
+
+### The Safety Feature: CDSafeZone
+
+Your idea to flip the safety logic from polling to signal-driven is perfect V2 thinking.
+
+**CDSafeZone** (Stage Component, extends Area2D)
+It monitors overlapping bodies. If an entity from an `unsafe_group` enters, it emits `"zone_unsafe"`. When the last one leaves, it emits `"zone_safe"`.
+
+The Spawner simply listens to these signals. When a Spawner gets its trigger, if it's currently waiting for a safe zone, it holds the spawn in a pending state until the `"zone_safe"` signal arrives.
+
+---
+
+### V2 Spawner Family Specs
+
+All Spawners extend `CDSpawner` (which extends `CDComponent2D`, Category: STAGE, Priority 70).
+
+#### CDSpawner (Base Class)
+*Abstract. Provides the core spawn queue, stagger logic, and safety hooks.*
+
+| Aspect | Detail |
+|---|---|
+| **Consumes** | A trigger signal (configured by export). `zone_safe` / `zone_unsafe` signals. `wave_number` from a `WaveCard` CueCard. |
+| **Generates** | `spawning_complete(wave_num: int)` on the Game Bus. |
+| **Exports** | `trigger_signal: StringName = &"game_play"` <br> `wave_card_path: NodePath` (to read current wave number) <br> `spawn_count_equation: String = "3 + wave_number"` <br> `stagger_delay: float = 0.1` <br> `safe_zone_signal_prefix: StringName = &""` (e.g., `&"center_zone"`) |
+| **Setup** | Connects to `get_game().bus_connect(trigger_signal, _on_trigger)`. If `safe_zone_signal_prefix` is set, connects to `safe_zone_signal_prefix + "_safe"` and `"_unsafe"`. |
+| **Process** | Manages `_spawn_queue`. Pops indices and calls the virtual method `_spawn_entity(index, total)` based on `stagger_delay`. |
+| **Logic** | When triggered, evaluates `spawn_count_equation` (substituting `wave_number` read from the `WaveCard`). Populates the queue. If the safe zone is currently marked unsafe, it pauses the queue popping until `"zone_safe"` is heard. |
+
+#### PointSpawner
+*Spawns entities at its exact global position (with optional random offset).*
+
+| Aspect | Detail |
+|---|---|
+| **Exports** | `spawn_scene: PackedScene` <br> `offset_range: Vector2 = Vector2(10, 10)` (random spread around center) |
+| **Virtual Impl** | `_spawn_entity(index, total)`: Instantiates `spawn_scene`. Sets `global_position` to the Spawner's `global_position` + random offset within `offset_range`. Adds to Game tree. |
+
+#### EdgeSpawner
+*Spawns entities along the edges of the configured game bounds.*
+
+| Aspect | Detail |
+|---|---|
+| **Exports** | `spawn_scene: PackedScene` <br> `edges: Array[CDEnums.Edge] = [CDEnums.Edge.TOP]` <br> `spacing: float = 32.0` |
+| **Virtual Impl** | `_spawn_entity(index, total)`: Instantiates `spawn_scene`. Calculates position evenly across the selected edges based on `total` and `spacing`. Adds to Game tree. |
+
+#### GridSpawner
+*Spawns a defined grid of explicitly typed entities using a data resource.*
+
+| Aspect | Detail |
+|---|---|
+| **Exports** | `grid_layout: CDGridLayout` (The resource mapping coordinates to PackedScenes) <br> `cell_size: Vector2 = Vector2(16, 16)` <br> `cell_spacing: Vector2 = Vector2(2, 2)` |
+| **Virtual Impl** | `_spawn_entity(index, total)`: Ignores `spawn_count_equation` (count is derived from the layout resource). Looks up the coordinate and `PackedScene` for the given `index` in the `CDGridLayout`. If the scene is `null` (a skip), it returns early. Calculates `global_position` based on the grid origin, `index`, `cell_size`, and `cell_spacing`. Instantiates the scene and places it. |
+
+---
+
+### Supporting Resource: CDGridLayout
+
+**Role:** A custom Resource that defines a 2D grid of entity scenes. Replaces V1's runtime property overrides and math-based skipping with explicit, editor-friendly data.
+
+| Property | Type | Description |
+|---|---|---|
+| `columns` | `int` | Width of the grid. |
+| `rows` | `Array[CDGridRow]` | An array where index 0 is the top row, index N is the bottom row. |
+
+**CDGridRow (Inner Class/Resource)**
+
+| Property | Type | Description |
+|---|---|---|
+| `cells` | `Array[PackedScene]` | Array length must match `columns`. If a cell is `null`, the spawner skips it (the V2 "junk block" pattern). If it contains a scene (e.g., `BrickHP5.tscn`), it spawns it. |
+
+**Why this is a V2 Win:**
+You want a random junk layout? Create 5 `CDGridLayout` resources with different `null` holes. Give the `GridSpawner` an array of layouts and let it pick `layouts.pick_random()` on trigger. No math, no `grid_skip_chance`, no `grid_health_values`. The data *is* the logic.
+
+---
+
+### Supporting CueCard: WaveCard
+
+**Role:** A stage component that acts as the single source of truth for the current wave number. Spawners read from this.
+
+| Aspect | Detail |
+|---|---|
+| **Consumes** | Signals that advance the wave (e.g., `"spawning_complete"`). |
+| **Generates** | `wave_advanced(wave_number: int)` on the Game Bus. |
+| **Exports** | `advance_signal: StringName = &"spawning_complete"` |
+| **Public Methods** | `get_wave_number() -> int` |
+
+---
+
+### How a V2 Game is Wired (Example: Space Invaders)
+
+1. **`CDGame`** starts, emits `"game_play"`.
+2. **`PointSpawner`** (The UFO) hears `"game_play"`, calculates count (1), spawns `Ufo.tscn` at the top edge.
+3. **`GridSpawner`** (The Invaders) hears `"game_play"`, reads `CDGridLayout_Invaders`, spawns 5 rows of `InvaderA.tscn`, `InvaderB.tscn`, etc., in a perfect grid.
+4. **`WaveCard`** tracks that we are on Wave 1.
+5. When the `FormationController` registers that the `"formation"` group is empty, it emits `"formation_cleared"` on the Game Bus.
+6. **`WaveCard`** hears `"formation_cleared"`, increments to Wave 2, and emits `"wave_advanced"`.
+7. **`GridSpawner`** hears `"wave_advanced"` as its trigger. It reads `WaveCard.get_wave_number()` (2), evaluates `"5 + wave_number"` (7 rows? or however you configure the equation), and spawns the grid again.
+
+No monoliths. No middleware Directors. Just components subscribing to the exact signals they need, reading state from CueCards, and emitting intent.

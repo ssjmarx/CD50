@@ -1,0 +1,162 @@
+Here are some fresh components for the V2 ecosystem, designed to fill common arcade/gameplay gaps while strictly adhering to the deterministic, signal-driven, single-purpose philosophy.
+
+---
+
+### Brains (Intent Generators)
+
+#### FleeNearestBrain
+**Role:** The inverse of `ChaseNearestBrain`. Emits a movement vector away from the closest threat. Perfect for cowardly enemies, escort missions, or evasive boss phases.
+*   **Consumes:** `CDGroupRegistry` queries.
+*   **Generates:** Entity Bus: `"move(direction: Vector2)"`.
+*   **Exports:** `threat_group: StringName = &"player"`, `flee_distance: float = 150.0`, `move_signal: StringName = &"move"`.
+*   **Process:** Finds nearest entity in `threat_group`. If within `flee_distance`, calculates vector *away* from threat, normalizes, and emits.
+
+#### OrbitBrain
+**Role:** Calculates a circular movement vector around a target entity or point. Great for shield drones, orbiting power-ups, or boss attack patterns.
+*   **Consumes:** `CDGroupRegistry` queries or Entity Bus: `"orbit_target(entity: CDEntity)"`.
+*   **Generates:** Entity Bus: `"move(direction: Vector2)"`.
+*   **Exports:** `target_group: StringName`, `orbit_radius: float = 50.0`, `orbit_speed: float = 2.0`.
+*   **Process:** Finds target. Calculates desired position on a circle around it based on elapsed time. Emits directional vector toward that point.
+
+#### IdleWanderBrain
+**Role:** Picks random nearby points and meanders toward them. Good for ambient wildlife, civilian NPCs, or enemies in a "relaxed" state.
+*   **Consumes:** Internal timer/state.
+*   **Generates:** Entity Bus: `"move_to(position: Vector2)"`.
+*   **Exports:** `wander_radius: float = 100.0`, `idle_time: float = 2.0`.
+*   **Process:** Picks a random point within `wander_radius` of spawn position. Emits `"move_to"`. When position is reached, waits `idle_time`, picks a new point.
+
+---
+
+### Legs (Movement Execution)
+
+#### SteeringLeg
+**Role:** Adds a force toward a desired direction, smoothly blending it with the current velocity. Essential for Boids/flocking behaviors or smooth, organic flight.
+*   **Consumes:** Entity Bus: `"steer(direction: Vector2)"`. Reads `entity.velocity`.
+*   **Generates:** Calls `entity.request_velocity_add()`.
+*   **Exports:** `steering_force: float = 5.0`, `max_speed: float = 200.0`.
+*   **Process:** Calculates desired velocity (`direction * max_speed`). Calculates steering force (`desired - current_velocity`). Limits force to `steering_force`, adds to accumulator.
+
+#### PlatformerLeg
+**Role:** Handles jump impulses for side-scrolling games.
+*   **Consumes:** Entity Bus: `"jump"`.
+*   **Generates:** Calls `entity.request_velocity_set(Vector2(vel_x, -jump_force))`.
+*   **Exports:** `jump_force: float = 400.0`, `coyote_time: float = 0.1`, `jump_buffer_time: float = 0.1`.
+*   **Process:** Listens for `"jump"`. If entity is on floor (or within `coyote_time`), sets vertical velocity to `-jump_force`. Handles jump buffering for responsive controls.
+
+#### BoomerangLeg
+**Role:** Modifies velocity over time to return the entity to its spawn point or the entity that spawned it.
+*   **Consumes:** Engine delta.
+*   **Generates:** Calls `entity.request_velocity_add()`.
+*   **Exports:** `return_force: float = 5.0`, `damping: float = 0.98`.
+*   **Process:** Calculates vector to return target. Adds `return_force` toward it. Applies `damping` to current velocity so it eventually stops at the target instead of orbiting forever.
+
+---
+
+### Arms (Outward Effects)
+
+#### PushbackArm
+**Role:** Applies a physical impulse to another entity on collision. Great for explosions, shield bashes, or bouncing enemies away.
+*   **Consumes:** Entity Bus: `"collision"`, `"collided_by"`, or Game Bus triggers.
+*   **Generates:** Target Entity Bus: `"external_impulse(impulse: Vector2)"`.
+*   **Exports:** `push_force: float = 500.0`, `target_group: StringName`.
+*   **Process:** On collision, emits `"external_impulse"` on the target's bus. (Requires a corresponding `ImpulseReceiverGuts` or Leg on the target to actually apply the velocity).
+
+#### StatusEffectArm
+**Role:** Emits a specific signal onto a target's bus to inflict a status (Burn, Stun, Slow). Decouples the *application* of the effect from the *execution* of the effect.
+*   **Consumes:** Entity Bus: `"collision"`.
+*   **Generates:** Target Entity Bus: `"apply_status(status_name: StringName, duration: float)"`.
+*   **Exports:** `status_name: StringName = &"stun"`, `duration: float = 2.0`, `target_group: StringName`.
+*   **Process:** On collision, emits `"apply_status"` on the valid target.
+
+#### GrappleArm
+**Role:** Fires a projectile. If that projectile sticks, it pulls the parent entity toward the stuck location.
+*   **Consumes:** Entity Bus: `"shoot"`, Game Bus: `"grapple_attached(position: Vector2)"` (via Announcer).
+*   **Generates:** Spawns GrappleHook entity. Emits `"move_to"` on own Entity Bus.
+*   **Process:** On `"shoot"`, spawns hook. When hook announces `"grapple_attached"`, this arm starts emitting `"move_to"` toward the attached position, reeling the entity in.
+
+---
+
+### Guts (Internal State)
+
+#### ImpulseReceiverGuts
+**Role:** Listens for sudden external forces (like knockback or explosions) and applies them to the velocity accumulator for one frame.
+*   **Consumes:** Entity Bus: `"external_impulse(impulse: Vector2)"`.
+*   **Generates:** Calls `entity.request_velocity_add()`.
+*   **Process:** On `"external_impulse"`, immediately adds the vector to the velocity accumulator. This ensures knockback respects friction and other legs.
+
+#### ShieldPoolGuts
+**Role:** A rechargeable health buffer that sits on top of `HealthPoolGuts`. Damage hits this first.
+*   **Consumes:** Entity Bus: `"take_damage"`.
+*   **Generates:** Entity Bus: `"shield_hit"`, `"shield_broken"`, `"shield_recharged"`. Passes overflow damage to `"take_damage"` if shield drops.
+*   **Exports:** `max_shield: float = 50.0`, `recharge_delay: float = 3.0`, `recharge_rate: float = 10.0`.
+*   **Process:** Absorbs damage. If damage > current shield, emits `"take_damage"` with the remainder. If no damage taken for `recharge_delay`, regenerates shield.
+
+#### StunGuts
+**Role:** Temporarily disables Brains and Legs.
+*   **Consumes:** Entity Bus: `"apply_status(status_name, duration)"`.
+*   **Generates:** Disables/enables child components.
+*   **Process:** If `status_name` is `"stun"`, disables all components of category BRAIN and LEGS for `duration` seconds. Emits `"status_began"`, `"status_ended"`.
+
+#### ResourcePoolGuts
+**Role:** Generic pool for stamina, mana, or ammo.
+*   **Consumes:** Entity Bus: `"spend_resource(amount: float)"`.
+*   **Generates:** Entity Bus: `"resource_changed(current: float)"`, `"resource_depleted"`.
+*   **Exports:** `max_resource: float = 100.0`, `regen_rate: float = 5.0`.
+*   **Process:** Subtracts amount. If < 0, emits `"resource_depleted"` and blocks further spending. Regenerates over time.
+
+---
+
+### Face (Visuals)
+
+#### DamageFlashFace
+**Role:** Briefly flashes the entity's sprite modulate color when taking damage.
+*   **Consumes:** Entity Bus: `"health_changed"`, `"shield_hit"`.
+*   **Generates:** Visual modulate changes.
+*   **Exports:** `flash_color: Color = Color.WHITE`, `flash_duration: float = 0.1`.
+*   **Process:** On signal, sets modulate to `flash_color`, tweens back to normal over `flash_duration`.
+
+#### SpriteStateFace
+**Role:** Changes the entity's texture or animation based on localized state signals.
+*   **Consumes:** Entity Bus: `"move"`, `"aim"`, `"zero_health"`, `"apply_status"`.
+*   **Generates:** Sprite/AnimationPlayer updates.
+*   **Exports:** Mapping of signals to sprite frames/animations.
+*   **Process:** Listens for intent signals and swaps visual state accordingly (e.g., plays "walk" animation on `"move"`, "stunned" animation on `"apply_status"`).
+
+#### TrailFace
+**Role:** Spawns fading ghost images behind the entity based on velocity.
+*   **Consumes:** Reads `entity.velocity` per frame.
+*   **Generates:** Spawns `TrailGhost` effect scenes.
+*   **Exports:** `min_speed: float = 50.0`, `spawn_rate: float = 0.05`, `ghost_scene: PackedScene`.
+*   **Process:** If velocity length > `min_speed`, spawns ghost at current position on a timer.
+
+---
+
+### Stage Components (Controllers, Goals, CueCards, A/V)
+
+#### ScreenShakeController (A/V)
+**Role:** Applies a random offset to the camera/viewport on heavy impacts.
+*   **Consumes:** Game Bus: `"explosion"`, `"heavy_hit"`.
+*   **Generates:** Tweens `Camera2D` offset.
+*   **Exports:** `shake_decay: float = 0.9`, `max_offset: Vector2 = Vector2(5, 5)`.
+*   **Process:** On signal, adds random offset to camera, decays it back to zero.
+
+#### DifficultyCurveController (Controller)
+**Role:** Adjusts game parameters over time or based on wave number.
+*   **Consumes:** `WaveCard` or `TimerCard` signals.
+*   **Generates:** Game Bus: `"update_difficulty(multiplier: float)"`.
+*   **Exports:** `curve: Curve` (Godot Curve resource mapping time/wave to multiplier).
+*   **Process:** Reads the curve based on current time/wave and emits `"update_difficulty"`. Spawners and Brains listen to this to speed up.
+
+#### MultiConditionGoal (Goal)
+**Role:** Triggers a game state transition only when *multiple* conditions are met (e.g., collect 3 keys AND reach the door).
+*   **Consumes:** Game Bus: Custom events (`"key_collected"`, `"door_reached"`).
+*   **Generates:** Calls `CDGame.end_game(bool)`.
+*   **Exports:** `required_conditions: Array[StringName]`, `result_on_met: Enum`.
+*   **Process:** Maintains a dictionary of booleans. Listens for the specific signals. When all are true, triggers the goal.
+
+#### FlockingController (Controller)
+**Role:** Calculates Boid-like rules (separation, alignment, cohesion) for a group and broadcasts steering forces to them.
+*   **Consumes:** `CDGroupRegistry` spatial queries.
+*   **Generates:** Entity Bus (Targeted): `"steer(direction: Vector2)"`.
+*   **Exports:** `target_group: StringName = &"birds"`, `separation_weight: float`, `alignment_weight: float`, `cohesion_weight: float`.
+*   **Process:** Queries group positions. For each entity, calculates the three steering vectors relative to neighbors, combines them, and emits `"steer"` directly to that specific entity's local bus.

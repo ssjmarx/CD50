@@ -1,0 +1,454 @@
+# CD50 Composable Architecture V2 — Infrastructure Design Document (Finalized)
+
+---
+
+## Architecture Core Principles
+
+1. **Native Signal Buses:** `CDEntity` and `CDGame` *are* the signal buses, using Godot's `add_user_signal()` and `emit_signal()` for maximum C++ performance, zero GC allocation, and automatic memory safety on node deletion.
+2. **Typed Payloads, Not Dictionaries:** Signals pass typed arguments directly (e.g., `emit_signal("take_damage", 10, source_entity)`). No Dictionary allocation or string-key hashing at runtime.
+3. **Deterministic Update Order:** Process priorities enforce a strict cascade: Brains (10) → Legs (20) → Physics (30) → Collision Flush (35) → Arms (40) → Guts (50) → Face (60) → Stage (70).
+4. **Deferred Collision Safety:** Collision signals are buffered during physics movement and flushed at Priority 35. No entity state is mutated by collisions until all movement is resolved.
+5. **Composition, Not Scripts:** Games and entities have no game-specific scripts. All behavior emerges from component wiring via signals.
+
+---
+
+## Signal Flow Reference
+
+```
+CDInputRouter ────────→ Player Brains (global input events)
+CDGame (Game Bus) ────[Controller]──────→ Entity Group Local Buses (broadcast)
+CDGame (Game Bus) ────[Controller]──────→ Specific Entity Local Bus (targeted)
+CDEntity (Local Bus) ─[Announcer]──────→ CDGame (Game Bus)
+CDEntity ──(buffered physics)──────→ CDEntity Local Bus (collision resolution)
+```
+
+---
+
+## Deterministic Update Order
+
+| Priority | System | Action |
+|----------|--------|--------|
+| 10 | Brain | Generate intent (read inputs, calculate AI) |
+| 20 | Legs | Apply movement (set velocity) |
+| 30 | CDEntity | Resolve physics (`move_and_collide`, buffer collisions) |
+| 35 | CDCollisionBuffer | Flush collision buffers, emit collision signals |
+| 40 | Arms | Apply effects (spawn projectiles, deal damage) |
+| 50 | Guts | Update internal state (health, counters, death checks) |
+| 60 | Face | Update visuals (sprites, animations, effects) |
+| 70 | Stage | Update game state (cue cards, spawners, goals, timelines) |
+
+---
+
+## 1. CDEntity
+
+**Role:** Local signal bus, physics actor, and data container for a single game entity. Extends CharacterBody2D. Entity types are differentiated entirely by their component composition and scene configuration.
+
+### Consumes
+- Velocity set by Leg components (direct property access)
+- Position constraints from exported properties
+- Collision shape configuration from child CollisionShape2D nodes
+
+### Generates
+- Native runtime signals dynamically registered via `add_user_signal()`
+- Universal lifecycle signals: `entity_activated`, `entity_deactivating`
+- Universal collision signals (emitted via buffer): `collision(collider, normal)`, `collided_by(collider, normal)`
+- CDGroupRegistry registration/unregistration (automatic)
+
+### Configuration (Exports)
+
+| Property | Type | Default | Description |
+|----------|------|---------|-------------|
+| `groups` | `Array[StringName]` | `[]` | Logical groups for CDGroupRegistry and CDCollisionMatrix |
+| `x_min` | `float` | `0.0` | Left clamp bound |
+| `x_max` | `float` | `640.0` | Right clamp bound |
+| `y_min` | `float` | `0.0` | Top clamp bound |
+| `y_max` | `float` | `360.0` | Bottom clamp bound |
+| `lock_x` | `bool` | `false` | Lock X-axis at current position |
+| `lock_y` | `bool` | `false` | Lock Y-axis at current position |
+
+### Public Methods
+
+| Method | Signature | Description |
+|--------|-----------|-------------|
+| Ensure Signal | `ensure_signal(signal_name: StringName) -> void` | Registers a native user signal if it doesn't exist. Must be called before connecting/emitting. |
+| Bus Connect | `bus_connect(signal_name: StringName, callable: Callable, flags: int = 0) -> void` | Ensures signal exists, then connects callable. |
+| Bus Emit | `bus_emit(signal_name: StringName, ...args: Variant) -> void` | Emits a signal with typed arguments. |
+| Activate | `activate() -> void` | INACTIVE → ACTIVE. Enables collision shapes, emits `entity_activated`. |
+| Deactivate | `deactivate() -> void` | ACTIVE → CLEANING_UP. Disables colliders, emits `entity_deactivating`. Deferred `queue_free` at end of frame. |
+| Get State | `get_state() -> EntityState` | Current lifecycle state. |
+| Get Groups | `get_groups() -> Array[StringName]` | Logical group membership. |
+| Is In Group | `is_in_group(group_name: StringName) -> bool` | Check membership. |
+| Move By | `move_by(displacement: Vector2) -> void` | Instant position change with clamping, no physics. |
+| Flush Collisions | `flush_collisions() -> void` | Emits buffered collision signals and clears the buffer. Called by CDCollisionBuffer at Priority 35. |
+
+### Internal Lifecycle
+
+| Callback | Behavior |
+|----------|----------|
+| `_enter_tree()` | Register with CDGroupRegistry for all groups. |
+| `_exit_tree()` | Unregister from CDGroupRegistry. Godot auto-disconnects all native signals. |
+| `_ready()` | Set `process_physics_priority = 30`. Register with CDCollisionMatrix. Set state to INACTIVE. |
+| `_physics_process(delta)` | Apply velocity via `move_and_collide`. On collision, push to `_pending_collisions` array and register with CDCollisionBuffer. Enforce axis locks and clamping. |
+
+### Collision Signal Payloads (Typed, no Dictionary)
+
+- `collision(collider: CDEntity, normal: Vector2)`
+- `collided_by(collider: CDEntity, normal: Vector2)`
+
+Consumers **must** validate the collider using `is_instance_valid(collider)` before acting, though the buffer guarantees validity within the current frame.
+
+---
+
+## 2. CDGame
+
+**Role:** Global signal bus, universal game state machine, host for stage infrastructure. Extends Node2D. Contains no game logic.
+
+### Consumes
+- State transition requests from Goals and external input (CDOrchestrator)
+- Collision group configuration from exported array
+
+### Generates
+- Native runtime signals dynamically registered via `add_user_signal()`
+- Universal game state signals: `game_attract`, `game_play`, `game_over`, `game_victory`
+- Infrastructure children: CDCollisionBuffer, CDGroupRegistry, CDCollisionMatrix
+
+### Configuration (Exports)
+
+| Property | Type | Default | Description |
+|----------|------|---------|-------------|
+| `game_title` | `String` | `""` | Display title |
+| `collision_groups` | `Array[CDCollisionGroup]` | `[]` | Collision relationships |
+
+### Public Methods
+
+| Method | Signature | Description |
+|--------|-----------|-------------|
+| Ensure Signal | `ensure_signal(signal_name: StringName) -> void` | Registers a native user signal on the game bus. |
+| Bus Connect | `bus_connect(signal_name: StringName, callable: Callable, flags: int = 0) -> void` | Ensures signal exists, then connects callable. |
+| Bus Emit | `bus_emit(signal_name: StringName, ...args: Variant) -> void` | Emits a signal on the game bus. |
+| Start Game | `start_game() -> void` | ATTRACT → PLAY. Unpause tree. Emit `game_play`. |
+| End Game | `end_game(won: bool) -> void` | PLAY → OVER or PLAY → VICTORY. |
+| Set State | `set_state(state: GameState) -> void` | Force specific state. Validates transition. |
+| Get State | `get_state() -> GameState` | Current game state. |
+| Pause | `pause() -> void` | Pause scene tree. |
+| Unpause | `unpause() -> void` | Resume scene tree. |
+| Find Ancestor | `find_ancestor(node: Node) -> CDGame` | Static. Walks tree to find CDGame. |
+
+### Game State Machine
+```
+ATTRACT ──→ PLAY ──→ OVER
+              └────→ VICTORY
+```
+PAUSE is handled via scene tree pausing, not a state.
+
+### Internal Lifecycle
+
+| Callback | Behavior |
+|----------|----------|
+| `_ready()` | Set `process_mode = PROCESS_MODE_ALWAYS`. Create CDCollisionBuffer, CDGroupRegistry, CDCollisionMatrix children. Pause scene tree (starts in ATTRACT). |
+
+---
+
+## 3. CDComponent2D
+
+**Role:** Universal base class for *all* body and stage components. Extends Node2D to provide editor UX for visual positioning (muzzle offsets, spawn points, sprite pivots). Provides bus access, safe entity helpers, and deterministic process priority.
+
+### Consumes
+- Configuration from exported properties
+- Parent node type (CDEntity for body, CDGame for stage)
+- Typed signal arguments from bus emissions
+
+### Generates
+- Native signal emissions on entity/game buses
+- Process priority based on component category
+
+### Configuration (Exports)
+
+| Property | Type | Default | Description |
+|----------|------|---------|-------------|
+| `component_category` | `ComponentCategory` | — | Determines process priority. One of: BRAIN, LEGS, ARM, GUT, FACE, STAGE. |
+
+### Public Methods
+
+| Method | Signature | Description |
+|--------|-----------|-------------|
+| Get Entity | `get_entity() -> CDEntity` | Parent CDEntity. Null for stage components. |
+| Get Game | `get_game() -> CDGame` | Walks tree to CDGame. |
+| Safe Entity | `safe_entity(entity: CDEntity) -> CDEntity` | Returns `null` if entity is freed (via `is_instance_valid`). Logs warning. |
+| Get Group | `get_group(group_name: StringName) -> Array[CDEntity]` | Shortcut to game's GroupRegistry. |
+| Get Group Count | `get_group_count(group_name: StringName) -> int` | Shortcut to game's GroupRegistry count. |
+
+### Virtual Methods (for subclasses)
+
+| Method | Signature | Description |
+|--------|-----------|-------------|
+| Setup | `_on_setup() -> void` | Called after references resolve in `_ready()`. Components call `bus_connect()` here. |
+
+### Priority Mapping
+
+| Category | Priority |
+|----------|----------|
+| BRAIN | 10 |
+| LEGS | 20 |
+| ARM | 40 |
+| GUT | 50 |
+| FACE | 60 |
+| STAGE | 70 |
+
+### Design Notes
+- Because it extends Node2D, components like `GunSimple` can be visually offset in the editor, avoiding manual trigonometry for muzzle positions.
+- Components connect to buses using `get_entity().bus_connect()` or `get_game().bus_connect()`. Godot handles disconnection automatically when the component or bus owner is freed.
+
+---
+
+## 4. CDCollisionBuffer
+
+**Role:** Ensures deterministic collision resolution by deferring collision signal emission until all entity physics steps are complete. Extends Node. Child of CDGame.
+
+### Consumes
+- Registration calls from CDEntities that experienced collisions during Priority 30.
+
+### Generates
+- `flush_collisions()` calls on registered CDEntities at Priority 35.
+
+### Public Methods
+
+| Method | Signature | Description |
+|--------|-----------|-------------|
+| Register Entity | `register_entity(entity: CDEntity) -> void` | Adds entity to the current frame's flush list. |
+
+### Internal Lifecycle
+
+| Callback | Behavior |
+|----------|----------|
+| `_ready()` | Set `process_physics_priority = 35`. |
+| `_physics_process(_delta)` | Iterate registered entities, call `flush_collisions()`, clear list. |
+
+### Design Notes
+- This completely eliminates the "physics exception" logic bomb. Entities move at 30, collisions flush at 35, components react at 40+. No mid-physics-step state mutation.
+
+---
+
+## 5. CDGroupRegistry
+
+**Role:** Maintains group membership lists and spatial indices for efficient entity queries. Child of CDGame.
+
+### Consumes
+- Registration/unregistration from CDEntity tree callbacks.
+- Positional queries from components.
+
+### Generates
+- Cached group arrays.
+- Frame-lazy position-sorted arrays.
+
+### Public Methods
+
+| Method | Signature | Description |
+|--------|-----------|-------------|
+| Register | `register(entity: CDEntity, group_name: StringName) -> void` | Add entity to group. Marks group dirty. |
+| Unregister | `unregister(entity: CDEntity, group_name: StringName) -> void` | Remove entity. Marks group dirty. |
+| Get Group | `get_group(group_name: StringName) -> Array[CDEntity]` | Lazy-refreshed group list. |
+| Get Count | `get_count(group_name: StringName) -> int` | Group member count. |
+| Get Sorted | `get_group_by_position(group_name: StringName, ascending: bool = true) -> Array[CDEntity]` | Entities sorted by X-position. Cached per frame using `Engine.get_process_frame()`. |
+| Get Nearest | `get_nearest(group_name: StringName, pos: Vector2) -> CDEntity` | Closest entity to position. |
+
+### Design Notes
+- Positional cache validity is tracked via `Engine.get_process_frame()`. The registry sorts on the first spatial request of a frame and returns the cached array for the rest of the frame. Entities never push "I moved" events, achieving zero-coupling movement tracking.
+
+---
+
+## 6. CDCollisionMatrix
+
+**Role:** Auto-configures collision layers and masks based on group relationships. Child of CDGame.
+
+### Consumes
+- `collision_groups` data from CDGame.
+- CDEntity group membership arrays.
+
+### Generates
+- `collision_layer` and `collision_mask` bit assignments on CDEntities.
+
+### Public Methods
+
+| Method | Signature | Description |
+|--------|-----------|-------------|
+| Initialize | `initialize(game: CDGame) -> void` | Connect to tree signals for auto-config. |
+| Setup | `setup(collision_groups: Array[CDCollisionGroup]) -> void` | Build bit mapping, configure existing entities. |
+| Configure Entity | `configure_entity(entity: CDEntity) -> void` | Set layer/mask for a single entity. |
+| Configure All | `configure_all() -> void` | Re-configure all entities. |
+
+### Bit Assignment Logic
+- **Layer:** OR of all bits for the entity's groups.
+- **Mask:** OR of all target bits for each of the entity's groups.
+
+---
+
+## 7. CDCollisionGroup
+
+**Role:** Pure data resource defining collision relationships.
+
+### Configuration (Exports)
+
+| Property | Type | Default | Description |
+|----------|------|---------|-------------|
+| `group_name` | `StringName` | `&""` | The group this definition describes |
+| `targets` | `Array[StringName]` | `[]` | Other groups this group collides with |
+
+---
+
+## 8. CDInputRouter (Autoload)
+
+**Role:** Single point of truth for all player input. Translates raw Godot `Input` actions into typed, routable signals. Enables instant input remapping and future replay systems.
+
+### Consumes
+- Godot `_input` and `_unhandled_input` events.
+
+### Generates
+- Global native signals for standard arcade inputs: `input_move(direction: Vector2)`, `input_aim(direction: Vector2)`, `input_action_pressed(action: StringName)`, `input_action_released(action: StringName)`.
+
+### Public Methods
+
+| Method | Signature | Description |
+|--------|-----------|-------------|
+| Set Player Map | `set_player_map(player_id: int, map_name: StringName) -> void` | Swap the input mapping profile for a specific player on the fly. |
+| Is Action Pressed | `is_action_pressed(action: StringName) -> bool` | Passthrough for standard Godot input checks (for components that poll instead of listen). |
+
+### Design Notes
+- Player Brain components connect to `CDInputRouter.bus_connect(&"input_move", ...)` instead of reading `Input.get_vector()` directly.
+- This makes input instantly reroutable (e.g., swapping P1/P2 controls, or mapping AI output to the input router for replays).
+
+---
+
+## 9. CDSoundBank (Autoload)
+
+**Role:** Pre-warmed pool of AudioStreamPlayer2D + AudioStreamGenerator pairs for one-shot synthesized sounds. Survives scene transitions.
+
+### Consumes
+- Play requests from Voice components.
+
+### Generates
+- Synthesized audio playback.
+
+### Configuration (Internal Constants)
+
+| Constant | Value |
+|----------|-------|
+| `MIX_RATE` | 11025 |
+| `MAX_VOICES` | 8 |
+| `MAX_FILL_PER_FRAME` | 256 |
+| `MAX_INITIAL_FILL` | 128 |
+
+### Public Methods
+
+| Method | Signature | Description |
+|--------|-----------|-------------|
+| Play | `play(wave_shape: int, effect: int, note: int, volume: float, duration: float, position: Vector2, positional: bool, exclusive: bool, source_id: int) -> bool` | Claim a voice and play. Returns false if pool is busy. |
+| Stop Source | `stop_source(source_id: int) -> void` | Stop active voices for a specific source. |
+
+### Design Notes
+- As an Autoload, game-over jingles and transition stingers continue playing even when the CDGame scene is unloaded by the CDOrchestrator.
+
+---
+
+## 10. CDSettings (Autoload)
+
+**Role:** Persistent game configuration and high-score tracker. Saves and loads from `user://`.
+
+### Consumes
+- Setting changes from UI or components.
+- `flush()` calls on application quit.
+
+### Generates
+- Persistent data queries.
+- Signals: `settings_changed(key: StringName)`.
+
+### Public Methods
+
+| Method | Signature | Description |
+|--------|-----------|-------------|
+| Get Setting | `get_setting(key: StringName, default: Variant) -> Variant` | Retrieve a setting, returning default if missing. |
+| Set Setting | `set_setting(key: StringName, value: Variant) -> void` | Update a setting in memory. Emits `settings_changed`. |
+| Save | `save() -> void` | Write current settings to disk. |
+| Load | `load() -> void` | Read settings from disk (called on `_ready`). |
+| Get High Score | `get_high_score(game_title: String) -> int` | Shortcut for fetching game high scores. |
+| Set High Score | `set_high_score(game_title: String, score: int) -> bool` | Update high score. Returns `true` if a new record was set. |
+
+---
+
+## 11. CDOrchestrator
+
+**Role:** Loads and manages game instances, handles vertical scrolling transitions, arcade meta-control. Extends Node2D.
+
+### Consumes
+- Game entries from exported array.
+- CDGame state for meta-UI updates.
+
+### Generates
+- CDGame instance loading/unloading.
+- Position tweens for screen transitions.
+- Meta-level UI updates.
+
+### Configuration (Exports)
+
+| Property | Type | Default | Description |
+|----------|------|---------|-------------|
+| `game_entries` | `Array[CDGameEntry]` | `[]` | Ordered list of available games |
+
+### Public Methods
+
+| Method | Signature | Description |
+|--------|-----------|-------------|
+| Load Game | `load_game(entry_index: int) -> void` | Load and transition to game. |
+| Unload Game | `unload_game() -> void` | Unload, return to attract. |
+| Pause Current | `pause_current_game() -> void` | Pause active CDGame. |
+| Unpause Current | `unpause_current_game() -> void` | Resume active CDGame. |
+| Get Active Game | `get_active_game() -> CDGame` | Current game, or null. |
+
+---
+
+## 12. CDGameEntry
+
+**Role:** Pure data resource defining a single game in the playlist.
+
+### Configuration (Exports)
+
+| Property | Type | Default | Description |
+|----------|------|---------|-------------|
+| `game_scene` | `PackedScene` | `null` | The game scene to instantiate |
+| `game_title` | `String` | `""` | Display title |
+| `fast_rules` | `Dictionary` | `{}` | Property overrides for arcade mode |
+
+---
+
+## 13. CDEnums
+
+**Role:** Shared enumerations for type safety.
+
+| Enum | Values | Used By |
+|------|--------|---------|
+| `GameState` | `ATTRACT`, `PLAY`, `OVER`, `VICTORY` | CDGame |
+| `EntityState` | `INACTIVE`, `ACTIVE`, `CLEANING_UP` | CDEntity |
+| `ComponentCategory` | `BRAIN`, `LEGS`, `ARM`, `GUT`, `FACE`, `STAGE` | CDComponent2D |
+| `WaveShape` | `SINE`, `SQUARE`, `SAWTOOTH`, `TRIANGLE`, `NOISE` | CDSoundBank |
+| `SoundEffect` | `NONE`, `WARBLE`, `TREMOLO`, `SWEEP_DOWN`, `DECAY` | CDSoundBank |
+
+Extends RefCounted.
+
+---
+
+## V1 → V2 Infrastructure Migration Summary
+
+| V1 | V2 | Key Change |
+|----|-----|------------|
+| `UniversalBody` | `CDEntity` | Native dynamic signals, buffered collisions, entity state machine. |
+| `UniversalGameScript` | `CDGame` | Native dynamic signals, stripped of score/lives logic. |
+| `UniversalComponent` + `2D` | `CDComponent2D` | Unified Node2D base, component category priorities. |
+| `GroupCache` (Autoload) | `CDGroupRegistry` | Per-game scope, frame-counter lazy spatial sorting. |
+| `CollisionMatrix` | `CDCollisionMatrix` | Simplified (no CollisionMarker). |
+| `SoundBank` (Autoload) | `CDSoundBank` | Persists across scene transitions. |
+| *(none)* | `CDCollisionBuffer` | **New.** Guarantees deterministic collision resolution. |
+| *(none)* | `CDInputRouter` | **New Autoload.** Centralized input-to-signal routing. |
+| *(none)* | `CDSettings` | **New Autoload.** Persistent high scores and configuration. |
+| `PropertyOverride` | *(removed)* | Replaced by explicit entity scenes and CDGameEntry fast_rules. |
+| `CommonEnums` | `CDEnums` | Trimmed to V2 architecture needs. |
+| `ArcadeOrchestrator` | `CDOrchestrator` | Subscribes to game bus instead of reaching into script internals. |
