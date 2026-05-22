@@ -89,7 +89,7 @@ metadata/_custom_type_script = "uid://cp0ni1lgml7c6"
 
 [node name="BugDrop" type="Node2D"]
 script = ExtResource("1_wv1sa")
-game_title = "Bug Blaster"
+game_title = "Bug Drop"
 collision_groups = Array[ExtResource("2_m4j8u")]([SubResource("Resource_jwgp7"), SubResource("Resource_nacot"), SubResource("Resource_vcbdb"), SubResource("Resource_6ogln"), SubResource("Resource_jauks"), SubResource("Resource_j86sr"), SubResource("Resource_sj50m"), SubResource("Resource_ioc8k")])
 
 [node name="TetrominoSpawner" parent="." instance=ExtResource("5_ts")]
@@ -277,6 +277,7 @@ collapse_direction = Vector2(0, -1)
 enable_combo = true
 enable_back_to_back = true
 enable_t_spin_scoring = true
+score_table = Array[int]([0, 200, 600, 1000, 1500])
 
 [node name="GroupKillOnSignal" parent="." instance=ExtResource("17_gkos")]
 listen_signal = "group_member_removed"

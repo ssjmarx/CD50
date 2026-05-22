@@ -1,12 +1,12 @@
-[gd_scene load_steps=21 format=3 uid="uid://ckxvsijl3fwv1"]
+[gd_scene load_steps=22 format=3 uid="uid://ckxvsijl3fwv1"]
 
 [ext_resource type="Script" uid="uid://bjdgpevhahi6d" path="res://Scripts/Core/universal_game_script.gd" id="1_04s2g"]
 [ext_resource type="Script" uid="uid://bfkr4fdx316o5" path="res://Scripts/Core/collision_group.gd" id="2_25ekh"]
 [ext_resource type="PackedScene" uid="uid://bq6cdrx340jp7" path="res://Scenes/Flow/interface.tscn" id="3_h75pn"]
+[ext_resource type="PackedScene" uid="uid://b2sekay4f1s2g" path="res://Scenes/Bodies/generic/asteroid_noscore.tscn" id="10_x0lb7"]
 [ext_resource type="PackedScene" uid="uid://dhulxxtcsipl6" path="res://Scenes/Rules/group_monitor.tscn" id="11_v3mlj"]
 [ext_resource type="PackedScene" uid="uid://dwyyfxniivl1r" path="res://Scenes/Rules/wave_director.tscn" id="12_fk46a"]
 [ext_resource type="PackedScene" uid="uid://vlbel76nqh5w" path="res://Scenes/Rules/wave_spawner.tscn" id="13_nvkvc"]
-[ext_resource type="PackedScene" uid="uid://d2cvj1qyemnu4" path="res://Scenes/Bodies/generic/asteroid.tscn" id="15_kkt1o"]
 [ext_resource type="Script" uid="uid://cp0ni1lgml7c6" path="res://Scripts/Core/property_override.gd" id="15_te72y"]
 [ext_resource type="PackedScene" uid="uid://csg0e2wxlx4qd" path="res://Scenes/Components/angled_deflector.tscn" id="16_te72y"]
 [ext_resource type="PackedScene" uid="uid://craitf0mklbon" path="res://Scenes/Rules/timer.tscn" id="17_vm45j"]
@@ -44,6 +44,13 @@ script = ExtResource("2_25ekh")
 group_name = "space_rocks"
 targets = Array[String](["players", "enemies"])
 metadata/_custom_type_script = "uid://bfkr4fdx316o5"
+
+[sub_resource type="Resource" id="Resource_score"]
+script = ExtResource("15_te72y")
+node_path = NodePath("ScoreOnDeath")
+property_name = "base_score"
+value = 300
+metadata/_custom_type_script = "uid://cp0ni1lgml7c6"
 
 [sub_resource type="Resource" id="Resource_pxxt0"]
 script = ExtResource("15_te72y")
@@ -88,13 +95,14 @@ spawn_scene = ExtResource("21_t4mwo")
 spawn_count_equation = "wave_number / 3 + 1"
 stagger_delay = 1.0
 director = NodePath("../WaveDirector2")
+property_overrides = Array[ExtResource("15_te72y")]([SubResource("Resource_score")])
 
 [node name="WaveDirector(space_rocks)" parent="." instance=ExtResource("12_fk46a")]
 trigger_type = 1
 wave_delay = 0.0
 
 [node name="WaveSpawner(space_rocks)" parent="." node_paths=PackedStringArray("director") instance=ExtResource("13_nvkvc")]
-spawn_scene = ExtResource("15_kkt1o")
+spawn_scene = ExtResource("10_x0lb7")
 spawn_count_equation = "1"
 director = NodePath("../WaveDirector(space_rocks)")
 spawn_components = Array[PackedScene]([ExtResource("16_te72y")])

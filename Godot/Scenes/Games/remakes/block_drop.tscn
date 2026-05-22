@@ -89,12 +89,12 @@ visible = true
 playfield_origin = Vector2(239, 0)
 use_health_kill = true
 enable_line_flash = false
-score_table = Array[int]([0, 10, 30, 50, 80])
+score_table = Array[int]([0, 75, 160, 255, 400])
 enable_combo = true
 enable_back_to_back = true
 enable_t_spin_scoring = true
-t_spin_score_table = Array[int]([40, 80, 120, 160])
-t_spin_mini_score_table = Array[int]([10, 30, 60, 90])
+t_spin_score_table = Array[int]([300, 600, 900, 1200])
+t_spin_mini_score_table = Array[int]([75, 225, 450, 675])
 
 [node name="JunkDirector" parent="." instance=ExtResource("22_junkd")]
 trigger_type = 3

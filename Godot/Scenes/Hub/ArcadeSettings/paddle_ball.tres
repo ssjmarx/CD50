@@ -44,7 +44,7 @@ metadata/_custom_type_script = "uid://cp0ni1lgml7c6"
 script = ExtResource("2_snkw5")
 node_path = NodePath("P1Goal/Goal")
 property_name = "score_amount"
-value = 100
+value = 300
 metadata/_custom_type_script = "uid://cp0ni1lgml7c6"
 
 [sub_resource type="Resource" id="Resource_spawn1"]

@@ -27,8 +27,8 @@ metadata/__load_path__ = "res://Assets/Audio/zapThreeToneDown.ogg"
 [node name="TriangleShip" type="CharacterBody2D" groups=["players"]]
 rotation = -1.5707964
 script = ExtResource("1_rsybn")
-bounds_margin = 16
 color = Color(0, 1, 1, 1)
+bounds_margin = 16
 collision_groups = Array[String](["players"])
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="."]

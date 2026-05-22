@@ -215,7 +215,7 @@ grid_columns = 10
 grid_rows = 10
 grid_spacing = 4
 grid_health_values = Array[int]([])
-grid_score_values = Array[int]([5, 5, 4, 4, 4, 3, 3, 2, 2, 1])
+grid_score_values = Array[int]([12, 12, 8, 8, 8, 6, 6, 4, 4, 3])
 
 [node name="VariableTuner" parent="." node_paths=PackedStringArray("source_node") instance=ExtResource("19_oqfas")]
 source_node = NodePath("../Area2D")

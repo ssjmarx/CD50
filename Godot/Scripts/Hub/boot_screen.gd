@@ -37,7 +37,7 @@ func _refresh() -> void:
 		var key: String = MODIFIER_KEYS[i]
 		var btn: Button = _modifier_buttons[i]
 		var display: String = SaveData.get_modifier_display_name(key)
-		var threshold: int = SaveData.get_modifier_threshold(key)
+		var _threshold: int = SaveData.get_modifier_threshold(key)
 		var unlocked: bool = SaveData.is_modifier_unlocked(key)
 		var active: bool = SaveData.is_modifier_active(key)
 		
@@ -46,9 +46,9 @@ func _refresh() -> void:
 			btn.disabled = false
 			btn.modulate = Color(1.0, 1.0, 1.0, 1.0)
 		else:
-			btn.text = "[   ] %s  (%d)" % [display, threshold]
+			btn.text = "[   ] %s" % [display]
 			btn.disabled = true
-			btn.modulate = Color(0.5, 0.5, 0.5, 0.5)
+			btn.modulate = Color(0.502, 0.502, 0.502, 0.196)
 	
 	# Hide tooltip on refresh
 	_tooltip_label.visible = false

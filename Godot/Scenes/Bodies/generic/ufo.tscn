@@ -64,4 +64,4 @@ target_group = "space_rocks"
 target_group = "space_rocks"
 
 [node name="ScoreOnDeath" parent="." instance=ExtResource("13_lx6du")]
-base_score = 10
+base_score = 15

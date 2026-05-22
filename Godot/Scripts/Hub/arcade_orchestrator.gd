@@ -53,7 +53,7 @@ var _current_interface: Control = null
 var _transition_tween: Tween = null
 
 # Semi-random playlist state
-# Phases: 0=REMAKE×2, 1=LITE_REMIX×2, 2=REMAKE+LITE×4, 3=HEAVY×2, 4=ALL(endless)
+# Phases: 0=REMAKE×2, 1=LITE_REMIX×2, 2=REMAKE+LITE×4, 3=HEAVY×1, 4=ALL(endless)
 var _sr_phase: int = 0
 var _sr_games_played_in_phase: int = 0
 var _sr_phase_bag: Array[int] = []  # indices into playlist for current phase
@@ -78,6 +78,7 @@ var _pending_unlocks: Array[String] = []
 var _last_run_score: int = 0
 var _polybius_vpc: SubViewportContainer = null  # Active Polybius viewport (intro/outro)
 var _godot_logo_vpc: SubViewportContainer = null  # Active Godot logo viewport
+var _score_logger: Node = null  # ScoreLogger for debug CSV export
 
 func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
@@ -101,6 +102,12 @@ func _ready() -> void:
 	$DefeatSound.source_node = self
 	if not game_defeat.is_connected($DefeatSound._on_signal):
 		game_defeat.connect($DefeatSound._on_signal)
+	
+	# Create score logger (debug-only, no-ops in release)
+	_score_logger = Node.new()
+	_score_logger.name = "ScoreLogger"
+	_score_logger.set_script(load("res://Scripts/Flow/score_logger.gd"))
+	add_child(_score_logger)
 	
 	# Read active modifiers from save data (overrides editor exports)
 	_apply_save_modifiers()
@@ -172,6 +179,10 @@ func _show_godot_logo() -> void:
 	# Hide boot screen behind the logo
 	_boot_screen.visible = false
 	
+	# Start music at idle volume when logo appears (not when boot screen appears)
+	_music_player.start()
+	_music_player.fade_to(music_idle_volume_db, music_fade_out_duration)
+	
 	# Connect to logo's boot_complete signal
 	logo.boot_complete.connect(_on_godot_logo_done)
 
@@ -216,9 +227,13 @@ func _on_godot_logo_done() -> void:
 func _show_boot_screen() -> void:
 	_state = OrchestratorState.BOOT
 	state_changed.emit(CommonEnums.State.ATTRACT)
+	# Start a new score log run (debug-only)
+	_score_logger.start_run()
 	_boot_screen.visible = true
-	# Start music at idle volume (MusicPlayer handles its own internals)
+	# Start music if not already playing (safety for when godot_logo_scene is null)
+	# start() is idempotent — has internal "if not _playing" guard
 	_music_player.start()
+	# Ensure volume is at idle level
 	_music_player.fade_to(music_idle_volume_db, music_fade_out_duration)
 
 func _start_next_game() -> void:
@@ -318,6 +333,8 @@ func _on_transition_to_game_over() -> void:
 
 func _restart_run() -> void:
 	_state = OrchestratorState.TRANSITIONING
+	# Start a new score log run (debug-only)
+	_score_logger.start_run()
 	
 	# Reset all run state; Crunch Time overrides starting lives to 1
 	_lives = 1 if _modifier_manager.is_crunch_time() else starting_lives
@@ -493,6 +510,15 @@ func _on_game_over_signal(final_score: int) -> void:
 	# Stop modifier listening before processing result
 	_modifier_manager.stop_listening()
 	
+	# Capture game info before score processing
+	var _game_elapsed: float = Time.get_ticks_msec() / 1000.0 - _game_start_time
+	var _game_ugs: UniversalGameScript = _get_current_ugs()
+	var _game_name: String = ""
+	var _game_title: String = ""
+	if _game_ugs:
+		_game_name = _game_ugs.scene_file_path if _game_ugs.scene_file_path else ""
+		_game_title = _game_ugs.game_title
+	
 	# Increment game count only on victory (drives per-game multiplier bonus)
 	if _last_game_won:
 		_game_count += _modifier_manager.get_game_count_increment()
@@ -515,6 +541,21 @@ func _on_game_over_signal(final_score: int) -> void:
 	# Apply time bonus and game score to running total
 	_running_score += int((final_score + time_bonus) * crunch_mult)
 	on_points_changed.emit(_running_score)
+	
+	# Log game to CSV (debug-only, no-ops in release)
+	_score_logger.log_game({
+		"game_name": _game_name,
+		"game_title": _game_title,
+		"result": "WIN" if _last_game_won else "LOSS",
+		"raw_score": final_score,
+		"time_elapsed_s": _game_elapsed,
+		"time_bonus": time_bonus,
+		"game_multiplier": _game_multiplier,
+		"arcade_bonus": _game_count,
+		"crunch_mult": crunch_mult,
+		"total_added": int((final_score + time_bonus) * crunch_mult),
+		"running_total": _running_score,
+	})
 	
 	if not _last_game_won and not _timed_out:
 		_lives -= 1
@@ -641,8 +682,26 @@ func _on_time_limit_reached() -> void:
 	var ugs = _get_current_ugs()
 	if ugs:
 		var crunch_mult: float = _modifier_manager.get_score_multiplier()
-		_running_score += int(ugs.current_score * crunch_mult)
+		var elapsed: float = Time.get_ticks_msec() / 1000.0 - _game_start_time
+		var raw: int = ugs.current_score
+		_running_score += int(raw * crunch_mult)
 		on_points_changed.emit(_running_score)
+		
+		# Log timeout game to CSV (debug-only)
+		_score_logger.log_game({
+			"game_name": ugs.scene_file_path if ugs.scene_file_path else "",
+			"game_title": ugs.game_title,
+			"result": "TIMEOUT",
+			"raw_score": raw,
+			"time_elapsed_s": elapsed,
+			"time_bonus": 0,
+			"game_multiplier": _game_multiplier,
+			"arcade_bonus": _game_count,
+			"crunch_mult": crunch_mult,
+			"total_added": int(raw * crunch_mult),
+			"running_total": _running_score,
+		})
+		
 		_disconnect_ugs_signals(ugs)
 	
 	# Defer to avoid physics flush errors (called from _physics_process)
@@ -692,13 +751,19 @@ func _apply_save_modifiers() -> void:
 	scope_creep = mods.get("scope_creep", false)
 
 # --- Semi-Random Playlist ---
-# Phases: 0=REMAKE×2, 1=LITE_REMIX×2, 2=REMAKE+LITE×4, 3=HEAVY×2, 4=ALL(endless)
+# Phases: 0=REMAKE×2, 1=LITE_REMIX×2, 2=REMAKE+LITE×4, 3=HEAVY×1, 4=ALL(endless)
 # Anti-repetition: blocks games with the same similarity_tag as the previous game.
 
 func _get_semi_random_entry() -> ArcadeGameEntry:
-	# If bag is empty, advance phase or refill
+	# Check if current phase count is reached (even if bag has entries left)
+	var phase_count := _sr_get_count_for_phase(_sr_phase)
+	if _sr_games_played_in_phase >= phase_count:
+		_sr_phase += 1
+		_sr_games_played_in_phase = 0
+		_sr_phase_bag.clear()
+	
+	# If bag is empty, refill for current phase
 	if _sr_phase_bag.is_empty():
-		_sr_advance_phase()
 		_sr_refill_phase_bag()
 	
 	# Pop entries until we find one that passes the similarity check
@@ -762,7 +827,7 @@ func _sr_get_count_for_phase(phase: int) -> int:
 		0: return 2   # 2 remakes
 		1: return 2   # 2 lite remixes
 		2: return 4   # 4 mixed (remakes + lite)
-		3: return 2   # 2 heavy
+		3: return 1   # 1 heavy remix / original
 		_: return 999 # Phase 4+: endless (never auto-advances)
 
 # --- Polybius Face Integration ---

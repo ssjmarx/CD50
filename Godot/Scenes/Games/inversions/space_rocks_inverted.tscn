@@ -70,6 +70,7 @@ wave_delay = 3.0
 spawn_scene = ExtResource("8_ig54k")
 spawn_count_equation = "4"
 director = NodePath("../WaveDirector(GameStart)")
+spawn_groups = Array[String](["space_rocks"])
 initial_velocity = Vector2(50, 0)
 use_random_angle = true
 
@@ -77,6 +78,7 @@ use_random_angle = true
 spawn_scene = ExtResource("8_ig54k")
 spawn_count_equation = "4 + wave_number"
 director = NodePath("../WaveDirector(Space Rocks)")
+spawn_groups = Array[String](["space_rocks"])
 initial_velocity = Vector2(50, 0)
 use_random_angle = true
 

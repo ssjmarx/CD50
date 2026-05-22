@@ -1,4 +1,4 @@
-[gd_resource type="Resource" script_class="ArcadeGameEntry" load_steps=16 format=3 uid="uid://cqyqy7p7arlrl"]
+[gd_resource type="Resource" script_class="ArcadeGameEntry" load_steps=19 format=3 uid="uid://cqyqy7p7arlrl"]
 
 [ext_resource type="PackedScene" uid="uid://b25vt23t3rds6" path="res://Scenes/Games/remixes/space_bugs.tscn" id="1_sbugs"]
 [ext_resource type="Script" uid="uid://cp0ni1lgml7c6" path="res://Scripts/Core/property_override.gd" id="2_props"]
@@ -16,6 +16,13 @@ script = ExtResource("2_props")
 node_path = NodePath("GroupMonitor")
 property_name = "victory_on_clear"
 value = true
+metadata/_custom_type_script = "uid://cp0ni1lgml7c6"
+
+[sub_resource type="Resource" id="Resource_victory_group"]
+script = ExtResource("2_props")
+node_path = NodePath("GroupMonitor")
+property_name = "target_group"
+value = "enemies"
 metadata/_custom_type_script = "uid://cp0ni1lgml7c6"
 
 [sub_resource type="Resource" id="Resource_firstwave"]
@@ -74,6 +81,20 @@ property_name = "duration"
 value = 2.0
 metadata/_custom_type_script = "uid://cp0ni1lgml7c6"
 
+[sub_resource type="Resource" id="Resource_crab_count"]
+script = ExtResource("2_props")
+node_path = NodePath("WaveSpawner(LargeUfos)")
+property_name = "spawn_count_equation"
+value = "3"
+metadata/_custom_type_script = "uid://cp0ni1lgml7c6"
+
+[sub_resource type="Resource" id="Resource_squid_count"]
+script = ExtResource("2_props")
+node_path = NodePath("WaveSpawner(SmallUfos)")
+property_name = "spawn_count_equation"
+value = "3"
+metadata/_custom_type_script = "uid://cp0ni1lgml7c6"
+
 [sub_resource type="Resource" id="Resource_mute_a"]
 script = ExtResource("2_props")
 node_path = NodePath("MusicRamping/SoundSynth_A")
@@ -91,7 +112,7 @@ metadata/_custom_type_script = "uid://cp0ni1lgml7c6"
 [resource]
 script = ExtResource("3_entry")
 game_scene = ExtResource("1_sbugs")
-overrides = Array[ExtResource("2_props")]([SubResource("Resource_lives"), SubResource("Resource_victory"), SubResource("Resource_firstwave"), SubResource("Resource_stagger1"), SubResource("Resource_stagger2"), SubResource("Resource_crab_timer"), SubResource("Resource_crab_loop"), SubResource("Resource_squid_timer"), SubResource("Resource_squid_loop"), SubResource("Resource_asteroids"), SubResource("Resource_mute_a"), SubResource("Resource_mute_b")])
+overrides = Array[ExtResource("2_props")]([SubResource("Resource_lives"), SubResource("Resource_victory"), SubResource("Resource_victory_group"), SubResource("Resource_firstwave"), SubResource("Resource_stagger1"), SubResource("Resource_stagger2"), SubResource("Resource_crab_timer"), SubResource("Resource_crab_loop"), SubResource("Resource_squid_timer"), SubResource("Resource_squid_loop"), SubResource("Resource_asteroids"), SubResource("Resource_crab_count"), SubResource("Resource_squid_count"), SubResource("Resource_mute_a"), SubResource("Resource_mute_b")])
 bucket = 1
 similarity_tag = "space_rocks"
 metadata/_custom_type_script = "uid://bdsbfe65crnbu"

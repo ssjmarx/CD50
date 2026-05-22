@@ -83,6 +83,7 @@ das_delay = 0.0
 use_input_queue = false
 
 [node name="ScoreOnDeath" parent="." instance=ExtResource("6_41tn6")]
+base_score = 25
 
 [node name="GunSimple" parent="." instance=ExtResource("7_tqtin")]
 ammo = ExtResource("8_gw60m")

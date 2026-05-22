@@ -100,7 +100,7 @@ grid_height = 16
 grid_rows = 1
 grid_spacing = 8
 grid_health_values = Array[int]([])
-grid_score_values = Array[int]([2])
+grid_score_values = Array[int]([10])
 
 [node name="WaveSpawner2" parent="." node_paths=PackedStringArray("director", "extra_directors") instance=ExtResource("4_wevyt")]
 position = Vector2(320, 80)
@@ -116,7 +116,7 @@ grid_height = 16
 grid_rows = 1
 grid_spacing = 8
 grid_health_values = Array[int]([])
-grid_score_values = Array[int]([])
+grid_score_values = Array[int]([5])
 
 [node name="WaveSpawner3" parent="." node_paths=PackedStringArray("director", "extra_directors") instance=ExtResource("4_wevyt")]
 position = Vector2(320, 32)
@@ -132,7 +132,7 @@ grid_height = 16
 grid_rows = 1
 grid_spacing = 8
 grid_health_values = Array[int]([])
-grid_score_values = Array[int]([3])
+grid_score_values = Array[int]([20])
 
 [node name="WaveSpawner5" parent="." node_paths=PackedStringArray("director", "extra_directors") instance=ExtResource("4_wevyt")]
 position = Vector2(320, 104)
@@ -148,7 +148,7 @@ grid_height = 16
 grid_rows = 1
 grid_spacing = 8
 grid_health_values = Array[int]([])
-grid_score_values = Array[int]([])
+grid_score_values = Array[int]([5])
 
 [node name="LivesCounter" parent="." instance=ExtResource("12_k2lq6")]
 

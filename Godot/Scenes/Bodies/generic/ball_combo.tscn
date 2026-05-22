@@ -47,10 +47,10 @@ target_groups = Array[String](["bricks", "space_rocks"])
 
 [node name="ScoreOnHit" parent="." instance=ExtResource("9_5fx64")]
 target_group = "bricks"
-score_amount = 0.1
+score_amount = 0.3
 score_type = 3
 
 [node name="ScoreOnHit2" parent="." instance=ExtResource("9_5fx64")]
 target_group = "space_rocks"
-score_amount = 0.1
+score_amount = 0.3
 score_type = 3

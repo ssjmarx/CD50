@@ -111,7 +111,7 @@ metadata/_custom_type_script = "uid://cp0ni1lgml7c6"
 
 [node name="BugBlaster" type="Node2D"]
 script = ExtResource("1")
-game_title = "Bug Blaster"
+game_title = "Planetary Attack!"
 collision_groups = Array[ExtResource("2")]([SubResource("Resource_jwgp7"), SubResource("Resource_nacot"), SubResource("Resource_vcbdb"), SubResource("Resource_6ogln"), SubResource("Resource_jauks"), SubResource("Resource_invaders"), SubResource("Resource_invbul")])
 playfield_size = Vector2(640, 720)
 

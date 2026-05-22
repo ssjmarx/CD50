@@ -29,14 +29,16 @@ collision_groups = Array[String](["space_rocks"])
 
 [node name="SplitOnDeath" parent="." instance=ExtResource("3_6fqt7")]
 fragment_path = "res://Scenes/Bodies/generic/asteroid.tscn"
+score_adjustment = 5
 
 [node name="ScreenWrap" parent="." instance=ExtResource("3_yh62g")]
 
 [node name="ScoreOnDeath" parent="." instance=ExtResource("6_87hte")]
+base_score = 5
 
 [node name="DamageOnHit" parent="." instance=ExtResource("7_rmws6")]
 
-[node name="DeathEffect" parent="." instance=ExtResource("8_xff2r")]
+[node name="DeathEffect" parent="." groups=["space_rocks"] instance=ExtResource("8_xff2r")]
 effect_scenes = Array[PackedScene]([ExtResource("9_5odhs")])
 
 [node name="SoundSynth" parent="." node_paths=PackedStringArray("source_node") instance=ExtResource("9_xff2r")]

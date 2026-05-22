@@ -84,6 +84,9 @@ size = Vector2(648, 8)
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_n6jm7"]
 size = Vector2(8, 372)
 
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_floor"]
+size = Vector2(640, 40)
+
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_7ju07"]
 size = Vector2(640, 8)
 
@@ -95,9 +98,6 @@ metadata/_custom_type_script = "uid://cp0ni1lgml7c6"
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_kxgnb"]
 size = Vector2(18, 360)
-
-[sub_resource type="RectangleShape2D" id="RectangleShape2D_floor"]
-size = Vector2(640, 40)
 
 [node name="Rock Breaker" type="Node2D"]
 script = ExtResource("1_3ahes")
@@ -114,8 +114,6 @@ lock_y = true
 
 [node name="DirectMovement" parent="Paddle" instance=ExtResource("4_38j4n")]
 
-[node name="PlayerControl" parent="Paddle" instance=ExtResource("5_k6kfk")]
-
 [node name="ScoreOnHit" parent="Paddle" instance=ExtResource("6_plkiq")]
 target_group = "balls"
 score_type = 3
@@ -128,6 +126,8 @@ spawn_count_equation = "1"
 director = NodePath("../../WaveDirector2")
 property_overrides = Array[ExtResource("9_hn3l5")]([SubResource("Resource_pxig7"), SubResource("Resource_a62kv"), SubResource("Resource_t7ne2")])
 initial_velocity = Vector2(0, 100)
+
+[node name="PlayerControl" parent="Paddle" instance=ExtResource("5_k6kfk")]
 
 [node name="Walls" type="StaticBody2D" parent="."]
 position = Vector2(-8, -8)
