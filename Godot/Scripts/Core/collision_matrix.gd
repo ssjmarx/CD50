@@ -47,7 +47,7 @@ func _configure_body(body: UniversalBody) -> void:
 		if group in _group_to_bit:
 			collision_layer = collision_layer | _group_to_bit[group]
 		else:
-			print("Attempted to configure non-existent collision group '", group, "' on body: ", body.name)
+			#print("Attempted to configure non-existent collision group '", group, "' on body: ", body.name)
 			continue
 		
 		var target_groups = _collision_groups[group]
@@ -55,7 +55,8 @@ func _configure_body(body: UniversalBody) -> void:
 			if target_group in _group_to_bit:
 				collision_mask = collision_mask | _group_to_bit[target_group]
 			else:
-				print("Attempted to configure non-existent collision target '", target_group, "' on body: ", body.name)
+				#print("Attempted to configure non-existent collision target '", target_group, "' on body: ", body.name)
+				pass
 	
 	body.collision_layer = collision_layer
 	body.collision_mask = collision_mask
@@ -116,7 +117,7 @@ func _configure_body_from_marker(body: Node, marker: CollisionMarker) -> void:
 		if group in _group_to_bit:
 			collision_layer = collision_layer | _group_to_bit[group]
 		else:
-			print("Attempted to configure non-existent collision group '", group, "' on body: ", body.name)
+			#print("Attempted to configure non-existent collision group '", group, "' on body: ", body.name)
 			continue
 		
 		var target_groups = _collision_groups[group]
@@ -124,7 +125,8 @@ func _configure_body_from_marker(body: Node, marker: CollisionMarker) -> void:
 			if target_group in _group_to_bit:
 				collision_mask = collision_mask | _group_to_bit[target_group]
 			else:
-				print("Attempted to configure non-existent collision target '", target_group, "' on body: ", body.name)
+				#print("Attempted to configure non-existent collision target '", target_group, "' on body: ", body.name)
+				pass
 	
 	body.collision_layer = collision_layer
 	body.collision_mask = collision_mask

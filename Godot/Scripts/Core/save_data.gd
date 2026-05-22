@@ -122,7 +122,7 @@ func wipe_save() -> void:
 		DirAccess.remove_absolute(ProjectSettings.globalize_path(SAVE_PATH))
 	_init_defaults()
 	save_data_changed.emit()
-	print("SaveData: save wiped")
+#	print("SaveData: save wiped")
 
 # --- Score & Progression ---
 

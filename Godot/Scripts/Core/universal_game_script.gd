@@ -157,7 +157,7 @@ func p1_win() -> void:
 	if mode == Mode.STANDALONE:
 		$Interface.show_element(CommonEnums.Element.WIN_TEXT)
 		$Interface.show_element(CommonEnums.Element.CONTINUE_TEXT)
-	print("Game: ", game_title, " Score: ", current_score)
+#	print("Game: ", game_title, " Score: ", current_score)
 
 # Show lose UI and transition to GAME_OVER
 func p1_lose() -> void:
@@ -168,7 +168,7 @@ func p1_lose() -> void:
 	if mode == Mode.STANDALONE:
 		$Interface.show_element(CommonEnums.Element.LOSE_TEXT)
 		$Interface.show_element(CommonEnums.Element.CONTINUE_TEXT)
-	print("Game: ", game_title, " Score: ", current_score)
+#	print("Game: ", game_title, " Score: ", current_score)
 
 # Called externally (by orchestrator or input router) when start is pressed in ATTRACT
 func _on_start_pressed() -> void:

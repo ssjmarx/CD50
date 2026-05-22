@@ -16,9 +16,9 @@ func _ready() -> void:
 		set_process(false)
 		set_physics_process(false)
 		return
-	print("[ScoreLogger] Ready. Debug build: ", OS.is_debug_build())
-	print("[ScoreLogger] Resolved user data dir: ", OS.get_user_data_dir())
-	print("[ScoreLogger] Log path: ", LOG_PATH)
+#	print("[ScoreLogger] Ready. Debug build: ", OS.is_debug_build())
+#	print("[ScoreLogger] Resolved user data dir: ", OS.get_user_data_dir())
+#	print("[ScoreLogger] Log path: ", LOG_PATH)
 	
 	# Generate a run ID from current timestamp
 	_run_id = int(Time.get_unix_time_from_system()) % 100000
@@ -94,7 +94,7 @@ func log_game(data: Dictionary) -> void:
 	file.store_line(",".join(row))
 	file.close()
 	
-	print("[ScoreLogger] Logging game: ", data.get("game_title", "?"), " result=", data.get("result", "?"))
+#	print("[ScoreLogger] Logging game: ", data.get("game_title", "?"), " result=", data.get("result", "?"))
 
 
 ## Clear the log file

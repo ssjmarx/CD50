@@ -78,7 +78,7 @@ var _pending_unlocks: Array[String] = []
 var _last_run_score: int = 0
 var _polybius_vpc: SubViewportContainer = null  # Active Polybius viewport (intro/outro)
 var _godot_logo_vpc: SubViewportContainer = null  # Active Godot logo viewport
-var _score_logger: Node = null  # ScoreLogger for debug CSV export
+#var _score_logger: Node = null  # ScoreLogger for debug CSV export (DISABLED)
 
 func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
@@ -103,11 +103,11 @@ func _ready() -> void:
 	if not game_defeat.is_connected($DefeatSound._on_signal):
 		game_defeat.connect($DefeatSound._on_signal)
 	
-	# Create score logger (debug-only, no-ops in release)
-	_score_logger = Node.new()
-	_score_logger.name = "ScoreLogger"
-	_score_logger.set_script(load("res://Scripts/Flow/score_logger.gd"))
-	add_child(_score_logger)
+	# Score logger disabled
+	#_score_logger = Node.new()
+	#_score_logger.name = "ScoreLogger"
+	#_score_logger.set_script(load("res://Scripts/Flow/score_logger.gd"))
+	#add_child(_score_logger)
 	
 	# Read active modifiers from save data (overrides editor exports)
 	_apply_save_modifiers()
@@ -227,8 +227,7 @@ func _on_godot_logo_done() -> void:
 func _show_boot_screen() -> void:
 	_state = OrchestratorState.BOOT
 	state_changed.emit(CommonEnums.State.ATTRACT)
-	# Start a new score log run (debug-only)
-	_score_logger.start_run()
+	#_score_logger.start_run()
 	_boot_screen.visible = true
 	# Start music if not already playing (safety for when godot_logo_scene is null)
 	# start() is idempotent — has internal "if not _playing" guard
@@ -333,8 +332,7 @@ func _on_transition_to_game_over() -> void:
 
 func _restart_run() -> void:
 	_state = OrchestratorState.TRANSITIONING
-	# Start a new score log run (debug-only)
-	_score_logger.start_run()
+	#_score_logger.start_run()
 	
 	# Reset all run state; Crunch Time overrides starting lives to 1
 	_lives = 1 if _modifier_manager.is_crunch_time() else starting_lives
@@ -542,20 +540,20 @@ func _on_game_over_signal(final_score: int) -> void:
 	_running_score += int((final_score + time_bonus) * crunch_mult)
 	on_points_changed.emit(_running_score)
 	
-	# Log game to CSV (debug-only, no-ops in release)
-	_score_logger.log_game({
-		"game_name": _game_name,
-		"game_title": _game_title,
-		"result": "WIN" if _last_game_won else "LOSS",
-		"raw_score": final_score,
-		"time_elapsed_s": _game_elapsed,
-		"time_bonus": time_bonus,
-		"game_multiplier": _game_multiplier,
-		"arcade_bonus": _game_count,
-		"crunch_mult": crunch_mult,
-		"total_added": int((final_score + time_bonus) * crunch_mult),
-		"running_total": _running_score,
-	})
+	# Score logger disabled
+	#_score_logger.log_game({
+	#	"game_name": _game_name,
+	#	"game_title": _game_title,
+	#	"result": "WIN" if _last_game_won else "LOSS",
+	#	"raw_score": final_score,
+	#	"time_elapsed_s": _game_elapsed,
+	#	"time_bonus": time_bonus,
+	#	"game_multiplier": _game_multiplier,
+	#	"arcade_bonus": _game_count,
+	#	"crunch_mult": crunch_mult,
+	#	"total_added": int((final_score + time_bonus) * crunch_mult),
+	#	"running_total": _running_score,
+	#})
 	
 	if not _last_game_won and not _timed_out:
 		_lives -= 1
@@ -687,20 +685,20 @@ func _on_time_limit_reached() -> void:
 		_running_score += int(raw * crunch_mult)
 		on_points_changed.emit(_running_score)
 		
-		# Log timeout game to CSV (debug-only)
-		_score_logger.log_game({
-			"game_name": ugs.scene_file_path if ugs.scene_file_path else "",
-			"game_title": ugs.game_title,
-			"result": "TIMEOUT",
-			"raw_score": raw,
-			"time_elapsed_s": elapsed,
-			"time_bonus": 0,
-			"game_multiplier": _game_multiplier,
-			"arcade_bonus": _game_count,
-			"crunch_mult": crunch_mult,
-			"total_added": int(raw * crunch_mult),
-			"running_total": _running_score,
-		})
+		# Score logger disabled
+		#_score_logger.log_game({
+		#	"game_name": ugs.scene_file_path if ugs.scene_file_path else "",
+		#	"game_title": ugs.game_title,
+		#	"result": "TIMEOUT",
+		#	"raw_score": raw,
+		#	"time_elapsed_s": elapsed,
+		#	"time_bonus": 0,
+		#	"game_multiplier": _game_multiplier,
+		#	"arcade_bonus": _game_count,
+		#	"crunch_mult": crunch_mult,
+		#	"total_added": int(raw * crunch_mult),
+		#	"running_total": _running_score,
+		#})
 		
 		_disconnect_ugs_signals(ugs)
 	

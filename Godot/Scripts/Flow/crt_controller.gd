@@ -72,7 +72,7 @@ func _ready() -> void:
 	_material = _color_rect.material as ShaderMaterial
 	_persistence_mat = _persistence_rect.material as ShaderMaterial
 	
-	print("CRT controller ready (Node2D mode, z=", z_index, ")")
+#	print("CRT controller ready (Node2D mode, z=", z_index, ")")
 
 func _build_nodes() -> void:
 	var vp_size: Vector2 = get_viewport().get_visible_rect().size
