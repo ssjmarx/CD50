@@ -1,6 +1,75 @@
 # Recent Progress
 
-**Last Updated:** 2026-05-20
+**Last Updated:** 2026-05-22
+
+---
+
+## V2 Architecture Planning (IN PROGRESS)
+
+Designing the V2 Composable Architecture — a full rebuild of the CD50 entity-component system for the desktop/Steam version. The itch.io version remains on V1.
+
+### Completed Brainstorming (11 design docs)
+All in `planning/brainstorming/`:
+- **ECS v2** — Core philosophy: deterministic priority cascade, signal-driven, single-purpose components
+- **Arms/Guts v2** — DamageOnHitArm, HealthPoolGuts, DieAtZeroHealthGuts, PointValueGuts, etc.
+- **Block Drop v2** — GridLegs, SettledCell entity, LineClearMonitor v2
+- **Brains v2** — PlayerControllerBrain, ChaseNearestBrain, AimAtNearestBrain, ShootWhenAimedBrain, SwarmMemberBrain, PatrolPathBrain, TimedStepBrain, FormationBrain, RandomSweepBrain
+- **Stage v2** — CueCards (ScoreCard, TimerCard, LivesCard, WaveCard), Goals, Controllers, Stage A/V
+- **Spawners v2** — CDSpawner base, PointSpawner, EdgeSpawner, GridSpawner, CDGridLayout resource, CDSafeZone
+- **Legs v2** — EightWayWalk, AccelDecel, EngineThrust, FrictionLinear/Static, RotationDirect/Target, GridMovementLeg, ScreenWrapLeg, ScreenClampLeg
+- **Physics Buffer v2** — Priority 30 movement, Priority 35 collision flush, deferred death
+- **Galaga v2** — Group-as-State pattern, SwoopController, FormationController, DiveDirector
+- **Additional Components v2** — FleeNearestBrain, OrbitBrain, IdleWanderBrain, SteeringLeg, PlatformerLeg, PushbackArm, StatusEffectArm, DamageFlashFace, ScreenShakeController, FlockingController
+- **Remakes v2** — Missile Command, Defender, Berzerk, Robotron: 2084 built from V2 components
+
+### Key Architecture Decisions
+- **Deterministic priority cascade:** Brains(10) → Legs(20) → Entity(30) → Buffer(35) → Arms(40) → Guts(50) → Faces(60) → Stage(70)
+- **Velocity accumulator:** Legs add to accumulator, Entity resolves at Priority 30. No more Legs fighting over `velocity`.
+- **Physics buffer:** Collisions buffered at Priority 30, flushed at Priority 35. All entities move before any game logic reacts.
+- **Hybrid bus system:** Entity bus uses native `add_user_signal()` (fixed names, high frequency). Game bus uses Dictionary-based callbacks (configurable names, zero registration boilerplate). See "Hybrid Bus System" decision below.
+- **Array exports by default:** All multi-value config (signals, groups, targets) uses `Array[Type]` — always arrays, even for single entries.
+- **Error handling:** Engine components fail fast. Game/entity components push_error and continue.
+- **V1 preservation:** Entire V1 architecture moves to `Godot/v1/`. V2 lives at `Godot/` root.
+- **Editor-first:** All CDGame children (Buffer, Registry, Matrix) are editor-placed nodes, not programmatically created.
+
+### 8-Update Schedule
+1. **Core Infrastructure** (Plan 19 — doc complete)
+2. **Stage: Cue Cards, Goals, Interface** (Plan 20 — doc complete)
+3. **Spawners + Brains**
+4. **Legs + Physics Integration**
+5. **Arms + Guts**
+6. **Faces + Voices + Speakers**
+7. **PseudoGrid (Block Drop V2)**
+8. **Galaga (Final Proof)**
+
+### Not Yet Designed
+- Faces (entity visuals — only 3 partial specs)
+- Voices (entity-level sound)
+- Speakers (scene-level sound)
+
+### Planning Docs Created
+| Doc | Status |
+|-----|--------|
+| `planning/19 - V2 Core Infrastructure.md` | Complete |
+| `planning/20 - V2 Stage.md` | Complete |
+| Plans 21–26 (Updates 3–8) | Not started |
+
+### Key Design Decisions (Plan 20)
+- **Configurable signal emissions:** All non-infrastructure components use array exports for both signal connections AND signal emissions. Method determines data shape, export determines signal name.
+- **No GroupCountCard:** CDGroupRegistry emits `"group_count_changed"` directly. Goals listen directly. Eliminates intermediary.
+- **CDCueCard base class:** All Cue Cards extend Control via CDCueCard. `is_interface` bool creates optional Label for display. No separate Interface component.
+- **Separate MultiplierCard:** ScoreCard optionally reads MultiplierCard via NodePath. Arms emit raw points, unaware of multipliers. Supports multiple ScoreCards.
+- **Generalized GroupCountGoal:** Replaces GroupClearedGoal. `CountComparison` enum supports <, =, >, <=, >=. Old "cleared" = `EQUAL_TO, target_count=0`.
+- **GameResult enum:** Added to CDEnums — `VICTORY`, `DEFEAT`, `DRAW`.
+- **Specific Cue Cards now, type-based bases later:** ScoreCard/LivesCard/WaveCard are self-documenting. CueInt/CueFloat/CueString bases will be extracted when reuse demands it. Promotion path: specific card extends type base (e.g., ScoreCard extends CueInt).
+- **CDMark — Area2D trigger zones:** Marks fill the gap between physics collisions (CDEntity ↔ CDEntity) and game state events (Cue Cards). CDMark (base), MobileMark (follows entity), CountMark (N-body threshold), TimedMark (dwell-time). Same specific-first pattern as Cue Cards. Shape auto-created from `shape_size` export or editor-placed CollisionShape2D children.
+- **Entity bus configurable emissions:** Entity components have fixed signal TYPE (hardcoded const) but configurable signal NAME(S) via `@export` arrays. `CDEntity.ensure_signal()` is idempotent with type-mismatch warning. Registration in `_ready()`, connections in `_initialize()` (two-phase lifecycle). Stage components don't need `_initialize()` — only entity components do (game bus = Dictionary, no ordering issues).
+
+### Key Design Decision: Hybrid Bus System (Plans 19 + 20)
+- **Entity bus (CDEntity):** Native `add_user_signal()`. Fixed signal names, high frequency (per-entity per-frame), typed signatures. C++ performance matters here.
+- **Game bus (CDGame):** Dictionary-based (`Dictionary[StringName, Array[Callable]]`). Configurable signal names, low frequency (a few dozen events/frame total), zero registration boilerplate. `bus_emit()` with no connections = Dictionary miss = no-op.
+- **Cross-bus communication:** 4 patterns — (1) entity→entity via physics, (2) entity→game via Announcers, (3) game→entity via Controllers, (4) entity→entity non-physics via Announcer→Dictionary→Controller bridge.
+- **Rationale:** Native signals on the game bus would require `bus_ensure()` registration boilerplate for every configurable signal name, with `TYPE_NIL` (Variant) args anyway — no type safety benefit. Dictionary eliminates all registration code at negligible performance cost for game-level event frequencies.
 
 ---
 

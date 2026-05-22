@@ -94,6 +94,16 @@ The game roster is **finalized at 12 games** — no more games will be built for
 **Timeline:** After itch launch  
 **Scope:** VRAM Boot Screen, Attract Mode System, Coin Drop Boot Sequence
 
+### Plan 19 — V2 Core Infrastructure
+**Status:** Planning doc complete, implementation not started  
+**Timeline:** Post-demo code lock (after May 31)  
+**Scope:** Foundation of the V2 Composable Architecture — CDEntity, CDGame, CDComponent2D, CDCollisionBuffer, CDGroupRegistry, CDCollisionMatrix, CDInputRouter, CDEnums, CDCollisionGroup. First of 8 V2 updates. V1 architecture moves to `Godot/v1/`.
+
+### Plan 20 — V2 Stage (Cue Cards, Goals, Interface)
+**Status:** Planning doc complete, implementation not started  
+**Timeline:** After Plan 19 implementation  
+**Scope:** First consumers of CDGame's game bus. CDCueCard base class, 5 Cue Cards (ScoreCard, MultiplierCard, LivesCard, TimerCard, WaveCard), 4 Goals (GroupCountGoal, ScoreThresholdGoal, LivesDepletedGoal, TimerExpiredGoal). Eliminates GroupCountCard (CDGroupRegistry emits directly). Cue Cards are Controls with `is_interface` bool for optional display.
+
 ---
 
 ## Mid-Term (June–October 2026)
