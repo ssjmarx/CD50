@@ -59,10 +59,10 @@ The editor UX is a single field with a `[+]` button. No overhead for the common 
 **Two bus implementations, each optimized for its use case.**
 
 ### Entity Bus — Native `add_user_signal()`
-- Fixed, small set of signals per entity: `"collision"`, `"collided_by"`, `"entity_deactivating"`, etc.
+- Fixed, small set of signals per entity: `"collision"`, `"collided_by"`, `"entity_deactivating"`, `"entity_activated"`, etc.
 - High frequency (per-entity per-frame). Native C++ signal dispatch matters here.
 - Typed signatures via `add_user_signal()`.
-- Components connect to entity signals via `@export var` StringName arrays in `_ready()`.
+- Components connect to entity signals via `@export var` StringName arrays in `_on_initialize()`.
 
 ### Game Bus — Dictionary-based
 - Configurable signal names. No registration or boilerplate needed.
@@ -90,6 +90,8 @@ The editor UX is a single field with a `[+]` button. No overhead for the common 
 | `ComponentCategory` | `BRAIN`, `LEGS`, `ENTITY`, `ARMS`, `GUTS`, `FACE`, `STAGE` | CDComponent2D |
 | `EntityState` | `ACTIVE`, `DEACTIVATING`, `INACTIVE` | CDEntity |
 | `GameState` | `ATTRACT`, `PLAYING`, `PAUSED`, `GAME_OVER` | CDGame |
+| `GameResult` | `VICTORY`, `DEFEAT`, `DRAW` | CDGame, Goals |
+| `CountComparison` | `LESS_THAN`, `EQUAL_TO`, `GREATER_THAN`, `LESS_OR_EQUAL`, `GREATER_OR_EQUAL` | GroupCountGoal (Plan 20) |
 | `Edge` | `TOP`, `BOTTOM`, `LEFT`, `RIGHT` | Spawners, screen utilities |
 | `InputAction` | `MOVE`, `AIM`, `ACTION_PRESSED`, `ACTION_RELEASED` | CDInputRouter |
 
@@ -102,9 +104,9 @@ The editor UX is a single field with a `[+]` button. No overhead for the common 
 | `group_name` | `StringName` | Identity (e.g., `&"player"`, `&"enemies"`) |
 | `collides_with` | `Array[StringName]` | Groups this can hit. Empty = ghost (no collisions). |
 
-### 3. CDComponent
+### 3. CDComponent2D
 **Type:** Extends Node2D
-**Purpose:** Base class for ALL V2 components. Auto-assigns process priority based on category.
+**Purpose:** Base class for ALL V2 components. Auto-assigns process priority based on category. Provides two-phase lifecycle to resolve signal timing.
 
 **Cached references (V1 pattern — no runtime tree-walking):**
 ```gdscript
@@ -123,7 +125,32 @@ The editor UX is a single field with a `[+]` button. No overhead for the common 
 | `FACE` | 60 |
 | `STAGE` | 70 |
 
-Component category is an export variable set for every CDComponent
+Component category is an export variable set for every CDComponent2D.
+
+**Two-Phase Lifecycle:**
+
+All CDComponent2D subclasses follow a deterministic two-phase initialization:
+
+| Phase | Method | Timing | Purpose |
+|-------|--------|--------|---------|
+| 1 | `_ready()` | Immediate | Resolve references (`entity`, `game`), set process priority, register signals on the bus via `add_user_signal()` / `bus_connect()` |
+| 2 | `_on_initialize()` | Deferred (end of frame) | Connect to signals that other components registered in Phase 1. Perform setup that depends on siblings being ready. |
+
+```gdscript
+func _ready():
+    process_physics_priority = _category_to_priority(component_category)
+    entity = CDEntity.find_ancestor(self)
+    game = CDGame.find_ancestor(self)
+    call_deferred("_initialize")
+
+func _initialize():
+    _on_initialize()
+
+func _on_initialize():
+    pass  # Override in subclass — connect to bus signals here
+```
+
+**Rationale:** Phase 1 guarantees all signals exist before Phase 2 connects to them. `call_deferred()` runs after all `_ready()` calls in the tree have completed, eliminating ordering issues between sibling components.
 
 ### 4. CDEntity
 **Type:** Extends CharacterBody2D (Priority 30)
@@ -131,11 +158,31 @@ Component category is an export variable set for every CDComponent
 
 **State Machine:** `ACTIVE` → `DEACTIVATING` → `INACTIVE`
 
+**Default Node Structure:**
+```
+CDEntity (CharacterBody2D)
+├── CollisionShape2D          # Default physics collision (circle, from @export collision_radius)
+└── [CDComponent2D children]
+```
+- The default `CollisionShape2D` is a `CircleShape2D` created in `_ready()` from `@export var collision_radius: float = 8.0`.
+- For simple entities (bullet, ball, paddle, asteroid, ship), this single shape IS the physics boundary. Group membership + Arms determine what happens on collision.
+- For complex entities (brawler, boss), Area2D children can be added in the scene for separate HitBox/HurtBox zones. These are scene-level additions, not API-level.
+- Components modify the collision shape through the Collision Shape API below — never by directly manipulating child nodes.
+
 **Velocity Accumulator API:**
 | Method | Description |
 |--------|-------------|
 | `request_velocity_set(vel: Vector2)` | Hard override. Last call wins. Discouraged — use only when a specific behavior requires it (e.g., EightWayWalk hard-stop). |
 | `request_velocity_add(vel: Vector2)` | Soft add. Accumulates. Preferred for most Legs. |
+
+**Collision Shape API:**
+| Method | Description |
+|--------|-------------|
+| `set_collision_circle(radius: float)` | Replaces the default CollisionShape2D with a CircleShape2D of the given radius |
+| `set_collision_polygon(points: PackedVector2Array)` | Replaces the default CollisionShape2D with a CollisionPolygon2D using the given points |
+| `set_collision_rect(width: float, height: float)` | Replaces the default CollisionShape2D with a RectangleShape2D of given dimensions |
+
+These methods manage the internal node tree so components don't couple to CDEntity's layout. The old shape node is freed, the new one is added as a child. Only the primary physics collision shape is affected — not Area2D HitBox/HurtBox children (those are managed by their own components).
 
 **Position API:**
 | Method | Description |
@@ -157,23 +204,46 @@ Component category is an export variable set for every CDComponent
    - Emit `"collided_by(self, -normal)"` on collider's bus (if valid).
 2. Clear buffer.
 
+**`activate()` (pool lifecycle only):**
+1. Set state to `ACTIVE`.
+2. Enable all `CollisionShape2D` children.
+3. Set `visible = true`, resume physics processing.
+4. Emit `"entity_activated"` — components re-initialize (reset counters, reconnect game bus).
+
+**Editor-placed entities** are born active. `activate()` is only called on pooled entities being pulled from a pool (see Plan 19.5).
+
 **`deactivate()`:**
 1. Set state to `DEACTIVATING`.
 2. Disable all `CollisionShape2D` children via `set_deferred("disabled", true)`.
-3. Emit `"entity_deactivating"`.
-4. `call_deferred("queue_free")`.
+3. Emit `"entity_deactivating"` — components respond (reset state, disconnect from game bus).
+4. **If `pool != null`:** Call `pool.release(self)`. Entity sleeps in pool (processing off, invisible, not freed).
+5. **If `pool == null`:** `call_deferred("queue_free")`. Entity is destroyed.
 
-**Entity Bus:** Uses `add_user_signal()` for native C++ signal performance. Components declare signal connections via `@export var` StringName array properties and connect in `_ready()`.
+The entity routes itself. Callers (Arms, Goals, Marks) always call `deactivate()` and don't need to know whether the entity is pooled.
+
+**Entity Bus Signals:**
+| Signal | Params | Description |
+|--------|--------|-------------|
+| `"collision"` | `(collider, normal)` | Buffered, fired at Priority 35 |
+| `"collided_by"` | `(source, -normal)` | Inverse of collision, fired on collider |
+| `"entity_deactivating"` | `()` | Entity is shutting down — components reset |
+| `"entity_activated"` | `()` | Pooled entity is waking up — components re-initialize |
 
 **Key Exports:**
 | Export | Type | Default | Description |
 |--------|------|---------|-------------|
 | `groups` | `Array[StringName]` | `[]` | Groups this entity belongs to. Applied on `_ready`. |
+| `collision_radius` | `float` | `8.0` | Radius for the default CircleShape2D created in `_ready` |
 | `lock_x` | `bool` | `false` | Lock X axis to spawn position |
 | `lock_y` | `bool` | `false` | Lock Y axis to spawn position |
 
+**Internal property (not exported — set by pool):**
+| Property | Type | Description |
+|----------|------|-------------|
+| `pool` | `CDObjectPool` | Set by pool after instantiation. Null = not pooled (default). |
+
 ### 5. CDCollisionBuffer
-**Type:** Node (editor-placed child of CDGame, Priority 35)
+**Type:** Node (editor-placed child of CDGame, `process_physics_priority = 35`)
 **Purpose:** Defers collision signal emission until all entities have moved.
 
 | Method | Description |
@@ -186,7 +256,7 @@ Component category is an export variable set for every CDComponent
 3. Clear the list.
 
 ### 6. CDGroupRegistry
-**Type:** Node (editor-placed child of CDGame)
+**Type:** Node (editor-placed child of CDGame, `process_physics_priority = 5`)
 **Purpose:** Frame-cached, typed access to entity groups. Successor to V1's `GroupCache` autoload.
 
 **V1 → V2 changes from GroupCache:**
@@ -202,6 +272,19 @@ Component category is an export variable set for every CDComponent
 | `get_count(group_name: StringName) -> int` | Count | Uses cached group |
 | `get_nearest(group_name: StringName, to_pos: Vector2) -> CDEntity` | Closest or null | Linear scan of cached group |
 | `get_nearest_to_entity(group_name: StringName, entity: CDEntity) -> CDEntity` | Closest excluding self | Filters out querying entity |
+
+**Signal Emissions:**
+| Signal | Params | Description |
+|--------|--------|-------------|
+| `group_count_changed` | `(group_name: StringName, count: int)` | Emitted when a dirty group's count changes from previous frame |
+
+**Process (Priority 5):**
+1. For each dirty group, re-query and compare count to previous frame's count.
+2. If count changed, emit `group_count_changed`.
+3. Clear dirty flags.
+4. Empty process loop when no groups are dirty — zero cost.
+
+**Rationale for Priority 5:** CDGroupRegistry must emit count changes before any Brain (Priority 10) or Stage (Priority 70) components process. Priority 5 ensures group state is settled before any gameplay logic runs.
 
 ### 7. CDCollisionMatrix
 **Type:** Node (editor-placed child of CDGame)
@@ -229,6 +312,7 @@ Component category is an export variable set for every CDComponent
 - `CDCollisionBuffer`
 - `CDGroupRegistry`
 - `CDCollisionMatrix`
+- Zero or more `CDObjectPool` nodes (see Plan 19.5)
 
 **Cached references:**
 ```gdscript
@@ -263,9 +347,9 @@ No registration needed. `bus_emit` with no connections = no-op. Configurable sig
 **Key Methods:**
 | Method | Description |
 |--------|-------------|
-| `start_game()` | ATTRACT → PLAYING, emits `"game_play"` |
-| `end_game(won: bool)` | PLAYING → GAME_OVER, emits `"game_over"` |
-| `reset_game()` | → ATTRACT, reloads state |
+| `start_game()` | ATTRACT → PLAYING, emits `"game_play"` on game bus |
+| `end_game(result: GameResult)` | PLAYING → GAME_OVER, emits `"game_over"` with `[result]` on game bus |
+| `reset_game()` | → ATTRACT, emits `"game_reset"` on game bus, reloads state |
 
 **Key Exports:**
 | Export | Type | Default | Description |
@@ -314,7 +398,9 @@ After all systems are built, create a test scene that proves:
 5. **Collision Buffer:** Two entities collide. Signals fire at Priority 35, after both have moved.
 6. **Entity Bus:** Debug Arm listens for `"collision"`. Receives it via native signal.
 7. **Deactivation:** Arm calls `deactivate()` on target. Collision shapes disable. Entity freed at frame end.
-8. **Input Router:** Key press → `input_move` emitted with correct direction and player_id.
+8. **Pooled Deactivation/Activation:** CDObjectPool acquires entity, configures position, calls `activate()`. Arm calls `deactivate()` — entity returns to pool instead of being freed. Pool re-acquires same entity — `activate()` fires, `"entity_activated"` received by components. (Full pool proof test in Plan 19.5.)
+9. **Input Router:** Key press → `input_move` emitted with correct direction and player_id.
+10. **Collision Shape API:** Entity with default collision_radius of 8. Call `set_collision_polygon(polygon_points)` → default circle replaced with CollisionPolygon2D. Call `set_collision_rect(20, 10)` → replaced with RectangleShape2D. Collision matrix still works after shape swap.
 
 ---
 

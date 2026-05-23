@@ -1,0 +1,31 @@
+# V2 Implementation Plan Sequence
+
+## Plan List (8 plans)
+
+| Plan # | Title | Status | Key Components |
+|--------|-------|--------|----------------|
+| **19** | V2 Core Infrastructure | ✅ Written | CDEntity, CDGame, CDComponent2D, CDCollisionBuffer, CDGroupRegistry, CDCollisionMatrix, CDInputRouter, CDEnums, CDCollisionGroup |
+| **19.5** | V2 Object Pooling | ✅ Written | CDObjectPool, pool-aware activate/deactivate, CDComponent2D lifecycle hooks |
+| **20** | V2 Stage | ✅ Written | CDCueCard, ScoreCard, MultiplierCard, LivesCard, TimerCard, WaveCard, CDMark, MobileMark, CountMark, TimedMark, Goals (GroupCountGoal, ScoreThresholdGoal, LivesDepletedGoal, TimerExpiredGoal) |
+| **21** | V2 Brains + Legs | ⬜ Not written | Brains: PlayerControl, InterceptorAI, PatrolAI, AimAI, SwarmAI, ShootAI, etc. Legs: DirectMovement, EngineSimple, Friction, Rotation, etc. |
+| **22** | V2 Arms & Guts | ⬜ Not written | Arms: GunSimple, DamageOnHit, DamageOnJoust. Guts: HealthPool, ScreenWrap, DieOnHit, DieOnTimer, etc. |
+| **23** | V2 Spawners | ✅ Written | CDSpawner base, PointSpawner, EdgeSpawner, GridSpawner, CDGridLayout, CDGridEquation, CDSpawnContext, CDSafeZone, GunArm, SpawnOnDeathArm, PieceSplitterArm |
+| **24** | V2 Faces, Voices, Projections & Speakers | ✅ Written | CDSoundBank, CDSoundDef, CDFaceBinding, SpriteFace, VectorFace, EngineFace, ThrusterFace, SoundVoice, ContinuousVoice, MusicSpeaker, SoundSpeaker, ContinuousSpeaker, CRTProjection, CreditProjection, MenaceProjection. *(Future: AnimatedFace + ActionStateGuts for multi-frame animations)* |
+| **25** | V2 Galaga (Architecture Proof) | ⬜ Not written | Full Galaga remake built entirely from V2 components. Proves the architecture works end-to-end. |
+
+## Post-V2: Game Implementation
+
+After Plan 25 proves the architecture, the demo games (Pong, Breakout, Asteroids, Pongsteroids, Tetris, Space Invaders, etc.) get reimplemented in V2. Then work begins on the remaining CD50 games.
+
+## CD50 Final Game Count Vision
+
+Current thinking on the final game roster (~50 games total):
+
+| Category | Count | Description |
+|----------|-------|-------------|
+| **Remakes** | 10 | Faithful recreations of classic arcade games (Pong, Breakout, Asteroids, Space Invaders, Galaga, Tetris, etc.) |
+| **Lite Remixes / Originals** | 30 | Light variations on classic formulas — mix-and-match components from remakes, or original concepts built from the same component library |
+| **Heavy Remixes / Originals** | 10 | Substantial reimaginings — major mechanic shifts, mashups of multiple games, or fully original games that use the composable architecture |
+| **Total** | ~50 | |
+
+This replaces the earlier "10 remakes + remixes" vision. The composable architecture makes the lite/heavy remix scale realistic — each remix is component assembly, not new code.

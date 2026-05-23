@@ -31,21 +31,27 @@ This applies to ALL non-infrastructure components going forward, not just Stage.
 
 ## Changes to Plan 19 (Core Infrastructure)
 
-### CDGroupRegistry Update
-Add `_process` that proactively re-queries dirty groups and emits `"group_count_changed(group_name: StringName, count: int)"` when count actually changed. Empty `_process` when no groups are dirty — zero cost.
+All of the following changes are **already reflected in Plan 19**. Listed here for reference:
+
+### CDGroupRegistry — `group_count_changed` Signal (Priority 5)
+CDGroupRegistry proactively re-queries dirty groups and emits `group_count_changed(group_name: StringName, count: int)` when count actually changed. Empty `_process` when no groups are dirty — zero cost. Runs at Priority 5, before any gameplay logic.
 
 This makes GroupCountCard unnecessary (see below). CDGroupRegistry is now the single source of truth for group counts, emitting on change instead of requiring polling.
 
-### CDEnums Update
-Add two new enums:
+### CDEnums — `GameResult` and `CountComparison`
+Already included in Plan 19's CDEnums spec:
 
 | Enum | Values | Used By |
 |------|--------|---------|
-| `GameResult` | `VICTORY`, `DEFEAT`, `DRAW` | Goals, CDGame |
+| `GameResult` | `VICTORY`, `DEFEAT`, `DRAW` | CDGame.end_game(), Goals |
 | `CountComparison` | `LESS_THAN`, `EQUAL_TO`, `GREATER_THAN`, `LESS_OR_EQUAL`, `GREATER_OR_EQUAL` | GroupCountGoal |
 
-### CDGame Update
-`reset_game()` emits `"game_reset"` on the game bus. All Cue Cards listen and reset internal state. Fully signal-driven — no method calls from CDGame to Cue Cards.
+### CDGame — `end_game(result: GameResult)` and `reset_game()`
+- `end_game()` now takes `GameResult` instead of `bool`. Emits `"game_over"` with `[result]` on the game bus.
+- `reset_game()` emits `"game_reset"` on the game bus. All Cue Cards listen and reset internal state. Fully signal-driven — no method calls from CDGame to Cue Cards.
+
+### CDComponent2D — Two-Phase Lifecycle
+Components register signals in `_ready()` (Phase 1) and connect to signals in `_on_initialize()` (Phase 2, deferred). All Stage components follow this pattern.
 
 ---
 
@@ -161,20 +167,32 @@ Each Cue Card overrides `_on_reset()` and calls `_update_label()` when state cha
 
 ### 5. WaveCard
 **Type:** Extends CDCueCard
-**Purpose:** Tracks current wave/level number.
+**Purpose:** Tracks current wave/level number. Acts as a **signal relay** — receives game events and re-emits wave-numbered signals for CDStageSpawner consumption. See Plan 23 (V2 Spawners) for the full relay pattern.
 
 | Export | Type | Default | Description |
 |--------|------|---------|-------------|
 | `starting_wave` | `int` | `1` | Wave at game start / reset |
-| `on_wave_changed` | `Array[StringName]` | `[&"wave_changed"]` | Signals emitted when wave changes |
+| `advance_signal` | `StringName` | `&"wave_cleared"` | Game bus signal that advances the wave |
+| `start_signal` | `StringName` | `&"game_play"` | Game bus signal that starts the first wave |
+| `on_wave_start` | `Array[StringName]` | `[&"wave_start"]` | Emitted when a new wave begins (advances counter first). Args: `(wave_number: int)` |
+| `on_wave_changed` | `Array[StringName]` | `[&"wave_changed"]` | Emitted whenever wave number changes. Args: `(new_wave: int)` |
 
 **Signal connections (Game Bus):**
-- Listens: `"wave_advanced"`, `"wave_reset"` (default, configurable)
+- Listens: `start_signal` (default `"game_play"`), `advance_signal` (default `"wave_cleared"`), `"wave_reset"`, `"game_reset"`
 
 **Behavior:**
-- On `"wave_advanced"`: increments `current_wave`, emits `on_wave_changed` with `(new_wave: int)`.
+- On `start_signal` (e.g., `"game_play"`): increments `current_wave`, emits `on_wave_start` with `(current_wave)`, emits `on_wave_changed` with `(current_wave)`.
+- On `advance_signal` (e.g., `"wave_cleared"` from GroupCountGoal): increments `current_wave`, emits `on_wave_start` with `(current_wave)`, emits `on_wave_changed` with `(current_wave)`.
 - On `"wave_reset"`: resets to `starting_wave`.
 - On `"game_reset"`: resets to `starting_wave`.
+
+**Relay pattern (Plan 23 integration):**
+```
+CDGame emits "game_play" → WaveCard hears it → emits "wave_start(1)" → Spawners fire
+GroupCountGoal emits "wave_cleared" → WaveCard hears it → emits "wave_start(2)" → Spawners fire again
+```
+
+**Independent wave cycles:** Multiple WaveCards with different signal names. WaveCard_A uses `on_wave_start = [&"asteroid_wave"]`, WaveCard_B uses `on_wave_start = [&"ufo_wave"]`. Each spawner subscribes to the relevant signal via its `trigger_signal` export.
 
 ---
 
@@ -319,6 +337,8 @@ func _passes_filter(body) -> bool:
 - Bug Blaster bottom line: `on_entered = [&"invaders_reached_bottom"]`, mask = invaders layer
 - Brick Breaker floor: `on_entered = [&"ball_lost"]`, mask = balls layer
 
+**Note:** CDMark extends Area2D (not CDComponent2D) and does not participate in the two-phase lifecycle. It connects to the game bus directly in `_ready()` — no ordering issues since it only emits, never listens to other components' signals.
+
 ### 11. MobileMark
 **Type:** Extends CDMark
 **Purpose:** Mark that follows a target CDEntity. All CDMark emission behavior inherited — adds movement logic only.
@@ -394,23 +414,22 @@ func _passes_filter(body) -> bool:
 
 ## Implementation Order
 
-1. **CDEnums update** — Add `GameResult`, `CountComparison`
-2. **CDGroupRegistry update** — Add `_process` dirty flush + signal emission
-3. **CDGame update** — Emit `"game_reset"` on `reset_game()`
-4. **CDCueCard** — Base class
-5. **ScoreCard** — Simplest Cue Card with optional multiplier
-6. **MultiplierCard** — Needed by ScoreCard tests
-7. **LivesCard** — Same pattern, trivial
-8. **WaveCard** — Same pattern, trivial
-9. **TimerCard** — Only Cue Card with `_physics_process` work
-10. **CDMark** — Base class for all Marks (Area2D trigger zone)
-11. **MobileMark** — Extends CDMark with entity-following
-12. **CountMark** — Extends CDMark with unique body counting
-13. **TimedMark** — Extends CDMark with dwell-time tracking
-14. **GroupCountGoal** — Needed for proof test, exercises CDGroupRegistry signal
-15. **LivesDepletedGoal** — Pure relay, trivial
-16. **ScoreThresholdGoal** — Threshold comparison
-17. **TimerExpiredGoal** — Pure relay
+All Plan 19 changes (CDEnums, CDGroupRegistry, CDGame, CDComponent2D two-phase lifecycle) are already implemented in Plan 19. This list covers only the new Stage components:
+
+1. **CDCueCard** — Base class
+2. **ScoreCard** — Simplest Cue Card with optional multiplier
+3. **MultiplierCard** — Needed by ScoreCard tests
+4. **LivesCard** — Same pattern, trivial
+5. **WaveCard** — Signal relay with configurable advance/start signals (feeds CDStageSpawner in Plan 23)
+6. **TimerCard** — Only Cue Card with `_physics_process` work
+7. **CDMark** — Base class for all Marks (Area2D trigger zone)
+8. **MobileMark** — Extends CDMark with entity-following
+9. **CountMark** — Extends CDMark with unique body counting
+10. **TimedMark** — Extends CDMark with dwell-time tracking
+11. **GroupCountGoal** — Needed for proof test, exercises CDGroupRegistry signal
+12. **LivesDepletedGoal** — Pure relay, trivial
+13. **ScoreThresholdGoal** — Threshold comparison
+14. **TimerExpiredGoal** — Pure relay
 
 ---
 
