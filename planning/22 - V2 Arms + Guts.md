@@ -47,7 +47,7 @@ The **OnJoust** variants add comparative logic (velocity, Y position, or custom 
 
 ---
 
-## Arms (11 Components)
+## Arms (12 Components)
 
 Category: `ARM` (Priority 40). Arms affect the game state *outside* the entity. They deal damage, apply forces, or announce score. They never modify the entity's own `velocity` or internal `HealthPool`.
 
@@ -61,7 +61,7 @@ Category: `ARM` (Priority 40). Arms affect the game state *outside* the entity. 
 | **Consumes** | Entity bus: `"collision(collider: CDEntity, normal: Vector2)"` |
 | **Generates** | Collider's entity bus: `"take_damage(amount: int, source: CDEntity)"` |
 | **Exports** | `damage_amount: int = 1` <br> `target_group: StringName = &"enemies"` <br> `collision_signal: StringName = &"collision"` <br> `damage_signal: StringName = &"take_damage"` |
-| **Process** | On collision, validates `collider` is in `target_group` and `is_instance_valid()`. If so, emits `damage_signal` on the *collider's* entity bus. |
+| **Process** | On collision, validates `collider` is in `target_group` and `is_instance_valid()`. If so, guards with `collider.has_signal(damage_signal)` and emits `damage_signal` on the *collider's* entity bus. If the collider lacks the signal (e.g., a wall without HealthPoolGuts), silently skips — no error. This follows the V2 cross-entity safety rule from Plan 19. |
 | **V1 Predecessor** | `damage_on_hit.gd` |
 
 #### DeathOnHitArm
@@ -155,6 +155,22 @@ Category: `ARM` (Priority 40). Arms affect the game state *outside* the entity. 
 
 ---
 
+### Collision Physics Arms (1)
+
+#### AngledDeflectorArm
+**Role:** Overrides the entity's `collision_response` to bounce with configurable restitution and angle-dependent behavior. The canonical use case is Pong/Breakout paddles — ball bounces at different angles depending on where it hits the paddle.
+
+| Aspect | Detail |
+|--------|--------|
+| **Consumes** | Entity bus: `"collision(collider: CDEntity, normal: Vector2)"` |
+| **Generates** | `entity.request_velocity_set(bounced_velocity)` on own entity |
+| **Exports** | `restitution: float = 1.0` (1.0 = perfect elastic, <1.0 = energy loss, >1.0 = energy gain) <br> `use_collision_normal: bool = true` (if false, calculates deflection direction from hit offset) <br> `hit_zone_size: float = 0.0` (half-width of the deflection surface. 0 = use collision normal only) <br> `max_deflection_angle: float = PI/3` (60° — max angle from collision normal when using hit-zone mode) <br> `target_group: StringName = &""` (empty = apply to all collisions) <br> `collision_signal: StringName = &"collision"` |
+| **Process** | On collision: (1) If `target_group` is set and collider not in group, skip. (2) If `use_collision_normal`, reflect velocity around collision normal and multiply by `restitution`. (3) If `hit_zone_size > 0`, calculate offset = collider position relative to entity center along the deflection axis, normalize to [-1, 1], map to angle within `max_deflection_angle`, and set velocity in that direction at original speed × `restitution`. (4) Call `entity.request_velocity_set(bounced_velocity)`. |
+| **Use Case** | Pong paddle: `hit_zone_size = paddle_half_width`, `max_deflection_angle = PI/3`. Ball bounces at steep angles when hitting paddle edges, shallow at center. Breakout paddle: same pattern. Any bumper/deflector surface. |
+| **Note** | This Arm handles the *physical* bounce. Game logic (scoring, damage) is handled by separate Arms. A Pong ball would have AngledDeflectorArm (bounce) + ScoreOnCollisionArm (announce score to game bus) as separate components. This is the "physics response decoupled from game response" pattern enabled by the CDCollisionBuffer design. |
+
+---
+
 ### Force/Status Arms (2)
 
 #### PushbackArm
@@ -190,15 +206,15 @@ Category: `GUTS` (Priority 50). Guts track internal state. They are purely self-
 
 | Aspect | Detail |
 |--------|--------|
-| **Consumes** | Entity bus: `"shape_changed(shape: CDShape)"` (CDShape defined in Plan 24) |
+| **Consumes** | Entity bus: `"shape_changed(points: PackedVector2Array)"` |
 | **Generates** | Calls `entity.set_collision_polygon()`, `entity.set_collision_circle()`, or `entity.set_collision_rect()` |
-| **Exports** | `shape: CDShape` (optional — if set, applies on init for static entities) |
-| **Process** | 1. On `_on_setup()`: if `shape` is set and has points, call `entity.set_collision_polygon(shape.points)`. <br> 2. On `"shape_changed"`: call `entity.set_collision_polygon(shape.points)` with the received CDShape. |
+| **Exports** | `static_points: PackedVector2Array` (optional — if set, applies on init for static entities) |
+| **Process** | 1. On `_on_initialize()`: if `static_points` is set and non-empty, call `entity.set_collision_polygon(static_points)`. <br> 2. On `"shape_changed"`: call `entity.set_collision_polygon(points)` with the received array. |
 
-**Static use case:** Triangle ship has a pre-authored CDShape resource. ShapeColliderGuts applies it on setup. No signal needed.
-**Dynamic use case:** AsteroidGuts generates a random CDShape at runtime, emits `"shape_changed"`. ShapeColliderGuts applies it. VectorFace also hears `"shape_changed"` and draws the same shape — one CDShape shared by reference, consumed by two independent components.
+**Static use case:** Triangle ship has a pre-authored `PackedVector2Array` in the export. ShapeColliderGuts applies it on init. No signal needed.
+**Dynamic use case:** AsteroidGuts generates random polygon points at runtime, emits `"shape_changed"`. ShapeColliderGuts applies it. VectorFace also hears `"shape_changed"` and draws the same points — both components consume the same signal.
 
-**Cross-references:** CDShape resource defined in Plan 24. CDEntity Collision Shape API defined in Plan 19. AsteroidGuts (game-specific Guts) not defined in this plan — it's a game implementation component.
+**Cross-references:** CDEntity Collision Shape API defined in Plan 19. AsteroidGuts (game-specific Guts) not defined in this plan — it's a game implementation component.
 
 ---
 
@@ -288,6 +304,7 @@ Category: `GUTS` (Priority 50). Guts track internal state. They are purely self-
 | **Exports** | `max_shield: float = 50.0` <br> `recharge_delay: float = 3.0` <br> `recharge_rate: float = 10.0` <br> `overflow_signal: StringName = &"take_health_damage"` |
 | **Process** | On `"take_damage"`, absorbs damage into shield. If damage exceeds current shield, emits `overflow_signal` with the remainder (consumed by HealthPoolGuts). If no damage taken for `recharge_delay`, regenerates shield at `recharge_rate`. Emits `"shield_hit"` on absorb, `"shield_broken"` when depleted, `"shield_recharged"` when full. |
 | **Pipeline** | `take_damage` → ShieldPoolGuts → `take_health_damage` → HealthPoolGuts. When ShieldPool is present, HealthPoolGuts's `damage_signal` should be set to `&"take_health_damage"`. |
+| **Tree ordering** | Both ShieldPoolGuts and HealthPoolGuts run at Priority 50. Godot processes same-priority siblings in tree order. **ShieldPoolGuts MUST be placed above HealthPoolGuts in the scene tree** so it processes `take_damage` first and emits `take_health_damage` before HealthPoolGuts runs. This ordering is fragile — document it clearly in the component's comments. |
 
 #### ResourcePoolGuts
 **Role:** Generic pool for stamina, mana, or ammo.
@@ -466,6 +483,7 @@ Godot/Scripts/
 │   ├── death_on_joust_arm.gd
 │   ├── score_on_collision_arm.gd
 │   ├── score_on_death_arm.gd
+│   ├── angled_deflector_arm.gd
 │   ├── pushback_arm.gd
 │   └── status_effect_arm.gd
 ├── Guts/

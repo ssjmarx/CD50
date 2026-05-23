@@ -15,6 +15,7 @@ The entire V1 architecture moves to `Godot/v1/` for reference. This includes all
 | `UniversalBody` | `CDEntity` | Adds velocity accumulator, entity bus, state machine |
 | `UniversalGameScript` | `CDGame` | Adds game bus, editor-placed children |
 | `UniversalComponent` / `UniversalComponent2D` | `CDComponent2D` | Adds priority auto-assignment |
+| (none) | `CDStageComponent2D` | Base class for CDGame children (Goals, Speakers, Projections). No entity reference. |
 | `GroupCache` (autoload) | `CDGroupRegistry` (editor node) | Same dirty-flag pattern, typed returns, spatial queries |
 | `CollisionMatrix` | `CDCollisionMatrix` (editor node) | Data-driven via CDCollisionGroup resources |
 | (none) | `CDCollisionBuffer` | New — deferred collision flush |
@@ -27,8 +28,8 @@ The entire V1 architecture moves to `Godot/v1/` for reference. This includes all
 
 **Engine components fail fast. Game/entity components push an error and continue.**
 
-- **Engine components** (CDEntity, CDGame, CDComponent2D, CDCollisionMatrix, CDCollisionBuffer, CDGroupRegistry, CDInputRouter, CDEnums): These are the foundation. If they're misconfigured, the game cannot function correctly. Crash with a descriptive error immediately so the developer fixes it before anything else.
-- **Game/entity components** (Brains, Legs, Arms, Guts, Faces, Stage): These are gameplay building blocks. A missing signal or bad config should `push_error()` and skip, allowing the developer to see the error in the output while continuing to test the rest of the game.
+- **Engine components** (CDEntity, CDGame, CDComponent2D, CDStageComponent2D, CDCollisionMatrix, CDCollisionBuffer, CDGroupRegistry, CDInputRouter, CDEnums): These are the foundation. If they're misconfigured, the game cannot function correctly. Crash with a descriptive error immediately so the developer fixes it before anything else.
+- **Game/entity components** (Brains, Legs, Arms, Guts, Faces, Voices, Stage): These are gameplay building blocks. A missing signal or bad config should `push_error()` and skip, allowing the developer to see the error in the output while continuing to test the rest of the game.
 
 Rationale: Engine crashes prevent broken builds from shipping. Component-level graceful degradation maximizes development velocity — you can test five systems while the sixth has a config error.
 
@@ -59,10 +60,11 @@ The editor UX is a single field with a `[+]` button. No overhead for the common 
 **Two bus implementations, each optimized for its use case.**
 
 ### Entity Bus — Native `add_user_signal()`
-- Fixed, small set of signals per entity: `"collision"`, `"collided_by"`, `"entity_deactivating"`, `"entity_activated"`, etc.
+- Fixed, small set of signals per entity: `"collision"`, `"collided_by"`, `"request_deactivate"`, `"entity_deactivating"`, `"entity_activated"`, etc.
 - High frequency (per-entity per-frame). Native C++ signal dispatch matters here.
 - Typed signatures via `add_user_signal()`.
 - Components connect to entity signals via `@export var` StringName arrays in `_on_initialize()`.
+- **Cross-entity safety:** When emitting on another entity's bus (e.g., Arms emitting `"take_damage"` on a collider), always guard with `has_signal()` before emitting. This allows bullets to safely hit walls (entities without HealthGuts) without errors.
 
 ### Game Bus — Dictionary-based
 - Configurable signal names. No registration or boilerplate needed.
@@ -87,10 +89,11 @@ The editor UX is a single field with a `[+]` button. No overhead for the common 
 
 | Enum | Values | Used By |
 |------|--------|---------|
-| `ComponentCategory` | `BRAIN`, `LEGS`, `ENTITY`, `ARMS`, `GUTS`, `FACE`, `STAGE` | CDComponent2D |
+| `ComponentCategory` | `BRAIN`, `LEGS`, `ENTITY`, `ARMS`, `GUTS`, `FACE`, `VOICE`, `STAGE` | CDComponent2D, CDStageComponent2D |
 | `EntityState` | `ACTIVE`, `DEACTIVATING`, `INACTIVE` | CDEntity |
 | `GameState` | `ATTRACT`, `PLAYING`, `PAUSED`, `GAME_OVER` | CDGame |
 | `GameResult` | `VICTORY`, `DEFEAT`, `DRAW` | CDGame, Goals |
+| `CollisionResponse` | `STOP`, `BOUNCE`, `SLIDE` | CDEntity — determines what happens physically on collision |
 | `CountComparison` | `LESS_THAN`, `EQUAL_TO`, `GREATER_THAN`, `LESS_OR_EQUAL`, `GREATER_OR_EQUAL` | GroupCountGoal (Plan 20) |
 | `Edge` | `TOP`, `BOTTOM`, `LEFT`, `RIGHT` | Spawners, screen utilities |
 | `InputAction` | `MOVE`, `AIM`, `ACTION_PRESSED`, `ACTION_RELEASED` | CDInputRouter |
@@ -106,7 +109,7 @@ The editor UX is a single field with a `[+]` button. No overhead for the common 
 
 ### 3. CDComponent2D
 **Type:** Extends Node2D
-**Purpose:** Base class for ALL V2 components. Auto-assigns process priority based on category. Provides two-phase lifecycle to resolve signal timing.
+**Purpose:** Base class for ALL V2 **entity** components. Auto-assigns process priority based on category. Provides two-phase lifecycle to resolve signal timing. **Only used for components that are children of CDEntity.** For components that are children of CDGame, use CDStageComponent2D instead.
 
 **Cached references (V1 pattern — no runtime tree-walking):**
 ```gdscript
@@ -123,6 +126,7 @@ The editor UX is a single field with a `[+]` button. No overhead for the common 
 | `ARMS` | 40 |
 | `GUTS` | 50 |
 | `FACE` | 60 |
+| `VOICE` | 65 |
 | `STAGE` | 70 |
 
 Component category is an export variable set for every CDComponent2D.
@@ -151,6 +155,24 @@ func _on_initialize():
 ```
 
 **Rationale:** Phase 1 guarantees all signals exist before Phase 2 connects to them. `call_deferred()` runs after all `_ready()` calls in the tree have completed, eliminating ordering issues between sibling components.
+
+### 3.5. CDStageComponent2D
+**Type:** Extends Node2D
+**Purpose:** Base class for V2 components that are children of **CDGame** (not CDEntity). Provides game reference, priority assignment, and two-phase lifecycle — but **no entity reference**, no pool lifecycle handlers, and no entity bus helpers.
+
+**Used by:** Goals (Plan 20), CDSoundBank, Speakers, MenaceProjection (Plan 24), and any other component that lives under CDGame rather than under an entity.
+
+**Cached references:**
+```gdscript
+@onready var game: CDGame = CDGame.find_ancestor(self)
+```
+
+**Priority mapping:** Same as CDComponent2D — uses `component_category` export.
+
+**Two-Phase Lifecycle:**
+Same pattern as CDComponent2D — `_ready()` resolves references and sets priority, `_on_initialize()` (deferred) connects to game bus signals.
+
+**Why a separate base class?** CDComponent2D's `_ready()` calls `CDEntity.find_ancestor(self)`, which returns `null` for CDGame children. Rather than adding null checks everywhere, CDStageComponent2D simply doesn't have entity-dependent code. The split is clean: CDComponent2D = entity children, CDStageComponent2D = CDGame children.
 
 ### 4. CDEntity
 **Type:** Extends CharacterBody2D (Priority 30)
@@ -195,8 +217,8 @@ These methods manage the internal node tree so components don't couple to CDEnti
 2. Apply pending position set/add if present.
 3. Clear velocity accumulator and position request.
 4. Enforce axis locks and screen clamping.
-5. If collision occurred, buffer it — do NOT emit signals.
-6. Register with `CDCollisionBuffer`.
+5. If collision occurred (`get_slide_collision_count() > 0`), buffer it — do NOT emit signals.
+6. If collision occurred, register with `CDCollisionBuffer`. Entities with no collisions do NOT register — zero cost for the common case.
 
 **`flush_collisions()`:**
 1. For each buffered collision:
@@ -221,21 +243,40 @@ These methods manage the internal node tree so components don't couple to CDEnti
 
 The entity routes itself. Callers (Arms, Goals, Marks) always call `deactivate()` and don't need to know whether the entity is pooled.
 
+**The Deactivation Contract:**
+
+There are two death paths, both converging at `CDEntity.deactivate()`:
+
+| Path | Signal Chain | Used By |
+|------|-------------|---------|
+| **Health pipeline** | Arm → `"take_damage"` → HealthPoolGuts → `"zero_health"` → DieAtZeroHealthGuts → `entity.deactivate()` | DamageOnHitArm, DamageOnCrashArm |
+| **Direct kill** | Arm → `"request_deactivate"` on target's bus → CDEntity self-listens → `deactivate()` | DeathOnHitArm, DeathOnCrashArm, DeathOnJoustArm |
+
+CDEntity self-connects to `"request_deactivate"` in `_ready()`, making it a built-in entity signal that any component or external emitter can call. This bypasses the health pipeline entirely — use for instakill, walls consuming bullets, etc.
+
 **Entity Bus Signals:**
 | Signal | Params | Description |
 |--------|--------|-------------|
 | `"collision"` | `(collider, normal)` | Buffered, fired at Priority 35 |
 | `"collided_by"` | `(source, -normal)` | Inverse of collision, fired on collider |
+| `"request_deactivate"` | `()` | Built-in — CDEntity self-connects, calls `deactivate()`. Bypasses health pipeline. |
 | `"entity_deactivating"` | `()` | Entity is shutting down — components reset |
 | `"entity_activated"` | `()` | Pooled entity is waking up — components re-initialize |
+| `"moved"` | `(old_pos: Vector2, new_pos: Vector2)` | Position changed after physics — consumed by LockDetectorGuts, grid systems, spawners |
+| `"rotated"` | `(old_rot: float, new_rot: float)` | Rotation changed after physics — consumed by TSpinDetectorGuts, LockDetectorGuts |
+
+**Design note on `"moved"` / `"rotated":** These are position-change notification signals, NOT per-frame broadcasts. Only emitted when position or rotation actually changes between the start and end of the Priority 30 physics step. A stationary entity emits neither. These were identified as cross-plan gaps during V2 planning review — LockDetectorGuts (Plan 22) needs `"moved"`/`"rotated"` for lock-delay reset, but nothing in Plans 20–24 spec where these signals originate. Adding them to CDEntity makes them available to all consumers.
 
 **Key Exports:**
 | Export | Type | Default | Description |
 |--------|------|---------|-------------|
 | `groups` | `Array[StringName]` | `[]` | Groups this entity belongs to. Applied on `_ready`. |
 | `collision_radius` | `float` | `8.0` | Radius for the default CircleShape2D created in `_ready` |
+| `collision_response` | `CollisionResponse` | `SLIDE` | What happens physically on collision. `STOP` = zero velocity on impact. `BOUNCE` = reflect velocity along collision normal. `SLIDE` = slide along surface (default CharacterBody2D behavior). |
 | `lock_x` | `bool` | `false` | Lock X axis to spawn position |
 | `lock_y` | `bool` | `false` | Lock Y axis to spawn position |
+
+**Why `move_and_collide` instead of `move_and_slide`:** V2 uses `move_and_collide()` directly in the Priority 30 physics step. This gives explicit control over collision response per entity via the `collision_response` export. `move_and_slide()` would force the CharacterBody2D default sliding behavior on all entities — but Pong balls need `BOUNCE`, grid entities need `STOP`, and some entities need no physics response at all. By calling `move_and_collide()` and handling the result ourselves, each entity's `collision_response` setting determines the physical outcome. Game logic (damage, scoring, death) is still handled by Arms at Priority 40, completely decoupled from the physical response.
 
 **Internal property (not exported — set by pool):**
 | Property | Type | Description |
@@ -248,7 +289,7 @@ The entity routes itself. Callers (Arms, Goals, Marks) always call `deactivate()
 
 | Method | Description |
 |--------|-------------|
-| `register_entity(entity: CDEntity)` | Adds entity to this frame's flush queue |
+| `register_entity(entity: CDEntity)` | Adds entity to this frame's flush queue. Only called by entities that actually collided. |
 
 **Process (Priority 35):**
 1. Iterate `_entities_to_flush`.
@@ -270,7 +311,7 @@ The entity routes itself. Callers (Arms, Goals, Marks) always call `deactivate()
 | `mark_dirty(group_name: StringName)` | void | Invalidate cache for a group |
 | `get_group(group_name: StringName) -> Array[CDEntity]` | Cached array | Frame-lazy, re-queries on dirty |
 | `get_count(group_name: StringName) -> int` | Count | Uses cached group |
-| `get_nearest(group_name: StringName, to_pos: Vector2) -> CDEntity` | Closest or null | Linear scan of cached group |
+| `get_nearest(group_name: StringName, to_pos: Vector2) -> CDEntity` | Closest or null | Linear scan of cached group. **Cost: O(N) per call where N = group size.** Acceptable for arcade-scale entity counts (<100). For future games with larger counts, add spatial hashing transparently. |
 | `get_nearest_to_entity(group_name: StringName, entity: CDEntity) -> CDEntity` | Closest excluding self | Filters out querying entity |
 
 **Signal Emissions:**
@@ -337,10 +378,21 @@ func bus_disconnect(signal_name: StringName, callable: Callable):
         _bus[signal_name].erase(callable)
 
 func bus_emit(signal_name: StringName, args: Array = []):
-    if _bus.has(signal_name):
-        for callable in _bus[signal_name]:
-            callable.callv(args)
+    if not _bus.has(signal_name):
+        return
+    var callables = _bus[signal_name]
+    if args.is_empty():
+        for c in callables:
+            c.call()
+    elif args.size() == 1:
+        for c in callables:
+            c.call(args[0])
+    else:
+        for c in callables:
+            c.callv(args)
 ```
+
+**`callv()` fast paths:** The 0-arg and 1-arg paths use `call()` directly, avoiding Array boxing overhead. These cover the majority of game bus emissions. `callv()` is only used for 2+ args.
 
 No registration needed. `bus_emit` with no connections = no-op. Configurable signal names work trivially. See V2 Signal Architecture section for cross-bus communication patterns.
 
@@ -349,7 +401,7 @@ No registration needed. `bus_emit` with no connections = no-op. Configurable sig
 |--------|-------------|
 | `start_game()` | ATTRACT → PLAYING, emits `"game_play"` on game bus |
 | `end_game(result: GameResult)` | PLAYING → GAME_OVER, emits `"game_over"` with `[result]` on game bus |
-| `reset_game()` | → ATTRACT, emits `"game_reset"` on game bus, reloads state |
+| `reset_game()` | Reloads the current scene via `get_tree().reload_current_scene()`. All entities, components, pools, and CueCards are recreated from scene definitions. No per-component reset logic needed. Persistent state (high scores, attract mode) must live above CDGame (on CDOrchestrator or equivalent). Partial resets (e.g., Breakout resetting bricks but keeping score) are handled by spawners listening to relevant game bus signals. |
 
 **Key Exports:**
 | Export | Type | Default | Description |
@@ -378,12 +430,13 @@ No registration needed. `bus_emit` with no connections = no-op. Configurable sig
 1. **CDEnums** — Pure data, no dependencies
 2. **CDCollisionGroup** — Resource, no dependencies
 3. **CDComponent2D** — Depends on CDEnums
-4. **CDEntity** — Depends on CDComponent2D, CDEnums
-5. **CDCollisionBuffer** — Depends on CDEntity
-6. **CDGroupRegistry** — Depends on CDEntity. Successor to V1 GroupCache.
-7. **CDCollisionMatrix** — Depends on CDCollisionGroup, CDEntity
-8. **CDGame** — Depends on all above
-9. **CDInputRouter** — Standalone autoload, can parallel with 4–8
+4. **CDStageComponent2D** — Depends on CDEnums, CDGame (can parallel with CDEntity)
+5. **CDEntity** — Depends on CDComponent2D, CDEnums
+6. **CDCollisionBuffer** — Depends on CDEntity
+7. **CDGroupRegistry** — Depends on CDEntity. Successor to V1 GroupCache.
+8. **CDCollisionMatrix** — Depends on CDCollisionGroup, CDEntity
+9. **CDGame** — Depends on all above
+10. **CDInputRouter** — Standalone autoload, can parallel with 4–9
 
 ---
 
@@ -395,12 +448,14 @@ After all systems are built, create a test scene that proves:
 2. **Collision Matrix:** `"player"` and `"enemies"` groups defined. Matrix configures layers. Entities collide correctly.
 3. **Velocity Accumulator:** Debug Leg adds velocity via `request_velocity_add()`. Entity moves and stops.
 4. **Position Set:** Debug grid Leg calls `request_position_add()`. Entity teleports by step. Happens at Priority 30, visible to Priority 35 collision flush.
-5. **Collision Buffer:** Two entities collide. Signals fire at Priority 35, after both have moved.
+5. **Collision Buffer:** Two entities collide. Only colliding entities register with buffer. Signals fire at Priority 35, after both have moved.
 6. **Entity Bus:** Debug Arm listens for `"collision"`. Receives it via native signal.
-7. **Deactivation:** Arm calls `deactivate()` on target. Collision shapes disable. Entity freed at frame end.
-8. **Pooled Deactivation/Activation:** CDObjectPool acquires entity, configures position, calls `activate()`. Arm calls `deactivate()` — entity returns to pool instead of being freed. Pool re-acquires same entity — `activate()` fires, `"entity_activated"` received by components. (Full pool proof test in Plan 19.5.)
-9. **Input Router:** Key press → `input_move` emitted with correct direction and player_id.
-10. **Collision Shape API:** Entity with default collision_radius of 8. Call `set_collision_polygon(polygon_points)` → default circle replaced with CollisionPolygon2D. Call `set_collision_rect(20, 10)` → replaced with RectangleShape2D. Collision matrix still works after shape swap.
+7. **Deactivation (health pipeline):** Arm emits `"take_damage"` on target. HealthPoolGuts receives, decrements. On zero, DieAtZeroHealthGuts calls `entity.deactivate()`. Collision shapes disable. Entity freed at frame end.
+8. **Deactivation (direct kill):** DeathOnHitArm emits `"request_deactivate"` on target's bus. CDEntity self-listens, calls `deactivate()`. Entity dies bypassing health pipeline.
+9. **Pooled Deactivation/Activation:** CDObjectPool acquires entity, configures position, calls `activate()`. Arm calls `deactivate()` — entity returns to pool instead of being freed. Pool re-acquires same entity — `activate()` fires, `"entity_activated"` received by components. (Full pool proof test in Plan 19.5.)
+10. **Input Router:** Key press → `input_move` emitted with correct direction and player_id.
+11. **Collision Shape API:** Entity with default collision_radius of 8. Call `set_collision_polygon(polygon_points)` → default circle replaced with CollisionPolygon2D. Call `set_collision_rect(20, 10)` → replaced with RectangleShape2D. Collision matrix still works after shape swap.
+12. **Cross-Entity Signal Safety:** Bullet entity with DeathOnCrashArm hits a wall entity (no HealthGuts). `"request_deactivate"` emitted on bullet's own bus → bullet dies. No errors from missing signals on wall.
 
 ---
 
@@ -418,7 +473,8 @@ Godot/
 │   │   ├── cdenums.gd               # CDEnums — shared enumerations
 │   │   ├── cdentity.gd              # CDEntity — base entity
 │   │   ├── cdgame.gd                # CDGame — game root
-│   │   ├── cdcomponent2d.gd         # CDComponent2D — base component
+│   │   ├── cdcomponent2d.gd         # CDComponent2D — base entity component
+│   │   ├── cdstagecomponent2d.gd    # CDStageComponent2D — base game-stage component
 │   │   ├── cdcollisionbuffer.gd     # CDCollisionBuffer — deferred collision flush
 │   │   ├── cdgroupregistry.gd       # CDGroupRegistry — cached group queries
 │   │   ├── cdcollisionmatrix.gd     # CDCollisionMatrix — auto layer config
@@ -429,6 +485,7 @@ Godot/
 │   ├── Arms/
 │   ├── Guts/
 │   ├── Faces/
+│   ├── Voices/
 │   └── Stage/
 ├── Scenes/                           # V2 scenes
 ├── Resources/                        # V2 resources
@@ -444,3 +501,5 @@ Godot/
 2. **Velocity set vs add:** `request_velocity_set` is last-write-wins. Discouraged in favor of `add`. Documented in component specs as "use only when a specific behavior requires hard override."
 
 3. **Position set during physics:** `request_position_set` / `request_position_add` are applied after `move_and_collide` in the Priority 30 step. This ensures grid entities teleport to their final position before the Priority 35 collision flush sees them. Grid collision checking (can I move to this cell?) is the responsibility of the grid Leg, which calls `test_move()` or physics query before submitting the position request.
+
+4. **get_nearest() scaling:** `get_nearest()` is O(N) per call where N = cached group size. For arcade games with <100 entities per group, this is negligible even with dozens of AI brains polling per frame. If a future game needs better scaling, add spatial hashing to CDGroupRegistry transparently (API doesn't change).

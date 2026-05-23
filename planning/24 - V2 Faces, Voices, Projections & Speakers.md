@@ -12,7 +12,10 @@ Audio and visual components for V2. Replaces V1's `sound_synth.gd`, `SoundBank` 
 | Faces | CDEntity child | Entity bus | SpriteFace, VectorFace, EngineFace, ThrusterFace |
 | Voices | CDEntity child | Entity bus | SoundVoice, ContinuousVoice |
 
-All components extend `CDComponent2D` and set `component_category` appropriately. Faces and Voices use `ComponentCategory.FACE` (Priority 60). Speakers and Projections use `ComponentCategory.STAGE` (Priority 70). CDSoundBank uses `ComponentCategory.STAGE`.
+**Base class split follows the V2 convention:**
+- **Faces and Voices** extend `CDComponent2D` (entity children). Faces use `ComponentCategory.FACE` (Priority 60). Voices use `ComponentCategory.VOICE` (Priority 65).
+- **Speakers and Projections** extend `CDStageComponent2D` (CDGame children) except where a different base is required (CreditProjection extends Control, CRTProjection extends Node2D for shader pipeline). These use `ComponentCategory.STAGE` (Priority 70).
+- **CDSoundBank** extends `CDStageComponent2D` — it's a CDGame child with no entity reference.
 
 ---
 
@@ -49,14 +52,30 @@ In arcade mode, CDGame lives inside a SubViewport. `AudioStreamPlayer` / `AudioS
 
 `AudioListener2D` defines *where* positional audio is heard from (panning/attenuation). It does NOT route audio out of a SubViewport. Enabling `audio_listener_enable` on a SubViewport just makes positional audio work within that viewport's coordinate space.
 
-### Solution: CDComponent2D with Root Audio Nodes
+### Solution: CDAudioBus + CDSoundBank
 
-CDSoundBank is a CDComponent2D child of CDGame (for tree discoverability and lifecycle binding), but its internal `AudioStreamPlayer` nodes are parented to `get_tree().root`. This gives:
+Audio routing uses a dedicated **CDAudioBus** (AudioBus layout) rather than parenting individual players to `get_tree().root`. CDSoundBank is a CDStageComponent2D child of CDGame (for tree discoverability and lifecycle binding), and all its audio output routes through the CDAudioBus which is always in the main audio output.
+
+**CDAudioBus (AudioBus Layout):**
+- Created in Godot's Audio Bus editor (not via code)
+- Named `"CD_Audio"` — all V2 audio routes through this bus
+- Allows game-level volume control, effects, and muting without touching individual players
+- Each CDGame instance could theoretically have its own bus for multi-game arcade mode (future consideration)
+- The bus persists across scene reloads since it's part of the project's audio bus layout
+
+**CDSoundBank node placement:**
+- Logic lives as a CDStageComponent2D child of CDGame (tree discoverability, lifecycle binding)
+- AudioStreamPlayer nodes are created as children of CDSoundBank itself
+- AudioStreamPlayer nodes output to the `"CD_Audio"` bus, which always reaches the main output
+- When CDGame is freed, CDSoundBank is freed with it, cleaning up all players
+
+This gives:
 
 1. **Tree discoverability:** `get_game().get_node("CDSoundBank")`
 2. **CDGame lifecycle binding:** auto-cleanup when game freed
-3. **Correct audio routing:** always audible, even in arcade mode
+3. **Correct audio routing:** always audible, even in arcade mode, via the CDAudioBus
 4. **No singleton:** follows V2 architecture
+5. **No root-level node parenting:** cleaner than V1's approach of parenting to `get_tree().root`
 
 ---
 
@@ -90,10 +109,12 @@ CDSoundBank is a CDComponent2D child of CDGame (for tree discoverability and lif
 **Rationale:** V1 assumes single beeps for everything. Jingle support unlocks game-start stings, victory fanfares, defeat sounds, combo chimes, etc. — all without creating separate components per jingle. Not applicable to Continuous* components (continuous sounds don't have discrete note sequences).
 
 ### 2. CDSoundBank
-**Type:** CDComponent2D child of CDGame (`ComponentCategory.STAGE`)
+**Type:** CDStageComponent2D child of CDGame (`ComponentCategory.STAGE`)
 **Purpose:** Centralized audio generation, polyphony management, voice deduplication, buffer fill, and jingle sequencing.
 
 **Hybrid audio routing:** Logic lives on game tree. AudioStreamPlayer nodes live at `get_tree().root`.
+
+**Polyphony limit:** Godot supports a finite number of concurrent `AudioStreamPlayback` instances (typically 16–32 depending on platform). CDSoundBank must enforce a hard cap on simultaneous one-shots. When the cap is reached, new requests either skip silently or steal the oldest playing one-shot (configurable). Document this limit clearly — arcade games with many simultaneous sound effects (Asteroids, Robotron) will hit it.
 
 | Method | Description |
 |--------|-------------|
@@ -128,7 +149,7 @@ CDSoundBank is a CDComponent2D child of CDGame (for tree discoverability and lif
 
 **Cross-references:** Consumed by VectorFace (this plan) and ShapeColliderGuts (Plan 22). CDEntity's Collision Shape API (Plan 19) is the interface ShapeColliderGuts uses to apply shapes to collision nodes.
 
-**Signal contract:** When a CDShape is generated at runtime, it should be emitted on the entity bus as `"shape_changed(shape: CDShape)"`. Both VectorFace and ShapeColliderGuts listen for this signal.
+**Runtime signal contract:** When shape points are generated at runtime (e.g., by AsteroidGuts), emit `"shape_changed(points: PackedVector2Array)"` on the entity bus. Both VectorFace (this plan) and ShapeColliderGuts (Plan 22) listen for this same signal and consume the `PackedVector2Array` directly. CDShape is a convenience for static shapes authored in the editor — it is NOT passed through the signal at runtime. This keeps ShapeColliderGuts free of CDShape dependencies and uses a native Godot type as the shared contract.
 
 ### 4. CDFaceBinding
 **Type:** Custom Resource (extends Resource)
@@ -173,7 +194,7 @@ CDSoundBank is a CDComponent2D child of CDGame (for tree discoverability and lif
 
 **Consumes:**
 - Entity bus: whatever signal names are specified in `bindings` (static frame swaps)
-- Entity bus: `"shape_changed(shape: CDShape)"` (dynamic runtime shape)
+- Entity bus: `"shape_changed(points: PackedVector2Array)"` (dynamic runtime points)
 
 **Three Consumption Modes:**
 
@@ -186,7 +207,7 @@ CDSoundBank is a CDComponent2D child of CDGame (for tree discoverability and lif
 **Process:**
 1. In `_on_initialize()`: iterate `bindings`, connect each `signal_name` on the entity bus. Also connect to `"shape_changed"`.
 2. On binding signal: swap to `shapes[binding.frame_index]`. If `binding.restore_after > 0`, start a timer to revert to `default_frame`. `queue_redraw()`.
-3. On `"shape_changed(shape: CDShape)"`: store the received shape as current drawing target. `queue_redraw()`.
+3. On `"shape_changed(points: PackedVector2Array)"`: store the received points as current drawing target (use `true` for closed by default in dynamic mode). `queue_redraw()`.
 4. On spawn: display `shapes[default_frame]`.
 5. `_draw()`: calls `draw_polyline(current_points, color, width)` on the active shape's points. If `shape.closed`, closes the polyline.
 
@@ -200,11 +221,11 @@ CDSoundBank is a CDComponent2D child of CDGame (for tree discoverability and lif
 
 **The Asteroid Flow (end-to-end):**
 ```
-AsteroidGuts generates CDShape → emits "shape_changed" on entity bus
-  → VectorFace hears it → draws the shape
-  → ShapeColliderGuts (Plan 22) hears it → applies to collision via CDEntity API
+AsteroidGuts generates random PackedVector2Array → emits "shape_changed(points)" on entity bus
+  → VectorFace hears it → draws the points as a closed polyline
+  → ShapeColliderGuts (Plan 22) hears it → applies points to collision via CDEntity API
 ```
-One CDShape, shared by reference, consumed by two independent components.
+One `PackedVector2Array`, emitted once, consumed by two independent components via the same signal.
 
 ### 7. VectorEngineFace
 **Type:** CDComponent2D (`ComponentCategory.FACE`)
@@ -255,7 +276,7 @@ One CDShape, shared by reference, consumed by two independent components.
 **V1 reference:** `Godot/Scripts/Components/vector_thruster_exhaust.gd` — identical behavior, audio routed through CDSoundBank instead of local AudioStreamPlayer.
 
 ### 9. SoundVoice
-**Type:** CDComponent2D (`ComponentCategory.FACE`)
+**Type:** CDComponent2D (`ComponentCategory.VOICE`, Priority 65)
 **Purpose:** One-shot or multi-note jingle triggered by entity bus signal. Sends play request to CDSoundBank.
 
 | Export | Type | Default | Description |
@@ -278,7 +299,7 @@ One CDShape, shared by reference, consumed by two independent components.
 Ultra-thin. All generation, polyphony, and sequencing handled by CDSoundBank.
 
 ### 10. ContinuousVoice
-**Type:** CDComponent2D (`ComponentCategory.FACE`)
+**Type:** CDComponent2D (`ComponentCategory.VOICE`, Priority 65)
 **Purpose:** Ongoing sound (engine hum, beam drone). Registers with CDSoundBank, deregisters on stop or exit.
 
 | Export | Type | Default | Description |
@@ -304,7 +325,7 @@ Ultra-thin. All generation, polyphony, and sequencing handled by CDSoundBank.
 **Use case example:** Engine noise that starts when thrusting and stops when releasing — entity emits `"start"` on thrust begin, `"stop"` on thrust end.
 
 ### 11. MusicSpeaker
-**Type:** CDComponent2D (`ComponentCategory.STAGE`)
+**Type:** CDStageComponent2D (`ComponentCategory.STAGE`)
 **Purpose:** Playlist + dual-player crossfade + loop-point logic. Game-level audio controller.
 
 | Export | Type | Default | Description |
@@ -332,7 +353,7 @@ Ultra-thin. All generation, polyphony, and sequencing handled by CDSoundBank.
 6. Shuffle queue, refill when empty.
 
 ### 12. SoundSpeaker
-**Type:** CDComponent2D (`ComponentCategory.STAGE`)
+**Type:** CDStageComponent2D (`ComponentCategory.STAGE`)
 **Purpose:** Game-level one-shot or jingle triggered by game bus signal.
 
 | Export | Type | Default | Description |
@@ -346,7 +367,7 @@ Ultra-thin. All generation, polyphony, and sequencing handled by CDSoundBank.
 **Process:** On trigger signal, calls `CDSoundBank.play_one_shot(...)`. Same thin-wrapper pattern as SoundVoice but on the game bus.
 
 ### 13. ContinuousSpeaker
-**Type:** CDComponent2D (`ComponentCategory.STAGE`)
+**Type:** CDStageComponent2D (`ComponentCategory.STAGE`)
 **Purpose:** Game-level continuous sound (ambient hum, alarm tone).
 
 | Export | Type | Default | Description |
@@ -399,7 +420,7 @@ Extends `Control` because it's a UI element — it lives naturally in the UI tre
 **V1 reference:** `music_player.gd` lines 192–268 (`_show_credit` / `_hide_credit`). Same Label construction and tween animation, extracted into its own component.
 
 ### 16. MenaceProjection
-**Type:** CDComponent2D (`ComponentCategory.STAGE`)
+**Type:** CDStageComponent2D (`ComponentCategory.STAGE`)
 **Purpose:** Generalized CRT menace effects. Extracted from V1's PolybiusFace and GodotLogo. All "random chance" events can be configured to listen for game bus signals, and functions are generalized to apply to any visual target.
 
 **Effects:**

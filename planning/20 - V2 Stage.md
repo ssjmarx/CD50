@@ -29,6 +29,22 @@ This applies to ALL non-infrastructure components going forward, not just Stage.
 
 ---
 
+## Stage Component Base Classes
+
+Stage components span three base classes, each for a different purpose:
+
+| Sub-type | Base Class | Why | Priority |
+|----------|-----------|-----|----------|
+| **Marks** | `Area2D` | Physics trigger zones — need body detection | N/A (signal-driven) |
+| **Goals** | `CDStageComponent2D` | Game bus listeners — CDGame children, no entity ref | 70 |
+| **CueCards** | `Control` | UI display — positioned/anchored like any Control | 70 |
+
+**Deterministic processing order:** Marks (Area2D, signal-driven) → Goals (CDStageComponent2D, Priority 70) → CueCards (Control, Priority 70). Within the same priority, Godot processes children in tree order — place Goals above CueCards in the scene tree.
+
+**Why three base classes?** Each has a legitimate need for its base. Area2D for physics detection, Control for UI layout, CDStageComponent2D for signal-processing components. They share the `ComponentCategory.STAGE` category for conceptual grouping, but the base class difference is a known inconsistency in the architecture — document it and move on.
+
+---
+
 ## Changes to Plan 19 (Core Infrastructure)
 
 All of the following changes are **already reflected in Plan 19**. Listed here for reference:
@@ -48,10 +64,13 @@ Already included in Plan 19's CDEnums spec:
 
 ### CDGame — `end_game(result: GameResult)` and `reset_game()`
 - `end_game()` now takes `GameResult` instead of `bool`. Emits `"game_over"` with `[result]` on the game bus.
-- `reset_game()` emits `"game_reset"` on the game bus. All Cue Cards listen and reset internal state. Fully signal-driven — no method calls from CDGame to Cue Cards.
+- `reset_game()` reloads the current scene via `get_tree().reload_current_scene()`. All entities, components, pools, CueCards, and Marks are recreated from scene definitions. No per-component reset logic needed. Persistent state (high scores, attract mode) must live above CDGame (on CDOrchestrator or equivalent). Partial resets (e.g., Breakout resetting bricks but keeping score) are handled by spawners listening to relevant game bus signals.
 
 ### CDComponent2D — Two-Phase Lifecycle
 Components register signals in `_ready()` (Phase 1) and connect to signals in `_on_initialize()` (Phase 2, deferred). All Stage components follow this pattern.
+
+### CDStageComponent2D — New Base Class
+Goals now extend CDStageComponent2D (not CDComponent2D). CDStageComponent2D provides game reference and priority assignment without entity-dependent code that would NPE for CDGame children. See Plan 19 for full spec.
 
 ---
 
@@ -59,7 +78,7 @@ Components register signals in `_ready()` (Phase 1) and connect to signals in `_
 
 ### 0. CDCueCard (Base Class)
 **Type:** Extends Control
-**Purpose:** Shared base for all Cue Cards. Handles game bus access, label creation, reset signal connection, and priority setup.
+**Purpose:** Shared base for all Cue Cards. Handles game bus access, label creation, and priority setup.
 
 ```gdscript
 class_name CDCueCard extends Control
@@ -72,7 +91,6 @@ var _label: Label
 
 func _ready():
     process_physics_priority = 70  # STAGE
-    game.bus_connect(&"game_reset", _on_reset)
     if is_interface:
         _create_label()
 
@@ -83,12 +101,9 @@ func _create_label():
 func _update_label(text: String):
     if _label:
         _label.text = text
-
-func _on_reset():
-    push_warning("CDCueCard._on_reset() not overridden by %s" % name)
 ```
 
-Each Cue Card overrides `_on_reset()` and calls `_update_label()` when state changes.
+Each Cue Card updates its label when state changes. No reset method needed — `CDGame.reset_game()` reloads the entire scene, recreating all CueCards from scratch.
 
 ### 1. ScoreCard
 **Type:** Extends CDCueCard
@@ -96,7 +111,7 @@ Each Cue Card overrides `_on_reset()` and calls `_update_label()` when state cha
 
 | Export | Type | Default | Description |
 |--------|------|---------|-------------|
-| `starting_score` | `int` | `0` | Score at game start / reset |
+| `starting_score` | `int` | `0` | Score at game start |
 | `multiplier_card_path` | `NodePath` | `""` | Optional path to a MultiplierCard. Empty = raw score only. |
 | `on_score_changed` | `Array[StringName]` | `[&"score_changed"]` | Signals emitted when score updates |
 
@@ -106,7 +121,6 @@ Each Cue Card overrides `_on_reset()` and calls `_update_label()` when state cha
 **Behavior:**
 - On `"score_gained"`: if `multiplier_card_path` is set, reads `multiplier_card.current_multiplier` and applies it. Otherwise adds raw amount.
 - Emits configured `on_score_changed` signals with `(new_score: int)`.
-- On `"game_reset"`: resets to `starting_score`.
 
 ### 2. MultiplierCard
 **Type:** Extends CDCueCard
@@ -114,7 +128,7 @@ Each Cue Card overrides `_on_reset()` and calls `_update_label()` when state cha
 
 | Export | Type | Default | Description |
 |--------|------|---------|-------------|
-| `starting_multiplier` | `float` | `1.0` | Multiplier at game start / reset |
+| `starting_multiplier` | `float` | `1.0` | Multiplier at game start |
 | `on_multiplier_changed` | `Array[StringName]` | `[&"multiplier_changed"]` | Signals emitted when multiplier updates |
 
 **Signal connections (Game Bus):**
@@ -122,7 +136,6 @@ Each Cue Card overrides `_on_reset()` and calls `_update_label()` when state cha
 
 **Behavior:**
 - On `"multiplier_set"`: updates `current_multiplier`, emits configured signals with `(new_mult: float)`.
-- On `"game_reset"`: resets to `starting_multiplier`.
 - Other components (e.g., controllers) can listen to `group_registry.group_count_changed` and emit `"multiplier_set"` to create dynamic multipliers — no direct dependency needed.
 
 ### 3. LivesCard
@@ -131,7 +144,7 @@ Each Cue Card overrides `_on_reset()` and calls `_update_label()` when state cha
 
 | Export | Type | Default | Description |
 |--------|------|---------|-------------|
-| `starting_lives` | `int` | `3` | Lives at game start / reset |
+| `starting_lives` | `int` | `3` | Lives at game start |
 | `on_lives_changed` | `Array[StringName]` | `[&"lives_changed"]` | Signals emitted when count changes |
 | `on_lives_depleted` | `Array[StringName]` | `[&"lives_depleted"]` | Signals emitted when count reaches 0 |
 
@@ -142,7 +155,6 @@ Each Cue Card overrides `_on_reset()` and calls `_update_label()` when state cha
 - On `"life_lost"`: decrements. If 0, emits `on_lives_depleted`.
 - On `"life_gained"`: increments.
 - Always emits `on_lives_changed` with `(new_count: int)`.
-- On `"game_reset"`: resets to `starting_lives`.
 
 ### 4. TimerCard
 **Type:** Extends CDCueCard
@@ -151,7 +163,7 @@ Each Cue Card overrides `_on_reset()` and calls `_update_label()` when state cha
 | Export | Type | Default | Description |
 |--------|------|---------|-------------|
 | `mode` | `Enum { COUNT_UP, COUNT_DOWN }` | `COUNT_DOWN` | Direction |
-| `starting_time` | `float` | `60.0` | Time at game start / reset |
+| `starting_time` | `float` | `60.0` | Time at game start |
 | `tick_interval` | `float` | `1.0` | Seconds between `"timer_tick"` emissions |
 | `on_timer_tick` | `Array[StringName]` | `[&"timer_tick"]` | Signals emitted at each interval |
 | `on_timer_expired` | `Array[StringName]` | `[&"timer_expired"]` | Signals emitted when COUNT_DOWN reaches 0 |
@@ -163,7 +175,6 @@ Each Cue Card overrides `_on_reset()` and calls `_update_label()` when state cha
 - Counts time in `_physics_process`. Emits `on_timer_tick` at `tick_interval` with `(current_time: float)`.
 - If COUNT_DOWN reaches 0: emits `on_timer_expired`.
 - Pause/resume toggles `_processing`.
-- On `"game_reset"`: resets to `starting_time`.
 
 ### 5. WaveCard
 **Type:** Extends CDCueCard
@@ -171,20 +182,19 @@ Each Cue Card overrides `_on_reset()` and calls `_update_label()` when state cha
 
 | Export | Type | Default | Description |
 |--------|------|---------|-------------|
-| `starting_wave` | `int` | `1` | Wave at game start / reset |
+| `starting_wave` | `int` | `1` | Wave at game start |
 | `advance_signal` | `StringName` | `&"wave_cleared"` | Game bus signal that advances the wave |
 | `start_signal` | `StringName` | `&"game_play"` | Game bus signal that starts the first wave |
 | `on_wave_start` | `Array[StringName]` | `[&"wave_start"]` | Emitted when a new wave begins (advances counter first). Args: `(wave_number: int)` |
 | `on_wave_changed` | `Array[StringName]` | `[&"wave_changed"]` | Emitted whenever wave number changes. Args: `(new_wave: int)` |
 
 **Signal connections (Game Bus):**
-- Listens: `start_signal` (default `"game_play"`), `advance_signal` (default `"wave_cleared"`), `"wave_reset"`, `"game_reset"`
+- Listens: `start_signal` (default `"game_play"`), `advance_signal` (default `"wave_cleared"`), `"wave_reset"`
 
 **Behavior:**
 - On `start_signal` (e.g., `"game_play"`): increments `current_wave`, emits `on_wave_start` with `(current_wave)`, emits `on_wave_changed` with `(current_wave)`.
 - On `advance_signal` (e.g., `"wave_cleared"` from GroupCountGoal): increments `current_wave`, emits `on_wave_start` with `(current_wave)`, emits `on_wave_changed` with `(current_wave)`.
 - On `"wave_reset"`: resets to `starting_wave`.
-- On `"game_reset"`: resets to `starting_wave`.
 
 **Relay pattern (Plan 23 integration):**
 ```
@@ -198,10 +208,10 @@ GroupCountGoal emits "wave_cleared" → WaveCard hears it → emits "wave_start(
 
 ### Goals (4)
 
-Goals extend CDComponent2D (not CDCueCard — they're not data holders and they don't display). All have `component_category = STAGE` (Priority 70). All have configurable signal emissions. Goals contain **no persistent state** — pure condition checks that emit signals when met.
+Goals extend **CDStageComponent2D** (not CDComponent2D — they are children of CDGame, not CDEntity, and would NPE on `entity` references). All have `component_category = STAGE` (Priority 70). All have configurable signal emissions. Goals contain **no persistent state** — pure condition checks that emit signals when met.
 
 ### 6. GroupCountGoal
-**Type:** Extends CDComponent2D
+**Type:** Extends CDStageComponent2D
 **Purpose:** Triggers when group count matches a condition. Generalized from the old "GroupClearedGoal" — that's just `comparison = EQUAL_TO, target_count = 0`.
 
 | Export | Type | Default | Description |
@@ -223,7 +233,7 @@ Goals extend CDComponent2D (not CDCueCard — they're not data holders and they 
 - Example uses: victory when enemies = 0, spawn reinforcements when enemies < 3, escalate when asteroids > 20.
 
 ### 7. ScoreThresholdGoal
-**Type:** Extends CDComponent2D
+**Type:** Extends CDStageComponent2D
 **Purpose:** Triggers when score crosses a threshold.
 
 | Export | Type | Default | Description |
@@ -239,7 +249,7 @@ Goals extend CDComponent2D (not CDCueCard — they're not data holders and they 
 - On score change: compare against threshold using `comparison`. On match, emit `on_condition_met`.
 
 ### 8. LivesDepletedGoal
-**Type:** Extends CDComponent2D
+**Type:** Extends CDStageComponent2D
 **Purpose:** Triggers when lives reach 0. Pure relay.
 
 | Export | Type | Default | Description |
@@ -253,7 +263,7 @@ Goals extend CDComponent2D (not CDCueCard — they're not data holders and they 
 - Direct relay. Hears `"lives_depleted"`, emits `on_condition_met`.
 
 ### 9. TimerExpiredGoal
-**Type:** Extends CDComponent2D
+**Type:** Extends CDStageComponent2D
 **Purpose:** Triggers when timer expires.
 
 | Export | Type | Default | Description |
@@ -337,7 +347,7 @@ func _passes_filter(body) -> bool:
 - Bug Blaster bottom line: `on_entered = [&"invaders_reached_bottom"]`, mask = invaders layer
 - Brick Breaker floor: `on_entered = [&"ball_lost"]`, mask = balls layer
 
-**Note:** CDMark extends Area2D (not CDComponent2D) and does not participate in the two-phase lifecycle. It connects to the game bus directly in `_ready()` — no ordering issues since it only emits, never listens to other components' signals.
+**Note:** CDMark extends Area2D (not CDComponent2D or CDStageComponent2D) and does not participate in the two-phase lifecycle. It connects to the game bus directly in `_ready()` — no ordering issues since it only emits, never listens to other components' signals.
 
 ### 11. MobileMark
 **Type:** Extends CDMark
@@ -364,7 +374,7 @@ func _passes_filter(body) -> bool:
 
 ### 12. CountMark
 **Type:** Extends CDMark
-**Purpose:** Emits after N distinct bodies have entered. Tracks unique bodies — a body entering, exiting, and re-entering only counts once. Resets on `"game_reset"`.
+**Purpose:** Emits after N distinct bodies have entered. Tracks unique bodies — a body entering, exiting, and re-entering only counts once. Resets on scene reload (no explicit reset needed).
 
 | Export | Type | Default | Description |
 |--------|------|---------|-------------|
@@ -376,7 +386,6 @@ func _passes_filter(body) -> bool:
 - Maintains internal `Array[CDEntity]` of unique bodies that have entered
 - On `body_entered`: if body not already tracked, add to array. Emit `on_count_changed`. If count reaches `target_count`, emit `on_count_reached`.
 - On `body_exited`: no effect on count (bodies remain tracked). Override this in subclass if exit-removal is desired.
-- On `"game_reset"`: clear tracked bodies array.
 - Inherits `filter_groups` and shape configuration from CDMark.
 
 **Example uses:**
@@ -402,7 +411,6 @@ func _passes_filter(body) -> bool:
 - `_physics_process`: increments elapsed time for each tracked body. At each `tick_interval`, emits `on_progress` with `(body, elapsed / hold_duration)`. When `elapsed >= hold_duration`, emits `on_complete` and stops tracking that body.
 - On `body_entered`: add to tracking dict. If first body, emit `on_occupy`.
 - On `body_exited`: remove from tracking dict. If dict now empty, emit `on_vacate`.
-- On `"game_reset"`: clear all tracking.
 - Inherits `filter_groups` and shape configuration from CDMark.
 
 **Example uses:**
@@ -414,7 +422,7 @@ func _passes_filter(body) -> bool:
 
 ## Implementation Order
 
-All Plan 19 changes (CDEnums, CDGroupRegistry, CDGame, CDComponent2D two-phase lifecycle) are already implemented in Plan 19. This list covers only the new Stage components:
+All Plan 19 changes (CDEnums, CDGroupRegistry, CDGame, CDComponent2D two-phase lifecycle, CDStageComponent2D) are already implemented in Plan 19. This list covers only the new Stage components:
 
 1. **CDCueCard** — Base class
 2. **ScoreCard** — Simplest Cue Card with optional multiplier
@@ -464,6 +472,9 @@ Flow: ball passes left goal → CDMark_LeftGoal emits `"p2_scored"` → ScoreCar
 ### Test 3: TimerCard Countdown
 Secondary test: TimerCard counting down with TimerExpiredGoal triggering defeat.
 
+### Test 4: Scene Reset
+CDGame.reset_game() → scene reloads → all CueCards, Goals, Marks, and entities recreated from scratch → fresh game state. Verify no stale state persists.
+
 ---
 
 ## File Structure
@@ -473,7 +484,8 @@ Godot/Scripts/
 ├── Core/
 │   ├── cdenums.gd               # Updated: GameResult, CountComparison
 │   ├── cdgroupregistry.gd       # Updated: _process dirty flush, signal emission
-│   └── cdgame.gd                # Updated: "game_reset" signal
+│   ├── cdgame.gd                # Updated: reset_game() uses scene reload
+│   └── cdstagecomponent2d.gd    # New: base class for CDGame children
 ├── Stage/
 │   ├── cdcard.gd                # CDCueCard — base class for Cue Cards
 │   ├── cdmark.gd                # CDMark — base class for Marks (Area2D trigger zones)
@@ -497,12 +509,12 @@ Godot/Scripts/
 
 | Component | Deferred To | Reason |
 |-----------|-------------|--------|
-| GroupPropertyController | Update 3 (Spawners + Brains) | Modifies entity properties, needs entity component context |
-| SwarmMovementController | Update 3 (Spawners + Brains) | Drives entity group movement, closely tied to spawning |
-| SwarmShootingController | Update 3 (Spawners + Brains) | Selects entities to fire, needs formation/spawner context |
-| MusicPlayer | Update 6 (Faces + Voices + Speakers) | Audio pipeline |
-| MusicRampingController | Update 6 (Faces + Voices + Speakers) | Audio pipeline |
-| CRTController | Update 6 (Faces + Voices + Speakers) | Visual pipeline |
+| GroupPropertyController | Plan 25 (Controllers) | Modifies entity properties, needs entity component context |
+| SwarmMovementController | Plan 25 (Controllers) | Drives entity group movement, closely tied to spawning |
+| SwarmShootingController | Plan 25 (Controllers) | Selects entities to fire, needs formation/spawner context |
+| MusicPlayer | Plan 24 (Faces + Voices + Speakers) | Audio pipeline |
+| MusicRampingController | Plan 24 (Faces + Voices + Speakers) | Audio pipeline |
+| CRTController | Plan 24 (Faces + Voices + Speakers) | Visual pipeline |
 
 ---
 
@@ -513,3 +525,5 @@ Godot/Scripts/
 2. **CDCueCard label styling:** Default labels will be bare. Per-game font/color customization can be done via Theme overrides on the Cue Card Control, or by replacing `_label` with a custom scene. This is a polish concern, not an architecture concern.
 
 3. **Multiple ScoreCards:** The plan supports multiple ScoreCards (e.g., P1 score + P2 score in Pong). Each ScoreCard would listen to different signal names (`"p1_score_gained"` vs `"p2_score_gained"`), configured via array exports. The game bus naturally supports this since signal names are strings.
+
+4. **Scene reload cost:** `reset_game()` reloads the entire scene, including pool warm-up. For games with heavy pools, this causes a brief hitch. Acceptable for arcade games (infrequent resets). If it becomes a problem, consider having the CDOrchestrator manage persistent pools across game reloads.

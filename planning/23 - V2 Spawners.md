@@ -107,7 +107,7 @@ All stage spawners share this lifecycle:
 
 | Aspect | Detail |
 |--------|--------|
-| **Extends** | `CDComponent2D`, Category: `STAGE`, Priority 70 |
+| **Extends** | `CDStageComponent2D`, Category: `STAGE`, Priority 70 |
 | **Consumes** | Game bus: configurable `trigger_signal`. CDSafeZone: `"zone_safe"`, `"zone_unsafe"` |
 | **Generates** | Game bus: `"spawning_complete"` (configurable, with `wave_number: int`) |
 | **Exports** | `trigger_signal: StringName = &"wave_start"` <br> `stagger_delay: float = 0.1` <br> `pool: CDObjectPool = null` <br> `spawn_context: CDSpawnContext = null` <br> `telefrag: bool = false` <br> `telefrag_targets: Array[StringName] = [&"enemies"]` <br> `safe_zone: CDSafeZone = null` <br> `on_spawning_complete: Array[StringName] = [&"spawning_complete"]` |
@@ -269,8 +269,8 @@ These extend CDComponent2D directly (ARM category, Priority 40). They respond to
 | **Extends** | `CDComponent2D`, Category: `ARM`, Priority 40 |
 | **Consumes** | Entity bus: `"zero_health"` or `"request_deactivate"` (configurable via `death_signal`) |
 | **Generates** | New entity added to game tree |
-| **Exports** | `spawn_scene: PackedScene` <br> `pool: CDObjectPool = null` <br> `death_signal: StringName = &"zero_health"` <br> `spawn_context: CDSpawnContext = null` <br> `inherit_position: bool = true` <br> `inherit_velocity: bool = false` |
-| **Process** | On `death_signal`, instantiates (or acquires from pool) `spawn_scene`. Sets position to entity's position if `inherit_position`. Applies spawn context. Adds to game tree. |
+| **Exports** | `spawn_scene: PackedScene` <br> `spawn_count: int = 1` (number of entities to spawn — e.g., asteroid splits into 3) <br> `pool: CDObjectPool = null` <br> `death_signal: StringName = &"zero_health"` <br> `spawn_context: CDSpawnContext = null` <br> `inherit_position: bool = true` <br> `inherit_velocity: bool = false` |
+| **Process** | On `death_signal`, loops `spawn_count` times. Each iteration: instantiates (or acquires from pool) `spawn_scene`. Sets position to entity's position if `inherit_position`. Applies spawn context (each spawn gets independent random rolls for angle/flip). Adds to game tree. |
 | **Use Cases** | Death explosion VFX, asteroid splitting into smaller asteroids, Missile Command chain reactions, enemy dropping a power-up |
 | **V1 Predecessor** | `death_effect.gd`, `death_effect_brick.gd` |
 
@@ -430,3 +430,5 @@ Godot/Scripts/
 5. **PieceSplitterArm and LineClearMonitor timing:** PieceSplitterArm runs at Priority 40 (ARM), spawns cells, then emits `"piece_settled"` on game bus. LineClearMonitor (Stage, Priority 70) hears `"piece_settled"` with a 1-frame delay to ensure all cells are in the tree. **Mitigation:** Document the timing dependency. Same pattern as TSpinDetectorGuts in Plan 22.
 
 6. **BlockDropManager deferral:** This plan does NOT include BlockDropManager (bag system, hold, preview, level gravity). That component is deferred until after the Group-as-State pattern is proven with Galaga. PieceSplitterArm and LockDetectorGuts (Plan 22) prepare the entity side; BlockDropManager will handle the stage side later.
+
+7. **Partial resets via spawners:** `CDGame.reset_game()` reloads the entire scene — a full reset. For partial resets (e.g., Breakout resetting bricks but keeping score), spawners can listen to game bus signals like `"bricks_reset"` and re-fire their spawn queue. The ScoreCard survives because it's a CueCard that only resets on scene reload. Wire a specific signal (not `"game_play"`) to avoid triggering full-game lifecycle. This pattern keeps reset granularity in the spawner's configurable signal subscription.

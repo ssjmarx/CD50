@@ -498,9 +498,9 @@ Discrete instant displacement. These bypass the velocity accumulator and use the
 
 ---
 
-## Plan 20 Amendment: Swarm Controllers
+## Swarm Controllers — Deferred to Plan 25
 
-The following Stage components should be added to Plan 20's stage component catalog. They were previously conflated with entity-level brains.
+The following Stage controllers were previously listed as a Plan 20 amendment. They are now deferred to **Plan 25 (V2 Controllers)**, which will spec them fully with exports, signal contracts, and behavior descriptions. They were previously conflated with entity-level brains.
 
 | Component | Category | Description |
 |-----------|----------|-------------|
@@ -510,6 +510,8 @@ The following Stage components should be added to Plan 20's stage component cata
 | `SwarmFlockMovementController` | Stage (Priority 70) | Emits `move(Vector2)` based on Boid-style rules (separation, alignment, cohesion) |
 
 **Rationale for Stage placement:** Controllers emit directly on entity buses. They ARE the brain for formation entities. No entity-level SwarmMemberBrain is needed — entities just need Legs that respond to the signals these controllers emit.
+
+**Why deferred:** These controllers are critical for Space Invaders and Galaga, but they had no concrete specs (no exports, signal contracts, or behavior descriptions). Plan 25 will provide full specifications before implementation.
 
 ---
 

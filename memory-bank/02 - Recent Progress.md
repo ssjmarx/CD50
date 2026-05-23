@@ -1,6 +1,6 @@
 # Recent Progress
 
-**Last Updated:** 2026-05-22
+**Last Updated:** 2026-05-23
 
 ---
 
@@ -50,9 +50,14 @@ All in `planning/brainstorming/`:
 ### Planning Docs Created
 | Doc | Status |
 |-----|--------|
-| `planning/19 - V2 Core Infrastructure.md` | Complete |
-| `planning/20 - V2 Stage.md` | Complete |
-| Plans 21–26 (Updates 3–8) | Not started |
+| `planning/19 - V2 Core Infrastructure.md` | Complete ✓ Audited |
+| `planning/19.5 - V2 Object Pooling.md` | Complete ✓ Audited |
+| `planning/20 - V2 Stage.md` | Complete ✓ Audited |
+| `planning/21 - V2 Brains + Legs.md` | Complete ✓ Audited |
+| `planning/22 - V2 Arms + Guts.md` | Complete ✓ Audited |
+| `planning/23 - V2 Spawners.md` | Complete ✓ Audited |
+| `planning/24 - V2 Faces, Voices, Projections & Speakers.md` | Complete ✓ Audited |
+| Plans 25–26 (Galaga, remaining) | Not started |
 
 ### Key Design Decisions (Plan 20)
 - **Configurable signal emissions:** All non-infrastructure components use array exports for both signal connections AND signal emissions. Method determines data shape, export determines signal name.
