@@ -201,7 +201,7 @@ func _show_credit(track: MusicTrack) -> void:
 	container.modulate.a = 0.0
 	_credit_layer.add_child(container)
 
-	var font = load("res://Assets/Fonts/Kenney Pixel.ttf")
+	var font = load("res://v1/Assets/Fonts/Kenney Pixel.ttf")
 	var line_height: float = 20.0
 	var left_margin: float = 16.0
 	var top_margin: float = 16.0

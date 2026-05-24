@@ -10,20 +10,20 @@ const GRID_SPACING: float = 40.0
 
 # Body scenes to scatter (diverse mix of shapes)
 const BODY_SCENES: Array[String] = [
-	"res://Scenes/Bodies/generic/asteroid.tscn",
-	"res://Scenes/Bodies/generic/ball.tscn",
-	"res://Scenes/Bodies/generic/brick.tscn",
-	"res://Scenes/Bodies/generic/paddle.tscn",
-	"res://Scenes/Bodies/generic/triangle_ship.tscn",
-	"res://Scenes/Bodies/generic/bullet_simple.tscn",
-	"res://Scenes/Bodies/generic/invader.tscn",
-	"res://Scenes/Bodies/generic/barrier.tscn",
-	"res://Scenes/Bodies/generic/ufo.tscn",
-	"res://Scenes/Bodies/generic/tetromino.tscn",
-	"res://Scenes/Bodies/generic/brick_damaging.tscn",
-	"res://Scenes/Bodies/generic/mystery_ship.tscn",
-	"res://Scenes/Bodies/player/player_paddle.tscn",
-	"res://Scenes/Bodies/player/player_triangle_ship.tscn",
+	"res://v1/Scenes/Bodies/generic/asteroid.tscn",
+	"res://v1/Scenes/Bodies/generic/ball.tscn",
+	"res://v1/Scenes/Bodies/generic/brick.tscn",
+	"res://v1/Scenes/Bodies/generic/paddle.tscn",
+	"res://v1/Scenes/Bodies/generic/triangle_ship.tscn",
+	"res://v1/Scenes/Bodies/generic/bullet_simple.tscn",
+	"res://v1/Scenes/Bodies/generic/invader.tscn",
+	"res://v1/Scenes/Bodies/generic/barrier.tscn",
+	"res://v1/Scenes/Bodies/generic/ufo.tscn",
+	"res://v1/Scenes/Bodies/generic/tetromino.tscn",
+	"res://v1/Scenes/Bodies/generic/brick_damaging.tscn",
+	"res://v1/Scenes/Bodies/generic/mystery_ship.tscn",
+	"res://v1/Scenes/Bodies/player/player_paddle.tscn",
+	"res://v1/Scenes/Bodies/player/player_triangle_ship.tscn",
 ]
 
 # Color bar palette (classic CRT test pattern colors)
@@ -155,7 +155,7 @@ func _draw_grid(parent: Node2D, grid_color: Color) -> void:
 func _attach_crt() -> void:
 	_crt_controller = Node2D.new()
 	_crt_controller.name = "CRTController"
-	_crt_controller.set_script(load("res://Scripts/Flow/crt_controller.gd"))
+	_crt_controller.set_script(load("res://v1/Scripts/Flow/crt_controller.gd"))
 	add_child(_crt_controller)
 
 func _add_status_label() -> void:

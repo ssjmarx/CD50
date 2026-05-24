@@ -104,7 +104,7 @@ func _build_nodes() -> void:
 	_persistence_rect.size = vp_size
 	_persistence_rect.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_persistence_mat = ShaderMaterial.new()
-	_persistence_mat.shader = load("res://Shaders/persistence.gdshader")
+	_persistence_mat.shader = load("res://v1/Shaders/persistence.gdshader")
 	_persistence_mat.set_shader_parameter("decay", persistence_decay)
 	_persistence_mat.set_shader_parameter("game_frame", get_viewport().get_texture())
 	_persistence_rect.material = _persistence_mat
@@ -119,7 +119,7 @@ func _build_nodes() -> void:
 	_color_rect.z_as_relative = false
 	_color_rect.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	var shader_mat := ShaderMaterial.new()
-	shader_mat.shader = load("res://Shaders/crt_light.gdshader")
+	shader_mat.shader = load("res://v1/Shaders/crt_light.gdshader")
 	shader_mat.set_shader_parameter("resolution", vp_size)
 	shader_mat.set_shader_parameter("persistence_blend", persistence_blend)
 	shader_mat.set_shader_parameter("persistence_tex", _persistence_vp.get_texture())
@@ -127,13 +127,13 @@ func _build_nodes() -> void:
 	add_child(_color_rect)
 	
 	# 3. Scanlines overlay (always on)
-	_scanlines_rect = _create_overlay("ScanlinesOverlay", "res://Assets/CRT/scanlines.png", vp_size)
+	_scanlines_rect = _create_overlay("ScanlinesOverlay", "res://v1/Assets/CRT/scanlines.png", vp_size)
 	_scanlines_rect.stretch_mode = TextureRect.STRETCH_TILE
 	_scanlines_rect.modulate.a = scanline_overlay_opacity
 	add_child(_scanlines_rect)
 	
 	# 4. Noise overlay (always on)
-	_noise_rect = _create_overlay("NoiseOverlay", "res://Assets/CRT/noise.png", vp_size)
+	_noise_rect = _create_overlay("NoiseOverlay", "res://v1/Assets/CRT/noise.png", vp_size)
 	_noise_rect.stretch_mode = TextureRect.STRETCH_TILE
 	_noise_rect.size = Vector2(704, 424)  # Larger than viewport for seamless scroll
 	_noise_rect.modulate.a = noise_overlay_opacity

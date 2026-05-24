@@ -1,7 +1,7 @@
 [gd_scene load_steps=26 format=3 uid="uid://ba48ow2kfgca5"]
 
 [ext_resource type="Script" uid="uid://bjdgpevhahi6d" path="res://v1/Scripts/Core/universal_game_script.gd" id="1_ffetl"]
-[ext_resource type="PackedScene" path="res://Scenes/Flow/grid_basic.tscn" id="2_7yh15"]
+[ext_resource type="PackedScene" path="res://v1/Scenes/Flow/grid_basic.tscn" id="2_7yh15"]
 [ext_resource type="Script" uid="uid://bfkr4fdx316o5" path="res://v1/Scripts/Core/collision_group.gd" id="2_gf417"]
 [ext_resource type="PackedScene" uid="uid://b418fukpc5m41" path="res://v1/Scenes/Components/collision_marker.tscn" id="4_ffetl"]
 [ext_resource type="PackedScene" uid="uid://mw70bjrifcpb" path="res://v1/Scenes/Bodies/generic/ball.tscn" id="4_jb3d5"]

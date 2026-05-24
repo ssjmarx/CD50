@@ -231,14 +231,14 @@ func _build_intro_phrase() -> PolybiusPhrase:
 	var line1 := PolybiusLine.new()
 	line1.text = "I hunger"
 	line1.eye_frame = 0  # neutral
-	line1.voice_clip = load("res://Assets/Voice/i_hunger.ogg")
+	line1.voice_clip = load("res://v1/Assets/Voice/i_hunger.ogg")
 	line1.beats = _make_beats([0.0, 0.15, 0.35], [1, 1, 1], [0.12, 0.12, 0.12])
 	line1.end_pause = 0.4
 	
 	var line2 := PolybiusLine.new()
 	line2.text = "for SCORE."
 	line2.eye_frame = 1  # displeased
-	line2.voice_clip = load("res://Assets/Voice/for_score.ogg")
+	line2.voice_clip = load("res://v1/Assets/Voice/for_score.ogg")
 	line2.beats = _make_beats([0.1, 0.45], [1, 1], [0.12, 0.2])
 	line2.end_pause = 0.5
 	
@@ -250,21 +250,21 @@ func _build_outro_phrase() -> PolybiusPhrase:
 	var line1 := PolybiusLine.new()
 	line1.text = "Pathetic."
 	line1.eye_frame = 0  # neutral
-	line1.voice_clip = load("res://Assets/Voice/pathetic.ogg")
+	line1.voice_clip = load("res://v1/Assets/Voice/pathetic.ogg")
 	line1.beats = _make_beats([0.05, 0.2, 0.4], [1, 1, 1], [0.12, 0.12, 0.12])
 	line1.end_pause = 0.5
 	
 	var line2 := PolybiusLine.new()
 	line2.text = "You're not even on the leaderboard."
 	line2.eye_frame = 0  # neutral
-	line2.voice_clip = load("res://Assets/Voice/leaderboard.ogg")
+	line2.voice_clip = load("res://v1/Assets/Voice/leaderboard.ogg")
 	line2.beats = _make_beats([0.2, 0.4, 0.55, 0.7, 0.85, 1.05, 1.3, 1.4, 1.7], [1, 1, 1, 1, 1, 1, 1, 1, 1], [0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.12])
 	line2.end_pause = 0.5
 	
 	var line3 := PolybiusLine.new()
 	line3.text = "PLAY AGAIN!"
 	line3.eye_frame = 1  # displeased
-	line3.voice_clip = load("res://Assets/Voice/again.ogg")
+	line3.voice_clip = load("res://v1/Assets/Voice/again.ogg")
 	line3.beats = _make_beats([0.15, 0.5], [1, 1], [0.15, 0.2])
 	line3.end_pause = 0.6
 	

@@ -87,13 +87,13 @@ func _ready() -> void:
 	# Create CRT controller programmatically (self-building Node2D with high z_index)
 	_crt_controller = Node2D.new()
 	_crt_controller.name = "CRTController"
-	_crt_controller.set_script(load("res://Scripts/Flow/crt_controller.gd"))
+	_crt_controller.set_script(load("res://v1/Scripts/Flow/crt_controller.gd"))
 	add_child(_crt_controller)
 	
 	# Create modifier manager
 	_modifier_manager = Node.new()
 	_modifier_manager.name = "ModifierManager"
-	_modifier_manager.set_script(load("res://Scripts/Hub/modifier_manager.gd"))
+	_modifier_manager.set_script(load("res://v1/Scripts/Hub/modifier_manager.gd"))
 	add_child(_modifier_manager)
 	_modifier_manager.set_orchestrator(self)
 	
@@ -106,7 +106,7 @@ func _ready() -> void:
 	# Score logger disabled
 	#_score_logger = Node.new()
 	#_score_logger.name = "ScoreLogger"
-	#_score_logger.set_script(load("res://Scripts/Flow/score_logger.gd"))
+	#_score_logger.set_script(load("res://v1/Scripts/Flow/score_logger.gd"))
 	#add_child(_score_logger)
 	
 	# Read active modifiers from save data (overrides editor exports)

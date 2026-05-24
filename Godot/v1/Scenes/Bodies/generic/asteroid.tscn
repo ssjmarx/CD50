@@ -28,7 +28,7 @@ collision_groups = Array[String](["space_rocks"])
 [node name="Health" parent="." instance=ExtResource("2_yh62g")]
 
 [node name="SplitOnDeath" parent="." instance=ExtResource("3_6fqt7")]
-fragment_path = "res://Scenes/Bodies/generic/asteroid.tscn"
+fragment_path = "res://v1/Scenes/Bodies/generic/asteroid.tscn"
 score_adjustment = 5
 
 [node name="ScreenWrap" parent="." instance=ExtResource("3_yh62g")]

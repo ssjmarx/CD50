@@ -189,7 +189,7 @@ func _create_timer_label(timer_node: Node) -> void:
 	
 	# Use the timer's LabelSettings resource
 	var settings = LabelSettings.new()
-	settings.font = load("res://Assets/Fonts/Kenney Pixel.ttf")
+	settings.font = load("res://v1/Assets/Fonts/Kenney Pixel.ttf")
 	settings.font_size = 32
 	
 	# Color based on result type: white for victory, red for defeat

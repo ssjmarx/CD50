@@ -21,7 +21,7 @@
 size = Vector2(8, 8)
 
 [sub_resource type="Resource" id="Resource_vsn6u"]
-metadata/__load_path__ = "res://Assets/Audio/zapThreeToneDown.ogg"
+metadata/__load_path__ = "res://v1/Assets/Audio/zapThreeToneDown.ogg"
 
 [node name="TriangleShip" type="CharacterBody2D"]
 rotation = -1.5707964
