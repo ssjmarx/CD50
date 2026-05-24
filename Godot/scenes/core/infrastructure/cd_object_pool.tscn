@@ -1,0 +1,6 @@
+[gd_scene load_steps=2 format=3 uid="uid://b32b05foqw2vl"]
+
+[ext_resource type="Script" uid="uid://crvpvklwjdyhw" path="res://scripts/core/infrastructure/cd_object_pool.gd" id="1_balvo"]
+
+[node name="CdObjectPool" type="Node2D"]
+script = ExtResource("1_balvo")

@@ -1,0 +1,6 @@
+[gd_scene load_steps=2 format=3 uid="uid://cyvlknjdwk6h7"]
+
+[ext_resource type="Script" uid="uid://dfbv2tw3cl4pe" path="res://scripts/core/infrastructure/cd_entity.gd" id="1_fthi1"]
+
+[node name="CdEntity" type="Node2D"]
+script = ExtResource("1_fthi1")

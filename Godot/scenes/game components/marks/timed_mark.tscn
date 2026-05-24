@@ -1,0 +1,6 @@
+[gd_scene load_steps=2 format=3 uid="uid://dksj54blfwuum"]
+
+[ext_resource type="Script" uid="uid://bh401i8av3ssf" path="res://scripts/game components/marks/timed_mark.gd" id="1_chw0r"]
+
+[node name="TimedMark" type="Node2D"]
+script = ExtResource("1_chw0r")

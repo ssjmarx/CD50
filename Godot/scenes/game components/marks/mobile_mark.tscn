@@ -1,0 +1,6 @@
+[gd_scene load_steps=2 format=3 uid="uid://bwvikb5dtvufh"]
+
+[ext_resource type="Script" uid="uid://dw0qo6kn01qtu" path="res://scripts/game components/marks/mobile_mark.gd" id="1_ef7mj"]
+
+[node name="MobileMark" type="Node2D"]
+script = ExtResource("1_ef7mj")

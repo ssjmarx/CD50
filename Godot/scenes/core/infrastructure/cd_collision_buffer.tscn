@@ -1,0 +1,6 @@
+[gd_scene load_steps=2 format=3 uid="uid://cmbx6xnct372t"]
+
+[ext_resource type="Script" uid="uid://ddyb7h4fll4ew" path="res://scripts/core/infrastructure/cd_collision_buffer.gd" id="1_7lu58"]
+
+[node name="CdCollisionBuffer" type="Node2D"]
+script = ExtResource("1_7lu58")

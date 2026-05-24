@@ -1,0 +1,6 @@
+[gd_scene load_steps=2 format=3 uid="uid://mxejpxipdbii"]
+
+[ext_resource type="Script" uid="uid://bxs3tdkllef3t" path="res://scripts/game components/cards/wave_card.gd" id="1_du44p"]
+
+[node name="WaveCard" type="Node2D"]
+script = ExtResource("1_du44p")

@@ -1,0 +1,6 @@
+[gd_scene load_steps=2 format=3 uid="uid://dqsat1yshg31w"]
+
+[ext_resource type="Script" uid="uid://dbf4dprf1wk07" path="res://scripts/game components/goals/score_threshold_goal.gd" id="1_v1hto"]
+
+[node name="ScoreThresholdGoal" type="Node2D"]
+script = ExtResource("1_v1hto")

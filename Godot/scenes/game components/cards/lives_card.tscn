@@ -1,0 +1,6 @@
+[gd_scene load_steps=2 format=3 uid="uid://cbuw38k0wvnia"]
+
+[ext_resource type="Script" uid="uid://c1owaij4mu564" path="res://scripts/game components/cards/lives_card.gd" id="1_5gukn"]
+
+[node name="LivesCard" type="Node2D"]
+script = ExtResource("1_5gukn")
