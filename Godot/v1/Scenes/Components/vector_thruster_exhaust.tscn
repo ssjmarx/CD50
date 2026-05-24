@@ -1,0 +1,10 @@
+[gd_scene load_steps=2 format=3 uid="uid://brkssy0wmtxti"]
+
+[ext_resource type="Script" uid="uid://bspqxr6jfdqqr" path="res://v1/Scripts/Components/vector_thruster_exhaust.gd" id="1_vtex"]
+
+[node name="VectorThrusterExhaust" type="Node2D"]
+script = ExtResource("1_vtex")
+flame_size = 3.0
+flame_width = 4.0
+distance = 4.0
+flicker_speed = 0.05

@@ -169,6 +169,7 @@ Polybius is the digital jailer. He judges, mocks, and demands more. When a new h
 
 ## Architecture
 
+**V1 (active, code-locked at 12 games):**
 - **113 components** across 11 categories (Core, Bodies, Brains, Legs, Arms, Components, Rules, Flow, Effects, Hub, Debug)
 - **Zero game scripts** — every game is a `UniversalGameScript` root with attached components
 - **Signal flow:** Brains → Body → Legs/Arms → Components/Rules/Flow → Effects
@@ -180,6 +181,12 @@ Polybius is the digital jailer. He judges, mocks, and demands more. When a new h
 - **Interface Takeover:** AO hijacks each game's child Interface, becomes sole source of truth for displayed values
 - **Physics-based grid:** Block Drop uses no grid data structure — all detection via physics queries
 - **Component toggleability:** Features enabled/disabled by including/excluding component scenes
+
+**V2 (in progress, core implemented):**
+- **10 core scripts** implemented (Plan 19): CDEntity, CDGame, CDComponent2D, CDStageComponent2D, CDCollisionBuffer, CDGroupRegistry, CDCollisionMatrix, CDInputRouter, CDEnums, CDCollisionGroup
+- **Hybrid bus:** Entity bus (native signals) + Game bus (Dictionary)
+- **Deterministic priority cascade:** Registry(5) → Brains(10) → Legs(20) → Entity(30) → Buffer(35) → Arms(40) → Guts(50) → Faces(60) → Stage(70)
+- **Remaining:** Plans 19.5–26 (Object Pooling, Stage, Brains+Legs, Arms+Guts, Spawners, Faces/Voices, Swarm, Block Drop)
 
 ---
 

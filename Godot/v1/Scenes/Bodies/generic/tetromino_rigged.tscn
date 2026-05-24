@@ -1,0 +1,30 @@
+[gd_scene load_steps=8 format=3 uid="uid://cdm27pfujkscc"]
+
+[ext_resource type="Script" uid="uid://vi07llk3m5n4" path="res://v1/Scripts/Bodies/tetromino.gd" id="1_4bays"]
+[ext_resource type="PackedScene" uid="uid://b0wnvwkw1cht0" path="res://v1/Scenes/Legs/grid_gravity.tscn" id="2_smfbk"]
+[ext_resource type="PackedScene" uid="uid://bn32q5kmricio" path="res://v1/Scenes/Legs/grid_movement.tscn" id="3_vfa76"]
+[ext_resource type="PackedScene" uid="uid://dixi6480rl8mn" path="res://v1/Scenes/Legs/grid_rotation_advanced.tscn" id="4_actx2"]
+[ext_resource type="PackedScene" uid="uid://ddrjfhgq2iqyt" path="res://v1/Scenes/Components/lock_detector.tscn" id="5_vfa76"]
+[ext_resource type="PackedScene" path="res://v1/Scenes/Components/ghost_piece.tscn" id="6_ghost"]
+[ext_resource type="PackedScene" path="res://v1/Scenes/Components/t_spin_detector.tscn" id="7_tspin"]
+
+[node name="Tetromino" type="CharacterBody2D" groups=["tetrominos"]]
+script = ExtResource("1_4bays")
+color = Color(0, 0, 1, 1)
+width = 18
+height = 18
+collision_groups = Array[String](["tetrominos"])
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+
+[node name="GridGravity" parent="." instance=ExtResource("2_smfbk")]
+
+[node name="GridMovement" parent="." instance=ExtResource("3_vfa76")]
+
+[node name="GridRotationAdvanced" parent="." instance=ExtResource("4_actx2")]
+
+[node name="LockDetector" parent="." instance=ExtResource("5_vfa76")]
+
+[node name="GhostPiece" parent="." instance=ExtResource("6_ghost")]
+
+[node name="TSpinDetector" parent="." instance=ExtResource("7_tspin")]

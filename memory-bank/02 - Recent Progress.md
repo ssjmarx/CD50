@@ -4,52 +4,64 @@
 
 ---
 
-## V2 Architecture Planning (IN PROGRESS)
+## Plan 19 — V2 Core Infrastructure (COMPLETE)
 
-Designing the V2 Composable Architecture — a full rebuild of the CD50 entity-component system for the desktop/Steam version. The itch.io version remains on V1.
+All 10 V2 core scripts written and in place at `Godot/scripts/core/`. Foundation of the V2 Composable Architecture is live.
 
-### Completed Brainstorming (11 design docs)
-All in `planning/brainstorming/`:
-- **ECS v2** — Core philosophy: deterministic priority cascade, signal-driven, single-purpose components
-- **Arms/Guts v2** — DamageOnHitArm, HealthPoolGuts, DieAtZeroHealthGuts, PointValueGuts, etc.
-- **Block Drop v2** — GridLegs, SettledCell entity, LineClearMonitor v2
-- **Brains v2** — PlayerControllerBrain, ChaseNearestBrain, AimAtNearestBrain, ShootWhenAimedBrain, SwarmMemberBrain, PatrolPathBrain, TimedStepBrain, FormationBrain, RandomSweepBrain
-- **Stage v2** — CueCards (ScoreCard, TimerCard, LivesCard, WaveCard), Goals, Controllers, Stage A/V
-- **Spawners v2** — CDSpawner base, PointSpawner, EdgeSpawner, GridSpawner, CDGridLayout resource, CDSafeZone
-- **Legs v2** — EightWayWalk, AccelDecel, EngineThrust, FrictionLinear/Static, RotationDirect/Target, GridMovementLeg, ScreenWrapLeg, ScreenClampLeg
-- **Physics Buffer v2** — Priority 30 movement, Priority 35 collision flush, deferred death
-- **Galaga v2** — Group-as-State pattern, SwoopController, FormationController, DiveDirector
-- **Additional Components v2** — FleeNearestBrain, OrbitBrain, IdleWanderBrain, SteeringLeg, PlatformerLeg, PushbackArm, StatusEffectArm, DamageFlashFace, ScreenShakeController, FlockingController
-- **Remakes v2** — Missile Command, Defender, Berzerk, Robotron: 2084 built from V2 components
+### Scripts Written
 
-### Key Architecture Decisions
-- **Deterministic priority cascade:** Brains(10) → Legs(20) → Entity(30) → Buffer(35) → Arms(40) → Guts(50) → Faces(60) → Stage(70)
-- **Velocity accumulator:** Legs add to accumulator, Entity resolves at Priority 30. No more Legs fighting over `velocity`.
-- **Physics buffer:** Collisions buffered at Priority 30, flushed at Priority 35. All entities move before any game logic reacts.
-- **Hybrid bus system:** Entity bus uses native `add_user_signal()` (fixed names, high frequency). Game bus uses Dictionary-based callbacks (configurable names, zero registration boilerplate). See "Hybrid Bus System" decision below.
-- **Array exports by default:** All multi-value config (signals, groups, targets) uses `Array[Type]` — always arrays, even for single entries.
-- **Error handling:** Engine components fail fast. Game/entity components push_error and continue.
-- **V1 preservation:** Entire V1 architecture moves to `Godot/v1/`. V2 lives at `Godot/` root.
-- **Editor-first:** All CDGame children (Buffer, Registry, Matrix) are editor-placed nodes, not programmatically created.
+| Script | Class | Type | Lines | Summary |
+|--------|-------|------|-------|---------|
+| `cdenums.gd` | `CDEnums` | Data bag | ~80 | Shared enums: ComponentCategory, EntityState, GameState, GameResult, CollisionResponse, CountComparison, Edge, InputAction |
+| `cdcollisiongroup.gd` | `CDCollisionGroup extends Resource` | Resource | ~15 | Named collision group with `collides_with` targets |
+| `cdentitycomponent.gd` | `CDComponent2D extends Node2D` | Base class | ~30 | Entity component base. Two-phase lifecycle, cached entity+game refs, priority by category |
+| `cdgamecomponent.gd` | `CDStageComponent2D extends Node2D` | Base class | ~27 | Game-stage component base. Same lifecycle but no entity ref. For CDGame children |
+| `cdentity.gd` | `CDEntity extends CharacterBody2D` | Entity | ~160 | Velocity accumulator, entity bus, state machine (ACTIVE→DEACTIVATING→INACTIVE), collision shape API, buffered collisions |
+| `cdcollisionbuffer.gd` | `CDCollisionBuffer extends Node` | Infrastructure | 16 | Deferred collision flush at Priority 35 |
+| `cdgroupregistry.gd` | `CDGroupRegistry extends Node` | Infrastructure | 76 | Frame-cached typed group queries, dirty-flag pattern, `group_count_changed` signal, spatial queries |
+| `cdcollisionmatrix.gd` | `CDCollisionMatrix extends Node` | Infrastructure | 44 | Auto-configures physics layers from CDCollisionGroup resources. 32-layer fail-fast |
+| `cdgame.gd` | `CDGame extends Node2D` | Game root | 114 | Game bus (Dictionary), state machine (ATTRACT→PLAYING→GAME_OVER), signal-based input connection, clean state transitions |
+| `cdinputrouter.gd` | `CDInputRouter extends Node` | Autoload | 65 | Pure signal emitter. Per-player move/aim/action signals. System buttons (start/restart/quit/pause). Bespoke action names |
 
-### 8-Update Schedule
-1. **Core Infrastructure** (Plan 19 — doc complete)
-2. **Stage: Cue Cards, Goals, Interface** (Plan 20 — doc complete)
-3. **Spawners + Brains**
-4. **Legs + Physics Integration**
-5. **Arms + Guts**
-6. **Faces + Voices + Speakers**
-7. **PseudoGrid (Block Drop V2)**
-8. **Galaga (Final Proof)**
+### Key Design Decisions (during implementation)
 
-### Not Yet Designed
-- Faces (entity visuals — only 3 partial specs)
-- Voices (entity-level sound)
-- Speakers (scene-level sound)
+| Decision | Rationale |
+|----------|-----------|
+| Clean state transitions on CDGame | Removed `_on_start_pressed`/`_on_restart_pressed`/`_on_quit_pressed` wrappers. `start_game()` IS the response. No double-guarding. |
+| Signal-based CDGame↔CDInputRouter | CDGame connects to router signals in `_ready()`. ArcadeOrchestrator mediates in arcade mode. Router never imports CDGame. |
+| Bespoke action names for Input Map | `fire`, `thrust`, `rotate_cw` etc. instead of generic `button_r`. Enables future remapping via Godot's InputMap API with zero router changes. |
+| Component naming | `CDComponent2D` (entity children) and `CDStageComponent2D` (CDGame children) — separate base classes, no null checks for entity on game components |
 
-### Planning Docs Created
+### Files Created
+
+| File | Purpose |
+|------|---------|
+| `Godot/scripts/core/cdenums.gd` | Shared enumerations |
+| `Godot/scripts/core/cdcollisiongroup.gd` | Collision group resource |
+| `Godot/scripts/core/cdentitycomponent.gd` | Entity component base (CDComponent2D) |
+| `Godot/scripts/core/cdgamecomponent.gd` | Game-stage component base (CDStageComponent2D) |
+| `Godot/scripts/core/cdentity.gd` | Base entity |
+| `Godot/scripts/core/cdcollisionbuffer.gd` | Deferred collision flush |
+| `Godot/scripts/core/cdgroupregistry.gd` | Cached group queries |
+| `Godot/scripts/core/cdcollisionmatrix.gd` | Physics layer config |
+| `Godot/scripts/core/cdgame.gd` | Game root with bus |
+| `Godot/scripts/core/cdinputrouter.gd` | Input routing autoload |
+
+---
+
+## V2 Architecture Planning (COMPLETE)
+
+All 8 V2 planning documents are complete, audited, and ready for implementation. The canonical design reference is `planning/V2 Rules.md`.
+
+### Planning Cleanup (May 23)
+- V1 planning docs (Plans 00–18) archived to `planning/v1/`
+- V2 Rules document created at `planning/V2 Rules.md` — canonical reference for all V2 architectural decisions, patterns, and conventions
+- Memory bank updated to reflect V2 architecture as the active priority
+
+### Complete V2 Planning Docs (8 plans + 1 rules doc)
 | Doc | Status |
 |-----|--------|
+| `planning/V2 Rules.md` | **Canonical reference** — all patterns, rules, conventions |
 | `planning/19 - V2 Core Infrastructure.md` | Complete ✓ Audited |
 | `planning/19.5 - V2 Object Pooling.md` | Complete ✓ Audited |
 | `planning/20 - V2 Stage.md` | Complete ✓ Audited |
@@ -57,24 +69,23 @@ All in `planning/brainstorming/`:
 | `planning/22 - V2 Arms + Guts.md` | Complete ✓ Audited |
 | `planning/23 - V2 Spawners.md` | Complete ✓ Audited |
 | `planning/24 - V2 Faces, Voices, Projections & Speakers.md` | Complete ✓ Audited |
-| Plans 25–26 (Galaga, remaining) | Not started |
+| `planning/25 - V2 Swarm Controllers + Galaga.md` | Complete ✓ Audited |
+| `planning/26 - Block Drop V2.md` | Complete ✓ Audited |
 
-### Key Design Decisions (Plan 20)
-- **Configurable signal emissions:** All non-infrastructure components use array exports for both signal connections AND signal emissions. Method determines data shape, export determines signal name.
-- **No GroupCountCard:** CDGroupRegistry emits `"group_count_changed"` directly. Goals listen directly. Eliminates intermediary.
-- **CDCueCard base class:** All Cue Cards extend Control via CDCueCard. `is_interface` bool creates optional Label for display. No separate Interface component.
-- **Separate MultiplierCard:** ScoreCard optionally reads MultiplierCard via NodePath. Arms emit raw points, unaware of multipliers. Supports multiple ScoreCards.
-- **Generalized GroupCountGoal:** Replaces GroupClearedGoal. `CountComparison` enum supports <, =, >, <=, >=. Old "cleared" = `EQUAL_TO, target_count=0`.
-- **GameResult enum:** Added to CDEnums — `VICTORY`, `DEFEAT`, `DRAW`.
-- **Specific Cue Cards now, type-based bases later:** ScoreCard/LivesCard/WaveCard are self-documenting. CueInt/CueFloat/CueString bases will be extracted when reuse demands it. Promotion path: specific card extends type base (e.g., ScoreCard extends CueInt).
-- **CDMark — Area2D trigger zones:** Marks fill the gap between physics collisions (CDEntity ↔ CDEntity) and game state events (Cue Cards). CDMark (base), MobileMark (follows entity), CountMark (N-body threshold), TimedMark (dwell-time). Same specific-first pattern as Cue Cards. Shape auto-created from `shape_size` export or editor-placed CollisionShape2D children.
-- **Entity bus configurable emissions:** Entity components have fixed signal TYPE (hardcoded const) but configurable signal NAME(S) via `@export` arrays. `CDEntity.ensure_signal()` is idempotent with type-mismatch warning. Registration in `_ready()`, connections in `_initialize()` (two-phase lifecycle). Stage components don't need `_initialize()` — only entity components do (game bus = Dictionary, no ordering issues).
+### V2 Architecture at a Glance
 
-### Key Design Decision: Hybrid Bus System (Plans 19 + 20)
-- **Entity bus (CDEntity):** Native `add_user_signal()`. Fixed signal names, high frequency (per-entity per-frame), typed signatures. C++ performance matters here.
-- **Game bus (CDGame):** Dictionary-based (`Dictionary[StringName, Array[Callable]]`). Configurable signal names, low frequency (a few dozen events/frame total), zero registration boilerplate. `bus_emit()` with no connections = Dictionary miss = no-op.
-- **Cross-bus communication:** 4 patterns — (1) entity→entity via physics, (2) entity→game via Announcers, (3) game→entity via Controllers, (4) entity→entity non-physics via Announcer→Dictionary→Controller bridge.
-- **Rationale:** Native signals on the game bus would require `bus_ensure()` registration boilerplate for every configurable signal name, with `TYPE_NIL` (Variant) args anyway — no type safety benefit. Dictionary eliminates all registration code at negligible performance cost for game-level event frequencies.
+See `planning/V2 Rules.md` for the full canonical reference. Key decisions:
+
+- **Deterministic priority cascade:** Registry(5) → Brains(10) → Legs(20) → Entity(30) → Buffer(35) → Arms(40) → Guts(50) → Faces(60) → Stage(70)
+- **Hybrid bus system:** Entity bus (native signals, typed, high-frequency) + Game bus (Dictionary-based, configurable names, zero boilerplate)
+- **Velocity accumulator:** Legs submit requests, CDEntity resolves at Priority 30
+- **Two-phase lifecycle:** `_ready()` for registration, `_on_initialize()` (deferred) for signal connections
+- **Signal-driven purity:** Components never call methods on other components — only emit signals
+- **On Hit / On Crash pattern:** Clean 2×2 matrix for collision response (DamageOnHit, DeathOnHit, DamageOnCrash, DeathOnCrash)
+- **Group-as-State:** Entity group membership IS entity state. CDGroupRegistry is single source of truth.
+- **Pseudogrid pattern:** Physics IS the grid. No grid data structures.
+- **Object pooling:** Pool reference IS the toggle. Entity routes itself. Separate acquire and activate.
+- **V1 preservation:** V1 moves to `Godot/v1/`. V2 at `Godot/` root. Itch demo stays on V1.
 
 ---
 

@@ -1,7 +1,7 @@
 # Component Catalogue
 
-**Last Updated:** 2026-05-18  
-**Total Scripts:** 108 across 11 categories  
+**Last Updated:** 2026-05-23  
+**Total Scripts:** 118 across 12 categories (108 V1 + 10 V2 Core)  
 **Total Scene Variants:** 2 (no unique script)  
 **Total Shaders:** 2 (crt_light.gdshader, persistence.gdshader)
 
@@ -9,7 +9,26 @@ Each entry includes the script name, class declaration, and a one-line descripti
 
 ---
 
-## Core (11)
+## V2 Core (10) — Plan 19
+
+New V2 architecture foundation scripts. Located in `Godot/scripts/core/`.
+
+| Script | Extends | Summary |
+|--------|---------|---------|
+| `cdenums.gd` | `CDEnums` (class_name only) | Shared enumerations: ComponentCategory, EntityState, GameState, GameResult, CollisionResponse, CountComparison, Edge, InputAction. |
+| `cdcollisiongroup.gd` | `CDCollisionGroup extends Resource` | Named collision group with `collides_with` target list. Used by CDCollisionMatrix to auto-configure physics layers. |
+| `cdentitycomponent.gd` | `CDComponent2D extends Node2D` | Entity component base. Two-phase lifecycle (`_ready` + `_on_initialize`), cached entity + game refs, auto-sets physics priority from ComponentCategory. |
+| `cdgamecomponent.gd` | `CDStageComponent2D extends Node2D` | Game-stage component base. Same two-phase lifecycle but no entity ref. For CDGame children (CueCards, Goals, Marks, Speakers). |
+| `cdentity.gd` | `CDEntity extends CharacterBody2D` | Velocity accumulator, entity bus (native signals), state machine (ACTIVE→DEACTIVATING→INACTIVE), collision shape API, buffered collision flush. Priority 30. |
+| `cdcollisionbuffer.gd` | `CDCollisionBuffer extends Node` | Deferred collision flush at Priority 35. Entities register; buffer calls `flush_collisions()` after all movement. |
+| `cdgroupregistry.gd` | `CDGroupRegistry extends Node` | Frame-cached typed group queries with dirty-flag pattern. Emits `group_count_changed`. Provides `get_nearest()` and `get_nearest_to_entity()`. Priority 5. |
+| `cdcollisionmatrix.gd` | `CDCollisionMatrix extends Node` | Auto-configures physics layers/masks from CDCollisionGroup resources. Bit-shift layer assignment, 32-group fail-fast. |
+| `cdgame.gd` | `CDGame extends Node2D` | Game root with Dictionary-based bus, state machine (ATTRACT→PLAYING→GAME_OVER), signal-based CDInputRouter connection, `find_ancestor()` static helper. |
+| `cdinputrouter.gd` | `CDInputRouter extends Node` | Pure signal emitter autoload. Per-player move/aim/action signals, system buttons (start/restart/quit/pause). Bespoke action names for future remapping. |
+
+---
+
+## Core (11) — V1
 
 | Script | Extends | Summary |
 |--------|---------|---------|

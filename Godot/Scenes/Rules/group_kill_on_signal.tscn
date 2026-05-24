@@ -1,6 +1,0 @@
-[gd_scene load_steps=2 format=3]
-
-[ext_resource type="Script" path="res://Scripts/Rules/group_kill_on_signal.gd" id="1"]
-
-[node name="GroupKillOnSignal" type="Node"]
-script = ExtResource("1")

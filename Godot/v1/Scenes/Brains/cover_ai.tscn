@@ -1,0 +1,6 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" uid="uid://dbvdt1eh61tkc" path="res://v1/Scripts/Brains/cover_ai.gd" id="1"]
+
+[node name="CoverAi" type="Node"]
+script = ExtResource("1")

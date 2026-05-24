@@ -1,15 +1,38 @@
 # Current Goal
 
-**Last Updated:** 2026-05-20  
-**Status:** Active — Final push to ship the itch.io demo by May 31
+**Last Updated:** 2026-05-23  
+**Status:** Active — V2 Object Pooling (Plan 19.5)
 
 ---
 
-## Active Priority: Ship the Demo by May 31
+## Active Priority: V2 Architecture Implementation
 
-The game roster is **finalized at 12 games** — no more games will be built for the demo. Only **one feature remains** (Polybius Character), then flip the itch.io page to public.
+The itch.io demo is **code-locked** (12 games, all componentized). We are now building the V2 Composable Architecture for the desktop/Steam version. The itch.io demo remains on V1.
 
-**Full deadline schedule:** `memory-bank/06 - Deadlines.md`
+**Canonical V2 design reference:** `planning/V2 Rules.md`  
+**V1 planning docs archived:** `planning/v1/` (Plans 00–18)
+
+### V2 Implementation Schedule (8 Updates)
+
+| # | Plan | Scope | Status |
+|---|------|-------|--------|
+| 1 | 19 — V2 Core Infrastructure | CDEntity, CDGame, CDComponent2D, CDCollisionBuffer, CDGroupRegistry, CDCollisionMatrix, CDInputRouter, CDEnums | ✅ Complete |
+| 1b | 19.5 — V2 Object Pooling | CDObjectPool, pool-aware activate/deactivate | 🔲 Next |
+| 2 | 20 — V2 Stage | CDCueCard, ScoreCard, LivesCard, TimerCard, WaveCard, Goals, CDMarks | 🔲 Planned |
+| 3 | 21 — V2 Brains + Legs | 14 Brains, 18 Legs — complete movement catalog | 🔲 Planned |
+| 4 | 22 — V2 Arms + Guts | 11 Arms, 12 Guts — collision response + internal state | 🔲 Planned |
+| 5 | 23 — V2 Spawners | CDStageSpawner, Point/Edge/GridSpawner, CDGridLayout, CDSafeZone | 🔲 Planned |
+| 6 | 24 — V2 Faces, Voices, Projections & Speakers | CDFace, CDFaceBinding, CDVoice, CDSpeaker, CDSoundBank, CDProjection | 🔲 Planned |
+| 7 | 25 — V2 Swarm Controllers + Galaga | SwarmGridStep, Formation, Flock, Shoot controllers + Galaga proof | 🔲 Planned |
+| 8 | 26 — Block Drop V2 | Full Block Drop remake proving Pseudogrid pattern | 🔲 Planned |
+
+### Immediate Next Step: Plan 19.5 — V2 Object Pooling
+
+Build CDObjectPool and pool-aware activate/deactivate lifecycle. CDEntity already has the DEACTIVATING→INACTIVE state machine from Plan 19; this plan adds the pool manager and spawn/return flow.
+
+### Demo Status
+
+The itch.io demo is code-locked at 12 games. The only unimplemented feature is the Steam wishlist link. Polybius character work (Plan 15 Phase 2) is paused — voice lines remain unrecorded but the face drawing system exists and works.
 
 ### Demo Game Roster — FINAL (12 games)
 
@@ -18,46 +41,6 @@ The game roster is **finalized at 12 games** — no more games will be built for
 | Remakes (5) | Paddle Ball, Brick Breaker, Space Rocks, Bug Blaster, Block Drop |
 | Remixes (5) | Dogfight, Meteor Rally, Rock Breaker, Bug Drop, Space Bugs |
 | Inversions (2) | Planetary Attack!, Space Rocks Inverted |
-
-### Completed This Phase (May 6–19)
-- ✅ Steamworks: Fee paid, App ID created, tax/bank info submitted — awaiting identity verification
-- ✅ itch.io: Game page created (private), build uploaded and tested at 60fps on T480 browser target
-- ✅ Butler pipeline: `deploy.sh` fully operational (export → zip → push)
-- ✅ Web performance: All 9 optimizations implemented and verified
-- ✅ Plan 16 Phase 1: 4 new games built (Bug Drop, Space Bugs, Planetary Attack!, Space Rocks Inverted)
-- ✅ Karl Casey music tracks added (2 new licensed OGG + MusicTrack resources)
-- ✅ New components: clear_shot_ai, cover_ai, swarm_controller_player, hit_effect, vector_thruster_exhaust, group_kill_on_signal, polybius_nose
-- ✅ Game roster finalized — 12 games locked for demo
-- ✅ 5 Balatro-like modifiers implemented (Shotgun Mode, Overclocked CPU, Feature Creep, Crunch Time, Scope Creep)
-- ✅ Mini Progression System — SaveData autoload with high scores, modifier unlocks, JSON persistence (May 20)
-- ✅ Planetary Attack Remake — scrolling playfield, camera_midpoint component, playfield_size on UGS (May 20)
-
-### Remaining Work (May 20–31) — 1 feature, then ship
-
-**1. Polybius Character (Plan 15 Phase 2)**
-- Currently drawing facial frames (Step 2b)
-- Remaining: voice lines, typewriter text, animations, AO integration (steps 2c–2j)
-- Scope: run intros, taunts between games, game-over commentary
-
-**~~2. 5 Balatro-like Modifiers~~ ✅ COMPLETE**
-
-**~~3. Mini Progression System~~ ✅ COMPLETE** (May 20)
-- `SaveData` autoload (`Scripts/Core/save_data.gd`) — JSON persistence via `user://cd50_save.json`
-- Best run score gates modifier unlocks at 5 thresholds (100 → 100,000)
-- Top 5 high scores with initials entry + date
-- Boot screen: high score display + modifier toggle buttons
-- Game over screen: initials entry + unlock notifications
-- AO integration: score reporting + new high score detection
-
-**~~4. Planetary Attack Remake~~ ✅ COMPLETE** (May 20)
-- Scrolling 2× playfield (1280×720) with `camera_midpoint` component
-- Player controls Mystery Ship protecting invader formation
-- Opposing paddle cannons, triangle ship hunters, asteroid field
-- `playfield_size` export on UGS — backward-compatible, zero change to existing games
-
-**Then: Ship**
-- Flip itch.io page from private to public
-- Steam Coming Soon page live as soon as identity verification completes
 
 ---
 
@@ -95,9 +78,8 @@ The game roster is **finalized at 12 games** — no more games will be built for
 **Scope:** VRAM Boot Screen, Attract Mode System, Coin Drop Boot Sequence
 
 ### Plan 19 — V2 Core Infrastructure
-**Status:** Planning doc complete, implementation not started  
-**Timeline:** Post-demo code lock (after May 31)  
-**Scope:** Foundation of the V2 Composable Architecture — CDEntity, CDGame, CDComponent2D, CDCollisionBuffer, CDGroupRegistry, CDCollisionMatrix, CDInputRouter, CDEnums, CDCollisionGroup. First of 8 V2 updates. V1 architecture moves to `Godot/v1/`.
+**Status:** COMPLETE (May 23, 2026)  
+**Scope:** Foundation of the V2 Composable Architecture — CDEntity, CDGame, CDComponent2D, CDCollisionBuffer, CDGroupRegistry, CDCollisionMatrix, CDInputRouter, CDEnums, CDCollisionGroup. All 10 scripts written. V1 architecture moves to `Godot/v1/`.
 
 ### Plan 20 — V2 Stage (Cue Cards, Goals, Interface)
 **Status:** Planning doc complete, implementation not started  

@@ -1,11 +1,12 @@
 # Current Status: CD50 — Arcade Cabinet
 
-**Last Updated:** 2026-05-20  
+**Last Updated:** 2026-05-23  
 **Engine:** Godot 4.5 (GDScript)  
-**Architecture:** Entity-Component (composition over inheritance)  
+**Architecture:** V1 Entity-Component (active) → V2 Composable Architecture (in planning)  
 **Playable Games:** Paddle Ball, Brick Breaker, Space Rocks, Meteor Rally, Dogfight, Bug Blaster, Block Drop (Modern), Rock Breaker, Bug Drop, Space Bugs, Planetary Attack!, Space Rocks Inverted — ALL componentized, zero game scripts
-**In Progress:** Plan 15 Phase 2 — Polybius Character
-**Recent Completed:** Plan 18 (Planetary Attack Remake — scrolling playfield + camera_midpoint); Plan 16 Phase 2b (Mini Progression System — save_data.gd autoload with high scores + modifier unlocks); 5 Balatro-like modifiers
+**In Progress:** V2 Architecture — Plan 19 (Core Infrastructure) COMPLETE, Plan 19.5 (Object Pooling) is next
+**Recent Completed:** Plan 19 — all 10 V2 core scripts written (CDEntity, CDGame, CDComponent2D, CDStageComponent2D, CDCollisionBuffer, CDGroupRegistry, CDCollisionMatrix, CDInputRouter, CDEnums, CDCollisionGroup)
+**Demo Status:** Code-locked at 12 games. Only Steam wishlist link remains. Itch.io demo stays on V1 architecture.
 
 ---
 
@@ -148,6 +149,59 @@ EFFECTS (death_particles, death_broken_triangle_ship)
 **Key signals on UniversalGameScript:**
 - From Components: `victory`, `defeat`, `group_cleared`, `group_member_removed`, `lives_changed`, `lives_depleted`, `timer_tick`, `timer_expired`, `spawning_wave`, `spawning_wave_complete`, `piece_settled`, `hold_requested`, `t_spin_detected(is_t_spin, is_mini)`
 - To Components/UI: `on_game_start`, `on_game_end`, `on_game_over`, `on_points_changed`, `on_multiplier_changed`, `state_changed`, `on_p1_score`, `on_p2_score`
+
+---
+
+## V2 Architecture (In Progress)
+
+The V2 Composable Architecture is a full refactor of the ECS for the desktop/Steam version. **Canonical reference:** `planning/V2 Rules.md`
+
+### Key Changes from V1
+
+| Aspect | V1 (Current) | V2 (Planned) |
+|--------|-------------|--------------|
+| Entity base | `UniversalBody` | `CDEntity` — velocity accumulator, entity bus, pool-aware lifecycle |
+| Game base | `UniversalGameScript` | `CDGame` — game bus (Dictionary), state machine, no game logic |
+| Component base | `UniversalComponent` / `UniversalComponent2D` | `CDComponent2D` — two-phase lifecycle, category priority |
+| Signal system | Body routes input→output | Hybrid bus: entity bus (native signals) + game bus (Dictionary) |
+| Processing | No fixed ordering | Deterministic priority cascade (5→10→20→30→35→40→50→60→70) |
+| Collision | Direct in physics process | `CDCollisionBuffer` flushes at Priority 35 |
+| Groups | `group_cache.gd` (lazy dirty flag) | `CDGroupRegistry` — single source of truth, emits `group_count_changed` |
+| Spawning | `WaveSpawner` inline | `CDStageSpawner` + `CDObjectPool` — separate acquire/activate |
+| Component categories | Brains, Legs, Arms, Components, Rules, Flow | Brains, Legs, Arms, Guts, Faces, Voices, Stage, Speakers, Spawners |
+| Collision response | `damage_on_hit`, `die_on_hit` (case-by-case) | 2×2 matrix: DamageOnHit/Crash, DeathOnHit/Crash + Joust variants |
+| Internal state | Mixed into Components category | Dedicated **Guts** category (health, timers, resources, lock detection) |
+
+### V2 Directory Structure
+
+```
+Godot/Scripts/
+├── Core/       — CDEntity, CDGame, CDComponent2D, CDCollisionBuffer, CDGroupRegistry, etc.
+├── Brains/     — 14 intent generators (Priority 10)
+├── Legs/       — 18 movement executors (Priority 20)
+├── Arms/       — 11 world-affecting components (Priority 40)
+├── Guts/       — 12 internal state trackers (Priority 50)
+├── Faces/      — Visual representation (Priority 60)
+├── Voices/     — Entity-level sound
+├── Stage/      — Game-level components (Priority 70)
+├── Speakers/   — Scene-level sound
+├── Spawners/   — Spawn components
+└── Resources/  — Custom resources
+```
+
+### V2 Implementation Plans
+
+| Plan | Scope | Doc |
+|------|-------|-----|
+| 19 | Core Infrastructure | `planning/19 - V2 Core Infrastructure.md` |
+| 19.5 | Object Pooling | `planning/19.5 - V2 Object Pooling.md` |
+| 20 | Stage (CueCards, Goals, Marks) | `planning/20 - V2 Stage.md` |
+| 21 | Brains + Legs | `planning/21 - V2 Brains + Legs.md` |
+| 22 | Arms + Guts | `planning/22 - V2 Arms + Guts.md` |
+| 23 | Spawners | `planning/23 - V2 Spawners.md` |
+| 24 | Faces, Voices, Projections & Speakers | `planning/24 - V2 Faces, Voices, Projections & Speakers.md` |
+| 25 | Swarm Controllers + Galaga | `planning/25 - V2 Swarm Controllers + Galaga.md` |
+| 26 | Block Drop V2 | `planning/26 - Block Drop V2.md` |
 
 ---
 

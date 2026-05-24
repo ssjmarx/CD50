@@ -1,6 +1,0 @@
-[gd_scene load_steps=2 format=3 uid="uid://bk5m8n3x7f2rp"]
-
-[ext_resource type="Script" path="res://Scripts/Components/hit_effect.gd" id="1_heff"]
-
-[node name="HitEffect" type="Node2D"]
-script = ExtResource("1_heff")

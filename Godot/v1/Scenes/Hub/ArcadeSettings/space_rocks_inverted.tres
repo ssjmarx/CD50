@@ -1,0 +1,76 @@
+[gd_resource type="Resource" script_class="ArcadeGameEntry" load_steps=13 format=3 uid="uid://brlrwh62hs1l0"]
+
+[ext_resource type="PackedScene" uid="uid://exeg2kp73icn" path="res://v1/Scenes/Games/inversions/space_rocks_inverted.tscn" id="1_1jjbr"]
+[ext_resource type="Script" uid="uid://cp0ni1lgml7c6" path="res://v1/Scripts/Core/property_override.gd" id="2_m17n3"]
+[ext_resource type="Script" uid="uid://bdsbfe65crnbu" path="res://v1/Scripts/Hub/arcade_game_entry.gd" id="3_yesoe"]
+
+[sub_resource type="Resource" id="Resource_vybgi"]
+script = ExtResource("2_m17n3")
+node_path = NodePath("LivesCounter")
+property_name = "max_lives"
+value = 1
+metadata/_custom_type_script = "uid://cp0ni1lgml7c6"
+
+[sub_resource type="Resource" id="Resource_okycj"]
+script = ExtResource("2_m17n3")
+node_path = NodePath("GroupMonitor")
+property_name = "victory_on_clear"
+value = true
+metadata/_custom_type_script = "uid://cp0ni1lgml7c6"
+
+[sub_resource type="Resource" id="Resource_j5aq8"]
+script = ExtResource("2_m17n3")
+node_path = NodePath("WaveSpawner(GameStart)")
+property_name = "spawn_count_equation"
+value = "6"
+metadata/_custom_type_script = "uid://cp0ni1lgml7c6"
+
+[sub_resource type="Resource" id="Resource_yxgaa"]
+script = ExtResource("2_m17n3")
+node_path = NodePath("Timer(SmallUfos)")
+property_name = "duration"
+value = 5.0
+metadata/_custom_type_script = "uid://cp0ni1lgml7c6"
+
+[sub_resource type="Resource" id="Resource_i2h47"]
+script = ExtResource("2_m17n3")
+node_path = NodePath("Timer(SmallUfos)")
+property_name = "loop_timer"
+value = false
+metadata/_custom_type_script = "uid://cp0ni1lgml7c6"
+
+[sub_resource type="Resource" id="Resource_otv15"]
+script = ExtResource("2_m17n3")
+node_path = NodePath("Timer(LargeUfos)")
+property_name = "duration"
+value = 8.0
+metadata/_custom_type_script = "uid://cp0ni1lgml7c6"
+
+[sub_resource type="Resource" id="Resource_b8v7l"]
+script = ExtResource("2_m17n3")
+node_path = NodePath("Timer(LargeUfos)")
+property_name = "loop_timer"
+value = false
+metadata/_custom_type_script = "uid://cp0ni1lgml7c6"
+
+[sub_resource type="Resource" id="Resource_mute_a"]
+script = ExtResource("2_m17n3")
+node_path = NodePath("MusicRamping/SoundSynth_A")
+property_name = "volume"
+value = 0.0
+metadata/_custom_type_script = "uid://cp0ni1lgml7c6"
+
+[sub_resource type="Resource" id="Resource_mute_b"]
+script = ExtResource("2_m17n3")
+node_path = NodePath("MusicRamping/SoundSynth_B")
+property_name = "volume"
+value = 0.0
+metadata/_custom_type_script = "uid://cp0ni1lgml7c6"
+
+[resource]
+script = ExtResource("3_yesoe")
+game_scene = ExtResource("1_1jjbr")
+overrides = Array[ExtResource("2_m17n3")]([SubResource("Resource_vybgi"), SubResource("Resource_okycj"), SubResource("Resource_j5aq8"), SubResource("Resource_yxgaa"), SubResource("Resource_i2h47"), SubResource("Resource_otv15"), SubResource("Resource_b8v7l"), SubResource("Resource_mute_a"), SubResource("Resource_mute_b")])
+bucket = 1
+similarity_tag = "space_rocks"
+metadata/_custom_type_script = "uid://bdsbfe65crnbu"

@@ -1,0 +1,319 @@
+[gd_scene load_steps=41 format=3 uid="uid://bx72rpqpg34hc"]
+
+[ext_resource type="Script" uid="uid://bjdgpevhahi6d" path="res://v1/Scripts/Core/universal_game_script.gd" id="1_woixt"]
+[ext_resource type="PackedScene" uid="uid://mw70bjrifcpb" path="res://v1/Scenes/Bodies/generic/ball.tscn" id="2_ball"]
+[ext_resource type="Script" uid="uid://bfkr4fdx316o5" path="res://v1/Scripts/Core/collision_group.gd" id="2_egt1g"]
+[ext_resource type="PackedScene" uid="uid://b4mr1t8pdtmf3" path="res://v1/Scenes/Bodies/generic/paddle.tscn" id="3_paddle"]
+[ext_resource type="PackedScene" uid="uid://6tweepbhleep" path="res://v1/Scenes/Brains/player_control.tscn" id="4_4f6sx"]
+[ext_resource type="PackedScene" uid="uid://cq0foubgjurmr" path="res://v1/Scenes/Brains/interceptor_ai.tscn" id="4_ai"]
+[ext_resource type="PackedScene" uid="uid://b418fukpc5m41" path="res://v1/Scenes/Components/collision_marker.tscn" id="6_e5qgl"]
+[ext_resource type="PackedScene" uid="uid://clhg61503vle8" path="res://v1/Scenes/Rules/variable_tuner.tscn" id="6_egt1g"]
+[ext_resource type="PackedScene" uid="uid://eketockdsssi" path="res://v1/Scenes/Legs/direct_movement.tscn" id="6_move"]
+[ext_resource type="PackedScene" uid="uid://dshe01a1pw43p" path="res://v1/Scenes/Rules/goal.tscn" id="8_pkkn6"]
+[ext_resource type="PackedScene" uid="uid://bq6cdrx340jp7" path="res://v1/Scenes/Flow/interface.tscn" id="9_46oju"]
+[ext_resource type="PackedScene" uid="uid://dhulxxtcsipl6" path="res://v1/Scenes/Rules/group_monitor.tscn" id="13_dpifu"]
+[ext_resource type="PackedScene" uid="uid://d1r6vipc03isf" path="res://v1/Scenes/Rules/points_monitor.tscn" id="14_68rfy"]
+[ext_resource type="PackedScene" uid="uid://dwyyfxniivl1r" path="res://v1/Scenes/Rules/wave_director.tscn" id="15_8p135"]
+[ext_resource type="PackedScene" uid="uid://vlbel76nqh5w" path="res://v1/Scenes/Rules/wave_spawner.tscn" id="16_ydxa1"]
+[ext_resource type="Script" uid="uid://cp0ni1lgml7c6" path="res://v1/Scripts/Core/property_override.gd" id="18_pxxt0"]
+[ext_resource type="PackedScene" uid="uid://b2sekay4f1s2g" path="res://v1/Scenes/Bodies/generic/asteroid_noscore.tscn" id="20_01box"]
+[ext_resource type="PackedScene" uid="uid://cg5rnfuldr2n0" path="res://v1/Scenes/Arms/damage_on_hit.tscn" id="20_68rfy"]
+[ext_resource type="PackedScene" uid="uid://csg0e2wxlx4qd" path="res://v1/Scenes/Components/angled_deflector.tscn" id="21_68rfy"]
+[ext_resource type="PackedScene" uid="uid://craitf0mklbon" path="res://v1/Scenes/Rules/timer.tscn" id="21_dpifu"]
+[ext_resource type="PackedScene" uid="uid://dh545dmdhudol" path="res://v1/Scenes/Bodies/generic/ufo.tscn" id="22_tk1t6"]
+[ext_resource type="PackedScene" uid="uid://dv3y04bswv3t4" path="res://v1/Scenes/Flow/music_ramping.tscn" id="25_ydxa1"]
+[ext_resource type="PackedScene" path="res://v1/Scenes/Components/checkerboard_line.tscn" id="26_check"]
+
+[sub_resource type="Resource" id="Resource_pkkn6"]
+script = ExtResource("2_egt1g")
+group_name = "balls"
+targets = Array[String](["paddles", "walls", "goals", "space_rocks", "enemies"])
+metadata/_custom_type_script = "uid://bfkr4fdx316o5"
+
+[sub_resource type="Resource" id="Resource_5j7oo"]
+script = ExtResource("2_egt1g")
+group_name = "walls"
+metadata/_custom_type_script = "uid://bfkr4fdx316o5"
+
+[sub_resource type="Resource" id="Resource_dpifu"]
+script = ExtResource("2_egt1g")
+group_name = "paddles"
+metadata/_custom_type_script = "uid://bfkr4fdx316o5"
+
+[sub_resource type="Resource" id="Resource_68rfy"]
+script = ExtResource("2_egt1g")
+group_name = "goals"
+targets = Array[String](["balls"])
+metadata/_custom_type_script = "uid://bfkr4fdx316o5"
+
+[sub_resource type="Resource" id="Resource_8p135"]
+script = ExtResource("2_egt1g")
+group_name = "space_rocks"
+targets = Array[String](["space_rocks"])
+metadata/_custom_type_script = "uid://bfkr4fdx316o5"
+
+[sub_resource type="Resource" id="Resource_ydxa1"]
+script = ExtResource("2_egt1g")
+group_name = "enemies"
+metadata/_custom_type_script = "uid://bfkr4fdx316o5"
+
+[sub_resource type="Resource" id="Resource_dkt3g"]
+script = ExtResource("2_egt1g")
+group_name = "enemies_bullets"
+targets = Array[String](["space_rocks"])
+metadata/_custom_type_script = "uid://bfkr4fdx316o5"
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_bg8lp"]
+size = Vector2(640, 8)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_l0p4r"]
+size = Vector2(40, 376)
+
+[sub_resource type="Resource" id="Resource_x2g5i"]
+script = ExtResource("18_pxxt0")
+node_path = NodePath("AngledDeflector")
+property_name = "deflection_bias"
+value = Vector2(5, 1)
+metadata/_custom_type_script = "uid://cp0ni1lgml7c6"
+
+[sub_resource type="Resource" id="Resource_l0p4r"]
+script = ExtResource("18_pxxt0")
+node_path = NodePath("DamageOnHit")
+property_name = "target_groups"
+value = ["space_rocks"]
+metadata/_custom_type_script = "uid://cp0ni1lgml7c6"
+
+[sub_resource type="Resource" id="Resource_tk1t6"]
+script = ExtResource("18_pxxt0")
+property_name = "color"
+value = Color(1, 0.64705884, 0, 1)
+metadata/_custom_type_script = "uid://cp0ni1lgml7c6"
+
+[sub_resource type="Resource" id="Resource_bg8lp"]
+script = ExtResource("18_pxxt0")
+node_path = NodePath("DamageOnHit")
+property_name = "target_groups"
+value = ["space_rocks"]
+metadata/_custom_type_script = "uid://cp0ni1lgml7c6"
+
+[sub_resource type="Resource" id="Resource_4oqwm"]
+script = ExtResource("18_pxxt0")
+node_path = NodePath("AngledDeflector")
+property_name = "deflection_bias"
+value = Vector2(5, 1)
+metadata/_custom_type_script = "uid://cp0ni1lgml7c6"
+
+[sub_resource type="Resource" id="Resource_01box"]
+script = ExtResource("18_pxxt0")
+property_name = "color"
+value = Color(1, 0.64705884, 0, 1)
+metadata/_custom_type_script = "uid://cp0ni1lgml7c6"
+
+[sub_resource type="Resource" id="Resource_pxxt0"]
+script = ExtResource("18_pxxt0")
+node_path = NodePath("AngledDeflector")
+property_name = "deflection_bias"
+value = Vector2(5, 1)
+metadata/_custom_type_script = "uid://cp0ni1lgml7c6"
+
+[sub_resource type="Resource" id="Resource_5y4c8"]
+script = ExtResource("18_pxxt0")
+property_name = "size"
+value = 1
+metadata/_custom_type_script = "uid://cp0ni1lgml7c6"
+
+[node name="Meteor Rally" type="Node2D"]
+script = ExtResource("1_woixt")
+game_title = "Meteor Rally"
+collision_groups = Array[ExtResource("2_egt1g")]([SubResource("Resource_pkkn6"), SubResource("Resource_5j7oo"), SubResource("Resource_dpifu"), SubResource("Resource_68rfy"), SubResource("Resource_8p135"), SubResource("Resource_ydxa1"), SubResource("Resource_dkt3g")])
+
+[node name="Player" parent="." groups=["paddles"] instance=ExtResource("3_paddle")]
+position = Vector2(64, 184)
+lock_x = true
+
+[node name="DirectMovement" parent="Player" instance=ExtResource("6_move")]
+
+[node name="PlayerControl" parent="Player" instance=ExtResource("4_4f6sx")]
+
+[node name="Opponent" parent="." groups=["paddles"] instance=ExtResource("3_paddle")]
+position = Vector2(576, 184)
+lock_x = true
+
+[node name="InterceptorAi" parent="Opponent" instance=ExtResource("4_ai")]
+target_group = "balls"
+
+[node name="VariableTuner" parent="Opponent/InterceptorAi" node_paths=PackedStringArray("source_node") instance=ExtResource("6_egt1g")]
+source_node = NodePath("../../../P1Goal")
+source_signal = "body_entered"
+target_property = "turning_speed"
+adjustment_amount = 15.0
+
+[node name="DirectMovement" parent="Opponent" instance=ExtResource("6_move")]
+
+[node name="StaticBody2D" type="StaticBody2D" parent="."]
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="StaticBody2D"]
+position = Vector2(320, -4)
+shape = SubResource("RectangleShape2D_bg8lp")
+
+[node name="CollisionMarker" parent="StaticBody2D" instance=ExtResource("6_e5qgl")]
+collision_groups = Array[String](["walls"])
+
+[node name="StaticBody2D2" type="StaticBody2D" parent="."]
+position = Vector2(0, 368)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="StaticBody2D2"]
+position = Vector2(320, -4)
+shape = SubResource("RectangleShape2D_bg8lp")
+
+[node name="CollisionMarker" parent="StaticBody2D2" instance=ExtResource("6_e5qgl")]
+collision_groups = Array[String](["walls"])
+
+[node name="P1Goal" type="Area2D" parent="."]
+position = Vector2(648, 0)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="P1Goal"]
+position = Vector2(-4, 180)
+shape = SubResource("RectangleShape2D_l0p4r")
+
+[node name="CollisionMarker" parent="P1Goal" instance=ExtResource("6_e5qgl")]
+collision_groups = Array[String](["goals"])
+
+[node name="Goal" parent="P1Goal" instance=ExtResource("8_pkkn6")]
+
+[node name="P2Goal" type="Area2D" parent="."]
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="P2Goal"]
+position = Vector2(-4, 180)
+shape = SubResource("RectangleShape2D_l0p4r")
+
+[node name="CollisionMarker" parent="P2Goal" instance=ExtResource("6_e5qgl")]
+collision_groups = Array[String](["goals"])
+
+[node name="Goal" parent="P2Goal" instance=ExtResource("8_pkkn6")]
+score_type = 1
+
+[node name="CenterLine" parent="." instance=ExtResource("26_check")]
+position = Vector2(320, 64)
+columns = 2
+
+[node name="Interface" parent="." instance=ExtResource("9_46oju")]
+
+[node name="GroupMonitor" parent="." instance=ExtResource("13_dpifu")]
+target_group = "balls"
+
+[node name="PointsMonitor" parent="." instance=ExtResource("14_68rfy")]
+
+[node name="PointsMonitor2" parent="." instance=ExtResource("14_68rfy")]
+score_type = 1
+result = 1
+
+[node name="WaveDirector" parent="." instance=ExtResource("15_8p135")]
+trigger_value = "balls"
+wave_delay = 3.0
+
+[node name="WaveSpawner" parent="." node_paths=PackedStringArray("director") instance=ExtResource("16_ydxa1")]
+spawn_scene = ExtResource("2_ball")
+spawn_pattern = 1
+spawn_count_equation = "1"
+director = NodePath("../WaveDirector")
+spawn_components = Array[PackedScene]([ExtResource("20_68rfy")])
+property_overrides = Array[ExtResource("18_pxxt0")]([SubResource("Resource_x2g5i"), SubResource("Resource_l0p4r"), SubResource("Resource_tk1t6")])
+initial_velocity = Vector2(100, 0)
+use_random_angle = true
+random_angle_min = 2.356
+random_angle_max = 3.927
+random_flip_h = true
+
+[node name="WaveDirector2" parent="." instance=ExtResource("15_8p135")]
+trigger_type = 3
+wave_delay = 1.0
+
+[node name="WaveSpawner2" parent="." node_paths=PackedStringArray("director") instance=ExtResource("16_ydxa1")]
+spawn_scene = ExtResource("2_ball")
+spawn_pattern = 1
+spawn_count_equation = "1"
+director = NodePath("../WaveDirector2")
+spawn_components = Array[PackedScene]([ExtResource("20_68rfy")])
+property_overrides = Array[ExtResource("18_pxxt0")]([SubResource("Resource_bg8lp"), SubResource("Resource_4oqwm"), SubResource("Resource_01box")])
+initial_velocity = Vector2(100, 0)
+use_random_angle = true
+random_angle_min = 2.356
+random_angle_max = 3.927
+random_flip_h = true
+
+[node name="WaveDirector(game start)" parent="." instance=ExtResource("15_8p135")]
+trigger_type = 3
+wave_delay = 0.0
+
+[node name="WaveDirector(space_rocks)" parent="." instance=ExtResource("15_8p135")]
+trigger_type = 1
+
+[node name="WaveSpawner(game start)" parent="." node_paths=PackedStringArray("director") instance=ExtResource("16_ydxa1")]
+spawn_scene = ExtResource("20_01box")
+spawn_count_equation = "4"
+director = NodePath("../WaveDirector(game start)")
+initial_velocity = Vector2(50, 0)
+use_random_angle = true
+
+[node name="WaveSpawner(space_rocks)" parent="." node_paths=PackedStringArray("director") instance=ExtResource("16_ydxa1")]
+spawn_scene = ExtResource("20_01box")
+spawn_count_equation = "1"
+director = NodePath("../WaveDirector(space_rocks)")
+spawn_components = Array[PackedScene]([ExtResource("21_68rfy")])
+property_overrides = Array[ExtResource("18_pxxt0")]([SubResource("Resource_pxxt0")])
+initial_velocity = Vector2(50, 0)
+use_random_angle = true
+
+[node name="Timer" parent="." instance=ExtResource("21_dpifu")]
+duration = 6.0
+loop_timer = true
+game_start = true
+
+[node name="WaveDirector(LargeUfos)" parent="." instance=ExtResource("15_8p135")]
+trigger_type = 1
+trigger_value = "large ufos"
+wave_delay = 0.0
+
+[node name="WaveSpawner(LargeUfos)" parent="." node_paths=PackedStringArray("director") instance=ExtResource("16_ydxa1")]
+spawn_scene = ExtResource("22_tk1t6")
+spawn_count_equation = "1"
+spawn_radius = 315.0
+director = NodePath("../WaveDirector(LargeUfos)")
+use_safe_zone = true
+unsafe_groups = Array[String](["enemies"])
+safety_radius = 1000.0
+
+[node name="Timer(LargeUfos)" parent="." instance=ExtResource("21_dpifu")]
+duration = 30.0
+loop_timer = true
+game_start = true
+timer_id = "large ufos"
+
+[node name="WaveDirector(SmallUfos)" parent="." instance=ExtResource("15_8p135")]
+trigger_type = 1
+trigger_value = "small ufos"
+wave_delay = 0.0
+
+[node name="WaveSpawner(SmallUfos)" parent="." node_paths=PackedStringArray("director") instance=ExtResource("16_ydxa1")]
+spawn_scene = ExtResource("22_tk1t6")
+spawn_count_equation = "1"
+spawn_radius = 315.0
+director = NodePath("../WaveDirector(SmallUfos)")
+property_overrides = Array[ExtResource("18_pxxt0")]([SubResource("Resource_5y4c8")])
+spawn_groups = Array[String](["enemies"])
+use_safe_zone = true
+unsafe_groups = Array[String](["enemies"])
+safety_radius = 1000.0
+
+[node name="Timer(SmallUfos)" parent="." instance=ExtResource("21_dpifu")]
+duration = 50.0
+loop_timer = true
+game_start = true
+timer_id = "small ufos"
+
+[node name="MusicRamping" parent="." instance=ExtResource("25_ydxa1")]
+target_group = "balls"
+
+[editable path="Player"]
+[editable path="Opponent"]

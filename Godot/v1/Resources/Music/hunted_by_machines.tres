@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="MusicTrack" load_steps=3 format=3 uid="uid://n86qco7j5gvf"]
+
+[ext_resource type="Script" uid="uid://cfd1lio8bfym2" path="res://v1/Scripts/Flow/music_track.gd" id="1_script"]
+[ext_resource type="AudioStream" uid="uid://bxh38lkifww2p" path="res://v1/Assets/Music/Karl Casey - Hunted by Machines.ogg" id="2_stream"]
+
+[resource]
+script = ExtResource("1_script")
+stream = ExtResource("2_stream")
+loop_start = 46.0
+loop_end = 202.0
+song_title = "Hunted by Machines"
+song_credit = "Music by Karl Casey "
+render_credit = "@ White Bat Audio"

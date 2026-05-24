@@ -1,0 +1,7 @@
+[gd_scene load_steps=2 format=3 uid="uid://b5msh5sbyor3u"]
+
+[ext_resource type="Script" uid="uid://d1x6xxsgnxk5k" path="res://v1/Scripts/Components/ring_spawner.gd" id="1_eavj6"]
+
+[node name="RingSpawner" type="Node"]
+script = ExtResource("1_eavj6")
+component_health = 4

@@ -1,0 +1,40 @@
+[gd_scene load_steps=9 format=3 uid="uid://chmnjqkckrar5"]
+
+[ext_resource type="Script" uid="uid://bssnat1o0bajr" path="res://v1/Scripts/Bodies/bullet_wrapping.gd" id="1_1lbvm"]
+[ext_resource type="PackedScene" uid="uid://cqh5t1y5b71wr" path="res://v1/Scenes/Components/screen_wrap.tscn" id="3_1lbvm"]
+[ext_resource type="PackedScene" uid="uid://bj8ah4sgagfc5" path="res://v1/Scenes/Components/die_on_timer.tscn" id="4_kp2sk"]
+[ext_resource type="PackedScene" uid="uid://cg5rnfuldr2n0" path="res://v1/Scenes/Arms/damage_on_hit.tscn" id="5_68r4x"]
+[ext_resource type="PackedScene" uid="uid://86gfkqtgv2yc" path="res://v1/Scenes/Components/die_on_hit.tscn" id="6_68r4x"]
+[ext_resource type="PackedScene" uid="uid://dga83l4d2rwyv" path="res://v1/Scenes/Flow/sound_synth.tscn" id="6_qe1e6"]
+[ext_resource type="PackedScene" uid="uid://bk5m8n3x7f2rp" path="res://v1/Scenes/Components/hit_effect.tscn" id="7_heff"]
+[ext_resource type="PackedScene" uid="uid://c8x5k2qah0wbd" path="res://v1/Scenes/Effects/bullet_hit_particles.tscn" id="8_bhp"]
+
+[node name="BulletWrapping" type="CharacterBody2D"]
+script = ExtResource("1_1lbvm")
+bounds_margin = 16
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+
+[node name="HitBox" type="Area2D" parent="."]
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="HitBox"]
+
+[node name="ScreenWrap" parent="." instance=ExtResource("3_1lbvm")]
+
+[node name="DamageOnHit" parent="." instance=ExtResource("5_68r4x")]
+target_groups = Array[String](["space_rocks", "players", "enemies", "bricks"])
+
+[node name="DieOnHit" parent="." instance=ExtResource("6_68r4x")]
+
+[node name="DieOnTimer" parent="." instance=ExtResource("4_kp2sk")]
+
+[node name="HitEffect" parent="." instance=ExtResource("7_heff")]
+effect_scenes = Array[PackedScene]([ExtResource("8_bhp")])
+
+[node name="SoundSynth2" parent="." instance=ExtResource("6_qe1e6")]
+play_mode = 2
+effect = 3
+note = 69
+volume = 0.1
+duration = 0.4
+exclusive = true

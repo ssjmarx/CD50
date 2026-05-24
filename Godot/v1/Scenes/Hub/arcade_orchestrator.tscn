@@ -1,0 +1,544 @@
+[gd_scene load_steps=29 format=3 uid="uid://boo0jvdtkr4xv"]
+
+[ext_resource type="Script" uid="uid://dt4uemfscl0x6" path="res://v1/Scripts/Hub/arcade_orchestrator.gd" id="1_script"]
+[ext_resource type="Script" uid="uid://bsyy2vcrh2l1k" path="res://v1/Scripts/Hub/boot_screen.gd" id="2_bootscreen"]
+[ext_resource type="FontFile" uid="uid://imm2iompf7sv" path="res://v1/Assets/Fonts/Kenney Pixel.ttf" id="2_font"]
+[ext_resource type="Script" uid="uid://bdsbfe65crnbu" path="res://v1/Scripts/Hub/arcade_game_entry.gd" id="2_u78ae"]
+[ext_resource type="Resource" uid="uid://cuon4hr5kjdp2" path="res://v1/Scenes/Hub/ArcadeSettings/planetary_attack.tres" id="3_3qvvg"]
+[ext_resource type="Script" uid="uid://dbwux38cuqwad" path="res://v1/Scripts/Hub/game_over_screen.gd" id="3_gameoverscreen"]
+[ext_resource type="Resource" uid="uid://brlrwh62hs1l0" path="res://v1/Scenes/Hub/ArcadeSettings/space_rocks_inverted.tres" id="3_k3wos"]
+[ext_resource type="Resource" uid="uid://bye8mypx151o7" path="res://v1/Scenes/Hub/ArcadeSettings/bug_drop.tres" id="4_k3wos"]
+[ext_resource type="Resource" uid="uid://bcphcp71aw3nt" path="res://v1/Scenes/Hub/ArcadeSettings/dogfight.tres" id="5_hby7g"]
+[ext_resource type="Resource" uid="uid://bvgnffon2rxmn" path="res://v1/Scenes/Hub/ArcadeSettings/meteor_rally.tres" id="8_hby7g"]
+[ext_resource type="Resource" uid="uid://cu3ds5oe230om" path="res://v1/Scenes/Hub/ArcadeSettings/rock_breaker.tres" id="9_el0dv"]
+[ext_resource type="Resource" uid="uid://x1w7jhywtp3r" path="res://v1/Scenes/Hub/ArcadeSettings/brick_breaker.tres" id="10_60qd6"]
+[ext_resource type="Script" uid="uid://cfd1lio8bfym2" path="res://v1/Scripts/Flow/music_track.gd" id="11_mtrack"]
+[ext_resource type="Resource" uid="uid://bcl4p542u027h" path="res://v1/Scenes/Hub/ArcadeSettings/paddle_ball.tres" id="11_odew3"]
+[ext_resource type="Resource" uid="uid://n86qco7j5gvf" path="res://v1/Resources/Music/hunted_by_machines.tres" id="12_music1"]
+[ext_resource type="Resource" uid="uid://cirxnwcy2g34q" path="res://v1/Scenes/Hub/ArcadeSettings/block_drop.tres" id="12_rbdrf"]
+[ext_resource type="Resource" uid="uid://bnsuj1p7iiehg" path="res://v1/Scenes/Hub/ArcadeSettings/bug_blaster.tres" id="13_2acnj"]
+[ext_resource type="PackedScene" uid="uid://c4ew4hmxod4e7" path="res://v1/Scenes/Flow/music_player.tscn" id="14_hby7g"]
+[ext_resource type="Resource" uid="uid://wtj1l710dfsc" path="res://v1/Scenes/Hub/ArcadeSettings/space_rocks.tres" id="14_w8a7a"]
+[ext_resource type="PackedScene" uid="uid://dhuojwtl418fn" path="res://v1/Scenes/Hub/polybius_face.tscn" id="15_jqe77"]
+[ext_resource type="Resource" uid="uid://cqyqy7p7arlrl" path="res://v1/Scenes/Hub/ArcadeSettings/space_bugs.tres" id="15_sbugs"]
+[ext_resource type="Script" uid="uid://e8yavddp8wmg" path="res://v1/Scripts/Flow/sound_synth.gd" id="18_synth"]
+[ext_resource type="PackedScene" uid="uid://cy1ix0s36i76w" path="res://v1/Scenes/Hub/godot_logo.tscn" id="19_logo"]
+
+[sub_resource type="LabelSettings" id="LabelSettings_title"]
+font = ExtResource("2_font")
+font_size = 96
+
+[sub_resource type="LabelSettings" id="LabelSettings_small"]
+font = ExtResource("2_font")
+font_size = 28
+
+[sub_resource type="LabelSettings" id="LabelSettings_gameover_small"]
+font = ExtResource("2_font")
+font_size = 20
+
+[sub_resource type="LabelSettings" id="LabelSettings_gameover"]
+font = ExtResource("2_font")
+font_size = 48
+
+[sub_resource type="LabelSettings" id="LabelSettings_initials"]
+font = ExtResource("2_font")
+font_size = 32
+
+[node name="ArcadeOrchestrator" type="Node2D"]
+script = ExtResource("1_script")
+playlist = Array[ExtResource("2_u78ae")]([ExtResource("11_odew3"), ExtResource("14_w8a7a"), ExtResource("13_2acnj"), ExtResource("12_rbdrf"), ExtResource("10_60qd6"), ExtResource("8_hby7g"), ExtResource("3_k3wos"), ExtResource("15_sbugs"), ExtResource("9_el0dv"), ExtResource("5_hby7g"), ExtResource("4_k3wos"), ExtResource("3_3qvvg")])
+polybius_scene = ExtResource("15_jqe77")
+godot_logo_scene = ExtResource("19_logo")
+music_volume_db = -12.0
+
+[node name="ArcadeMusic" parent="." instance=ExtResource("14_hby7g")]
+playlist = Array[ExtResource("11_mtrack")]([ExtResource("12_music1")])
+volume_db = -20.0
+
+[node name="Background" type="ColorRect" parent="."]
+offset_right = 640.0
+offset_bottom = 360.0
+mouse_filter = 2
+color = Color(0, 0, 0, 1)
+
+[node name="GameContainer" type="Node2D" parent="."]
+
+[node name="BootScreen" type="Control" parent="."]
+layout_mode = 3
+anchors_preset = 0
+offset_right = 640.0
+offset_bottom = 360.0
+mouse_filter = 2
+script = ExtResource("2_bootscreen")
+
+[node name="TitleLabel" type="Label" parent="BootScreen"]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -248.0
+offset_top = -98.0
+offset_right = 248.0
+offset_bottom = -2.0
+grow_horizontal = 2
+grow_vertical = 2
+text = "CD50 ARCADE"
+label_settings = SubResource("LabelSettings_title")
+horizontal_alignment = 1
+
+[node name="LifetimeLabel" type="Label" parent="BootScreen"]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -117.0
+offset_top = -11.0
+offset_right = 117.0
+offset_bottom = 11.0
+grow_horizontal = 2
+grow_vertical = 2
+text = "CAREER: 0"
+label_settings = SubResource("LabelSettings_small")
+horizontal_alignment = 1
+
+[node name="HSTitle" type="Label" parent="BootScreen"]
+visible = false
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -26.0
+offset_top = -5.5
+offset_right = 26.0
+offset_bottom = 5.5
+grow_horizontal = 2
+grow_vertical = 2
+text = "HIGH SCORES"
+label_settings = SubResource("LabelSettings_small")
+
+[node name="HS0" type="Label" parent="BootScreen"]
+visible = false
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -0.5
+offset_top = -5.5
+offset_right = 0.5
+offset_bottom = 5.5
+grow_horizontal = 2
+grow_vertical = 2
+label_settings = SubResource("LabelSettings_small")
+
+[node name="HS1" type="Label" parent="BootScreen"]
+visible = false
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -0.5
+offset_top = -5.5
+offset_right = 0.5
+offset_bottom = 5.5
+grow_horizontal = 2
+grow_vertical = 2
+label_settings = SubResource("LabelSettings_small")
+
+[node name="HS2" type="Label" parent="BootScreen"]
+visible = false
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -0.5
+offset_top = -5.5
+offset_right = 0.5
+offset_bottom = 5.5
+grow_horizontal = 2
+grow_vertical = 2
+label_settings = SubResource("LabelSettings_small")
+
+[node name="HS3" type="Label" parent="BootScreen"]
+visible = false
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -0.5
+offset_top = -5.5
+offset_right = 0.5
+offset_bottom = 5.5
+grow_horizontal = 2
+grow_vertical = 2
+label_settings = SubResource("LabelSettings_small")
+
+[node name="HS4" type="Label" parent="BootScreen"]
+visible = false
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -0.5
+offset_top = -5.5
+offset_right = 0.5
+offset_bottom = 5.5
+grow_horizontal = 2
+grow_vertical = 2
+label_settings = SubResource("LabelSettings_small")
+
+[node name="ModTitle" type="Label" parent="BootScreen"]
+visible = false
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -120.0
+offset_top = 20.0
+offset_right = 120.0
+offset_bottom = 40.0
+grow_horizontal = 2
+grow_vertical = 2
+text = "MODIFIERS"
+label_settings = SubResource("LabelSettings_small")
+
+[node name="ModBtnScopeCreep" type="Button" parent="BootScreen"]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -82.0
+offset_top = 44.0
+offset_right = 158.0
+offset_bottom = 75.0
+grow_horizontal = 2
+grow_vertical = 2
+text = "[   ] SCOPE CREEP"
+alignment = 0
+
+[node name="ModBtnShotgunMode" type="Button" parent="BootScreen"]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -82.0
+offset_top = 68.0
+offset_right = 158.0
+offset_bottom = 99.0
+grow_horizontal = 2
+grow_vertical = 2
+text = "[   ] SHOTGUN MODE"
+alignment = 0
+
+[node name="ModBtnOverclockedCPU" type="Button" parent="BootScreen"]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -82.0
+offset_top = 92.0
+offset_right = 158.0
+offset_bottom = 123.0
+grow_horizontal = 2
+grow_vertical = 2
+text = "[   ] OVERCLOCKED CPU"
+alignment = 0
+
+[node name="ModBtnFeatureCreep" type="Button" parent="BootScreen"]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -82.0
+offset_top = 116.0
+offset_right = 158.0
+offset_bottom = 147.0
+grow_horizontal = 2
+grow_vertical = 2
+text = "[   ] FEATURE CREEP"
+alignment = 0
+
+[node name="ModBtnCrunchTime" type="Button" parent="BootScreen"]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -82.0
+offset_top = 140.0
+offset_right = 158.0
+offset_bottom = 171.0
+grow_horizontal = 2
+grow_vertical = 2
+text = "[   ] CRUNCH TIME"
+alignment = 0
+
+[node name="TooltipLabel" type="Label" parent="BootScreen"]
+visible = false
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = 130.0
+offset_top = 44.0
+offset_right = 310.0
+offset_bottom = 62.0
+grow_horizontal = 2
+grow_vertical = 2
+text = "tooltip"
+label_settings = SubResource("LabelSettings_small")
+
+[node name="InsertCoinLabel" type="Label" parent="BootScreen"]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -248.0
+offset_top = -34.0
+offset_right = 248.0
+offset_bottom = -14.0
+grow_horizontal = 2
+grow_vertical = 2
+text = "PRESS START TO PLAY"
+label_settings = SubResource("LabelSettings_gameover_small")
+horizontal_alignment = 1
+
+[node name="DefeatSound" type="Node2D" parent="."]
+script = ExtResource("18_synth")
+play_mode = 1
+wave_shape = 2
+effect = 3
+note = 48
+volume = 1.0
+duration = 1.0
+source_signal = "game_defeat"
+positional = false
+
+[node name="GameOverScreen" type="Control" parent="."]
+layout_mode = 3
+anchors_preset = 0
+offset_right = 640.0
+offset_bottom = 360.0
+mouse_filter = 2
+script = ExtResource("3_gameoverscreen")
+
+[node name="GameOverLabel" type="Label" parent="GameOverScreen"]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -128.0
+offset_top = -116.0
+offset_right = 128.0
+offset_bottom = -68.0
+grow_horizontal = 2
+grow_vertical = 2
+text = "GAME OVER"
+label_settings = SubResource("LabelSettings_gameover")
+horizontal_alignment = 1
+
+[node name="FinalScoreLabel" type="Label" parent="GameOverScreen"]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -128.0
+offset_top = -76.0
+offset_right = 128.0
+offset_bottom = -52.0
+grow_horizontal = 2
+grow_vertical = 2
+text = "FINAL SCORE: 0"
+label_settings = SubResource("LabelSettings_gameover_small")
+horizontal_alignment = 1
+
+[node name="CareerLabel" type="Label" parent="GameOverScreen"]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -117.0
+offset_top = -60.0
+offset_right = 117.0
+offset_bottom = -40.0
+grow_horizontal = 2
+grow_vertical = 2
+text = "CAREER: 0"
+label_settings = SubResource("LabelSettings_small")
+horizontal_alignment = 1
+
+[node name="UnlockLabel" type="Label" parent="GameOverScreen"]
+layout_mode = 0
+offset_left = 448.0
+offset_top = 186.0
+offset_right = 708.0
+offset_bottom = 266.0
+label_settings = SubResource("LabelSettings_small")
+autowrap_mode = 3
+
+[node name="InitialsPrompt" type="Label" parent="GameOverScreen"]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -130.0
+offset_top = 4.0
+offset_right = 130.0
+offset_bottom = 24.0
+grow_horizontal = 2
+grow_vertical = 2
+text = "NEW HIGH SCORE!"
+label_settings = SubResource("LabelSettings_small")
+horizontal_alignment = 1
+
+[node name="InitialsDisplay" type="Label" parent="GameOverScreen"]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -130.0
+offset_top = 20.0
+offset_right = 130.0
+offset_bottom = 58.0
+grow_horizontal = 2
+grow_vertical = 2
+text = "[A] A  A"
+label_settings = SubResource("LabelSettings_initials")
+horizontal_alignment = 1
+
+[node name="GOHS0" type="Label" parent="GameOverScreen"]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -130.0
+offset_top = 44.0
+offset_right = 130.0
+offset_bottom = 62.0
+grow_horizontal = 2
+grow_vertical = 2
+label_settings = SubResource("LabelSettings_small")
+horizontal_alignment = 1
+
+[node name="GOHS1" type="Label" parent="GameOverScreen"]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -130.0
+offset_top = 68.0
+offset_right = 130.0
+offset_bottom = 86.0
+grow_horizontal = 2
+grow_vertical = 2
+label_settings = SubResource("LabelSettings_small")
+horizontal_alignment = 1
+
+[node name="GOHS2" type="Label" parent="GameOverScreen"]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -130.0
+offset_top = 92.0
+offset_right = 130.0
+offset_bottom = 110.0
+grow_horizontal = 2
+grow_vertical = 2
+label_settings = SubResource("LabelSettings_small")
+horizontal_alignment = 1
+
+[node name="GOHS3" type="Label" parent="GameOverScreen"]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -130.0
+offset_top = 116.0
+offset_right = 130.0
+offset_bottom = 134.0
+grow_horizontal = 2
+grow_vertical = 2
+label_settings = SubResource("LabelSettings_small")
+horizontal_alignment = 1
+
+[node name="GOHS4" type="Label" parent="GameOverScreen"]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -130.0
+offset_top = 140.0
+offset_right = 130.0
+offset_bottom = 158.0
+grow_horizontal = 2
+grow_vertical = 2
+label_settings = SubResource("LabelSettings_small")
+horizontal_alignment = 1
+
+[node name="PlayAgainLabel" type="Label" parent="GameOverScreen"]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -128.0
+offset_top = -36.0
+offset_right = 128.0
+offset_bottom = -12.0
+grow_horizontal = 2
+grow_vertical = 2
+text = "PRESS START TO PLAY AGAIN"
+label_settings = SubResource("LabelSettings_gameover_small")
+horizontal_alignment = 1

@@ -1,0 +1,11 @@
+[gd_scene load_steps=2 format=3 uid="uid://dcynt5doi4k20"]
+
+[ext_resource type="Script" uid="uid://vi07llk3m5n4" path="res://v1/Scripts/Bodies/tetromino.gd" id="1_bg046"]
+
+[node name="Tetromino" type="CharacterBody2D" groups=["tetrominos"]]
+script = ExtResource("1_bg046")
+color = Color(1, 0.45, 0, 1)
+single_cell = true
+collision_groups = Array[String](["tetrominos", "settled_pieces"])
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]

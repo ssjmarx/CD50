@@ -1,0 +1,344 @@
+[gd_scene load_steps=31 format=3 uid="uid://bpj70hfifidra"]
+
+[ext_resource type="Script" uid="uid://bjdgpevhahi6d" path="res://v1/Scripts/Core/universal_game_script.gd" id="1_d0qe2"]
+[ext_resource type="Script" uid="uid://bfkr4fdx316o5" path="res://v1/Scripts/Core/collision_group.gd" id="2_n304l"]
+[ext_resource type="PackedScene" uid="uid://q3xxo1hdrr4j" path="res://v1/Scenes/Flow/tetromino_spawner.tscn" id="3_ubbxl"]
+[ext_resource type="PackedScene" uid="uid://dcynt5doi4k20" path="res://v1/Scenes/Bodies/generic/tetromino_single.tscn" id="4_cqxkq"]
+[ext_resource type="PackedScene" uid="uid://cdm27pfujkscc" path="res://v1/Scenes/Bodies/generic/tetromino_rigged.tscn" id="4_v8b0n"]
+[ext_resource type="PackedScene" uid="uid://dl63uuwsbx8qr" path="res://v1/Scenes/Rules/line_clear_monitor.tscn" id="7_yqjmt"]
+[ext_resource type="PackedScene" uid="uid://bq6cdrx340jp7" path="res://v1/Scenes/Flow/interface.tscn" id="9_3p83b"]
+[ext_resource type="PackedScene" uid="uid://6tweepbhleep" path="res://v1/Scenes/Brains/player_control.tscn" id="9_87oc6"]
+[ext_resource type="PackedScene" uid="uid://b418fukpc5m41" path="res://v1/Scenes/Components/collision_marker.tscn" id="11_w5ai1"]
+[ext_resource type="PackedScene" path="res://v1/Scenes/Components/hold_relay.tscn" id="12_hold"]
+[ext_resource type="FontFile" uid="uid://imm2iompf7sv" path="res://v1/Assets/Fonts/Kenney Pixel.ttf" id="12_ixwad"]
+[ext_resource type="PackedScene" uid="uid://craitf0mklbon" path="res://v1/Scenes/Rules/timer.tscn" id="13_1s8f2"]
+[ext_resource type="PackedScene" uid="uid://dga83l4d2rwyv" path="res://v1/Scenes/Flow/sound_synth.tscn" id="13_snd"]
+[ext_resource type="PackedScene" uid="uid://bj81pr736k256" path="res://v1/Scenes/Components/health.tscn" id="14_health"]
+[ext_resource type="PackedScene" path="res://v1/Scenes/Components/death_effect_brick.tscn" id="15_death"]
+[ext_resource type="PackedScene" path="res://v1/Scenes/Components/flag_palette.tscn" id="16_flag"]
+[ext_resource type="Resource" path="res://v1/Resources/Flags/cuba_10x5.tres" id="17_cuba"]
+[ext_resource type="PackedScene" uid="uid://c4ew4hmxod4e7" path="res://v1/Scenes/Flow/music_player.tscn" id="18_music"]
+[ext_resource type="Script" uid="uid://cfd1lio8bfym2" path="res://v1/Scripts/Flow/music_track.gd" id="19_mtrack"]
+[ext_resource type="Resource" path="res://v1/Resources/Music/el_manisero.tres" id="20_track1"]
+[ext_resource type="Resource" path="res://v1/Resources/Music/son_de_la_loma.tres" id="21_track2"]
+[ext_resource type="PackedScene" uid="uid://dwyyfxniivl1r" path="res://v1/Scenes/Rules/wave_director.tscn" id="22_junkd"]
+[ext_resource type="PackedScene" uid="uid://vlbel76nqh5w" path="res://v1/Scenes/Rules/wave_spawner.tscn" id="23_junks"]
+[ext_resource type="PackedScene" path="res://v1/Scenes/Components/checkerboard_line.tscn" id="24_check"]
+
+[sub_resource type="Resource" id="Resource_ubbxl"]
+script = ExtResource("2_n304l")
+group_name = "tetrominos"
+targets = Array[String](["settled_pieces", "tetrominos", "walls"])
+metadata/_custom_type_script = "uid://bfkr4fdx316o5"
+
+[sub_resource type="Resource" id="Resource_cqxkq"]
+script = ExtResource("2_n304l")
+group_name = "settled_pieces"
+metadata/_custom_type_script = "uid://bfkr4fdx316o5"
+
+[sub_resource type="Resource" id="Resource_572ux"]
+script = ExtResource("2_n304l")
+group_name = "walls"
+targets = Array[String](["tetrominos"])
+metadata/_custom_type_script = "uid://bfkr4fdx316o5"
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_yqjmt"]
+size = Vector2(18, 360)
+
+[sub_resource type="LabelSettings" id="LabelSettings_ixwad"]
+font = ExtResource("12_ixwad")
+
+[sub_resource type="LabelSettings" id="LabelSettings_1s8f2"]
+font = ExtResource("12_ixwad")
+
+[node name="Block Drop" type="Node2D"]
+script = ExtResource("1_d0qe2")
+game_title = "Block Drop"
+collision_groups = Array[ExtResource("2_n304l")]([SubResource("Resource_ubbxl"), SubResource("Resource_cqxkq"), SubResource("Resource_572ux")])
+
+[node name="Interface" parent="." instance=ExtResource("9_3p83b")]
+display_mode = 1
+
+[node name="Attract Text" parent="Interface" index="5"]
+text = "Press Enter to
+start playing."
+
+[node name="Points" parent="Interface" index="7"]
+visible = true
+offset_left = 195.0
+offset_top = 344.0
+offset_right = 267.0
+offset_bottom = 368.0
+rotation = -1.5707964
+
+[node name="PointsNumber" parent="Interface/Points" index="0"]
+visible = true
+
+[node name="Multiplier" parent="Interface" index="8"]
+visible = true
+offset_left = 174.0
+offset_top = 344.0
+offset_right = 290.0
+offset_bottom = 368.0
+rotation = -1.5707964
+
+[node name="MultiplierNumber" parent="Interface/Multiplier" index="0"]
+visible = true
+
+[node name="LineClearMonitor" parent="." instance=ExtResource("7_yqjmt")]
+playfield_origin = Vector2(239, 0)
+use_health_kill = true
+enable_line_flash = false
+score_table = Array[int]([0, 75, 160, 255, 400])
+enable_combo = true
+enable_back_to_back = true
+enable_t_spin_scoring = true
+t_spin_score_table = Array[int]([300, 600, 900, 1200])
+t_spin_mini_score_table = Array[int]([75, 225, 450, 675])
+
+[node name="JunkDirector" parent="." instance=ExtResource("22_junkd")]
+trigger_type = 3
+wave_delay = 0.0
+
+[node name="JunkSpawner" parent="." node_paths=PackedStringArray("director") instance=ExtResource("23_junks")]
+position = Vector2(329, 306)
+spawn_scene = ExtResource("4_cqxkq")
+spawn_pattern = 2
+spawn_count_equation = "1"
+stagger_delay = 0.001
+director = NodePath("../JunkDirector")
+spawn_components = Array[PackedScene]([ExtResource("14_health"), ExtResource("15_death")])
+spawn_groups = Array[String](["settled_pieces"])
+grid_width = 18
+grid_height = 18
+grid_columns = 10
+grid_rows = 0
+grid_spacing = 0
+grid_health_values = Array[int]([])
+grid_score_values = Array[int]([])
+grid_min_skips_per_row = 1
+
+[node name="TetrominoSpawner" parent="." instance=ExtResource("3_ubbxl")]
+position = Vector2(338, 27)
+bag = Array[PackedScene]([ExtResource("4_v8b0n")])
+settled_cell_scene = ExtResource("4_cqxkq")
+settled_cell_components = Array[PackedScene]([ExtResource("14_health"), ExtResource("15_death")])
+settled_group = "settled_pieces"
+active_piece_components = Array[PackedScene]([ExtResource("9_87oc6"), ExtResource("12_hold")])
+preview_origin = Vector2(520, 80)
+enable_hold = true
+hold_origin = Vector2(520, 240)
+
+[node name="StaticBody2D" type="StaticBody2D" parent="."]
+position = Vector2(428, 180)
+
+[node name="CollisionShape2D2" type="CollisionShape2D" parent="StaticBody2D"]
+shape = SubResource("RectangleShape2D_yqjmt")
+
+[node name="CollisionMarker" parent="StaticBody2D" instance=ExtResource("11_w5ai1")]
+collision_groups = Array[String](["walls"])
+
+[node name="WallChecker" parent="StaticBody2D" instance=ExtResource("24_check")]
+position = Vector2(0, -180)
+cell_size = 3
+columns = 6
+rows = 120
+color_a = Color(0.745, 0.745, 0.745, 1)
+
+[node name="StaticBody2D2" type="StaticBody2D" parent="."]
+position = Vector2(230, 180)
+
+[node name="CollisionShape2D2" type="CollisionShape2D" parent="StaticBody2D2"]
+shape = SubResource("RectangleShape2D_yqjmt")
+
+[node name="CollisionMarker" parent="StaticBody2D2" instance=ExtResource("11_w5ai1")]
+collision_groups = Array[String](["walls"])
+
+[node name="WallChecker" parent="StaticBody2D2" instance=ExtResource("24_check")]
+position = Vector2(0, -180)
+cell_size = 3
+columns = 6
+rows = 120
+color_a = Color(0.745, 0.745, 0.745, 1)
+
+[node name="Sounds" type="Node2D" parent="."]
+
+[node name="LockSound" parent="Sounds" node_paths=PackedStringArray("source_node") instance=ExtResource("13_snd")]
+play_mode = 1
+effect = 4
+note = 57
+volume = 0.3
+duration = 0.4
+source_node = NodePath("../../TetrominoSpawner")
+source_signal = "piece_did_lock"
+positional = false
+
+[node name="LineClearSound" parent="Sounds" node_paths=PackedStringArray("source_node") instance=ExtResource("13_snd")]
+play_mode = 1
+effect = 4
+note = 62
+volume = 0.5
+duration = 0.5
+source_node = NodePath("../../LineClearMonitor")
+source_signal = "lines_cleared"
+positional = false
+
+[node name="LevelUpSound" parent="Sounds" node_paths=PackedStringArray("source_node") instance=ExtResource("13_snd")]
+play_mode = 1
+effect = 4
+note = 69
+volume = 0.5
+duration = 0.5
+source_node = NodePath("../../LineClearMonitor")
+source_signal = "level_changed"
+positional = false
+
+[node name="RotateSound" parent="Sounds" node_paths=PackedStringArray("source_node") instance=ExtResource("13_snd")]
+play_mode = 1
+wave_shape = 3
+effect = 4
+note = 72
+duration = 0.2
+source_node = NodePath("../../TetrominoSpawner")
+source_signal = "piece_rotated"
+positional = false
+
+[node name="MoveSound" parent="Sounds" node_paths=PackedStringArray("source_node") instance=ExtResource("13_snd")]
+play_mode = 1
+wave_shape = 4
+effect = 4
+duration = 0.2
+source_node = NodePath("../../TetrominoSpawner")
+source_signal = "piece_moved"
+positional = false
+
+[node name="GameOverSound" parent="Sounds" node_paths=PackedStringArray("source_node") instance=ExtResource("13_snd")]
+play_mode = 1
+effect = 3
+volume = 0.5
+duration = 0.5
+source_node = NodePath("../..")
+source_signal = "state_changed"
+filter_value = "2"
+positional = false
+
+[node name="HoldSound" parent="Sounds" node_paths=PackedStringArray("source_node") instance=ExtResource("13_snd")]
+play_mode = 1
+effect = 3
+note = 72
+volume = 0.3
+duration = 0.2
+source_node = NodePath("../..")
+source_signal = "hold_requested"
+positional = false
+
+[node name="TSpinSound" parent="Sounds" node_paths=PackedStringArray("source_node") instance=ExtResource("13_snd")]
+play_mode = 1
+wave_shape = 0
+effect = 1
+note = 76
+volume = 0.5
+duration = 0.5
+source_node = NodePath("../..")
+source_signal = "t_spin_detected"
+filter_value = "true"
+positional = false
+
+[node name="B2BSound" parent="Sounds" node_paths=PackedStringArray("source_node") instance=ExtResource("13_snd")]
+play_mode = 1
+wave_shape = 0
+effect = 1
+note = 79
+volume = 0.5
+duration = 0.5
+source_node = NodePath("../../LineClearMonitor")
+source_signal = "back_to_back"
+positional = false
+
+[node name="HardDropSound" parent="Sounds" node_paths=PackedStringArray("source_node") instance=ExtResource("13_snd")]
+play_mode = 1
+effect = 4
+note = 48
+volume = 0.4
+duration = 0.3
+source_node = NodePath("../../TetrominoSpawner")
+source_signal = "piece_hard_dropped"
+positional = false
+
+[node name="Visuals" type="Node2D" parent="."]
+
+[node name="NextFrame" type="ColorRect" parent="Visuals"]
+offset_left = 472.0
+offset_top = 42.0
+offset_right = 564.0
+offset_bottom = 134.0
+color = Color(0.745, 0.745, 0.745, 1)
+
+[node name="NextFrameBg" type="ColorRect" parent="Visuals"]
+offset_left = 474.0
+offset_top = 44.0
+offset_right = 562.0
+offset_bottom = 132.0
+color = Color(0, 0, 0, 0.8)
+
+[node name="NextLabel" type="Label" parent="Visuals"]
+offset_left = 482.0
+offset_top = 24.0
+offset_right = 542.0
+offset_bottom = 41.0
+theme_override_font_sizes/font_size = 12
+text = "NEXT"
+label_settings = SubResource("LabelSettings_ixwad")
+
+[node name="HoldFrame" type="ColorRect" parent="Visuals"]
+offset_left = 472.0
+offset_top = 198.0
+offset_right = 564.0
+offset_bottom = 290.0
+color = Color(0.745, 0.745, 0.745, 1)
+
+[node name="HoldFrameBg" type="ColorRect" parent="Visuals"]
+offset_left = 474.0
+offset_top = 200.0
+offset_right = 562.0
+offset_bottom = 288.0
+color = Color(0, 0, 0, 0.8)
+
+[node name="HoldLabel" type="Label" parent="Visuals"]
+offset_left = 482.0
+offset_top = 180.0
+offset_right = 542.0
+offset_bottom = 197.0
+theme_override_font_sizes/font_size = 12
+text = "HOLD"
+label_settings = SubResource("LabelSettings_1s8f2")
+
+[node name="Timer" parent="." instance=ExtResource("13_1s8f2")]
+duration = 20.0
+game_start = true
+
+[node name="FlagPalette" parent="." instance=ExtResource("16_flag")]
+position = Vector2(239, 270)
+source_signal = "piece_settled"
+flag_resource = ExtResource("17_cuba")
+
+[node name="FlagPalette2" parent="." instance=ExtResource("16_flag")]
+position = Vector2(239, 162)
+source_signal = "piece_settled"
+flag_resource = ExtResource("17_cuba")
+
+[node name="FlagPalette3" parent="." instance=ExtResource("16_flag")]
+position = Vector2(239, 54)
+source_signal = "piece_settled"
+flag_resource = ExtResource("17_cuba")
+
+[node name="MusicPlayer" parent="." node_paths=PackedStringArray("speed_ramp_source") instance=ExtResource("18_music")]
+playlist = Array[ExtResource("19_mtrack")]([ExtResource("20_track1"), ExtResource("21_track2")])
+loop = true
+volume_db = 12.5
+fade_out_duration = 1.0
+speed_ramp_source = NodePath("../LineClearMonitor")
+speed_ramp_signal = "level_changed"
+speed_per_level = 0.025
+
+[editable path="Interface"]
