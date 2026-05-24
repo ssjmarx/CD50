@@ -22,6 +22,9 @@ func _ready() -> void:
 	process_physics_priority = CDEnums.category_to_priority(component_category)
 	
 	call_deferred("_initialize")
+	
+	entity.connect("entity_deactivating", _on_entity_deactivating)
+	entity.connect("entity_activated", _on_entity_activated)
 
 ## step two setup
 func _initialize() -> void:
@@ -33,8 +36,8 @@ func _on_initialize() -> void:
 
 ## virtual method for subclass cleanup before deletion/pooling
 func _on_entity_deactivating() -> void:
-	pass
+	set_physics_process(false)
 
 ## virtual method for subclass reactivation from pool
 func _on_entity_activated() -> void:
-	pass
+	set_physics_process(true)

@@ -1,12 +1,11 @@
-[gd_resource type="Resource" script_class="FlagResource" load_steps=2 format=3]
+[gd_resource type="Resource" script_class="FlagResource" load_steps=2 format=3 uid="uid://bkjuq8as5rxbm"]
 
 [ext_resource type="Script" uid="uid://bck7ggx4nghd7" path="res://v1/Scripts/Core/flag_resource.gd" id="1_fr"]
 
 [resource]
 script = ExtResource("1_fr")
-
 flag_name = "Ethiopia"
 columns = 10
 palette_keys = "GYR"
-palette_colors = [Color(0.07, 0.47, 0.13, 1), Color(0.96, 0.75, 0.0, 1), Color(0.86, 0.08, 0.09, 1)]
+palette_colors = [Color(0.07, 0.47, 0.13, 1), Color(0.96, 0.75, 0, 1), Color(0.86, 0.08, 0.09, 1)]
 rows = PackedStringArray("GGGGGGGGGG", "GGGGGGGGGG", "GGGGGGGGGG", "YYYYYYYYYY", "YYYYYYYYYY", "YYYYYYYYYY", "RRRRRRRRRR", "RRRRRRRRRR", "RRRRRRRRRR", "RRRRRRRRRR")

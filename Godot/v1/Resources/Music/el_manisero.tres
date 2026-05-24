@@ -1,7 +1,7 @@
-[gd_resource type="Resource" script_class="MusicTrack" load_steps=3 format=3]
+[gd_resource type="Resource" script_class="MusicTrack" load_steps=3 format=3 uid="uid://4t4n47mcbgw7"]
 
 [ext_resource type="Script" uid="uid://cfd1lio8bfym2" path="res://v1/Scripts/Flow/music_track.gd" id="1_script"]
-[ext_resource type="AudioStreamOggVorbis" uid="uid://d4b1yfkoikj68" path="res://v1/Assets/Music/el_manisero.ogg" id="2_stream"]
+[ext_resource type="AudioStream" uid="uid://d4b1yfkoikj68" path="res://v1/Assets/Music/el_manisero.ogg" id="2_stream"]
 
 [resource]
 script = ExtResource("1_script")

@@ -32,7 +32,7 @@ var _collision_buffer: CDCollisionBuffer
 var state: CDEnums.EntityState = CDEnums.EntityState.ACTIVE
 
 ## owning pool, if null means that CDEntity is not pooled
-var pool: CDObjectPool
+var pool
 
 ## universal references
 var game: CDGame
