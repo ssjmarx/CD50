@@ -1,10 +1,12 @@
 ## mark that follows a target CDEntity with lock-on behavior
 class_name MobileMark extends CDMark
 
-@export var target_entity_path: NodePath = ""
-@export var target_groups: Array[StringName] = []
 @export var follow_offset: Vector2 = Vector2.ZERO
 @export var lerp_speed: float = 10.0
+
+@export_group("Target")
+@export var target_entity_path: NodePath = ""
+@export var target_groups: Array[StringName] = []
 
 var _target: CDEntity
 

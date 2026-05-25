@@ -1,0 +1,6 @@
+[gd_scene load_steps=2 format=3 uid="uid://dnupvpm1xtec8"]
+
+[ext_resource type="Script" uid="uid://ctsranetcrrjt" path="res://scripts/entity components/legs/acceleration_target_leg.gd" id="1_wklpy"]
+
+[node name="AccelerationTargetLeg" type="Node2D"]
+script = ExtResource("1_wklpy")

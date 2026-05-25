@@ -1,11 +1,11 @@
 # Current Status: CD50 — Arcade Cabinet
 
-**Last Updated:** 2026-05-23  
+**Last Updated:** 2026-05-24  
 **Engine:** Godot 4.5 (GDScript)  
-**Architecture:** V1 Entity-Component (active) → V2 Composable Architecture (in planning)  
+**Architecture:** V2 Composable Architecture (active development) — V1 archived to `Godot/v1/`  
 **Playable Games:** Paddle Ball, Brick Breaker, Space Rocks, Meteor Rally, Dogfight, Bug Blaster, Block Drop (Modern), Rock Breaker, Bug Drop, Space Bugs, Planetary Attack!, Space Rocks Inverted — ALL componentized, zero game scripts
-**In Progress:** V2 Architecture — Plan 19 (Core Infrastructure) COMPLETE, Plan 19.5 (Object Pooling) is next
-**Recent Completed:** Plan 19 — all 10 V2 core scripts written (CDEntity, CDGame, CDComponent2D, CDStageComponent2D, CDCollisionBuffer, CDGroupRegistry, CDCollisionMatrix, CDInputRouter, CDEnums, CDCollisionGroup)
+**In Progress:** V2 Architecture — Plans 19, 19.5, 20, 21 COMPLETE. Plan 22 (Arms + Guts) is next.
+**Recent Completed:** Plan 21 — all 13 Brains, 15 Legs, 1 Gut, WallKickResource written. Plan 20 — all 4 CueCards, 2 Goals, 4 Marks written. Plan 19.5 — CDObjectPool written.
 **Demo Status:** Code-locked at 12 games. Only Steam wishlist link remains. Itch.io demo stays on V1 architecture.
 
 ---
@@ -191,17 +191,19 @@ Godot/Scripts/
 
 ### V2 Implementation Plans
 
-| Plan | Scope | Doc |
-|------|-------|-----|
-| 19 | Core Infrastructure | `planning/19 - V2 Core Infrastructure.md` |
-| 19.5 | Object Pooling | `planning/19.5 - V2 Object Pooling.md` |
-| 20 | Stage (CueCards, Goals, Marks) | `planning/20 - V2 Stage.md` |
-| 21 | Brains + Legs | `planning/21 - V2 Brains + Legs.md` |
-| 22 | Arms + Guts | `planning/22 - V2 Arms + Guts.md` |
-| 23 | Spawners | `planning/23 - V2 Spawners.md` |
-| 24 | Faces, Voices, Projections & Speakers | `planning/24 - V2 Faces, Voices, Projections & Speakers.md` |
-| 25 | Swarm Controllers + Galaga | `planning/25 - V2 Swarm Controllers + Galaga.md` |
-| 26 | Block Drop V2 | `planning/26 - Block Drop V2.md` |
+| Plan | Scope | Status | Doc |
+|------|-------|--------|-----|
+| 19 | Core Infrastructure | ✅ Complete | `planning/19 - V2 Core Infrastructure.md` |
+| 19.5 | Object Pooling | ✅ Complete | `planning/19.5 - V2 Object Pooling.md` |
+| 20 | Stage (CueCards, Goals, Marks) | ✅ Complete | `planning/20 - V2 Stage.md` |
+| 21 | Brains + Legs | ✅ Complete | `planning/21 - V2 Brains + Legs.md` |
+| 22 | Arms + Guts | 🔲 Next | `planning/22 - V2 Arms + Guts.md` |
+| 23 | Spawners | 🔲 Planned | `planning/23 - V2 Spawners.md` |
+| 24 | Faces, Voices, Projections & Speakers | 🔲 Planned | `planning/24 - V2 Faces, Voices, Projections & Speakers.md` |
+| 25 | Swarm Controllers + Galaga | 🔲 Planned | `planning/25 - V2 Swarm Controllers + Galaga.md` |
+| 26 | Block Drop V2 | 🔲 Planned | `planning/26 - Block Drop V2.md` |
+
+**Full V2 component catalogue:** `memory-bank/07 - Component Catalogue V2.md` (52 scripts written)
 
 ---
 

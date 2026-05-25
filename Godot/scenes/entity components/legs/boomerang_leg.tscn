@@ -1,0 +1,6 @@
+[gd_scene load_steps=2 format=3 uid="uid://buw15x44mcwk5"]
+
+[ext_resource type="Script" uid="uid://bjffe56pdvmqv" path="res://scripts/entity components/legs/boomerang_leg.gd" id="1_h4e44"]
+
+[node name="BoomerangLeg" type="Node2D"]
+script = ExtResource("1_h4e44")

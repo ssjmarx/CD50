@@ -1,0 +1,6 @@
+[gd_scene load_steps=2 format=3 uid="uid://bet7mpf2gu8yp"]
+
+[ext_resource type="Script" uid="uid://dkitfh0dqgxx8" path="res://scripts/entity components/legs/screen_wrap_leg.gd" id="1_bs7hf"]
+
+[node name="ScreenWrapLeg" type="Node2D"]
+script = ExtResource("1_bs7hf")

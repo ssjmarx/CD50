@@ -1,0 +1,6 @@
+[gd_scene load_steps=2 format=3 uid="uid://k52evfm2d4xt"]
+
+[ext_resource type="Script" uid="uid://c2ywmt2ckw1e4" path="res://scripts/entity components/brains/ai_formation_brain.gd" id="1_f35b5"]
+
+[node name="AIFormationBrain" type="Node2D"]
+script = ExtResource("1_f35b5")

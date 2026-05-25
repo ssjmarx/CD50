@@ -1,0 +1,6 @@
+[gd_scene load_steps=2 format=3 uid="uid://c65kydvcakuo1"]
+
+[ext_resource type="Script" uid="uid://dwixe2l7kfegu" path="res://scripts/entity components/brains/ai_idle_wander_brain.gd" id="1_fvf3p"]
+
+[node name="AIIdleWanderBrain" type="Node2D"]
+script = ExtResource("1_fvf3p")

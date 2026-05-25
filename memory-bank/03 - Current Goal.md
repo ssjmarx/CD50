@@ -1,7 +1,7 @@
 # Current Goal
 
-**Last Updated:** 2026-05-23  
-**Status:** Active — V2 Object Pooling (Plan 19.5)
+**Last Updated:** 2026-05-24  
+**Status:** Active — V2 Arms + Guts (Plan 22)
 
 ---
 
@@ -17,18 +17,20 @@ The itch.io demo is **code-locked** (12 games, all componentized). We are now bu
 | # | Plan | Scope | Status |
 |---|------|-------|--------|
 | 1 | 19 — V2 Core Infrastructure | CDEntity, CDGame, CDComponent2D, CDCollisionBuffer, CDGroupRegistry, CDCollisionMatrix, CDInputRouter, CDEnums | ✅ Complete |
-| 1b | 19.5 — V2 Object Pooling | CDObjectPool, pool-aware activate/deactivate | 🔲 Next |
-| 2 | 20 — V2 Stage | CDCueCard, ScoreCard, LivesCard, TimerCard, WaveCard, Goals, CDMarks | 🔲 Planned |
-| 3 | 21 — V2 Brains + Legs | 14 Brains, 18 Legs — complete movement catalog | 🔲 Planned |
-| 4 | 22 — V2 Arms + Guts | 11 Arms, 12 Guts — collision response + internal state | 🔲 Planned |
+| 1b | 19.5 — V2 Object Pooling | CDObjectPool, pool-aware activate/deactivate | ✅ Complete |
+| 2 | 20 — V2 Stage | CDCueCard, ScoreCard, LivesCard, TimerCard, WaveCard, Goals, CDMarks | ✅ Complete |
+| 3 | 21 — V2 Brains + Legs | 13 Brains, 15 Legs, 1 Gut, WallKickResource | ✅ Complete |
+| 4 | 22 — V2 Arms + Guts | 11 Arms, 12 Guts — collision response + internal state | 🔲 Next |
 | 5 | 23 — V2 Spawners | CDStageSpawner, Point/Edge/GridSpawner, CDGridLayout, CDSafeZone | 🔲 Planned |
 | 6 | 24 — V2 Faces, Voices, Projections & Speakers | CDFace, CDFaceBinding, CDVoice, CDSpeaker, CDSoundBank, CDProjection | 🔲 Planned |
 | 7 | 25 — V2 Swarm Controllers + Galaga | SwarmGridStep, Formation, Flock, Shoot controllers + Galaga proof | 🔲 Planned |
 | 8 | 26 — Block Drop V2 | Full Block Drop remake proving Pseudogrid pattern | 🔲 Planned |
 
-### Immediate Next Step: Plan 19.5 — V2 Object Pooling
+### Immediate Next Step: Plan 22 — V2 Arms + Guts
 
-Build CDObjectPool and pool-aware activate/deactivate lifecycle. CDEntity already has the DEACTIVATING→INACTIVE state machine from Plan 19; this plan adds the pool manager and spawn/return flow.
+Build the Arms (collision response, weapons) and Guts (internal state trackers) categories. Arms consume collision signals at Priority 40 and affect the world. Guts hold entity state at Priority 50. See `planning/22 - V2 Arms + Guts.md` for the full plan.
+
+**52 V2 scripts written so far** across Core (13), Brains (13), Legs (15), Guts (1), Stage (10). Full catalogue: `memory-bank/07 - Component Catalogue V2.md`
 
 ### Demo Status
 
@@ -81,10 +83,9 @@ The itch.io demo is code-locked at 12 games. The only unimplemented feature is t
 **Status:** COMPLETE (May 23, 2026)  
 **Scope:** Foundation of the V2 Composable Architecture — CDEntity, CDGame, CDComponent2D, CDCollisionBuffer, CDGroupRegistry, CDCollisionMatrix, CDInputRouter, CDEnums, CDCollisionGroup. All 10 scripts written. V1 architecture moves to `Godot/v1/`.
 
-### Plan 20 — V2 Stage (Cue Cards, Goals, Interface)
-**Status:** Planning doc complete, implementation not started  
-**Timeline:** After Plan 19 implementation  
-**Scope:** First consumers of CDGame's game bus. CDCueCard base class, 5 Cue Cards (ScoreCard, MultiplierCard, LivesCard, TimerCard, WaveCard), 4 Goals (GroupCountGoal, ScoreThresholdGoal, LivesDepletedGoal, TimerExpiredGoal). Eliminates GroupCountCard (CDGroupRegistry emits directly). Cue Cards are Controls with `is_interface` bool for optional display.
+### Plan 20 — V2 Stage (Cue Cards, Goals, Marks)
+**Status:** COMPLETE (May 24, 2026)  
+**Scope:** CDCueCard base class, 4 Cue Cards (ScoreCard, LivesCard, TimerCard, WaveCard), 2 Goals (GroupCountGoal, ScoreThresholdGoal), 4 Marks (CDMark, CountMark, MobileMark, TimedMark). All 10 scripts written.
 
 ---
 
@@ -130,6 +131,10 @@ The following plans have been **deleted** from the active pipeline:
 
 | Plan | Description | Completed |
 |------|-------------|-----------|
+| 21 | V2 Brains + Legs (13 Brains, 15 Legs, 1 Gut, WallKickResource — 30 scripts) | 2026-05-24 |
+| 20 | V2 Stage (4 CueCards, 2 Goals, 4 Marks — 10 scripts) | 2026-05-24 |
+| 19.5 | V2 Object Pooling (CDObjectPool) | 2026-05-24 |
+| 19 | V2 Core Infrastructure (CDEntity, CDGame, CDInputRouter, etc. — 13 scripts) | 2026-05-23 |
 | 18 | Planetary Attack Remake (scrolling playfield, camera_midpoint, playfield_size) | 2026-05-20 |
 | 16 | Cambrian Remix Explosion (4 games, 5 modifiers, progression system) | 2026-05-20 |
 | 14 | Arcade Juice Part 1 (Custom CRT Shader, Vector Monitor, Phosphor Trails) | 2026-05-06 |

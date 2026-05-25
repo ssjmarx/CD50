@@ -1,0 +1,6 @@
+[gd_scene load_steps=2 format=3 uid="uid://moyji37tsrlp"]
+
+[ext_resource type="Script" uid="uid://3mac12lhetsy" path="res://scripts/entity components/brains/player_aim_brain.gd" id="1_sjey2"]
+
+[node name="PlayerAimBrain" type="Node2D"]
+script = ExtResource("1_sjey2")

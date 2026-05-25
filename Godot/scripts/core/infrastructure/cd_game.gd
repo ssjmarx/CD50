@@ -9,6 +9,7 @@ class_name CDGame extends Node2D
 @onready var collision_buffer: CDCollisionBuffer = $CDCollisionBuffer
 @onready var group_registry: CDGroupRegistry = $CDGroupRegistry
 @onready var collision_matrix: CDCollisionMatrix = $CDCollisionMatrix
+@onready var input_router: CDInputRouter = $CDInputRouter
 
 var _current_state: CDEnums.GameState = CDEnums.GameState.ATTRACT
 

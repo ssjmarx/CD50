@@ -288,6 +288,11 @@ func set_collision_rect(width: float, height: float) -> void:
 	node.shape = shape
 	add_child(node)
 
+## ensures a user signal exists on this entity
+func ensure_signal(signal_name: StringName) -> void:
+	if not has_signal(signal_name):
+		add_user_signal(signal_name)
+
 ## find CDEntity ancestor
 static func find_ancestor(node: Node) -> CDEntity:
 	var current = node.get_parent()

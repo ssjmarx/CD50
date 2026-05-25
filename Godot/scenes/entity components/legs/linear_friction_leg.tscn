@@ -1,0 +1,6 @@
+[gd_scene load_steps=2 format=3 uid="uid://ci3gja75p0qed"]
+
+[ext_resource type="Script" uid="uid://dgc78i4xdf6nm" path="res://scripts/entity components/legs/linear_friction_leg.gd" id="1_hm8ew"]
+
+[node name="LinearFrictionLeg" type="Node2D"]
+script = ExtResource("1_hm8ew")

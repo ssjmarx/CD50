@@ -1,0 +1,6 @@
+[gd_scene load_steps=2 format=3 uid="uid://0vmrifgo6qki"]
+
+[ext_resource type="Script" uid="uid://bsdgtm1fvog2b" path="res://scripts/entity components/brains/ai_repeat_action_brain.gd" id="1_h3fgd"]
+
+[node name="AIRepeatActionBrain" type="Node2D"]
+script = ExtResource("1_h3fgd")

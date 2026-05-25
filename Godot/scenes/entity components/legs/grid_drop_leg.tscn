@@ -1,0 +1,6 @@
+[gd_scene load_steps=2 format=3 uid="uid://dnspcaasu722h"]
+
+[ext_resource type="Script" uid="uid://bi0las2cc0q51" path="res://scripts/entity components/legs/grid_drop_leg.gd" id="1_jfkww"]
+
+[node name="GridDropLeg" type="Node2D"]
+script = ExtResource("1_jfkww")

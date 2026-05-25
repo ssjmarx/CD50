@@ -79,3 +79,10 @@ enum InputAction {
 	ACTION_PRESSED,
 	ACTION_RELEASED,
 }
+
+## patterns for "patrol" AI brains
+enum PatrolMode {
+	LOOP,
+	RETRACE,
+	ONCE,
+}
