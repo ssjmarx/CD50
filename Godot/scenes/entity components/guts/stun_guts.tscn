@@ -1,0 +1,6 @@
+[gd_scene load_steps=2 format=3 uid="uid://bm6uwbsf4quup"]
+
+[ext_resource type="Script" uid="uid://kv4wuk7tc4d" path="res://scripts/entity components/guts/stun_guts.gd" id="1_bq6nm"]
+
+[node name="StunGuts" type="Node2D"]
+script = ExtResource("1_bq6nm")

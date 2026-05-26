@@ -86,3 +86,22 @@ enum PatrolMode {
 	RETRACE,
 	ONCE,
 }
+
+## comparison modes for entity comparisons (ie OnJoust arms)
+enum EntityCompare {
+	VELOCITY,
+	Y_POSITION,
+	CUSTOM, # define any attribute located on a component
+}
+
+## tiebreaker behavior for entity comparisons
+enum EntityCompareTiebreaker {
+	DONT_FIRE,
+	FIRE,
+}
+
+## invalid comparison handling for entity comparisons
+enum EntityCompareInvalidAction {
+	DONT_FIRE,
+	FIRE,
+}

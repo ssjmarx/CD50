@@ -27,10 +27,11 @@ func _on_move(direction: Vector2) -> void:
 	
 	if check_collision and _is_occupied(target_pos):
 		for sig in step_blocked_signals:
-			entity.emit_signal(sig)
+			entity.emit_signal(sig, direction)
 		return
 	
 	entity.request_position_add(step)
+
 
 func _is_occupied(pos: Vector2) -> bool:
 	var space_state := entity.get_world_2d().direct_space_state

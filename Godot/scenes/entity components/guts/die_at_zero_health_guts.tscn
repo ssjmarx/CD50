@@ -1,0 +1,6 @@
+[gd_scene load_steps=2 format=3 uid="uid://bfxtjii32duju"]
+
+[ext_resource type="Script" uid="uid://jjdj2qrlrfav" path="res://scripts/entity components/guts/die_at_zero_health_guts.gd" id="1_de0mn"]
+
+[node name="DieAtZeroHealthGuts" type="Node2D"]
+script = ExtResource("1_de0mn")

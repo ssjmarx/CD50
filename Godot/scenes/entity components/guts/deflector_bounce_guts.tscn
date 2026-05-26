@@ -1,0 +1,6 @@
+[gd_scene load_steps=2 format=3 uid="uid://bx6yaotnsugw3"]
+
+[ext_resource type="Script" uid="uid://blmlcbiyjp0ys" path="res://scripts/entity components/guts/deflector_bounce_guts.gd" id="1_ufsus"]
+
+[node name="DeflectorBounceGuts" type="Node2D"]
+script = ExtResource("1_ufsus")

@@ -29,6 +29,11 @@ func _ready() -> void:
 			mask |= _layer_map[target_name]
 		_mask_map[group.group_name] = mask
 
+## returns the layer bit value for a collision group name.
+## used by CDEntity to resolve group-based handler registration to bitmasks.
+func get_layer_for_group(group_name: StringName) -> int:
+	return _layer_map.get(group_name, 0)
+
 ## sets collision_layer and collision_mask on CDEntity
 func configure(entity: CDEntity) -> void:
 	var layer = 0

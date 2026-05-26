@@ -1,0 +1,6 @@
+[gd_scene load_steps=2 format=3 uid="uid://5gs7o4yyo06t"]
+
+[ext_resource type="Script" uid="uid://c7djvejyuq2wj" path="res://scripts/entity components/guts/shieldpool_guts.gd" id="1_t8w7o"]
+
+[node name="ShieldpoolGuts" type="Node2D"]
+script = ExtResource("1_t8w7o")

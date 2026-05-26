@@ -38,6 +38,9 @@ var pool
 var game: CDGame
 var _spawn_position: Vector2
 
+## collision handler registry — guts components register here to override physics
+var _collision_handlers: Array # [{layers: int, handler: Callable}] — 0 = catch-all
+
 ## prevents infinite collisions in corners
 const MAX_COLLISION_ITERATIONS: int = 4
 
@@ -65,7 +68,7 @@ func _ready() -> void:
 	add_user_signal("rotated", 	[{"name": "old_rot", "type": TYPE_FLOAT},
 								{"name": "new_rot", "type": TYPE_FLOAT}])
 	
-	connect("request_deactivate", deactivate)
+	connect("request_deactivate", _on_request_deactivate)
 	
 	_create_default_collision_shape()
 	
@@ -99,28 +102,21 @@ func _physics_process(delta: float) -> void:
 	var remaining = velocity * delta
 	
 	for i in range(MAX_COLLISION_ITERATIONS):
+		if remaining.length_squared() < 0.0001:
+			break
 		var collision = move_and_collide(remaining)
 		if not collision:
 			break
-	
-		var normal = collision.get_normal()
+		
 		var collider = collision.get_collider()
-	
-		# buffer collisions
 		if collider is CDEntity:
-			_pending_collisions.append({"collider": collider, "normal": normal})
-	
-		# handle collisions based on setting
-		match collision_response:
-			CDEnums.CollisionResponse.SLIDE:
-				remaining = collision.get_remainder().slide(normal)
-				velocity = velocity.slide(normal)
-			CDEnums.CollisionResponse.BOUNCE:
-				remaining = collision.get_remainder().bounce(normal)
-				velocity = velocity.bounce(normal)
-			CDEnums.CollisionResponse.STOP:
-				velocity = Vector2.ZERO
-				break
+			_pending_collisions.append({"collider": collider, "normal": collision.get_normal()})
+		
+		var handler = _find_collision_handler(collider)
+		if handler.is_valid():
+			remaining = handler.call(collision)
+		else:
+			remaining = _default_collision_response(collision)
 	
 	# rotation
 	global_rotation += angular_velocity * delta
@@ -206,12 +202,20 @@ func flush_collisions() -> void:
 			collider.emit_signal("collided_by", self, -normal)
 	_pending_collisions.clear()
 
-## cleanup and die
+## signal handler for request_deactivate
+func _on_request_deactivate() -> void:
+	deactivate()
+
+## phase 1: immediate mark — entity stays fully functional until end of frame
 func deactivate() -> void:
 	if state != CDEnums.EntityState.ACTIVE:
 		return
 	state = CDEnums.EntityState.DEACTIVATING
+	set_physics_process(false)
+	call_deferred("_complete_deactivation")
 
+## phase 2: deferred cleanup — runs at priority 99 (end of frame)
+func _complete_deactivation() -> void:
 	# disable collisions
 	for child in get_children():
 		if child is CollisionShape2D:
@@ -219,7 +223,7 @@ func deactivate() -> void:
 		elif child is CollisionPolygon2D:
 			child.set_deferred("disabled", true)
 
-	# notify components
+	# notify components — disconnect signals, reset state
 	emit_signal("entity_deactivating")
 
 	# clean up groups
@@ -231,12 +235,11 @@ func deactivate() -> void:
 	# return to pool or free
 	if pool != null:
 		visible = false
-		set_physics_process(false)
 		state = CDEnums.EntityState.INACTIVE
 		pool.release(self)
 	else:
 		state = CDEnums.EntityState.INACTIVE
-		call_deferred("queue_free")
+		queue_free()
 
 ## wake from pool
 func activate() -> void:
@@ -315,3 +318,56 @@ func _clear_collision_shapes() -> void:
 	for child in get_children():
 		if child is CollisionShape2D or child is CollisionPolygon2D:
 			child.queue_free()
+
+## register a custom collision handler for specific collider groups.
+## empty target_groups = catch-all (layers = 0, matches everything).
+## resolves group names to layer bitmask at registration time via collision matrix.
+func register_collision_handler(target_groups: Array[StringName], handler: Callable) -> void:
+	var layers: int = 0
+	if target_groups.size() > 0 and game and game.collision_matrix:
+		for group_name in target_groups:
+			layers |= game.collision_matrix.get_layer_for_group(group_name)
+	_collision_handlers.append({"layers": layers, "handler": handler})
+
+## unregister a collision handler (called during cleanup)
+func unregister_collision_handler(handler: Callable) -> void:
+	for i in range(_collision_handlers.size() - 1, -1, -1):
+		if _collision_handlers[i]["handler"] == handler:
+			_collision_handlers.remove_at(i)
+
+## default collision handling, used in most cases
+func _default_collision_response(collision: KinematicCollision2D) -> Vector2:
+	var normal = collision.get_normal()
+	match collision_response:
+		CDEnums.CollisionResponse.SLIDE:
+			velocity = velocity.slide(normal)
+			return collision.get_remainder().slide(normal)
+		CDEnums.CollisionResponse.BOUNCE:
+			velocity = velocity.bounce(normal)
+			return collision.get_remainder().bounce(normal)
+		CDEnums.CollisionResponse.STOP:
+			velocity = Vector2.ZERO
+			return Vector2.ZERO
+	return Vector2.ZERO
+
+## find matching handler for this collider using layer bitmask
+func _find_collision_handler(collider) -> Callable:
+	if collider == null or not is_instance_valid(collider):
+		return Callable()
+	
+	var collider_layers: int = collider.collision_layer
+	
+	# check specific handlers first (layers != 0)
+	for entry in _collision_handlers:
+		var layers: int = entry["layers"]
+		if layers == 0:
+			continue  # skip catch-alls in first pass
+		if collider_layers & layers != 0:
+			return entry["handler"]
+	
+	# check catch-all handlers (layers == 0)
+	for entry in _collision_handlers:
+		if entry["layers"] == 0:
+			return entry["handler"]
+	
+	return Callable()

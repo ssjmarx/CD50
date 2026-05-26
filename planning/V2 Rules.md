@@ -1,6 +1,6 @@
 # V2 Composable Architecture — Design Rules
 
-**Last Updated:** 2026-05-23  
+**Last Updated:** 2026-05-25  
 **Status:** Canonical reference — supersedes individual plan docs for architectural decisions  
 **Source:** Plans 19–26 + brainstorming docs
 
@@ -30,6 +30,7 @@ The blank entity. Routes signals, resolves velocity, manages its lifecycle. Owns
   - Velocity accumulator: `request_velocity_set()`, `request_velocity_add()` — Legs submit requests, CDEntity resolves at Priority 30.
   - Position API: `request_position_set()`, `request_position_add()` — for grid/spatial legs that bypass velocity.
   - Collision Shape API: `set_collision_polygon()`, `set_collision_circle()`, `set_collision_rect()` — for runtime procedural shapes. **Default shape is a circle** (`set_collision_circle(radius)`) set from the `shape_size` export — circles are the cheapest collision shape. Editor-placed CollisionShape2D children or collision shape components override the default circle if present.
+  - Collision Handler API: `register_collision_handler()`, `unregister_collision_handler()` — for guts components that need frame-perfect physics resolution. **Use sparingly.** See Section 12.
   - Lifecycle: `activate()`, `deactivate()` — pool-aware (returns to pool or frees).
   - Signal registration: `ensure_signal()` — idempotent, with type-mismatch warning.
 - **Key signals on entity bus:** `"collision"`, `"request_deactivate"`, `"entity_deactivating"`, `"entity_activated"`, `"moved"`, `"rotated"`, `"shape_changed"`
@@ -94,13 +95,14 @@ Every frame, Godot processes nodes in order of their `process_physics_priority` 
 | 60 | VISUAL | Face | Visual updates (CDFace vector drawing, CDProjection scene effects) | Visuals reflect final state |
 | 65 | AUDIO | Voice | Sound components (CDVoice entity-level, CDSpeaker scene-level) | Audio reflects final state — after visuals |
 | 70 | RULES | Stage | Game-level logic (Goals, CueCards, Controllers, StageSpawners) | Score tracking, win/lose conditions, spawning |
+| 99 | CLEANUP | — | `call_deferred("_complete_deactivation")` — entity cleanup, pool return, group removal | All priority processing complete before any entity is removed from the world |
 
 ### The Pipeline (Mental Model)
 
 ```
-REGISTRATION → INPUT → INTENT → STEERING → PHYSICS → COLLISION → INTERACTION → STATE → VISUAL → AUDIO → RULES
- sync groups   read     "go!"    calc       moves     "you hit    damage       health   draw it   play it   score it +
-               input             speed +    the       something"  to target    drops    on screen out loud  check win
+REGISTRATION → INPUT → INTENT → STEERING → PHYSICS → COLLISION → INTERACTION → STATE → VISUAL → AUDIO → RULES → CLEANUP
+ sync groups   read     "go!"    calc       moves     "you hit    damage       health   draw it   play it   score it   remove dead
+               input             speed +    the       something"  to target    drops    on screen out loud  check win  return pool
                                   direction  thing
 ```
 
@@ -194,18 +196,44 @@ Native signals on the game bus would require `bus_ensure()` registration boilerp
 - `normal` is the collision normal pointing away from this entity.
 - All collision-response Arms consume this signal.
 
-### Entity Bus — Deactivation Contract
+### Entity Bus — Deactivation Contract (Two-Phase)
 
 ```
-"request_deactivate"     — Request death (entity checks pool, routes accordingly)
-"entity_deactivating"    — Components reset internal state, disconnect from game bus
+"request_deactivate"     — Request death (triggers immediate DEACTIVATING mark, deferred cleanup at Priority 99)
+"entity_deactivating"    — Components reset internal state, disconnect from signals (fires during Priority 99 cleanup)
 "entity_activated"       — Components re-initialize, reconnect (pool reuse)
 ```
 
-- `request_deactivate` can be emitted by any component that decides the entity should die.
-- CDEntity handles the routing: pooled entities return to pool, non-pooled entities are freed.
-- **`entity_deactivating` is always emitted** before pool return or destruction. Components are guaranteed cleanup time regardless of lifecycle path — disconnect from game bus, reset state, fire death effects. Non-pooled entities get this signal too, then are freed at frame end via `call_deferred("queue_free")`.
-- Components override `_on_entity_deactivating()` and `_on_entity_activated()` for pool lifecycle.
+#### Phase 1: Immediate (during Priority 35–50 processing)
+
+When `"request_deactivate"` is emitted (by an Arm during collision flush, or by a Guts during state processing):
+
+1. `deactivate()` checks `state == ACTIVE`, returns if not
+2. Sets `state = CDEnums.EntityState.DEACTIVATING` — guards prevent double-deactivation
+3. Calls `set_physics_process(false)` — entity won't move next frame
+4. Queues `call_deferred("_complete_deactivation")` — cleanup deferred to end of frame
+
+The entity remains fully functional during this phase: components stay connected, groups stay registered, entity stays visible. This ensures:
+- **Symmetric collisions work correctly** — both entities' arms fire during the buffer flush
+- **Group counts remain accurate** through Priority 70 (Rules)
+- **Death visual effects** can render at Priority 60 (Faces) on the same frame
+
+#### Phase 2: Deferred Cleanup (Priority 99 — end of frame)
+
+`_complete_deactivation()` runs after all `_physics_process` calls complete:
+
+1. Disables collision shapes via `set_deferred("disabled", true)`
+2. Emits `"entity_deactivating"` — components disconnect signals, reset internal state
+3. Removes entity from groups — marks GroupRegistry dirty (caught at Priority 5 next frame)
+4. Returns to pool (`pool.release(self)`) or frees (`queue_free()`)
+
+- **Pooled entities:** `state = INACTIVE`, `visible = false`, returned to `_available`. Available for `acquire()` next frame.
+- **Non-pooled entities:** `state = INACTIVE`, `queue_free()` — Godot frees at end of idle frame.
+- `deactivate()` can be called directly (by stage components at Priority 70) or via `"request_deactivate"` signal — both paths follow the same two-phase flow.
+
+#### DEACTIVATING Guard
+
+Components that emit `"request_deactivate"` on their own entity (e.g., DieAtZeroHealthGuts after receiving damage, DieOnTimerGuts on timeout) are protected by the state guard. If the entity is already `DEACTIVATING`, `deactivate()` returns immediately — no duplicate cleanup. Components at Priority 50 (Guts) process damage normally even on a DEACTIVATING entity; their emissions simply no-op.
 
 ### Entity Bus — Movement Notification
 
@@ -383,7 +411,84 @@ V2 collision response follows a clean 2×2 matrix. Each cell is a single-purpose
 
 ---
 
-## 12. Spawning Patterns
+## 12. The Collision Handler Pattern
+
+### What It Is
+
+A collision handler is a guts component that takes over CDEntity's physics resolution for specific collider groups. It runs **during** `_physics_process` at Priority 30 — frame-perfect, not deferred.
+
+### When to Use It
+
+**Collision handlers exist for one reason: frame-perfect physics remainder resolution.** Use them ONLY when the default collision response (SLIDE/BOUNCE/STOP) cannot produce the correct result because the response depends on what was hit.
+
+**The guardrail — ask yourself:**
+
+> *"Should this be a Leg component?"*
+
+If the behavior is about **how the entity moves** (applying forces, setting velocity over time, friction, acceleration), it's a Leg. Legs submit requests through the accumulator before physics runs.
+
+If the behavior is about **what happens when movement is blocked** (custom bounce angles, one-way platforms, sticky surfaces, variable restitution), it's a collision handler. Handlers run during physics resolution.
+
+| Concern | Component Type | API | Timing |
+|---------|---------------|-----|--------|
+| "Move in this direction" | Leg | `request_velocity_set/add()` | Before physics (Priority 20) |
+| "When I hit THIS, bounce THAT way" | Collision Handler Guts | `register_collision_handler()` | During physics (Priority 30) |
+| "Deal damage on collision" | Arm | Entity bus signals | After collision buffer (Priority 35) |
+
+### The API
+
+```gdscript
+# CDEntity methods:
+func register_collision_handler(target_groups: Array[StringName], handler: Callable) -> void
+func unregister_collision_handler(handler: Callable) -> void
+func _default_collision_response(collision: KinematicCollision2D) -> Vector2
+
+# Handler signature:
+# func(collision: KinematicCollision2D) -> Vector2
+#   - Receives the collision data
+#   - Modifies entity.velocity directly (this IS physics resolution)
+#   - Returns remaining movement vector
+```
+
+### Layer Bitmask Resolution (Hot Path Optimization)
+
+Collision handlers accept `target_groups` for editor readability, but resolve to **layer bitmasks** at registration time for zero-cost hot path matching:
+
+1. **Registration time (once):** `register_collision_handler()` asks `CDCollisionMatrix.get_layer_for_group()` for each group name, ORs them into a single `int`. Empty `target_groups` → layers = 0 (catch-all).
+2. **Hot path (every frame):** `_find_collision_handler()` reads `collider.collision_layer` (native Godot int) and does a single bitwise AND per handler. No string comparisons, no `is_in_group()` calls.
+
+```
+Registration:  [&"paddles"] → matrix.get_layer_for_group(&"paddles") → 1 << 3 = 8 → store {layers: 8}
+Hot path:      collider.collision_layer & 8 != 0  →  handler matched (integer AND, zero allocation)
+```
+
+This keeps the "trust the collision matrix" convention: `target_groups = []` means the handler trusts that if physics produced a collision, it should handle it. Setting specific groups is a ROUTING decision (different physics response for different surfaces), not a filtering decision (the collision matrix already filtered).
+
+### How It Works
+
+CDEntity's collision loop checks registered handlers before falling back to the default `collision_response` (SLIDE/BOUNCE/STOP):
+
+1. **Specific handlers first** — keyed to collider groups (e.g., `[&"paddles"]`)
+2. **Catch-all handlers second** — empty groups array, handles anything not matched
+3. **Default response** — no handler matched, uses the `collision_response` export
+
+Multiple handlers can coexist on one entity, each handling different collider groups. A Pong ball can deflect off paddles, stick to glue bricks, and bounce normally off walls — all in the same frame.
+
+### Single-Component Design
+
+Collision handlers are self-contained Guts components. The handler owns its own configuration (`target_groups`, physics parameters like `deflection_bias` and `restitution`). No cross-entity config lookup needed — the handler already knows what to do when it hits its target groups.
+
+Example: `DeflectorBounceGuts` (on ball) owns `deflection_bias`, `restitution`, and `target_groups = [&"paddles"]`. When the ball hits a paddle, it deflects. When it hits anything else, the default collision response (BOUNCE) applies.
+
+**Why not an Arm on the paddle?** The "configurer defines behavior" pattern (Arm on paddle, Guts reads from collider) is elegant for per-surface variation (Pinball flippers vs bumpers). But no current or planned game needs it. YAGNI — the ball already knows what it's deflecting off of via `target_groups`. Adding a second component just to hold two floats that the first component could hold itself is over-engineering. If per-surface variation is ever needed, create a game-specific component at that time — the collision handler API supports multiple handlers keyed to different groups.
+
+### Why This Is NOT Bypassing the Accumulator
+
+The accumulator pattern is for **external forces** — Brains and Legs queue velocity requests before physics runs. Collision handlers are the **physics engine itself** — they run during `_physics_process`, modifying `velocity` as the collision loop executes. CDEntity already directly writes `velocity` during collision resolution (`velocity = velocity.bounce(normal)`). The handler just lets a component choose WHICH direct write happens. The accumulator and collision handler never interfere — they're different phases of the same tick.
+
+---
+
+## 13. Spawning Patterns
 
 ### Two Worlds: Stage vs Entity
 
@@ -415,7 +520,7 @@ Multiple WaveCards with different signal names enable independent wave cycles (e
 
 ---
 
-## 13. Audio/Visual Architecture (Five-Layer System)
+## 14. Audio/Visual Architecture (Five-Layer System)
 
 ### Layer 1: CDVoice (Entity-Level Sound)
 - Attached to CDEntities. Plays sounds on the entity bus.
@@ -447,7 +552,7 @@ Both CDFace (visual drawing) and ShapeColliderGuts (physics collision) can consu
 
 ---
 
-## 14. State Machine Patterns
+## 15. State Machine Patterns
 
 ### Group-as-State
 
@@ -477,7 +582,7 @@ CDTransition custom resources define state machine transitions:
 
 ---
 
-## 15. The Pseudogrid Pattern
+## 16. The Pseudogrid Pattern
 
 Block Drop / Tetris uses **physics AS the grid.** There is no grid data structure.
 
@@ -493,7 +598,7 @@ This works because:
 
 ---
 
-## 16. Object Pooling
+## 17. Object Pooling
 
 ### Design Principles
 
@@ -522,7 +627,7 @@ Pooled entities as children of CDObjectPool do not interfere with any signal pat
 
 ---
 
-## 17. Naming Conventions
+## 18. Naming Conventions
 
 ### File Naming
 
@@ -560,9 +665,208 @@ Godot/Scripts/
 
 ---
 
-## 18. V1 Preservation
+## 19. V1 Preservation
 
 The entire V1 architecture moves to `Godot/v1/`. V2 lives at `Godot/` root. Both architectures coexist in the codebase — the itch.io demo runs on V1, the desktop/Steam version targets V2.
+
+---
+
+## 20. Anti-Patterns
+
+Things to avoid. Each of these violates a core architectural principle and will cause bugs, coupling, or maintenance pain.
+
+### Signal Violations
+
+**The Phone Call** — Calling a method directly on another component instead of emitting a signal.
+
+```gdscript
+# ❌ WRONG
+collider.take_damage(5)
+
+# ✅ CORRECT
+collider.emit_signal("take_damage", 5)
+```
+
+Components communicate through signals, never through direct method calls. The phone call creates hard coupling — the caller must know the callee's interface. Signals let the recipient decide what to do, and let games rewire behavior without code changes.
+
+**Premature Connection** — Connecting to signals in `_ready()` instead of `_on_initialize()`.
+
+```gdscript
+# ❌ WRONG
+func _ready():
+    super._ready()
+    entity.connect("collision", _on_collision)  # other components may not exist yet
+
+# ✅ CORRECT
+func _ready():
+    super._ready()
+    # registration only
+
+func _on_initialize():
+    entity.connect("collision", _on_collision)  # all components now exist
+```
+
+Other components haven't finished `_ready()` when your `_ready()` runs. Their signals may not be registered yet. `_on_initialize()` is called deferred, after all `_ready()` calls complete.
+
+**Hardcoded Signal Names** — Not using `@export var` for signal names.
+
+```gdscript
+# ❌ WRONG
+entity.connect("collision", _on_collision)  # can't be rewired
+
+# ✅ CORRECT
+@export var collision_signals: Array[StringName] = [&"collision"]
+# connected in _on_initialize(), configurable per-game
+```
+
+Every signal name should be configurable so games can rewire the pipeline without code changes.
+
+**Cross-Entity Blind Emission** — Emitting on another entity's bus without validity guards.
+
+```gdscript
+# ❌ WRONG
+collider.emit_signal("take_damage", 5)  # collider might be dead
+
+# ✅ CORRECT
+if is_instance_valid(collider) and collider.has_signal("take_damage"):
+    collider.emit_signal("take_damage", 5)
+```
+
+One dead entity reference = crash. Always guard cross-entity emissions.
+
+### Accumulator Violations
+
+**Direct Velocity Override** — Writing `entity.velocity =` from outside CDEntity's own physics loop.
+
+```gdscript
+# ❌ WRONG (from an Arm at Priority 40)
+collider.velocity = deflected_velocity  # bypasses accumulator, creates ordering bugs
+
+# ✅ CORRECT — use the accumulator
+collider.request_velocity_set(deflected_velocity)
+
+# ✅ ALSO CORRECT — use a collision handler (runs during Priority 30)
+entity.register_collision_handler(groups, _handle_collision)
+```
+
+The accumulator exists to prevent frame-ordering bugs. If two components write `entity.velocity` directly, whoever runs last wins — and that order depends on scene tree position. The accumulator resolves all requests at a single deterministic point.
+
+**The Dueling Legs** — Putting two `velocity_set`-based Legs on the same entity.
+
+```gdscript
+# ❌ WRONG — only one set wins per frame
+entity.add_child(EightWayWalk.new())    # calls request_velocity_set()
+entity.add_child(DirectMovementLeg.new())  # also calls request_velocity_set()
+
+# ✅ CORRECT — one set-based Leg, multiple add-based Legs
+entity.add_child(DirectMovementLeg.new())   # request_velocity_set()
+entity.add_child(LinearFrictionLeg.new())   # request_velocity_add()
+```
+
+Only one `set` wins per frame. Use `set`-based Legs for exclusive movement control, `add`-based Legs for composable forces.
+
+### Category Violations
+
+**The Omnibrain** — A Brain that also moves the entity, applies forces, or tracks health.
+
+```gdscript
+# ❌ WRONG
+func _physics_process(delta):
+    entity.request_velocity_set(direction * speed)  # this is a Leg
+    entity.emit_signal("shoot", &"fire")            # this is an Arm
+    health -= 1                                      # this is Guts
+```
+
+Brains generate intent ONLY. They emit directional, positional, and action signals. If a Brain is touching `velocity` or calling `request_velocity_set()`, split it into a Brain + Leg.
+
+**The Double Agent** — A component that tracks internal state AND affects other entities.
+
+```gdscript
+# ❌ WRONG — one component doing two things
+class_name HealthAndDamageArm extends CDEntityComponent
+    # tracks health AND deals damage to others
+```
+
+Should be two components: a Guts (tracks health, emits `"zero_health"`) and an Arm (deals damage on collision, activated by the collision signal). The Guts emits a signal; the Arm listens.
+
+**Game Logic in CDEntity** — Adding game-specific behavior to `cd_entity.gd`.
+
+```gdscript
+# ❌ WRONG — adding to cd_entity.gd
+if collider.is_in_group("coins"):
+    game.score += 10
+```
+
+CDEntity is a blank physics shell. Game rules belong in Stage components at Priority 70. If you're writing a game rule in `cd_entity.gd`, it's in the wrong place.
+
+### Collision Handler Misuse
+
+**The Physics Leg** — Using a collision handler for movement that should be a Leg.
+
+> *"Should this be a Leg component?"*
+
+If the behavior is about **how the entity moves** — applying forces, setting velocity over time, friction, acceleration — it's a Leg. Use the accumulator. Collision handlers are for **what happens when movement is blocked** — custom bounce angles, one-way platforms, sticky surfaces.
+
+**Bypassing the Buffer** — Reading collision results directly from `move_and_collide()` in a component.
+
+```gdscript
+# ❌ WRONG — not all entities have moved yet
+func _physics_process(delta):
+    var collision = entity.move_and_collide(entity.velocity * delta)
+    if collision:
+        deal_damage(collision.get_collider())
+```
+
+During Priority 30, other entities are still moving. Reading their position or colliding with them directly creates ordering inconsistencies. Use the collision buffer (Priority 35) for all collision response.
+
+### Pool / Lifecycle Violations
+
+**The Leaky Pool** — Not resetting component state in `_on_entity_deactivating()`.
+
+```gdscript
+# ❌ WRONG — stale state persists across pool reuse
+# (missing _on_entity_deactivating override)
+
+# ✅ CORRECT
+func _on_entity_deactivating():
+    super._on_entity_deactivating()
+    health = max_health
+    timer = 0.0
+```
+
+When a pooled entity reactivates, stale state from its previous life persists. Every Guts component must clean up in `_on_entity_deactivating()`.
+
+**Premature Removal** — Calling `queue_free()` directly on an entity.
+
+```gdscript
+# ❌ WRONG — bypasses two-phase lifecycle
+entity.queue_free()
+
+# ✅ CORRECT
+entity.emit_signal("request_deactivate")
+# or
+entity.deactivate()
+```
+
+`queue_free()` bypasses the two-phase lifecycle, breaks group counts, and causes asymmetric collision bugs. Always use `deactivate()` or the `"request_deactivate"` signal.
+
+### Configuration Anti-Patterns
+
+**Default Group Filters** — Setting `target_groups` defaults to something other than `[]`.
+
+```gdscript
+# ❌ WRONG — overrides the collision matrix
+@export var target_groups: Array[StringName] = [&"enemies"]
+
+# ✅ CORRECT — trust the matrix, opt in to filtering
+@export var target_groups: Array[StringName] = []
+```
+
+The collision matrix handles filtering at the C++ level. Components should trust the matrix by default and only add group filters as an opt-in escape hatch for special cases. Components with `target_groups = []` skip the GDScript filter check entirely — zero overhead.
+
+**The Singleton Assumption** — Writing a component that assumes it's the only instance.
+
+The architecture is designed for many entities with the same component. Never use singletons for game state — use the game bus (`bus_emit`/`bus_connect`) or CDGroupRegistry for shared state.
 
 ---
 
@@ -577,10 +881,9 @@ The entire V1 architecture moves to `Godot/v1/`. V2 lives at `Godot/` root. Both
 | Legs | 20 | STEERING | 18 | EightWayWalk, AccelDecel, EngineThrust, FrictionLinear/Static, SteeringLeg, BoomerangLeg, RotationDirect/Target, GridMovement/Rotation/Drop/Alignment, ScreenWrap/Clamp, PathFollower, SmoothTo |
 | Entity | 30 | PHYSICS | ~1 | CDEntity (velocity resolution + move_and_collide) |
 | Buffer | 35 | COLLISION | ~1 | CDCollisionBuffer |
-| Arms | 40 | INTERACTION | 11 | DamageOnHit/CrashArm, DeathOnHit/CrashArm, DamageOnJoust/DeathOnJoustArm, ScoreOnCollision/DeathArm, AngledDeflectorArm, PushbackArm, StatusEffectArm, GunSimpleArm |
-| Guts | 50 | STATE | 12 | HealthPool, DieAtZeroHealth, Points, DieOnTimer, DieOffscreen, ImpulseReceiver, ShieldPool, ResourcePool, Stun, LockDetector, TSpinDetector, ShapeCollider |
+| Arms | 40 | INTERACTION | 10 | DamageOnHit/CrashArm, DeathOnHit/CrashArm, DamageOnJoust/DeathOnJoustArm, ScoreOnCollision/DeathArm, PushbackArm, StatusEffectArm, GunSimpleArm |
+| Guts | 50 | STATE | 13 | HealthPool, DieAtZeroHealth, Points, DieOnTimer, DieOffscreen, ImpulseReceiver, ShieldPool, ResourcePool, Stun, LockDetector, TSpinDetector, ShapeCollider, DeflectorBounceGuts |
 | Face | 60 | VISUAL | ~5 | VectorFace, FaceBindings, CDProjection |
 | Voice/Speakers | 65 | AUDIO | ~6 | CDVoice variants (entity-level), CDSpeaker variants (scene-level) |
 | Stage | 70 | RULES | 14 | CDCueCard, ScoreCard, MultiplierCard, LivesCard, TimerCard, WaveCard, CDMark, MobileMark, CountMark, TimedMark, GroupCountGoal, ScoreThresholdGoal, LivesDepletedGoal, TimerExpiredGoal |
 | Spawners | 40/70 | INTERACTION/RULES | ~6 | Entity spawners (GunSimpleArm, Priority 40), Stage spawners (CDStageSpawner + variants, Priority 70) |
-+++++++ REPLACE

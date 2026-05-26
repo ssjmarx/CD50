@@ -1,0 +1,6 @@
+[gd_scene load_steps=2 format=3 uid="uid://cuk01vspryktn"]
+
+[ext_resource type="Script" uid="uid://bhj7wuf11timg" path="res://scripts/entity components/guts/t_spin_detector_guts.gd" id="1_ldcem"]
+
+[node name="TSpinDetectorGuts" type="Node2D"]
+script = ExtResource("1_ldcem")

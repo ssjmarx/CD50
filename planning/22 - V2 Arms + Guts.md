@@ -47,11 +47,11 @@ The **OnJoust** variants add comparative logic (velocity, Y position, or custom 
 
 ---
 
-## Arms (12 Components)
+## Arms (11 Components)
 
 Category: `ARM` (Priority 40). Arms affect the game state *outside* the entity. They deal damage, apply forces, or announce score. They never modify the entity's own `velocity` or internal `HealthPool`.
 
-### Collision Response Arms (5)
+### Collision Response Arms (6)
 
 #### DamageOnHitArm
 **Role:** Deals a flat amount of damage to whatever the entity collides with.
@@ -155,20 +155,6 @@ Category: `ARM` (Priority 40). Arms affect the game state *outside* the entity. 
 
 ---
 
-### Collision Physics Arms (1)
-
-#### AngledDeflectorArm
-**Role:** Overrides the entity's `collision_response` to bounce with configurable restitution and angle-dependent behavior. The canonical use case is Pong/Breakout paddles — ball bounces at different angles depending on where it hits the paddle.
-
-| Aspect | Detail |
-|--------|--------|
-| **Consumes** | Entity bus: `"collision(collider: CDEntity, normal: Vector2)"` |
-| **Generates** | `entity.request_velocity_set(bounced_velocity)` on own entity |
-| **Exports** | `restitution: float = 1.0` (1.0 = perfect elastic, <1.0 = energy loss, >1.0 = energy gain) <br> `use_collision_normal: bool = true` (if false, calculates deflection direction from hit offset) <br> `hit_zone_size: float = 0.0` (half-width of the deflection surface. 0 = use collision normal only) <br> `max_deflection_angle: float = PI/3` (60° — max angle from collision normal when using hit-zone mode) <br> `target_group: StringName = &""` (empty = apply to all collisions) <br> `collision_signal: StringName = &"collision"` |
-| **Process** | On collision: (1) If `target_group` is set and collider not in group, skip. (2) If `use_collision_normal`, reflect velocity around collision normal and multiply by `restitution`. (3) If `hit_zone_size > 0`, calculate offset = collider position relative to entity center along the deflection axis, normalize to [-1, 1], map to angle within `max_deflection_angle`, and set velocity in that direction at original speed × `restitution`. (4) Call `entity.request_velocity_set(bounced_velocity)`. |
-| **Use Case** | Pong paddle: `hit_zone_size = paddle_half_width`, `max_deflection_angle = PI/3`. Ball bounces at steep angles when hitting paddle edges, shallow at center. Breakout paddle: same pattern. Any bumper/deflector surface. |
-| **Note** | This Arm handles the *physical* bounce. Game logic (scoring, damage) is handled by separate Arms. A Pong ball would have AngledDeflectorArm (bounce) + ScoreOnCollisionArm (announce score to game bus) as separate components. This is the "physics response decoupled from game response" pattern enabled by the CDCollisionBuffer design. |
-
 ---
 
 ### Force/Status Arms (2)
@@ -195,9 +181,25 @@ Category: `ARM` (Priority 40). Arms affect the game state *outside* the entity. 
 
 ---
 
-## Guts (11 Components)
+## Guts (12 Components)
 
 Category: `GUTS` (Priority 50). Guts track internal state. They are purely self-centered — they don't care about the outside world except for signals telling them to update their internal variables.
+
+### Collision Handler (1)
+
+#### DeflectorBounceGuts
+**Role:** Collision handler that deflects off target groups with angled bounce physics. Uses the collision handler API (Section 12 of V2 Rules) for frame-perfect physics remainder resolution. Self-contained — owns its own deflection config, no separate Arm needed.
+
+| Aspect | Detail |
+|--------|--------|
+| **Registers** | Collision handler via `entity.register_collision_handler(target_groups, handler)` — resolved to layer bitmask at registration time for zero-cost hot path matching |
+| **Generates** | Modifies `entity.velocity` directly (collision handler pattern — this IS physics resolution) |
+| **Exports** | `target_groups: Array[StringName] = []` (empty = handle all collisions, trust the matrix. Set specific groups for ROUTING e.g. `[&"paddles"]` = deflect off paddles only, walls get default BOUNCE) <br> `deflection_bias: Vector2 = Vector2(1, 1)` (X/Y bias for deflection angle — higher X = wider horizontal deflection) <br> `restitution: float = 1.0` (1.0 = perfect elastic, <1.0 = energy loss, >1.0 = energy gain) |
+| **Process** | On collision with a target group entity: (1) Calculate raw offset from entity to collider, normalized. (2) Apply `deflection_bias` to X/Y components. (3) Re-normalize. (4) Set `entity.velocity = direction * speed * restitution`. (5) Return `collision.get_remainder().slide(normal)` for the remaining movement. Collisions with non-target entities fall through to the default collision response (BOUNCE/SLIDE/STOP per CDEntity export). |
+| **Use Case** | Pong ball (scene override): `target_groups = [&"paddles"]` — bounces off paddles with offset-based angles, bounces normally off walls. Default (empty): handles all collisions with deflection — useful for Breakout paddles and bumpers. |
+| **Why not an Arm on the paddle?** The ball already knows what it's deflecting off of via `target_groups`. Adding a second component just to hold two floats is over-engineering for current requirements. If per-surface variation is ever needed (Pinball flippers vs bumpers), create a game-specific component at that time. |
+
+---
 
 ### Collision Shape (1)
 
@@ -483,10 +485,10 @@ Godot/Scripts/
 │   ├── death_on_joust_arm.gd
 │   ├── score_on_collision_arm.gd
 │   ├── score_on_death_arm.gd
-│   ├── angled_deflector_arm.gd
 │   ├── pushback_arm.gd
 │   └── status_effect_arm.gd
 ├── Guts/
+│   ├── deflector_bounce_guts.gd    # Collision handler for angled bounce physics
 │   ├── shape_collider_guts.gd      # Applies CDShape to entity collision
 │   ├── health_pool_guts.gd
 │   ├── die_at_zero_health_guts.gd

@@ -1,0 +1,6 @@
+[gd_scene load_steps=2 format=3 uid="uid://dq8xg4xryn07c"]
+
+[ext_resource type="Script" uid="uid://40xt3jivcckj" path="res://scripts/entity components/arms/death_on_hit_arm.gd" id="1_m5rhv"]
+
+[node name="DeathOnHitArm" type="Node2D"]
+script = ExtResource("1_m5rhv")
