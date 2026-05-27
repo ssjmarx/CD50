@@ -1,6 +1,6 @@
 # Component Catalogue V2
 
-**Last Updated:** 2026-05-26  
+**Last Updated:** 2026-05-27  
 **Architecture:** V2 Composable Architecture  
 **Canonical Reference:** `planning/V2 Rules.md`  
 
@@ -38,13 +38,17 @@ The V2 architecture replaces V1's `UniversalBody`/`UniversalComponent` system wi
 
 ---
 
-## Core — Resources (3)
+## Core — Resources (7)
 
 | Script | Class | Description |
 |--------|-------|-------------|
 | `cd_enums.gd` | `CDEnums` | Data bag for common enums across the codebase |
 | `cd_collision_group.gd` | `CDCollisionGroup` | Resource used by CDCollisionMatrix to configure collision layers |
 | `wall_kick_resource.gd` | `WallKickResource` | Wall-kick offset table data for Tetris-style rotation (8 kick arrays: 0→R, R→0, R→2, 2→R, 2→L, L→2, L→0, 0→L) |
+| `cd_spawn_context.gd` | `CDSpawnContext` | Lightweight resource describing how a newly spawned entity should be configured (velocity, random angle, flips, rotation) |
+| `cd_grid_layout.gd` | `CDGridLayout` | Data-driven grid definition — explicit PackedScene per cell, null = skip. Inner class `CDGridRow` |
+| `cd_grid_equation.gd` | `CDGridEquation` | Math-driven grid definition — uniform scene with randomized skips (columns, rows, skip_chance, min_skips_per_row) |
+| `cd_utilities.gd` | `CDUtilities` | Pure static utility functions — `apply_spawn_context()` and `evaluate_int()` (Expression-based equation evaluator) |
 
 ---
 
@@ -88,7 +92,7 @@ Pure intent generators (Priority 10). Never touch velocity, never move entities.
 
 ---
 
-## Entity Components — Arms (10)
+## Entity Components — Arms (13)
 
 World-affecting components (Priority 40). Consume collision signals from the buffer flush and affect other entities or the game state.
 
@@ -118,6 +122,16 @@ On Hit / On Crash matrix — the 2×2 pattern for entity destruction and damage.
 |--------|-------|-------------|
 | `pushback_arm.gd` | `PushbackArm` | Emits `external_impulse` on collider's bus based on collision normal |
 | `status_on_hit_arm.gd` | `StatusOnHitArm` | Emits `apply_status` on collider's bus with configurable status name and duration |
+
+### Spawn Arms (3)
+
+Entity-level spawners (Priority 40). Respond to entity bus signals, spawn immediately — no queue, no stagger, no wave tracking.
+
+| Script | Class | Description |
+|--------|-------|-------------|
+| `gun_arm.gd` | `GunArm` | Spawns a projectile on fire signal, pool-backed with cooldown and rotation inheritance |
+| `spawn_on_death_arm.gd` | `SpawnOnDeathArm` | Spawns entities when the parent entity dies (death effects, asteroid splits, power-up drops) |
+| `piece_splitter_arm.gd` | `PieceSplitterArm` | Tetris-specific — spawns SettledCell entities at piece block positions, then deactivates parent |
 
 ---
 
@@ -258,7 +272,7 @@ Stage-level components that trigger game-end conditions.
 
 ---
 
-## Game Components — Marks (4)
+## Game Components — Marks (6)
 
 Stage-level spatial detectors. Area2D-based triggers that emit signals on body contact.
 
@@ -268,6 +282,21 @@ Stage-level spatial detectors. Area2D-based triggers that emit signals on body c
 | `count_mark.gd` | `CountMark` | Emits after N unique bodies have entered |
 | `mobile_mark.gd` | `MobileMark` | Mark that follows a target CDEntity with lock-on behavior |
 | `timed_mark.gd` | `TimedMark` | Emits while a body remains inside the zone for a configured duration |
+| `safe_zone_mark.gd` | `SafeZoneMark` | Spawn-safety monitor for trapdoors — emits `zone_safe`/`zone_unsafe` on game bus |
+| `occupancy_mark.gd` | `OccupancyMark` | Occupancy tracker — emits `occupancy_changed` with group name and count on game bus |
+
+---
+
+## Game Components — Trapdoors (4)
+
+Stage-level spawners (Priority 70, RULES category). Subscribe to game bus signals, queue and stagger-spawn entities. Extend `CDStageTrapdoor`.
+
+| Script | Class | Description |
+|--------|-------|-------------|
+| `cd_stage_trapdoor.gd` | `CDStageTrapdoor` | Abstract base class — provides trigger→queue→stagger→spawn lifecycle, telefrag, pool, safe zone |
+| `point_trapdoor.gd` | `PointTrapdoor` | Spawns at own position with random offset (UFOs, power-ups, bosses) |
+| `edge_trapdoor.gd` | `EdgeTrapdoor` | Distributes spawns along selected screen edges with jitter |
+| `grid_trapdoor.gd` | `GridTrapdoor` | 2D grid spawning — data-driven (CDGridLayout) or math-driven (CDGridEquation) with skip filtering |
 
 ---
 
@@ -277,15 +306,16 @@ Stage-level spatial detectors. Area2D-based triggers that emit signals on body c
 |----------|-------|--------|
 | Core Base Classes | 3 | Complete |
 | Core Infrastructure | 7 | Complete |
-| Core Resources | 3 | Complete |
+| Core Resources | 7 | Complete |
 | Brains | 14 | Complete |
-| Arms | 10 | Complete |
+| Arms | 13 | Complete |
 | Guts | 15 | Complete |
 | Legs | 15 | Complete |
 | Cue Cards | 4 | Complete |
 | Goals | 2 | Complete |
-| Marks | 4 | Complete |
-| **Total V2 Scripts** | **76** | |
+| Marks | 6 | Complete |
+| Trapdoors | 4 | Complete |
+| **Total V2 Scripts** | **90** | |
 
 ---
 
@@ -295,7 +325,6 @@ These categories are planned but not yet written:
 
 | Category | Plan | Expected Components |
 |----------|------|---------------------|
-| Spawners | Plan 23 | CDStageSpawner, PointSpawner, EdgeSpawner, GridSpawner, etc. |
 | Faces | Plan 24 | CDFace, CDFaceBinding, etc. |
 | Voices | Plan 24 | CDVoice, CDSpeaker, CDSoundBank, etc. |
 | Stage Controllers | Plan 25 | SwarmGridStep, Formation, Flock, Shoot controllers |
@@ -329,3 +358,13 @@ These categories are planned but not yet written:
 | *(new)* | `acceleration_target_leg.gd` | Positional targeting leg (no V1 equivalent) |
 | *(new)* | `grid_alignment_leg.gd` | Grid snap + drift correction (no V1 equivalent) |
 | *(new)* | `boomerang_leg.gd` | Return-force leg (no V1 equivalent) |
+| `wave_spawner.gd` (POSITION) | `point_trapdoor.gd` | Pattern extracted into dedicated trapdoor |
+| `wave_spawner.gd` (SCREEN_EDGES) | `edge_trapdoor.gd` | Pattern extracted, uses game_bounds |
+| `wave_spawner.gd` (GRID) | `grid_trapdoor.gd` + `CDGridLayout` / `CDGridEquation` | Grid math → data resource or equation resource |
+| `wave_spawner.gd` (_wait_for_safe_zone) | `safe_zone_mark.gd` | Polling loop → signal-driven Area2D |
+| `wave_spawner.gd` (initial_velocity) | `cd_spawn_context.gd` | Extracted into reusable resource |
+| `wave_spawner.gd` (telefrag) | `cd_stage_trapdoor.gd` base class | Built into lifecycle, respects health pipeline |
+| `tetromino_spawner.gd` (lock/split) | `piece_splitter_arm.gd` | Entity handles its own lock+split |
+| `gun_simple.gd` | `gun_arm.gd` | Pool-backed, configurable fire signal |
+| `death_effect.gd` / `death_effect_brick.gd` | `spawn_on_death_arm.gd` | Unified, pool-backed, configurable death signal |
+| `property_override.gd` | `cd_spawn_context.gd` | Narrowed to velocity/rotation only |

@@ -10,7 +10,7 @@ enum ComponentCategory {
 	STATE,        # guts
 	VISUAL,       # faces/projections
 	AUDIO,        # voices/speakers
-	RULES,        # goals, cuecards, spawners
+	RULES,        # goals, cuecards, trapdoors
 }
 
 # func to assign category to a priority inside of a component

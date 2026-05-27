@@ -1,7 +1,7 @@
 # Current Goal
 
-**Last Updated:** 2026-05-26  
-**Status:** Active — V2 Spawners (Plan 23)
+**Last Updated:** 2026-05-27  
+**Status:** Active — V2 Faces, Voices, Projections & Speakers (Plan 24)
 
 ---
 
@@ -21,16 +21,16 @@ The itch.io demo is **code-locked** (12 games, all componentized). We are now bu
 | 2 | 20 — V2 Stage | CDCueCard, ScoreCard, LivesCard, TimerCard, WaveCard, Goals, CDMarks | ✅ Complete |
 | 3 | 21 — V2 Brains + Legs | 14 Brains, 15 Legs, 1 Gut, WallKickResource | ✅ Complete |
 | 4 | 22 — V2 Arms + Guts | 10 Arms, 15 Guts — collision response + internal state | ✅ Complete |
-| 5 | 23 — V2 Spawners | CDStageSpawner, Point/Edge/GridSpawner, CDGridLayout, CDSafeZone | 🔲 Next |
-| 6 | 24 — V2 Faces, Voices, Projections & Speakers | CDFace, CDFaceBinding, CDVoice, CDSpeaker, CDSoundBank, CDProjection | 🔲 Planned |
+| 5 | 23 — V2 Spawners | CDStageTrapdoor, Point/Edge/GridTrapdoor, Spawn Arms, CDGridLayout, CDGridEquation, SafeZoneMark | ✅ Complete |
+| 6 | 24 — V2 Faces, Voices, Projections & Speakers | CDFace, CDFaceBinding, CDVoice, CDSpeaker, CDSoundBank, CDProjection | 🔲 Next |
 | 7 | 25 — V2 Swarm Controllers + Galaga | SwarmGridStep, Formation, Flock, Shoot controllers + Galaga proof | 🔲 Planned |
 | 8 | 26 — Block Drop V2 | Full Block Drop remake proving Pseudogrid pattern | 🔲 Planned |
 
-### Immediate Next Step: Plan 23 — V2 Spawners
+### Immediate Next Step: Plan 24 — V2 Faces, Voices, Projections & Speakers
 
-Build the Spawner system — CDStageSpawner base class, Point/Edge/Grid spawner variants, CDGridLayout, and CDSafeZone. Spawners acquire entities from CDObjectPool and activate them at configured positions. See `planning/23 - V2 Spawners.md` for the full plan.
+Build the visual and audio representation layer — CDFace (entity drawing), CDFaceBinding (config-driven face assembly), CDVoice (entity-level sound), CDSpeaker (scene-level sound), CDSoundBank (audio resource), CDProjection (camera/screen effects). See `planning/24 - V2 Faces, Voices, Projections & Speakers.md` for the full plan.
 
-**76 V2 scripts written so far** across Core (13), Brains (14), Arms (10), Legs (15), Guts (15), Stage (10). Full catalogue: `memory-bank/07 - Component Catalogue V2.md`
+**90 V2 scripts written so far** across Core (10), Brains (14), Arms (13), Legs (15), Guts (15), Stage (16), Resources (7). Full catalogue: `memory-bank/07 - Component Catalogue V2.md`
 
 ### Demo Status
 
@@ -131,6 +131,7 @@ The following plans have been **deleted** from the active pipeline:
 
 | Plan | Description | Completed |
 |------|-------------|-----------|
+| 23 | V2 Spawners (4 Trapdoors, 3 Spawn Arms, 2 Marks, 4 Resources — 14 scripts) | 2026-05-27 |
 | 22 | V2 Arms + Guts (10 Arms, 15 Guts — 25 scripts) | 2026-05-26 |
 | 21 | V2 Brains + Legs (14 Brains, 15 Legs, 1 Gut, WallKickResource — 31 scripts) | 2026-05-24 |
 | 20 | V2 Stage (4 CueCards, 2 Goals, 4 Marks — 10 scripts) | 2026-05-24 |

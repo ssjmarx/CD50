@@ -1,15 +1,16 @@
-## base class for all stage spawners
-class_name CDStageSpawner extends CDGameComponent
+## base class for all stage trapdoors
+class_name CDStageTrapdoor extends CDGameComponent
 
 @export var stagger_delay: float = 0.1
 @export var pool: CDObjectPool = null
 @export var spawn_context: CDSpawnContext = null
 @export var telefrag: bool = false
 @export var telefrag_targets: Array[StringName] = [&"enemies"]
-@export var safe_zone: CDSafeZone = null
 
 @export_group("Listen Signals")
 @export var trigger_signals: Array[StringName] = [&"wave_start"]
+@export var safe_signals: Array[StringName] = [&"zone_safe"]
+@export var unsafe_signals: Array[StringName] = [&"zone_unsafe"]
 
 @export_group("Emit Signals")
 @export var on_spawning_complete: Array[StringName] = [&"spawning_complete"]
@@ -23,20 +24,20 @@ var _zone_is_safe: bool = true
 func _ready() -> void:
 	super._ready()
 	component_category = CDEnums.ComponentCategory.RULES
-	set_process(false)
+	set_physics_process(false)
 
 func _on_initialize() -> void:
 	for sig in trigger_signals:
 		game.bus_connect(sig, _on_trigger)
-
-	if safe_zone:
-		safe_zone.zone_safe.connect(_on_zone_safe)
-		safe_zone.zone_unsafe.connect(_on_zone_unsafe)
+	for sig in safe_signals:
+		game.bus_connect(sig, _on_zone_safe)
+	for sig in unsafe_signals:
+		game.bus_connect(sig, _on_zone_unsafe)
 
 ## queue and stagger spawns for clean performance
-func _process(delta: float) -> void:
+func _physics_process(delta: float) -> void:
 	if _spawn_queue.is_empty():
-		set_process(false)
+		set_physics_process(false)
 		return
 
 	if not _zone_is_safe:
@@ -61,7 +62,7 @@ func _get_spawn_position(_index: int, _total: int) -> Vector2:
 	return global_position
 
 func _get_spawn_scene(_index: int, _total: int) -> PackedScene:
-	push_error("CDStageSpawner is abstract — override _get_spawn_scene() in a concrete spawner (PointSpawner, EdgeSpawner, GridSpawner)")
+	push_error("CDStageTrapdoor is abstract — override _get_spawn_scene() in a concrete trapdoor (PointTrapdoor, EdgeTrapdoor, GridTrapdoor)")
 	return null
 
 ## receives the trigger signal, wave number passed by wave card
@@ -77,7 +78,7 @@ func _on_trigger(wave_number: int = 0) -> void:
 		_spawn_queue.append(i)
 
 	_spawn_timer = 0.0
-	set_process(true)
+	set_physics_process(true)
 
 ## spawn a single entity
 func _spawn_one(index: int) -> void:
@@ -106,33 +107,13 @@ func _spawn_one(index: int) -> void:
 		_telefrag_at(spawn_position, entity)
 
 	# apply spawn context (velocity, rotation) before entity enters tree
-	_apply_spawn_context(entity)
+	CDUtilities.apply_spawn_context(entity, spawn_context)
 
 	# activate: add to tree (fresh) or wake from pool
 	if pool:
 		entity.activate()
 	else:
 		game.add_child(entity)
-
-## applies CDSpawnContext to entity. runs before add_child / activate
-func _apply_spawn_context(entity: CDEntity) -> void:
-	if spawn_context == null:
-		return
-
-	entity.velocity = spawn_context.velocity
-
-	if spawn_context.use_random_angle:
-		var speed := entity.velocity.length()
-		var angle := Vector2.from_angle(randf_range(spawn_context.random_angle_min, spawn_context.random_angle_max))
-		entity.velocity = angle * speed
-
-	if spawn_context.random_flip_h:
-		entity.velocity.x *= [-1, 1].pick_random()
-
-	if spawn_context.random_flip_v:
-		entity.velocity.y *= [-1, 1].pick_random()
-
-	entity.rotation = spawn_context.rotation
 
 ## does a point query at the spawn location, anything that collides get killed
 func _telefrag_at(pos: Vector2, _exclude: CDEntity) -> void:

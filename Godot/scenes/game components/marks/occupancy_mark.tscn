@@ -1,0 +1,6 @@
+[gd_scene load_steps=2 format=3 uid="uid://dowdkt0k4vj3y"]
+
+[ext_resource type="Script" uid="uid://dlx03jhjdaue8" path="res://scripts/game components/marks/occupancy_mark.gd" id="1_kkd6d"]
+
+[node name="OccupancyMark" type="Node2D"]
+script = ExtResource("1_kkd6d")

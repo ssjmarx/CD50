@@ -1,6 +1,59 @@
 # Recent Progress
 
-**Last Updated:** 2026-05-26
+**Last Updated:** 2026-05-27
+
+---
+
+## Plan 23 — V2 Spawners (COMPLETE)
+
+Plan 23 is fully implemented. 14 new V2 scripts written across Trapdoors, Spawn Arms, Marks, and Resources. All stage-level and entity-level spawning is in place.
+
+### Trapdoors — Stage-Level Spawners (4 scripts)
+
+| Script | Description |
+|--------|-------------|
+| `cd_stage_trapdoor.gd` | Abstract base class — trigger→queue→stagger→spawn lifecycle, telefrag, pool, safe zone |
+| `point_trapdoor.gd` | Spawns at own position with random offset (UFOs, power-ups, bosses) |
+| `edge_trapdoor.gd` | Distributes spawns along selected screen edges with jitter |
+| `grid_trapdoor.gd` | 2D grid spawning — data-driven (CDGridLayout) or math-driven (CDGridEquation) with skip filtering |
+
+### Spawn Arms — Entity-Level Spawners (3 scripts)
+
+| Script | Description |
+|--------|-------------|
+| `gun_arm.gd` | Spawns projectile on fire signal, pool-backed with cooldown and rotation inheritance |
+| `spawn_on_death_arm.gd` | Spawns entities when parent entity dies (death effects, asteroid splits, power-up drops) |
+| `piece_splitter_arm.gd` | Tetris-specific — spawns SettledCell entities at piece block positions, then deactivates parent |
+
+### Marks — Spawn Support (2 scripts)
+
+| Script | Description |
+|--------|-------------|
+| `safe_zone_mark.gd` | Spawn-safety monitor — emits `zone_safe`/`zone_unsafe` on game bus |
+| `occupancy_mark.gd` | Occupancy tracker — emits `occupancy_changed` with group name and count on game bus |
+
+### Resources — Spawn Data (4 scripts)
+
+| Script | Description |
+|--------|-------------|
+| `cd_spawn_context.gd` | Lightweight resource for configuring spawned entities (velocity, random angle, flips, rotation) |
+| `cd_grid_layout.gd` | Data-driven grid definition — explicit PackedScene per cell, null = skip |
+| `cd_grid_equation.gd` | Math-driven grid definition — uniform scene with randomized skips |
+| `cd_utilities.gd` | Pure static utilities — `apply_spawn_context()` and `evaluate_int()` (Expression-based equation evaluator) |
+
+### Key Design Decisions
+
+| Decision | Rationale |
+|----------|-----------|
+| Renamed CDStageSpawner → CDStageTrapdoor | Evocative name that disambiguates from entity-level GunArm/SpawnOnDeathArm. Trapdoors are on the floor (stage), spilling enemies upward. |
+| CDStageTrapdoor is non-virtual base, not abstract | No GDScript abstract keyword. Uses non-virtual pattern — base class is fully functional, subclasses override `_generate_positions()` to add positioning logic. |
+| Trigger→Queue→Stagger→Spawn lifecycle | Decouples wave signal arrival from actual spawning. Queue batch-collects, stagger spaces them visually, spawn is the final step. |
+| CDGridLayout for data-driven, CDGridEquation for math-driven | Two grid strategies cover all use cases. GridTrapdoor uses strategy pattern to select at runtime. |
+| CDUtilities.evaluate_int() for equation strings | Godot's Expression class evaluates math strings like "8 - floor(x / 4)". Enables designer-editable spawn counts without code changes. |
+| SafeZoneMark as signal-driven Area2D | Replaces V1's polling `_wait_for_safe_zone` coroutine. Emits on game bus — trapdoor subscribes, no coupling. |
+| Telefrag respects health pipeline | Damages entity first (via `take_damage` signal on entity bus), lets HealthPoolGuts/ShieldPoolGuts process, entity's own death logic handles cascade. |
+
+### V2 Total Scripts Written: 90
 
 ---
 

@@ -1,0 +1,16 @@
+[gd_scene load_steps=2 format=3 uid="uid://caatm0w6gg3b1"]
+
+[ext_resource type="Script" uid="uid://ddp8ixgvh132d" path="res://scripts/game components/trapdoors/grid_trapdoor.gd" id="1_4jxpd"]
+
+[node name="GridTrapdoor" type="Node2D"]
+script = ExtResource("1_4jxpd")
+cell_size = null
+cell_spacing = null
+stagger_delay = null
+telefrag = null
+telefrag_targets = null
+trigger_signals = null
+safe_signals = null
+unsafe_signals = null
+on_spawning_complete = null
+component_category = null

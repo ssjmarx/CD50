@@ -1,0 +1,6 @@
+[gd_scene load_steps=2 format=3 uid="uid://8bj84uc60kws"]
+
+[ext_resource type="Script" uid="uid://cob73767bhu45" path="res://scripts/entity components/arms/spawn_on_death_arm.gd" id="1_6iweg"]
+
+[node name="SpawnOnDeathArm" type="Node2D"]
+script = ExtResource("1_6iweg")

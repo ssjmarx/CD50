@@ -1,0 +1,6 @@
+[gd_scene load_steps=2 format=3 uid="uid://b1e365cvr1e8p"]
+
+[ext_resource type="Script" uid="uid://dbmcppqdj4cft" path="res://scripts/game components/trapdoors/point_trapdoor.gd" id="1_hqn5h"]
+
+[node name="PointTrapdoor" type="Node2D"]
+script = ExtResource("1_hqn5h")
