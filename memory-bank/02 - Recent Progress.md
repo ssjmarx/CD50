@@ -1,6 +1,102 @@
 # Recent Progress
 
-**Last Updated:** 2026-05-24
+**Last Updated:** 2026-05-26
+
+---
+
+## Plan 22 — V2 Arms + Guts (COMPLETE)
+
+Plan 22 is fully implemented. 24 new V2 scripts written across Arms and Guts categories. All collision response, internal state tracking, resource pools, status effects, and Tetris-specific detectors are in place.
+
+### Arms (10 scripts)
+
+**Collision Response Arms (6):**
+
+| Script | Description |
+|--------|-------------|
+| `damage_on_hit_arm.gd` | Emits `take_damage` on collider's bus when this entity is the instigator |
+| `death_on_hit_arm.gd` | Emits `request_deactivate` on collider's bus when this entity is the instigator |
+| `damage_on_crash_arm.gd` | Emits `take_damage` on collider's bus for any collision (mutual damage) |
+| `death_on_crash_arm.gd` | Emits `request_deactivate` on collider's bus for any collision (mutual destruction) |
+| `damage_on_joust_arm.gd` | Emits `take_damage` on the slower collider's bus (velocity comparison) |
+| `death_on_joust_arm.gd` | Emits `request_deactivate` on the slower collider's bus (velocity comparison) |
+
+**Scoring Arms (2):**
+
+| Script | Description |
+|--------|-------------|
+| `score_on_collision_arm.gd` | Emits `add_score` on game bus when collision occurs with target groups |
+| `score_on_death_arm.gd` | Emits `add_score` on game bus when this entity deactivates |
+
+**Force & Status Arms (2):**
+
+| Script | Description |
+|--------|-------------|
+| `pushback_arm.gd` | Emits `external_impulse` on collider's bus based on collision normal |
+| `status_on_hit_arm.gd` | Emits `apply_status` on collider's bus with configurable status and duration |
+
+### Guts (13 new scripts)
+
+**Collision & Shape (2):**
+
+| Script | Description |
+|--------|-------------|
+| `deflector_bounce_guts.gd` | Bounces entity velocity on collision using configurable response mode |
+| `shape_collider_guts.gd` | Manages collision shape enable/disable for pooled entities |
+
+**Health & Death (2 new + 1 existing):**
+
+| Script | Description |
+|--------|-------------|
+| `healthpool_guts.gd` | Tracks HP with configurable damage/heal, emits `health_changed` and `health_depleted` |
+| `die_at_zero_health_guts.gd` | Listens for `health_depleted` and calls `entity.deactivate()` |
+| `points_guts.gd` | Holds point value for scoring (pre-existing, confirmed compatible) |
+
+**Self-Destruction (3):**
+
+| Script | Description |
+|--------|-------------|
+| `die_on_timer_guts.gd` | Destroys entity after configurable lifespan |
+| `die_out_of_bounds_guts.gd` | Polling bounds check against `game.game_bounds` with spawn delay |
+| `die_offscreen_guts.gd` | Camera-visibility cleanup via `VisibleOnScreenNotifier2D` (event-driven) |
+
+**Force Reception (1):**
+
+| Script | Description |
+|--------|-------------|
+| `impulse_receiver_guts.gd` | Listens for `external_impulse` and passes it to the velocity accumulator |
+
+**Resource Pools (2):**
+
+| Script | Description |
+|--------|-------------|
+| `shieldpool_guts.gd` | Rechargeable buffer on top of HealthPool — absorbs damage, overflows remainder |
+| `resourcepool_guts.gd` | Generic spendable pool (stamina/mana/ammo) with regeneration |
+
+**Status Effects (1):**
+
+| Script | Description |
+|--------|-------------|
+| `stun_guts.gd` | Disables Brains and Legs for a duration, emits `status_began`/`status_ended` |
+
+**Grid / Tetris (2):**
+
+| Script | Description |
+|--------|-------------|
+| `lock_detector_guts.gd` | Detects when grid piece can't fall, manages lock delay with infinite-spin prevention |
+| `t_spin_detector_guts.gd` | SRS 3-corner rule T-Spin detection with full/mini classification |
+
+### Key Design Decisions
+
+| Decision | Rationale |
+|----------|-----------|
+| DieOffscreenGuts split | Two variants: polling (OutOfBounds, game_bounds) vs event-driven (Offscreen, camera visibility). Different use cases for bullets vs enemies. |
+| ShieldPool damage pipeline | ShieldPool emits overflow to `take_health_damage` (different signal than `take_damage`), avoiding tree-ordering issues with HealthPool. Both fire synchronously via Godot signals. |
+| LockDetectorGuts uses `step_blocked` | Grid pieces use position teleportation, not physics collision. LockDetector listens to `step_blocked(direction)` from GridMovementLeg instead of `collision`. |
+| TSpinDetectorGuts rotation tracking | Tracks `_rotation_state` (0-3) and checks which specific corners are filled to distinguish full T-Spin from mini. |
+| ResourcePoolGuts spend-fail signal | Emits `resource_spend_failed` instead of returning bool (Godot signals can't capture return values). |
+
+### V2 Total Scripts Written: 76
 
 ---
 

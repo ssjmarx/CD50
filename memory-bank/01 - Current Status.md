@@ -1,11 +1,11 @@
 # Current Status: CD50 — Arcade Cabinet
 
-**Last Updated:** 2026-05-24  
+**Last Updated:** 2026-05-26  
 **Engine:** Godot 4.5 (GDScript)  
 **Architecture:** V2 Composable Architecture (active development) — V1 archived to `Godot/v1/`  
 **Playable Games:** Paddle Ball, Brick Breaker, Space Rocks, Meteor Rally, Dogfight, Bug Blaster, Block Drop (Modern), Rock Breaker, Bug Drop, Space Bugs, Planetary Attack!, Space Rocks Inverted — ALL componentized, zero game scripts
-**In Progress:** V2 Architecture — Plans 19, 19.5, 20, 21 COMPLETE. Plan 22 (Arms + Guts) is next.
-**Recent Completed:** Plan 21 — all 13 Brains, 15 Legs, 1 Gut, WallKickResource written. Plan 20 — all 4 CueCards, 2 Goals, 4 Marks written. Plan 19.5 — CDObjectPool written.
+**In Progress:** V2 Architecture — Plans 19, 19.5, 20, 21, 22 COMPLETE. Plan 23 (Spawners) is next.
+**Recent Completed:** Plan 22 — all 10 Arms, 15 Guts written. Plan 21 — all 14 Brains, 15 Legs, 1 Gut, WallKickResource written.
 **Demo Status:** Code-locked at 12 games. Only Steam wishlist link remains. Itch.io demo stays on V1 architecture.
 
 ---
@@ -197,13 +197,13 @@ Godot/Scripts/
 | 19.5 | Object Pooling | ✅ Complete | `planning/19.5 - V2 Object Pooling.md` |
 | 20 | Stage (CueCards, Goals, Marks) | ✅ Complete | `planning/20 - V2 Stage.md` |
 | 21 | Brains + Legs | ✅ Complete | `planning/21 - V2 Brains + Legs.md` |
-| 22 | Arms + Guts | 🔲 Next | `planning/22 - V2 Arms + Guts.md` |
-| 23 | Spawners | 🔲 Planned | `planning/23 - V2 Spawners.md` |
+| 22 | Arms + Guts | ✅ Complete | `planning/22 - V2 Arms + Guts.md` |
+| 23 | Spawners | 🔲 Next | `planning/23 - V2 Spawners.md` |
 | 24 | Faces, Voices, Projections & Speakers | 🔲 Planned | `planning/24 - V2 Faces, Voices, Projections & Speakers.md` |
 | 25 | Swarm Controllers + Galaga | 🔲 Planned | `planning/25 - V2 Swarm Controllers + Galaga.md` |
 | 26 | Block Drop V2 | 🔲 Planned | `planning/26 - Block Drop V2.md` |
 
-**Full V2 component catalogue:** `memory-bank/07 - Component Catalogue V2.md` (52 scripts written)
+**Full V2 component catalogue:** `memory-bank/07 - Component Catalogue V2.md` (76 scripts written)
 
 ---
 

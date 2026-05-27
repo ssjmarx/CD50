@@ -1,6 +1,6 @@
 # Component Catalogue V2
 
-**Last Updated:** 2026-05-24  
+**Last Updated:** 2026-05-26  
 **Architecture:** V2 Composable Architecture  
 **Canonical Reference:** `planning/V2 Rules.md`  
 
@@ -48,7 +48,7 @@ The V2 architecture replaces V1's `UniversalBody`/`UniversalComponent` system wi
 
 ---
 
-## Entity Components — Brains (13)
+## Entity Components — Brains (14)
 
 Pure intent generators (Priority 10). Never touch velocity, never move entities. Emit signals on the entity bus.
 
@@ -88,13 +88,97 @@ Pure intent generators (Priority 10). Never touch velocity, never move entities.
 
 ---
 
-## Entity Components — Guts (1)
+## Entity Components — Arms (10)
 
-Internal state trackers (Priority 50). No world interaction — purely data for other components to query.
+World-affecting components (Priority 40). Consume collision signals from the buffer flush and affect other entities or the game state.
+
+### Collision Response Arms (6)
+
+On Hit / On Crash matrix — the 2×2 pattern for entity destruction and damage.
 
 | Script | Class | Description |
 |--------|-------|-------------|
-| `vision_cone_guts.gd` | `VisionConeGuts` | Defines a forward-facing vision cone that detects bodies |
+| `damage_on_hit_arm.gd` | `DamageOnHitArm` | Emits `take_damage` on collider's bus when this entity is the instigator in a hit |
+| `death_on_hit_arm.gd` | `DeathOnHitArm` | Emits `request_deactivate` on collider's bus when this entity is the instigator in a hit |
+| `damage_on_crash_arm.gd` | `DamageOnCrashArm` | Emits `take_damage` on collider's bus for any collision (mutual damage) |
+| `death_on_crash_arm.gd` | `DeathOnCrashArm` | Emits `request_deactivate` on collider's bus for any collision (mutual destruction) |
+| `damage_on_joust_arm.gd` | `DamageOnJoustArm` | Emits `take_damage` on the slower collider's bus (velocity comparison) |
+| `death_on_joust_arm.gd` | `DeathOnJoustArm` | Emits `request_deactivate` on the slower collider's bus (velocity comparison) |
+
+### Scoring Arms (2)
+
+| Script | Class | Description |
+|--------|-------|-------------|
+| `score_on_collision_arm.gd` | `ScoreOnCollisionArm` | Emits `add_score` on game bus when collision occurs with target groups |
+| `score_on_death_arm.gd` | `ScoreOnDeathArm` | Emits `add_score` on game bus when this entity deactivates |
+
+### Force & Status Arms (2)
+
+| Script | Class | Description |
+|--------|-------|-------------|
+| `pushback_arm.gd` | `PushbackArm` | Emits `external_impulse` on collider's bus based on collision normal |
+| `status_on_hit_arm.gd` | `StatusOnHitArm` | Emits `apply_status` on collider's bus with configurable status name and duration |
+
+---
+
+## Entity Components — Guts (15)
+
+Internal state trackers (Priority 50). No world interaction — hold entity state and emit signals when state changes.
+
+### Collision & Shape (2)
+
+| Script | Class | Description |
+|--------|-------|-------------|
+| `deflector_bounce_guts.gd` | `DeflectorBounceGuts` | Bounces entity velocity on collision using configurable response mode |
+| `shape_collider_guts.gd` | `ShapeColliderGuts` | Manages collision shape enable/disable (needed for pooled entities) |
+
+### Health & Death (3)
+
+| Script | Class | Description |
+|--------|-------|-------------|
+| `healthpool_guts.gd` | `HealthPoolGuts` | Tracks HP with configurable damage/heal, emits `health_changed` and `health_depleted` |
+| `die_at_zero_health_guts.gd` | `DieAtZeroHealthGuts` | Listens for `health_depleted` and calls `entity.deactivate()` |
+| `points_guts.gd` | `PointsGuts` | Holds point value for scoring — data holder consumed by ScoreOnDeathArm |
+
+### Self-Destruction (3)
+
+| Script | Class | Description |
+|--------|-------|-------------|
+| `die_on_timer_guts.gd` | `DieOnTimerGuts` | Destroys entity after a configurable lifespan (bullets, bombs) |
+| `die_out_of_bounds_guts.gd` | `DieOutOfBoundsGuts` | Polling-based bounds check against `game.game_bounds` with spawn delay |
+| `die_offscreen_guts.gd` | `DieOffscreenGuts` | Camera-visibility-based cleanup via `VisibleOnScreenNotifier2D` (event-driven) |
+
+### Force Reception (1)
+
+| Script | Class | Description |
+|--------|-------|-------------|
+| `impulse_receiver_guts.gd` | `ImpulseReceiverGuts` | Listens for `external_impulse` and passes it to the velocity accumulator |
+
+### Resource Pools (2)
+
+| Script | Class | Description |
+|--------|-------|-------------|
+| `shieldpool_guts.gd` | `ShieldPoolGuts` | Rechargeable buffer on top of HealthPool — absorbs damage, overflows remainder |
+| `resourcepool_guts.gd` | `ResourcePoolGuts` | Generic spendable pool (stamina/mana/ammo) with regeneration and spend-fail signal |
+
+### Status Effects (1)
+
+| Script | Class | Description |
+|--------|-------|-------------|
+| `stun_guts.gd` | `StunGuts` | Disables Brains and Legs for a duration, emits `status_began`/`status_ended` |
+
+### Grid / Tetris (2)
+
+| Script | Class | Description |
+|--------|-------|-------------|
+| `lock_detector_guts.gd` | `LockDetectorGuts` | Detects when a grid piece can't fall further, manages lock delay with infinite-spin prevention |
+| `t_spin_detector_guts.gd` | `TSpinDetectorGuts` | SRS 3-corner rule T-Spin detection with full/mini classification, announces to game bus |
+
+### Vision (1)
+
+| Script | Class | Description |
+|--------|-------|-------------|
+| `vision_cone_guts.gd` | `VisionConeGuts` | Forward-facing vision cone that detects bodies |
 
 ---
 
@@ -194,13 +278,14 @@ Stage-level spatial detectors. Area2D-based triggers that emit signals on body c
 | Core Base Classes | 3 | Complete |
 | Core Infrastructure | 7 | Complete |
 | Core Resources | 3 | Complete |
-| Brains | 13 | Complete |
-| Guts | 1 | Partial (Plan 22 pending) |
+| Brains | 14 | Complete |
+| Arms | 10 | Complete |
+| Guts | 15 | Complete |
 | Legs | 15 | Complete |
 | Cue Cards | 4 | Complete |
 | Goals | 2 | Complete |
 | Marks | 4 | Complete |
-| **Total V2 Scripts** | **52** | |
+| **Total V2 Scripts** | **76** | |
 
 ---
 
@@ -210,13 +295,10 @@ These categories are planned but not yet written:
 
 | Category | Plan | Expected Components |
 |----------|------|---------------------|
-| Arms (11) | Plan 22 | DamageOnHit, DamageOnCrash, DeathOnHit, DeathOnCrash, Joust variants, GunSimple, etc. |
-| Guts (11+) | Plan 22 | HealthGuts, TimerGuts, LockDetectorGuts, TetrominoGuts, etc. |
 | Spawners | Plan 23 | CDStageSpawner, PointSpawner, EdgeSpawner, GridSpawner, etc. |
 | Faces | Plan 24 | CDFace, CDFaceBinding, etc. |
 | Voices | Plan 24 | CDVoice, CDSpeaker, CDSoundBank, etc. |
 | Stage Controllers | Plan 25 | SwarmGridStep, Formation, Flock, Shoot controllers |
-| ScreenClampLeg | Plan 21 | Scene exists, script not yet written |
 
 ---
 

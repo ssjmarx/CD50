@@ -1,7 +1,7 @@
 # Current Goal
 
-**Last Updated:** 2026-05-24  
-**Status:** Active — V2 Arms + Guts (Plan 22)
+**Last Updated:** 2026-05-26  
+**Status:** Active — V2 Spawners (Plan 23)
 
 ---
 
@@ -19,18 +19,18 @@ The itch.io demo is **code-locked** (12 games, all componentized). We are now bu
 | 1 | 19 — V2 Core Infrastructure | CDEntity, CDGame, CDComponent2D, CDCollisionBuffer, CDGroupRegistry, CDCollisionMatrix, CDInputRouter, CDEnums | ✅ Complete |
 | 1b | 19.5 — V2 Object Pooling | CDObjectPool, pool-aware activate/deactivate | ✅ Complete |
 | 2 | 20 — V2 Stage | CDCueCard, ScoreCard, LivesCard, TimerCard, WaveCard, Goals, CDMarks | ✅ Complete |
-| 3 | 21 — V2 Brains + Legs | 13 Brains, 15 Legs, 1 Gut, WallKickResource | ✅ Complete |
-| 4 | 22 — V2 Arms + Guts | 11 Arms, 12 Guts — collision response + internal state | 🔲 Next |
-| 5 | 23 — V2 Spawners | CDStageSpawner, Point/Edge/GridSpawner, CDGridLayout, CDSafeZone | 🔲 Planned |
+| 3 | 21 — V2 Brains + Legs | 14 Brains, 15 Legs, 1 Gut, WallKickResource | ✅ Complete |
+| 4 | 22 — V2 Arms + Guts | 10 Arms, 15 Guts — collision response + internal state | ✅ Complete |
+| 5 | 23 — V2 Spawners | CDStageSpawner, Point/Edge/GridSpawner, CDGridLayout, CDSafeZone | 🔲 Next |
 | 6 | 24 — V2 Faces, Voices, Projections & Speakers | CDFace, CDFaceBinding, CDVoice, CDSpeaker, CDSoundBank, CDProjection | 🔲 Planned |
 | 7 | 25 — V2 Swarm Controllers + Galaga | SwarmGridStep, Formation, Flock, Shoot controllers + Galaga proof | 🔲 Planned |
 | 8 | 26 — Block Drop V2 | Full Block Drop remake proving Pseudogrid pattern | 🔲 Planned |
 
-### Immediate Next Step: Plan 22 — V2 Arms + Guts
+### Immediate Next Step: Plan 23 — V2 Spawners
 
-Build the Arms (collision response, weapons) and Guts (internal state trackers) categories. Arms consume collision signals at Priority 40 and affect the world. Guts hold entity state at Priority 50. See `planning/22 - V2 Arms + Guts.md` for the full plan.
+Build the Spawner system — CDStageSpawner base class, Point/Edge/Grid spawner variants, CDGridLayout, and CDSafeZone. Spawners acquire entities from CDObjectPool and activate them at configured positions. See `planning/23 - V2 Spawners.md` for the full plan.
 
-**52 V2 scripts written so far** across Core (13), Brains (13), Legs (15), Guts (1), Stage (10). Full catalogue: `memory-bank/07 - Component Catalogue V2.md`
+**76 V2 scripts written so far** across Core (13), Brains (14), Arms (10), Legs (15), Guts (15), Stage (10). Full catalogue: `memory-bank/07 - Component Catalogue V2.md`
 
 ### Demo Status
 
@@ -131,7 +131,8 @@ The following plans have been **deleted** from the active pipeline:
 
 | Plan | Description | Completed |
 |------|-------------|-----------|
-| 21 | V2 Brains + Legs (13 Brains, 15 Legs, 1 Gut, WallKickResource — 30 scripts) | 2026-05-24 |
+| 22 | V2 Arms + Guts (10 Arms, 15 Guts — 25 scripts) | 2026-05-26 |
+| 21 | V2 Brains + Legs (14 Brains, 15 Legs, 1 Gut, WallKickResource — 31 scripts) | 2026-05-24 |
 | 20 | V2 Stage (4 CueCards, 2 Goals, 4 Marks — 10 scripts) | 2026-05-24 |
 | 19.5 | V2 Object Pooling (CDObjectPool) | 2026-05-24 |
 | 19 | V2 Core Infrastructure (CDEntity, CDGame, CDInputRouter, etc. — 13 scripts) | 2026-05-23 |
