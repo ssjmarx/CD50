@@ -97,8 +97,6 @@ func _draw() -> void:
 	for i in 4:
 		if not _active[i] and not is_editor:
 			continue
-		if not _active[i] and is_editor:
-			continue
 		
 		var flame_dir: Vector2 = FLAME_DIRS[i]
 		var base_pos: Vector2 = flame_dir * distance

@@ -137,7 +137,7 @@ func play_one_shot(def: CDSoundDef, sound_position: Vector2, positional: bool,
 	voice.note_frame_start = 0
 	var first_note: CDNote = def.notes[0]
 	voice.shot_end = maxi(1, int(first_note.duration * MIX_RATE))
-	voice.cached_freq = _freq_from_note(first_note.note)
+	voice.cached_freq = CDUtilities.freq_from_note(first_note.note)
 	
 	# configure player
 	voice.player.volume_db = linear_to_db(def.volume)
@@ -172,7 +172,7 @@ func _advance_jingle(voice: Voice) -> bool:
 	var next_note: CDNote = voice.notes[voice.note_index]
 	voice.note_frame_start = voice.frame_pos
 	voice.shot_end = voice.frame_pos + maxi(1, int(next_note.duration * MIX_RATE))
-	voice.cached_freq = _freq_from_note(next_note.note)
+	voice.cached_freq = CDUtilities.freq_from_note(next_note.note)
 	voice.phase = 0.0  # Reset phase for clean note transition
 	voice.player.volume_db = linear_to_db(voice.volume)
 	return true
@@ -206,7 +206,7 @@ func start_continuous(signature: String, wave_shape: int, effect: int,
 	voice.frame_pos = 0
 	voice.phase = 0.0
 	voice.shot_end = 0
-	voice.cached_freq = _freq_from_note(note)
+	voice.cached_freq = CDUtilities.freq_from_note(note)
 	voice.player.volume_db = linear_to_db(volume)
 	voice.player.global_position = sound_position
 	voice.player.max_distance = POSITIONAL_DISTANCE if positional else GLOBAL_DISTANCE
@@ -272,9 +272,6 @@ func _find_idle_continuous_voice() -> Voice:
 		if not voice.active:
 			return voice
 	return null
-
-static func _freq_from_note(note: int) -> float:
-	return 440.0 * pow(2.0, (note - 69) / 12.0)
 
 func _get_sample(voice: Voice, t: float) -> float:
 	var freq: float = CDUtilities.apply_freq_effect(voice.cached_freq, t, voice.effect)

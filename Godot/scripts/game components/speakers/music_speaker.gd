@@ -1,7 +1,7 @@
 ## playlist + dual-player crossfade + loop-point logic
 class_name MusicSpeaker extends CDGameComponent
 
-@export var playlist: Array[MusicTrack] = []
+@export var playlist: Array[CDMusicTrack] = []
 @export var loop: bool = false
 @export var volume_db: float = -6.0
 @export var idle_volume_db: float = -20.0
@@ -66,7 +66,7 @@ func _play_next() -> void:
 			return
 	
 	_current_index = _queue.pop_front()
-	var track: MusicTrack = playlist[_current_index]
+	var track: CDMusicTrack = playlist[_current_index]
 	
 	# crossfade to the other player
 	var fade_out_player: AudioStreamPlayer = _active_player
@@ -89,7 +89,7 @@ func _play_next() -> void:
 	else:
 		_schedule_next_on_finish()
 
-func _schedule_loop_crossfade(track: MusicTrack) -> void:
+func _schedule_loop_crossfade(track: CDMusicTrack) -> void:
 	var wait_time: float = track.loop_end - track.loopfade_duration
 	await get_tree().create_timer(wait_time).timeout
 	if not _is_playing:
