@@ -9,6 +9,8 @@ var game: CDGame
 
 ## step one setup
 func _ready() -> void:
+	if Engine.is_editor_hint():
+		return
 	entity = CDEntity.find_ancestor(self)
 	game = CDGame.find_ancestor(self)
 	

@@ -8,7 +8,7 @@ enum ComponentCategory {
 	ENTITY,       # CDEntity
 	INTERACTION,  # arms
 	STATE,        # guts
-	VISUAL,       # faces/projections
+	VISUAL,       # faces/projectors
 	AUDIO,        # voices/speakers
 	RULES,        # goals, cuecards, trapdoors
 }
@@ -104,4 +104,35 @@ enum EntityCompareTiebreaker {
 enum EntityCompareInvalidAction {
 	DONT_FIRE,
 	FIRE,
+}
+
+## CDSoundDef wave shapes
+enum WaveShape {
+	SINE,
+	SQUARE,
+	SAWTOOTH,
+	TRIANGLE,
+	NOISE,
+}
+
+## CDSoundDef frequency/amplitude effects
+enum Effect {
+	NONE,
+	WARBLE,
+	TREMOLO,
+	SWEEP_DOWN,
+	DECAY,
+}
+
+## MIDI note numbers for sound generation
+enum Semitone {
+	# Octave 3 (48-59)
+	C3 = 48, CS3 = 49, D3 = 50, DS3 = 51, E3 = 52,
+	F3 = 53, FS3 = 54, G3 = 55, GS3 = 56, A3 = 57, AS3 = 58, B3 = 59,
+	# Octave 4 (60-71)
+	C4 = 60, CS4 = 61, D4 = 62, DS4 = 63, E4 = 64,
+	F4 = 65, FS4 = 66, G4 = 67, GS4 = 68, A4 = 69, AS4 = 70, B4 = 71,
+	# Octave 5 (72-83)
+	C5 = 72, CS5 = 73, D5 = 74, DS5 = 75, E5 = 76,
+	F5 = 77, FS5 = 78, G5 = 79, GS5 = 80, A5 = 81, AS5 = 82, B5 = 83,
 }

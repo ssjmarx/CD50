@@ -1,6 +1,9 @@
 ## pure static utility functions used across V2
 class_name CDUtilities
 
+## for sound generation
+const MIX_RATE: int = 11025
+
 ## applies a CDSpawnContext to an entity before it enters the tree
 static func apply_spawn_context(entity: CDEntity, context: CDSpawnContext) -> void:
 	if context == null:
@@ -33,3 +36,42 @@ static func evaluate_int(equation: String, var_names: PackedStringArray, var_val
 		push_error("%s: failed to execute equation '%s': %s" % [context_name, equation, expr.get_error_text()])
 		return 0
 	return int(result)
+
+## converts MIDI note number to frequency in Hz
+static func freq_from_note(note: int) -> float:
+	return 440.0 * pow(2.0, (note - 69) / 12.0)
+
+## returns modified frequency after applying freq effects
+static func apply_freq_effect(freq: float, t: float, effect: int) -> float:
+	match effect:
+		CDEnums.Effect.WARBLE:
+			return freq + sin(TAU * 5.0 * t) * 30.0
+		CDEnums.Effect.SWEEP_DOWN:
+			return freq * maxf(0.1, 1.0 - t * 2.0)
+	return freq
+
+## returns raw waveform sample from phase position
+static func wave_sample(phase: float, wave_shape: int) -> float:
+	match wave_shape:
+		CDEnums.WaveShape.SINE:
+			return sin(TAU * phase)
+		CDEnums.WaveShape.SQUARE:
+			return sign(sin(TAU * phase))
+		CDEnums.WaveShape.SAWTOOTH:
+			return 2.0 * (phase - floor(phase + 0.5))
+		CDEnums.WaveShape.TRIANGLE:
+			return 2.0 * abs(2.0 * (phase - floor(phase + 0.5))) - 1.0
+		CDEnums.WaveShape.NOISE:
+			var noise: float = randf() * 2.0 - 1.0
+			var tone: float = sin(TAU * phase)
+			return lerp(tone, noise, 0.5)
+	return 0.0
+
+## returns modified sample after applying amplitude effects
+static func apply_amp_effect(sample: float, t: float, note_progress: float, effect: int) -> float:
+	match effect:
+		CDEnums.Effect.TREMOLO:
+			return sample * (0.5 + 0.5 * sin(TAU * 4.0 * t))
+		CDEnums.Effect.DECAY:
+			return sample * maxf(0.0, 1.0 - note_progress)
+	return sample

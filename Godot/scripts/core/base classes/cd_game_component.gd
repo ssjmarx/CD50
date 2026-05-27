@@ -8,6 +8,8 @@ var game: CDGame
 
 ## step one setup
 func _ready() -> void:
+	if Engine.is_editor_hint():
+		return
 	game = CDGame.find_ancestor(self)
 	
 	if game == null:

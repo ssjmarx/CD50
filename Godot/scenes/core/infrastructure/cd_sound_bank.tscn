@@ -1,0 +1,6 @@
+[gd_scene load_steps=2 format=3 uid="uid://dp5wrnwomehwo"]
+
+[ext_resource type="Script" uid="uid://b7jldqxkwokf3" path="res://scripts/core/infrastructure/cd_sound_bank.gd" id="1_7rtwa"]
+
+[node name="CDSoundBank" type="Node2D"]
+script = ExtResource("1_7rtwa")

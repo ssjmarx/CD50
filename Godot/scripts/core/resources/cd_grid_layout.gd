@@ -25,7 +25,3 @@ func get_cell(index: int) -> PackedScene:
 	if col_index >= rows[row_index].cells.size():
 		return null
 	return rows[row_index].cells[col_index]
-
-## one row of the grid
-class CDGridRow extends Resource:
-	@export var cells: Array[PackedScene] = []

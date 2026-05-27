@@ -1,0 +1,6 @@
+[gd_scene load_steps=2 format=3 uid="uid://i3pdc506noqn"]
+
+[ext_resource type="Script" uid="uid://cn1afmp06420b" path="res://scripts/game components/speakers/music_speaker.gd" id="1_72kkj"]
+
+[node name="MusicSpeaker" type="Node2D"]
+script = ExtResource("1_72kkj")

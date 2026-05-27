@@ -1,0 +1,6 @@
+[gd_scene load_steps=2 format=3 uid="uid://c160d1kuwsrav"]
+
+[ext_resource type="Script" uid="uid://67xn8ucqopey" path="res://scripts/game components/projectors/crt_projector.gd" id="1_kiyo6"]
+
+[node name="CRTProjector" type="Node2D"]
+script = ExtResource("1_kiyo6")

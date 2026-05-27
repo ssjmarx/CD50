@@ -1,0 +1,6 @@
+[gd_scene load_steps=2 format=3 uid="uid://dcpdwp3e1p2y4"]
+
+[ext_resource type="Script" uid="uid://bc3nw22emagdi" path="res://scripts/game components/speakers/continuous_speaker.gd" id="1_3ydlv"]
+
+[node name="ContinuousSpeaker" type="Node2D"]
+script = ExtResource("1_3ydlv")

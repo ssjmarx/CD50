@@ -1,0 +1,18 @@
+[gd_scene load_steps=6 format=3 uid="uid://c4jinp88xtitl"]
+
+[ext_resource type="Script" uid="uid://do1urrpws1kht" path="res://scripts/entity components/voices/sound_voice.gd" id="1_qt2tg"]
+[ext_resource type="Script" uid="uid://ci2yaa2b1swsj" path="res://scripts/core/resources/cd_note.gd" id="2_x1ah0"]
+[ext_resource type="Script" uid="uid://d3l2c838cqwsm" path="res://scripts/core/resources/cd_sound_def.gd" id="3_7y5ad"]
+
+[sub_resource type="Resource" id="Resource_lpgd0"]
+script = ExtResource("2_x1ah0")
+metadata/_custom_type_script = "uid://ci2yaa2b1swsj"
+
+[sub_resource type="Resource" id="Resource_87dja"]
+script = ExtResource("3_7y5ad")
+notes = Array[ExtResource("2_x1ah0")]([SubResource("Resource_lpgd0")])
+metadata/_custom_type_script = "uid://d3l2c838cqwsm"
+
+[node name="SoundVoice" type="Node2D"]
+script = ExtResource("1_qt2tg")
+sound = SubResource("Resource_87dja")

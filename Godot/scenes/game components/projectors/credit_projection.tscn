@@ -1,0 +1,8 @@
+[gd_scene load_steps=2 format=3 uid="uid://b82igga3ssm15"]
+
+[ext_resource type="Script" uid="uid://blb2xel5g4sj0" path="res://scripts/game components/projectors/credit_projection.gd" id="1_7ugqr"]
+
+[node name="CreditProjection" type="Control"]
+layout_mode = 3
+anchors_preset = 0
+script = ExtResource("1_7ugqr")

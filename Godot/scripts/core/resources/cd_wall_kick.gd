@@ -1,4 +1,4 @@
-class_name WallKickResource extends Resource
+class_name CDWallKick extends Resource
 
 ## 8 kick arrays: 0→R, R→0, R→2, 2→R, 2→L, L→2, L→0, 0→L
 ## each array is an Array[Vector2i] of kick offsets to try in order

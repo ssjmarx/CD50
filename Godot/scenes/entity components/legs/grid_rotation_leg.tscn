@@ -4,3 +4,7 @@
 
 [node name="GridRotationLeg" type="Node2D"]
 script = ExtResource("1_sochl")
+rotation_step = null
+rotate_signals = null
+rotation_blocked_signals = null
+component_category = null

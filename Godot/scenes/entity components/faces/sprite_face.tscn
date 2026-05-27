@@ -1,0 +1,6 @@
+[gd_scene load_steps=2 format=3 uid="uid://dlgrii32eggbo"]
+
+[ext_resource type="Script" uid="uid://ctqplbiqcqqkn" path="res://scripts/entity components/faces/sprite_face.gd" id="1_mqcor"]
+
+[node name="SpriteFace" type="Node2D"]
+script = ExtResource("1_mqcor")

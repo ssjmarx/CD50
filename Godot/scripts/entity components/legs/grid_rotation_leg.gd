@@ -1,7 +1,7 @@
 ## Tetris-style rotation with wall-kick offset tables.
 class_name GridRotationLeg extends CDEntityComponent
 
-@export var kick_table: WallKickResource
+@export var kick_table: CDWallKick
 @export var rotation_step: float = PI / 2.0
 
 @export_group("Listen Signals")

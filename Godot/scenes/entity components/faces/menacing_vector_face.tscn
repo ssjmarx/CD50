@@ -1,0 +1,6 @@
+[gd_scene load_steps=2 format=3 uid="uid://ce37cuxh1567r"]
+
+[ext_resource type="Script" uid="uid://cjr0gp0pofsuq" path="res://scripts/entity components/faces/menacing_vector_face.gd" id="1_eydx5"]
+
+[node name="MenacingVectorFace" type="Node2D"]
+script = ExtResource("1_eydx5")
