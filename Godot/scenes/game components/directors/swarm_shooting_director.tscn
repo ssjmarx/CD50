@@ -1,0 +1,6 @@
+[gd_scene load_steps=2 format=3 uid="uid://dy1u3daim4ib3"]
+
+[ext_resource type="Script" uid="uid://cej2q0d3f3opd" path="res://scripts/game components/directors/swarm_shooting_director.gd" id="1_sfan0"]
+
+[node name="SwarmShootingDirector" type="Node2D"]
+script = ExtResource("1_sfan0")

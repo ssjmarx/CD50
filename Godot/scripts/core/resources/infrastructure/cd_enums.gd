@@ -3,28 +3,36 @@ class_name CDEnums
 
 ## CDComponent2D and CDStageComponent2D priority categories
 enum ComponentCategory {
-	INTENT,       # brains/controllers
-	STEERING,     # legs
-	ENTITY,       # CDEntity
-	INTERACTION,  # arms
-	STATE,        # guts
-	VISUAL,       # faces/projectors
-	AUDIO,        # voices/speakers
-	RULES,        # goals, cuecards, trapdoors
+	REGISTRATION,   # 5  — group cache flush
+	INPUT,          # 8  — input routing
+	INTENT,         # 10 — brains/controllers
+	STEERING,       # 20 — legs
+	ENTITY,         # 30 — CDEntity
+	COLLISION,      # 35 — collision buffer flush
+	INTERACTION,    # 40 — arms
+	STATE,          # 50 — guts (internal entity state)
+	VISUAL,         # 60 — faces/projectors
+	AUDIO,          # 65 — voices/speakers
+	RULES,          # 70 — directors, goals, cards, trapdoors
+	UPDATE,         # 90 — state mutation flush, component lifecycle
 }
 
 # func to assign category to a priority inside of a component
 static func category_to_priority(category: ComponentCategory) -> int:
 	match category:
+		ComponentCategory.REGISTRATION: return 5	# not intended for component use
+		ComponentCategory.INPUT: 		return 8	# not intended for component use
 		ComponentCategory.INTENT:       return 10
 		ComponentCategory.STEERING:     return 20
 		ComponentCategory.ENTITY:       return 30
+		ComponentCategory.COLLISION:	return 35	# not intended for component use
 		ComponentCategory.INTERACTION:  return 40
 		ComponentCategory.STATE:        return 50
 		ComponentCategory.VISUAL:       return 60
 		ComponentCategory.AUDIO:        return 65
 		ComponentCategory.RULES:        return 70
-		_: return 70
+		ComponentCategory.UPDATE:		return 90	# not intended for component use
+		_: return 95
 
 ## CDEntity lifecycle states
 enum EntityState {

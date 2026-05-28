@@ -1,0 +1,6 @@
+[gd_scene load_steps=2 format=3 uid="uid://b7uyqydnog2th"]
+
+[ext_resource type="Script" uid="uid://ds8aagmrm6pes" path="res://scripts/game components/directors/formation_director.gd" id="1_t7o5w"]
+
+[node name="FormationDirector" type="Node2D"]
+script = ExtResource("1_t7o5w")
