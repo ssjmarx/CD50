@@ -46,38 +46,65 @@ Every frame, components execute in a deterministic priority cascade. Lower prior
 | 60 | VISUAL | Face | Visual updates (vector drawing, sprite swaps, effects) | Visuals reflect final state |
 | 65 | AUDIO | Voice | Sound components (entity-level and scene-level) | Audio reflects final state — after visuals |
 | 70 | RULES | Stage | Game-level logic (Goals, CueCards, Directors, Spawners) | Score tracking, win/lose conditions, spawning |
-| 99 | CLEANUP | — | Entity cleanup, pool return, group removal | All priority processing complete before any entity is removed |
+| 90 | UPDATE | Updater | CDUpdater flushes deferred group transitions and component lifecycle mutations | All rule evaluation complete before any state mutations are applied |
+
+**After all priority processing:** Entity cleanup runs via `call_deferred()` — returning entities to pools and removing them from groups. This deferred cleanup happens after every priority slot has finished.
 
 **Mental model:**
 
 ```
-REGISTRATION → INPUT → INTENT → STEERING → PHYSICS → COLLISION → INTERACTION → STATE → VISUAL → AUDIO → RULES → CLEANUP
- sync groups   read     "go!"    calc       moves     "you hit    damage       health   draw it   play it   score it   remove dead
-                input             speed +    the       something"  to target    drops    on screen out loud  check win  return pool
+REGISTRATION → INPUT → INTENT → STEERING → PHYSICS → COLLISION → INTERACTION → STATE → VISUAL → AUDIO → RULES → UPDATE → [deferred cleanup]
+ sync groups   read     "go!"    calc       moves     "you hit    damage       health   draw it   play it   score it   flush   return to pool
+                input             speed +    the       something"  to target    drops    on screen out loud  check win  mutations  remove dead
                                    direction  thing
 ```
 
 ### Two Worlds: Entity Components vs Game Components
 
-CD50 has two distinct component hierarchies:
+CD50 has two distinct component hierarchies. Components set their `component_category` from `CDEnums.ComponentCategory` to determine their execution priority. Some categories are **reserved for infrastructure** — components never use them.
 
-**Entity Components** — Children of `CDEntity`. Run on every entity, every frame. Use the entity bus for high-frequency communication.
+**Reserved categories (infrastructure only, not for component use):**
 
-| Base Class | Extends | Has `entity` | Has `game` | Priority from category |
-|------------|---------|-------------|-----------|----------------------|
-| `CDComponent2D` | `Node2D` | Yes | Yes | Yes |
+| Category | Priority | What Runs Here |
+|----------|----------|---------------|
+| REGISTRATION | 5 | CDGroupRegistry dirty flush |
+| INPUT | 8 | CDInputRouter |
+| ENTITY | 30 | CDEntity physics resolution |
+| COLLISION | 35 | CDCollisionBuffer flush |
+| UPDATE | 90 | CDUpdater deferred mutations |
 
-Categories: Brains (10), Legs (20), Arms (40), Guts (50), Faces (60), Voices (65).
+**Entity Components** — Children of `CDEntity`. Run on every entity, every frame. Use the entity bus for high-frequency communication. Each sets its `component_category` to one of these values:
 
-**Game Components** — Children of `CDGame`. Manage game-level state, UI, spawning. Use the game bus for low-frequency events.
+| Base Class | Extends | Has `entity` | Has `game` |
+|------------|---------|-------------|-----------|
+| `CDComponent2D` | `Node2D` | Yes | Yes |
 
-| Base Class | Extends | Has `entity` | Has `game` | Priority |
+| ComponentCategory | Priority | Colloquial Name | Examples |
+|-------------------|----------|----------------|---------|
+| INTENT | 10 | Brains | PlayerMoveBrain, AIChaseBrain |
+| STEERING | 20 | Legs | DirectMovementLeg, EngineLeg |
+| INTERACTION | 40 | Arms | DamageOnHitArm, GunArm |
+| STATE | 50 | Guts | HealthpoolGuts, TimerGuts |
+| VISUAL | 60 | Faces | VectorFace, PolygonFace |
+| AUDIO | 65 | Voices | SoundVoice, ContinuousVoice |
+
+**Game Components** — Children of `CDGame`. Manage game-level state, UI, spawning. Use the game bus for low-frequency events. All run at ComponentCategory.RULES (70) or are event-driven.
+
+| Base Class | Extends | Has `entity` | Has `game` | Category |
 |------------|---------|-------------|-----------|----------|
-| `CDStageComponent2D` | `Node2D` | No | Yes | 70 (RULES) |
-| `CDCueCard` | `Control` | No | Yes | 70 (RULES) |
-| `CDMark` | `Area2D` | No | Yes | Event-driven |
+| `CDStageComponent2D` | `Node2D` | No | Yes | RULES (70) |
+| `CDCueCard` | `Control` | No | Yes | RULES (70) |
+| `CDMark` | `Area2D` | No | Yes | Event-driven (Area2D) |
 
-Categories: Cards, Goals, Directors, Marks, Projectors, Speakers, Trapdoors — all Stage (70).
+| Stage Subcategory | Description | Examples |
+|-------------------|-------------|---------|
+| Cards | UI state display | ScoreCard, LivesCard, TimerCard, WaveCard |
+| Goals | Win/lose conditions | GroupCountGoal, ScoreThresholdGoal |
+| Directors | Entity group controllers | FormationDirector, SwoopDirector |
+| Marks | Spatial detection zones | CountMark, SafeZoneMark, TimedMark |
+| Projectors | Visual post-processing | CRTProjector, CreditProjection |
+| Speakers | Game-level audio | SoundSpeaker, MusicSpeaker |
+| Trapdoors | Stage spawners | PointTrapdoor, EdgeTrapdoor, GridTrapdoor |
 
 ---
 
@@ -93,29 +120,59 @@ CD50 uses a hybrid signal system: two mechanisms chosen for what each is best at
 - **Registration:** `entity.ensure_signal("signal_name", [param_types])` — idempotent, warns on type mismatch
 - **Connection:** `entity.connect("signal_name", callable)` — standard Godot signal connection
 
-**Canonical signal types:**
+**Standard entity bus signals (hardcoded on CDEntity):**
 
-| Type | Signature | Semantic | Used By |
-|------|-----------|----------|---------|
-| Directional | `(Vector2)` | Normalized direction — "go this way" | Brains → Legs |
-| Positional | `(Vector2)` | World-space coordinates — "go to this point" | Brains → Legs |
-| Action | `(StringName)` | Named action trigger (e.g., `&"shoot"`) | Brains → Arms |
-| Action End | `(StringName)` | Named action release | Brains → Arms |
-| Rotate | `(float)` | Spin direction (-1.0, 0.0, 1.0) | Brains → Legs |
-| Curve | `(Curve2D, float)` | Path to follow and speed | Brains → Legs |
-| Drop | `(int)` | Number of grid cells to drop | Brains → Legs |
+These signals are registered via `add_user_signal()` in `CDEntity._ready()` with typed parameter signatures. They exist on every entity automatically.
 
-**Standard entity bus signals:**
+| Signal | Signature | Emitted By | Purpose |
+|--------|-----------|------------|---------|
+| `"collision"` | `(CDEntity collider, Vector2 normal)` | CDCollisionBuffer flush (Priority 35) | Notify entity it collided with something |
+| `"collided_by"` | `(CDEntity source, Vector2 normal)` | CDCollisionBuffer flush (Priority 35) | Reverse signal on the *other* entity — "you were hit" |
+| `"moved"` | `(Vector2 old_pos, Vector2 new_pos)` | CDEntity physics loop (Priority 30) | Position changed this frame |
+| `"rotated"` | `(float old_rot, float new_rot)` | CDEntity physics loop (Priority 30) | Rotation changed this frame |
+| `"request_deactivate"` | `()` | Any component | Request entity death (triggers two-phase deactivation) |
+| `"entity_deactivating"` | `()` | CDEntity during deferred cleanup | Components must disconnect signals and reset state here |
+| `"entity_activated"` | `()` | CDEntity on pool reuse | Components must reconnect signals and restore defaults here |
 
-| Signal | Signature | Emitted By |
-|--------|-----------|------------|
-| `"collision"` | `(CDEntity, Vector2)` | CDCollisionBuffer at Priority 35 |
-| `"request_deactivate"` | `()` | Any component requesting entity death |
-| `"entity_deactivating"` | `()` | CDEntity during cleanup at Priority 99 |
-| `"entity_activated"` | `()` | CDEntity on pool reuse activation |
-| `"moved"` | `()` | CDEntity after position changes |
-| `"rotated"` | `()` | CDEntity after rotation changes |
-| `"shape_changed"` | `(PackedVector2Array)` | Procedural shape generators |
+**Common entity bus signals (via `ensure_signal()` + component exports):**
+
+These signals are created dynamically by components calling `entity.ensure_signal("name")`. All signal names are configurable via `@export` arrays — the defaults listed below represent the most common conventions.
+
+| Default Name | Signature | Semantic | Typical Emitters → Listeners |
+|-------------|-----------|----------|------------------------------|
+| `"move"` | `(Vector2)` | Directional intent — "go this way" | Brains → Legs |
+| `"move_to"` | `(Vector2)` | Positional target — "go to this point" | Brains/Directors → Legs |
+| `"aim"` | `(Vector2)` | Aim direction | Brains → Legs/Faces/VisionCones |
+| `"action"` | `(StringName)` | Named action trigger | Brains → Arms |
+| `"action_end"` | `(StringName)` | Named action release | Brains → Arms |
+| `"shoot"` | `()` | Fire weapon | Brains/Directors → GunArm |
+| `"take_damage"` | `(int)` | Apply damage to this entity | Arms → HealthpoolGuts |
+| `"heal"` | `(int)` | Restore health | Arms → HealthpoolGuts |
+| `"zero_health"` | `()` | Health reached zero | HealthpoolGuts → DeathGuts/Arms |
+| `"health_changed"` | `(int)` | Health value updated | HealthpoolGuts → Faces/UI |
+| `"shape_changed"` | `(PackedVector2Array)` | Polygon points updated | ShapeGuts → Faces |
+| `"apply_status"` | `()` | Apply a status effect (e.g., stun) | Arms → StunGuts |
+| `"status_began"` | `()` | Status effect started | StunGuts → Faces/Arms |
+| `"status_ended"` | `()` | Status effect ended | StunGuts → Faces/Arms |
+| `"external_impulse"` | `(Vector2)` | External force applied | Arms → ImpulseReceiverGuts |
+| `"start_shooting"` | `()` | Begin auto-fire | VisionCone/Directors → RepeatActionBrain |
+| `"stop_shooting"` | `()` | End auto-fire | VisionCone/Directors → RepeatActionBrain |
+| `"piece_locked"` | `()` | Grid piece settled | LockDetectorGuts → Arms/Guts |
+| `"piece_settled"` | `()` | Piece fully settled | PieceSplitterArm → Game bus |
+| `"timer_expired"` | `()` | Countdown reached zero | TimerGuts → DeathGuts/Arms |
+| `"timer_tick"` | `(float)` | Timer tick update | TimerGuts → Arms |
+| `"grid_drop"` | `(int)` | Grid cells to drop | Brains → GridDropLeg |
+| `"rotate"` | `()` | Rotate grid piece | Brains → GridRotationLeg |
+| `"step_blocked"` | `()` | Grid step was blocked | GridMovementLeg → LockDetectorGuts |
+| `"rotation_blocked"` | `()` | Grid rotation was blocked | GridRotationLeg → Arms |
+| `"spend_resource"` | `(float)` | Spend from resource pool | Arms → ResourcepoolGuts |
+| `"resource_depleted"` | `()` | Resource hit zero | ResourcepoolGuts → Arms |
+| `"shield_hit"` | `()` | Shield absorbed damage | ShieldpoolGuts → Faces |
+| `"shield_broken"` | `()` | Shield fully depleted | ShieldpoolGuts → Arms |
+| `"receive_powerup"` | `()` | Powerup collected | PowerupDeliveryArm → PowerupWingmanArm |
+| `"path_finished"` | `()` | Path/cruise complete | Legs → AnnouncerGuts |
+| `"patrol_complete"` | `()` | Patrol cycle done | Legs → Brains |
+| `"sweep_complete"` | `()` | Sweep pass done | Legs → Brains |
 
 ### Game Bus (on CDGame)
 
@@ -135,18 +192,33 @@ CD50 uses a hybrid signal system: two mechanisms chosen for what each is best at
 
 **Performance note:** `bus_emit()` checks arg count to avoid Array boxing overhead. 0-arg and 1-arg emissions use `callable.call()` directly. `callv()` is only used for 2+ args. Since most game bus signals are 0-arg or 1-arg, this eliminates most allocation overhead.
 
-**Standard game bus events:**
+**Hardcoded game bus events (emitted by CDGame):**
 
-| Signal | Args | Emitted By | Consumed By |
-|--------|------|------------|-------------|
-| `"game_play"` | none | CDGame state machine | WaveCard, spawners |
-| `"game_over"` | `[GameResult]` | CDGame.end_game() | CueCards, orchestrator |
-| `"group_count_changed"` | `[StringName, int]` | CDGroupRegistry | GroupCountGoal |
-| `"score_gained"` | `[int]` | ScoreOnCollisionArm, ScoreOnDeathArm | ScoreCard |
-| `"lives_changed"` | `[int]` | LivesCard | UI, goals |
+CDGame emits these internally during state machine transitions. They are not configurable — they are the infrastructure's lifecycle events.
+
+| Signal | Args | When Emitted | Purpose |
+|--------|------|-------------|---------|
+| `"game_state_changed"` | `[GameState]` | Any state transition | Notify all stage components of state change |
+| `"game_play"` | none | Transition to `PLAYING` | Start the game — spawners, wave cards activate |
+| `"game_over"` | `[GameResult]` | Transition to `GAME_OVER` | End the game — cards, goals react |
+
+**Common game bus signals (from stage component exports):**
+
+These are defined as `@export` arrays on stage components. All signal names are configurable per game. The defaults below represent current conventions.
+
+| Default Name | Args | Emitted By | Consumed By |
+|-------------|------|------------|-------------|
+| `"score_gained"` | `[int]` | ScoreOnCollisionArm, ScoreOnDeathArm, ScoreCard | ScoreCard, ScoreThresholdGoal |
+| `"score_changed"` | `[int]` | ScoreCard | UI labels, goals |
+| `"multiplier_changed"` | `[float]` | ScoreCard | UI labels |
+| `"lives_changed"` | `[int]` | LivesCard | UI labels, goals |
 | `"lives_depleted"` | none | LivesCard | Game over goals |
-| `"wave_start"` | `[int]` | WaveCard | Trapdoors |
-| `"wave_cleared"` | none | GroupCountGoal | WaveCard |
+| `"wave_start"` | `[int]` | WaveCard | Trapdoors, directors |
+| `"wave_changed"` | `[int]` | WaveCard | UI labels |
+| `"track_changed"` | `[CDMusicTrack]` | MusicSpeaker | Audio infrastructure |
+| `"swoop_complete"` | `[CDEntity]` | SwoopDirector | AnnouncerGuts, game logic |
+| `"t_spin_detected"` | `[bool, bool]` | TSpinDetectorGuts | Score cards, announcers |
+| Mark entry/exit signals | `[CDEntity]` | CDMark, CountMark, TimedMark, SafeZoneMark, OccupancyMark | Directors, goals, arms |
 
 ### Why Hybrid?
 
@@ -214,6 +286,8 @@ Entity components use a two-phase init to solve the "other components don't exis
 - Connect to game bus signals
 - Read sibling component state
 - **This is where the component "wakes up"**
+
+**⚠️ Current limitation:** Entity initialization currently depends on CDGame infrastructure (group registry, collision buffer, input router, object pool). This means entities cannot run standalone outside a CDGame scene tree. An entity instantiated without a CDGame ancestor will fail to initialize properly. This coupling is a known constraint that may be relaxed in future iterations.
 
 Stage components (CDStageComponent2D, CDCueCard) often don't need `_on_initialize()` — they connect to the game bus (Dictionary-based, no ordering issues) directly in `_ready()` or via `call_deferred("_on_initialize")`.
 
