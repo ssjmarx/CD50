@@ -193,7 +193,7 @@ Entity_A announces on game bus
   → Controller emits on Entity_B's bus
 ```
 
-Used when two entities need to communicate but aren't colliding. The game bus acts as a relay.  Use with caution as it is slow.
+Used when two entities need to communicate but aren't colliding. The game bus acts as a relay.
 
 ---
 
