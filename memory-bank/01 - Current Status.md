@@ -5,150 +5,63 @@
 **Architecture:** V2 Composable Architecture (active development) — V1 archived to `Godot/v1/`  
 **Playable Games:** Paddle Ball, Brick Breaker, Space Rocks, Meteor Rally, Dogfight, Bug Blaster, Block Drop (Modern), Rock Breaker, Bug Drop, Space Bugs, Planetary Attack!, Space Rocks Inverted — ALL componentized, zero game scripts
 **In Progress:** V2 Architecture — Plans 19–24 COMPLETE. Plan 25 (Swarm Controllers + Galaga) in progress. 153 V2 scripts written.
-**Recent Completed:** Plan 24 — 7 Faces, 2 Voices, 3 Speakers, 2 Projectors, 5 Directors, 5 Triggers, 5 Selectors, 12 Curves, 4 Behavior Resources, 3 Audio Resources, 2 Effects, plus new infrastructure (CDEffect, CDSoundBank, CDUpdater). Plans 19–23 complete as previously documented.
+**Recent Completed:** USAGE.md — comprehensive architecture documentation. Plan 24 complete (7 Faces, 2 Voices, 3 Speakers, 2 Projectors, 5 Directors, 5 Triggers, 5 Selectors, 12 Curves, plus infrastructure). Plans 19–23 complete as previously documented.
 **Demo Status:** Code-locked at 12 games. Only Steam wishlist link remains. Itch.io demo stays on V1 architecture.
+
+**Key Documentation:**
+- `USAGE.md` — Complete patterns, anti-patterns, and code quality guide for the V2 architecture
+- `memory-bank/05 - Patterns & Anti-Patterns.md` — Quick-reference index for AI agents
+- `memory-bank/07 - Component Catalogue V2.md` — Full V2 component inventory (153 scripts)
+- `planning/V2 Rules.md` — Canonical V2 design reference
 
 ---
 
 ## Project Overview
 
-CD50 is a modular arcade game collection built around a composable component architecture. Games are assembled from reusable components (Brains, Legs, Arms, Components, Rules, Flow) attached to generic `UniversalBody` (entity) and `UniversalGameScript` (game) base classes. The signal flow is: **Brains** read input → emit on **UniversalBody** input signals → UniversalBody routes to processed output signals → **Legs/Arms** listen to output signals and act. **Rules** components manage game logic (scores, groups, conditions). **Flow** components manage waves, spawning, and UI.
+CD50 is a modular arcade game collection built around a composable component architecture. Every game is assembled from reusable components (Brains, Legs, Arms, Guts, Faces, Voices, Stage) attached to generic `CDEntity` and `CDGame` base classes. No game-specific scripts exist.
 
-**All games run as pure scene assemblies** — no game-specific scripts exist. Every game is a `UniversalGameScript` root node with attached components configured in the editor.
-
----
-
-## Core Scripts
-
-### `Scripts/Core/universal_body.gd` — `UniversalBody extends CharacterBody2D`
-- Base class for all physical entities. Routes input signals from Brains to processed output signals (axis locks applied). Provides position clamping and physics-based movement with automatic velocity bouncing.
-- **`_physics_process()`** calls `move_parent_physics()` by default — uses `move_and_collide()` for collision detection, emits `body_collided`, applies separation nudge along normal, and re-applies bounced remainder for crisp reflections.
-- Listens to (internally connected): `left_joystick`, `right_joystick`, `mouse_position`, `button_pressed`, `button_released`
-- Emits (routed outputs): `move`, `move_to`, `action`, `end_action`, `shoot`, `end_shoot`, `thrust`, `end_thrust`, `aim`, `aim_at`, `body_collided(collider, normal)`
-
-### `Scripts/Core/universal_game_script.gd` — `UniversalGameScript extends Node2D`
-- Master class for game coordinators. Generic container with **zero game-specific logic**. State machine (ATTRACT/PLAYING/PAUSED/GAME_OVER), P1/P2 + generic score tracking, collision matrix setup. All game behavior comes from attached Rule/Flow/Component nodes.
-- **Mode enum:** `STANDALONE` (self-contained with input handling) vs `ARCADE` (orchestrator-controlled, no direct input)
-- **Arcade bonus:** `arcade_bonus` float — set by orchestrator via `set_arcade_bonus()`, added to `current_multiplier` during scoring
-- **Playfield size:** `playfield_size: Vector2 = Vector2(640, 360)` — default matches viewport. Larger playfields enable scrolling cameras (e.g., Planetary Attack uses 1280×720).
-- **Auto-emit property setters:** `current_score`, `current_multiplier` — emit signals on change
-- **Signals FROM components:** `victory`, `defeat`, `group_cleared`, `group_member_removed`, `lives_changed`, `lives_depleted`, `timer_tick`, `timer_expired`, `spawning_wave`, `spawning_wave_complete`, `piece_settled`, `hold_requested`, `t_spin_detected(is_t_spin, is_mini)`
-- **Signals TO components/UI:** `on_game_start`, `on_game_end`, `on_game_over`, `on_points_changed`, `on_multiplier_changed`, `state_changed`, `on_p1_score`, `on_p2_score`
-- Self-connects `victory` → `p1_win()` and `defeat` → `p1_lose()` in `_ready()`
-- **Input:** `_input()` handles `start`/`pause` actions in STANDALONE mode only; ARCADE mode relies on orchestrator
-- Static helper: `find_ancestor(node)` walks tree to find the UGS
-
-### `Scripts/Core/universal_component.gd` — `UniversalComponent extends Node`
-- Base class for game-level components. Provides `parent` (owning body) and `game` (UGS ancestor) references.
-- Auto-resolves parent chain in `_ready()`.
-
-### `Scripts/Core/universal_component_2d.gd` — `UniversalComponent2D extends Node2D`
-- Node2D-based variant of UniversalComponent. Used for components that need spatial positioning (WaveSpawner, WaveDirector, etc.).
-
-### `Scripts/Core/collision_matrix.gd` — `CollisionMatrix extends RefCounted`
-- Auto-configures collision layers/masks from group definitions. Supports both `UniversalBody` and non-body nodes via `CollisionMarker` children.
-
-### `Scripts/Core/group_cache.gd` — `extends Node`
-- Lazy dirty-flag cache for group node lookups. Avoids repeated `get_nodes_in_group()` allocations. Marks groups dirty when nodes enter/exit the tree or `add_to_group()` is called.
-
-### `Scripts/Core/sound_bank.gd` — `extends Node` (Autoload)
-- Pre-warmed pool of 8 `AudioStreamPlayer2D` + `AudioStreamGenerator` pairs for one-shot synthesized sounds. SoundSynth ON_SIGNAL mode routes through this pool instead of creating/destroying audio nodes per sound. Centralized `_process` loop fills all active voices in one pass. CONTINUOUS mode SoundSynth is unaffected.
-
-### `Scripts/Core/collision_group.gd` — `CollisionGroup extends Resource`
-- Custom resource defining a collision group name and its target groups.
-
-### `Scripts/Core/property_override.gd` — `PropertyOverride extends Resource`
-- Custom resource for spawn-time property configuration. Stores `node_path`, `property_name`, and `value`.
-
-### `Scripts/Core/common_enums.gd` — `CommonEnums extends RefCounted`
-- Shared enumerations: `Element`, `State`, `ScoreType`, `Trigger`, `SpawnPattern`, `AdjustmentMode`, `Condition`, `Result`, `DisplayMode`.
+**All games run as pure scene assemblies.** See `USAGE.md` for the complete architecture guide.
 
 ---
 
-## Body Scripts & Scene Organization
+## V2 Core Infrastructure
 
-### Design Philosophy
+All V2 core scripts live in `Godot/scripts/core/`. Full details in `USAGE.md`.
 
-Body scripts (`Scripts/Bodies/*.gd`) contain **drawing code only** — they define the visual shape, colors, and `_draw()` calls. All gameplay behavior is handled by attached components.
-
-Body **scenes** (`Scenes/Bodies/`) are organized into three tiers:
-
-```
-Scenes/Bodies/
-├── generic/        — Archetype templates (no brain, no faction, no color override)
-├── player/         — Pre-rigged for player control
-└── nonplayer/      — Pre-rigged as threats/obstacles
-```
-
-### Current Body Scene Inventory
-
-```
-Scenes/Bodies/generic/
-├── asteroid.tscn, asteroid_bouncing.tscn, asteroid_bouncing_nosound.tscn, asteroid_noscore.tscn
-├── ball.tscn, ball_combo.tscn
-├── brick.tscn, brick_damaging.tscn, brick_noscore.tscn, brick_barrier.tscn
-├── bullet_simple.tscn, bullet_simple_smallsound.tscn, bullet_simple_nosound.tscn, bullet_wrapping.tscn
-├── invader.tscn, mystery_ship.tscn
-├── paddle.tscn, paddle_cannon.tscn
-├── tetromino.tscn, tetromino_single.tscn, tetromino_rigged.tscn
-├── triangle_ship.tscn, triangle_ship_modern.tscn
-├── ufo.tscn, ufo_shielded.tscn, ufo_straightline.tscn, ufo_nosound.tscn
-
-Scenes/Bodies/player/
-├── player_paddle.tscn, player_paddle_cannon.tscn
-├── player_triangle_ship.tscn, player_triangle_ship_modern.tscn
-
-Scenes/Bodies/nonplayer/
-├── nonplayer_invader.tscn
-├── nonplayer_paddle.tscn
-├── nonplayer_triangle_ship.tscn, nonplayer_triangle_ship_modern.tscn
-```
+| Script | Class | Role |
+|--------|-------|------|
+| `cdentity.gd` | `CDEntity extends CharacterBody2D` | Blank physics shell — velocity accumulator, entity bus, pool-aware lifecycle |
+| `cdgame.gd` | `CDGame extends Node2D` | Game root — Dictionary-based bus, state machine, no game logic |
+| `cd_entity_component.gd` | `CDComponent2D extends Node2D` | Entity component base — two-phase lifecycle, category priority |
+| `cd_game_component.gd` | `CDStageComponent2D extends Node2D` | Stage component base — same lifecycle, no entity ref |
+| `cd_collision_buffer.gd` | `CDCollisionBuffer` | Deferred collision flush at Priority 35 |
+| `cd_group_registry.gd` | `CDGroupRegistry` | Single source of truth for group counts |
+| `cd_collision_matrix.gd` | `CDCollisionMatrix` | Auto-configures physics layers from CDCollisionGroup resources |
+| `cd_input_router.gd` | `CDInputRouter` | Pure signal emitter autoload for player input |
+| `cd_object_pool.gd` | `CDObjectPool` | Per-type entity pool with acquire/return lifecycle |
+| `cd_updater.gd` | `CDUpdater` | Defers state mutations to Priority 90 |
+| `cd_effect.gd` | `CDEffect` | Lightweight visual effect base — plays once and auto-frees |
+| `cd_sound_bank.gd` | `CDSoundBank` | Centralized audio engine for V2 |
+| `cd_enums.gd` | `CDEnums` | Shared enumerations — ComponentCategory, EntityState, GameState, etc. |
 
 ---
 
-## Component Catalog
+## V2 Component Count
 
-| Category | Count | Components |
-|----------|-------|------------|
-| Core | 12 | universal_body, universal_game_script, universal_component, universal_component_2d, collision_matrix, collision_group, group_cache, sound_bank, save_data, property_override, common_enums, flag_resource |
-| Bodies | 12 | ball, paddle, asteroid, brick, barrier, bullet_simple, bullet_wrapping, tetromino, triangle_ship, ufo, invader, paddle_cannon |
-| Brains | 11 | player_control, interceptor_ai, aim_ai, shoot_ai, shoot_ai_swarm, patrol_ai, falling_ai, swarm_ai, clear_shot_ai, cover_ai, swarm_controller_player |
-| Legs | 13 | direct_movement, direct_acceleration, engine_simple, engine_complex, friction_linear, friction_static, rotation_direct, rotation_target, grid_movement, grid_rotation, grid_gravity, grid_rotation_advanced, warp_asteroids |
-| Arms | 3 | gun_simple, damage_on_hit, damage_on_joust |
-| Components | 24 | angled_deflector, bounce_on_hit, camera_midpoint, checkerboard_line, collision_marker, death_effect, die_on_hit, die_on_timer, flag_palette, ghost_piece, health, hit_effect, hold_relay, lock_detector, pong_acceleration, ring_spawner, score_on_death, score_on_hit, screen_cleanup, screen_wrap, split_on_death, t_spin_detector, vector_engine_exhaust, vector_thruster_exhaust |
-| Rules | 12 | goal, points_monitor, variable_tuner, variable_tuner_global, group_monitor, group_count_multiplier, group_kill_on_signal, lives_counter, timer, line_clear_monitor, wave_director*, wave_spawner* |
-| Flow | 10 | interface, sound_on_hit, sound_synth, music_ramping, sfx_ramping, music_player, music_track, swarm_controller, tetromino_spawner, crt_controller |
-| Effects | 3 | death_particles, death_broken_triangle_ship, death_brick_explode |
-| Hub | 9 | arcade_orchestrator, arcade_game_entry, modifier_manager, boot_screen, game_over_screen, polybius_face, polybius_eyes, polybius_mouth, polybius_nose |
-| Debug | 1 | crt_tuner |
-| **Total** | **113** | |
+| Category | Priority | Count | Key Components |
+|----------|----------|-------|----------------|
+| Core | varies | ~12 | CDEntity, CDGame, CDComponent2D, CDStageComponent2D, CDCollisionBuffer, CDGroupRegistry, etc. |
+| Brains (INTENT) | 10 | 16 | PlayerMove/Aim/Action/MoveToBrain, AIChase/Flee/Orbit/Formation/DiveBomb/Aim/RepeatAction/TractorBeam/PathMove/RandomSweep/TimedStep/IdleWanderBrain |
+| Legs (STEERING) | 20 | 15 | DirectMovement/Acceleration/Engine/Target/RotationLeg, GridMovement/Rotation/Drop/AlignmentLeg, Friction, ScreenWrap |
+| Arms (INTERACTION) | 40 | 16 | DamageOnHit/Crash/Joust, DeathOnHit/Crash/Joust, ScoreOnCollision/Death, Pushback, StatusOnHit, GunArm, SpawnOnDeath, PowerupDelivery/Wingman, TractorBeam, PieceSplitter |
+| Guts (STATE) | 50 | 19 | Healthpool/Shieldpool/Resourcepool, DieAtZeroHealth/Offscreen/OnTimer/OutOfBounds, DeflectorBounce/ImpulseReceiver/ShapeCollider, LockDetector/VisionCone, KBM/MoveAdapter, Announcer/Points/Stun/TSpinDetector/Timer |
+| Faces (VISUAL) | 60 | 7 | VectorFace, PolygonFace, SpriteFace, VectorEngineFace, VectorThrusterFace, DeathEffectFace, MenacingVectorFace |
+| Voices (AUDIO) | 65 | 2 | SoundVoice, ContinuousVoice |
+| Stage (RULES) | 70 | 28 | ScoreCard, LivesCard, TimerCard, WaveCard, Goals, Directors, Marks, Speakers, Projectors, Trapdoors |
 
-*\* wave_director and wave_spawner scripts live in `Scripts/Rules/` but are categorized as Flow by function.*
+**Total: ~153 V2 scripts + 41 custom resources**
 
----
-
-## Signal Flow Architecture
-
-```
-INPUT (keyboard/mouse/gamepad)
-  ↓
-BRAINS (player_control, interceptor_ai, aim_ai, patrol_ai, shoot_ai, shoot_ai_swarm, swarm_ai, falling_ai, clear_shot_ai, cover_ai, swarm_controller_player)
-  ↓ emit on UniversalBody input signals
-UNIVERSAL BODY (routes input → output with axis locks)
-  ↓ emit processed output signals
-LEGS (direct_movement, engine_simple, grid_movement, grid_rotation, grid_gravity, grid_rotation_advanced, warp_asteroids, etc.)
-ARMS (gun_simple, damage_on_hit, damage_on_joust)
-  ↓
-COMPONENTS (angled_deflector, ghost_piece, hold_relay, lock_detector, t_spin_detector, etc.)
-RULES (goal, points_monitor, line_clear_monitor, group_monitor, lives_counter, timer, etc.)
-FLOW (interface, sound_synth, tetromino_spawner, swarm_controller, wave_director, wave_spawner, etc.)
-  ↓
-EFFECTS (death_particles, death_broken_triangle_ship)
-```
-
-**Key signals on UniversalGameScript:**
-- From Components: `victory`, `defeat`, `group_cleared`, `group_member_removed`, `lives_changed`, `lives_depleted`, `timer_tick`, `timer_expired`, `spawning_wave`, `spawning_wave_complete`, `piece_settled`, `hold_requested`, `t_spin_detected(is_t_spin, is_mini)`
-- To Components/UI: `on_game_start`, `on_game_end`, `on_game_over`, `on_points_changed`, `on_multiplier_changed`, `state_changed`, `on_p1_score`, `on_p2_score`
+Full catalogue: `memory-bank/07 - Component Catalogue V2.md`
 
 ---
 

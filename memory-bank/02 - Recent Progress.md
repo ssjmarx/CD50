@@ -4,6 +4,16 @@
 
 ---
 
+## USAGE.md — Architecture Documentation (COMPLETE)
+
+Created `USAGE.md` — the comprehensive guide to all patterns, anti-patterns, and code quality guidelines for the V2 composable architecture. Covers the priority pipeline, signal bus system, component lifecycle, per-category usage guides, core patterns, anti-patterns, code quality guidelines, and extension instructions.
+
+Also created `memory-bank/05 - Patterns & Anti-Patterns.md` as a quick-reference index for AI agents, replacing the retired V1 Component Catalogue.
+
+Updated `memory-bank/01 - Current Status.md` to streamline toward V2, removing V1-centric signal flow documentation and V1 component catalog.
+
+---
+
 ## Plan 24 — V2 Faces, Voices, Projections & Speakers (COMPLETE)
 
 Plan 24 is fully implemented. 63 new V2 scripts written — the largest single plan to date. Brings visual representation, entity audio, game-level audio, post-processing, AI path curves, state machine triggers, entity selectors, behavior resources, audio resources, effects, and new infrastructure online.
