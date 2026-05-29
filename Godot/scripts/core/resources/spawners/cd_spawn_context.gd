@@ -8,3 +8,4 @@ class_name CDSpawnContext extends Resource
 @export var random_flip_h: bool = false
 @export var random_flip_v: bool = false
 @export var rotation: float = 0.0
+@export var additional_groups: Array[StringName] = []

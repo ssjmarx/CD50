@@ -1,0 +1,40 @@
+@tool
+
+## arc/semicircle curve
+class_name CDArcCurve extends CDCurve
+
+@export var height: float = 150.0:
+	set(v):
+		height = v
+		emit_changed()
+
+@export var bulge_direction: int = 1:
+	set(v):
+		bulge_direction = v
+		emit_changed()
+
+func generate_curve(start: Vector2, end: Vector2) -> Curve2D:
+	var curve := Curve2D.new()
+
+	var mid := (start + end) * 0.5
+	var travel := end - start
+	var travel_dir := travel.normalized()
+	var perp := Vector2(-travel_dir.y, travel_dir.x) * float(bulge_direction)
+
+	var seed_offset := _get_phase() * 0.1
+	var effective_height := height * (1.0 + seed_offset)
+
+	for i in range(resolution + 1):
+		var t := float(i) / float(resolution)
+
+		var angle := PI * (1.0 - 2.0 * absf(t - 0.5))
+
+		var forward := -cos(angle)
+
+		var arc := sin(angle) * effective_height
+
+		var pos := mid + travel_dir * (forward * travel.length() * 0.5) + perp * arc
+
+		curve.add_point(pos)
+
+	return _finalize(curve)

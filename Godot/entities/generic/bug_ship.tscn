@@ -1,4 +1,4 @@
-[gd_scene load_steps=14 format=3 uid="uid://crldddsx3c7ck"]
+[gd_scene load_steps=16 format=3 uid="uid://crldddsx3c7ck"]
 
 [ext_resource type="Script" uid="uid://dfbv2tw3cl4pe" path="res://scripts/core/infrastructure/cd_entity.gd" id="1_u2iwu"]
 [ext_resource type="PackedScene" uid="uid://dlgrii32eggbo" path="res://scenes/entity components/faces/sprite_face.tscn" id="2_w6l0f"]
@@ -11,6 +11,8 @@
 [ext_resource type="PackedScene" uid="uid://bisjhhp8r5a4p" path="res://scenes/entity components/faces/death_effect_face.tscn" id="10_ceqff"]
 [ext_resource type="PackedScene" uid="uid://bfxtjii32duju" path="res://scenes/entity components/guts/die_at_zero_health_guts.tscn" id="10_gh8fs"]
 [ext_resource type="PackedScene" uid="uid://dnt5g5mntk0nk" path="res://scenes/effects/death_particle_effect.tscn" id="11_tosi5"]
+[ext_resource type="PackedScene" uid="uid://bet7mpf2gu8yp" path="res://scenes/entity components/legs/screen_wrap_leg.tscn" id="12_ceqff"]
+[ext_resource type="PackedScene" uid="uid://cchd668j4pmmp" path="res://scenes/entity components/guts/MoveAdapterGuts.tscn" id="13_tosi5"]
 
 [sub_resource type="AnimatedTexture" id="AnimatedTexture_5lf82"]
 frames = 2
@@ -32,7 +34,7 @@ frames = Array[Texture2D]([SubResource("AnimatedTexture_5lf82")])
 component_category = 8
 
 [node name="DirectMovementLeg" parent="." instance=ExtResource("5_5lf82")]
-speed = 300.0
+speed = 400.0
 
 [node name="GunArm" parent="." instance=ExtResource("6_4d6mp")]
 position = Vector2(0, 6)
@@ -47,3 +49,7 @@ max_health = 1
 
 [node name="DeathEffectFace" parent="." instance=ExtResource("10_ceqff")]
 effect_scenes = Array[PackedScene]([ExtResource("11_tosi5")])
+
+[node name="ScreenWrapLeg" parent="." instance=ExtResource("12_ceqff")]
+
+[node name="MoveAdapterGuts" parent="." instance=ExtResource("13_tosi5")]

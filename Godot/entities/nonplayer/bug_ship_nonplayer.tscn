@@ -1,28 +1,13 @@
-[gd_scene load_steps=7 format=3 uid="uid://b11x1mdy4g3un"]
+[gd_scene load_steps=3 format=3 uid="uid://b11x1mdy4g3un"]
 
 [ext_resource type="PackedScene" uid="uid://crldddsx3c7ck" path="res://entities/generic/bug_ship.tscn" id="1_l0p0g"]
 [ext_resource type="PackedScene" uid="uid://by11ic4lo4df8" path="res://entities/nonplayer/onscreen_bullet_nonplayer.tscn" id="2_k1cgg"]
-[ext_resource type="PackedScene" uid="uid://c65kydvcakuo1" path="res://scenes/entity components/brains/ai_idle_wander_brain.tscn" id="2_ln4ko"]
-[ext_resource type="PackedScene" uid="uid://0vmrifgo6qki" path="res://scenes/entity components/brains/ai_repeat_action_brain.tscn" id="3_vcyk3"]
-[ext_resource type="PackedScene" uid="uid://dgvpukhg57el7" path="res://scenes/entity components/guts/timer_guts.tscn" id="4_vcyk3"]
-[ext_resource type="PackedScene" uid="uid://cchd668j4pmmp" path="res://scenes/entity components/guts/MoveAdapterGuts.tscn" id="5_rb6ty"]
 
 [node name="BugShip" instance=ExtResource("1_l0p0g")]
 groups = Array[StringName]([&"bug_ships", &"ships", &"enemies"])
-clamp_to_bounds = true
+
+[node name="DirectMovementLeg" parent="." index="1"]
+speed = 500.0
 
 [node name="GunArm" parent="." index="2"]
 bullet_scene = ExtResource("2_k1cgg")
-
-[node name="AIIdleWanderBrain" parent="." index="6" instance=ExtResource("2_ln4ko")]
-
-[node name="AIRepeatActionBrain" parent="." index="7" instance=ExtResource("3_vcyk3")]
-action_signals = Array[StringName]([])
-action_end_signals = Array[StringName]([])
-
-[node name="TimerGuts" parent="." index="8" instance=ExtResource("4_vcyk3")]
-starting_time = 2.0
-tick_signals = Array[StringName]([&"start_shooting"])
-expired_signals = Array[StringName]([&"stop_shooting", &"timer_reset"])
-
-[node name="MoveAdapterGuts" parent="." index="9" instance=ExtResource("5_rb6ty")]

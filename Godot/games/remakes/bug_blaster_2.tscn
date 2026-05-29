@@ -1,4 +1,4 @@
-[gd_scene load_steps=18 format=3 uid="uid://c0q0c0v84x80"]
+[gd_scene load_steps=24 format=3 uid="uid://c0q0c0v84x80"]
 
 [ext_resource type="Script" uid="uid://dm0uehngpvbh7" path="res://scripts/core/infrastructure/cd_game.gd" id="1_8wwv7"]
 [ext_resource type="Script" uid="uid://b2ibop6r2cryj" path="res://scripts/core/resources/infrastructure/cd_collision_group.gd" id="2_6ihv4"]
@@ -11,7 +11,10 @@
 [ext_resource type="PackedScene" uid="uid://b11x1mdy4g3un" path="res://entities/nonplayer/bug_ship_nonplayer.tscn" id="9_q4h5u"]
 [ext_resource type="PackedScene" uid="uid://b1e365cvr1e8p" path="res://scenes/game components/trapdoors/point_trapdoor.tscn" id="10_qh32t"]
 [ext_resource type="Script" uid="uid://dcu4ocnin0htu" path="res://scripts/core/resources/spawners/cd_spawn_context.gd" id="11_7ar12"]
-[ext_resource type="PackedScene" uid="uid://bs6bk8vnu652o" path="res://scenes/game components/cards/timer_card.tscn" id="11_dg5ky"]
+[ext_resource type="PackedScene" uid="uid://mxejpxipdbii" path="res://scenes/game components/cards/wave_card.tscn" id="13_fiuet"]
+[ext_resource type="PackedScene" uid="uid://ca4qbo05yiya" path="res://scenes/game components/directors/swoop_director.tscn" id="14_3rr66"]
+[ext_resource type="Script" uid="uid://c1xyo1kl5f3v7" path="res://scripts/core/resources/curves/cd_triangle_curve.gd" id="15_cf182"]
+[ext_resource type="Script" uid="uid://pwxrlfkuscv5" path="res://scripts/core/resources/curves/cd_zigzag_curve.gd" id="15_jv0aj"]
 
 [sub_resource type="Resource" id="Resource_q4h5u"]
 script = ExtResource("2_6ihv4")
@@ -35,10 +38,27 @@ group_name = &"player_bullets"
 collides_with = Array[StringName]([&"enemies"])
 metadata/_custom_type_script = "uid://b2ibop6r2cryj"
 
-[sub_resource type="Resource" id="Resource_fiuet"]
+[sub_resource type="Resource" id="Resource_3rr66"]
 script = ExtResource("11_7ar12")
 rotation = 1.571
+additional_groups = Array[StringName]([&"swooping_a"])
 metadata/_custom_type_script = "uid://dcu4ocnin0htu"
+
+[sub_resource type="Resource" id="Resource_cf182"]
+script = ExtResource("15_jv0aj")
+curve_seed = null
+metadata/_custom_type_script = "uid://pwxrlfkuscv5"
+
+[sub_resource type="Resource" id="Resource_spawn_b"]
+script = ExtResource("11_7ar12")
+rotation = 1.571
+additional_groups = Array[StringName]([&"swooping_b"])
+metadata/_custom_type_script = "uid://dcu4ocnin0htu"
+
+[sub_resource type="Resource" id="Resource_5v48x"]
+script = ExtResource("15_cf182")
+curve_seed = null
+metadata/_custom_type_script = "uid://c1xyo1kl5f3v7"
 
 [node name="BugBlaster2" type="Node2D"]
 script = ExtResource("1_8wwv7")
@@ -61,22 +81,49 @@ lock_x = true
 clamp_to_bounds = true
 bounds_margin = 6.0
 
-[node name="BugShip" parent="." instance=ExtResource("9_q4h5u")]
-position = Vector2(320, 180)
-rotation = 1.5707964
+[node name="WaveCard" parent="." instance=ExtResource("13_fiuet")]
+on_wave_start = Array[StringName]([&"wave_start_a"])
 
 [node name="PointTrapdoor" parent="." instance=ExtResource("10_qh32t")]
-position = Vector2(610, 180)
+position = Vector2(648, 128)
 spawn_scene = ExtResource("9_q4h5u")
-spawn_count_equation = "1"
-spawn_context = SubResource("Resource_fiuet")
-telefrag = true
+spawn_count_equation = "12"
+offset_range = Vector2(0, 0)
+stagger_delay = 0.0
+spawn_context = SubResource("Resource_3rr66")
+trigger_signals = Array[StringName]([&"wave_start_a"])
+on_spawning_complete = Array[StringName]([&"spawning_complete_a"])
 
-[node name="TimerCard" parent="." instance=ExtResource("11_dg5ky")]
-offset_left = 30.0
-offset_top = 30.0
-offset_right = 30.0
-offset_bottom = 30.0
-starting_time = 2.0
-on_timer_expired = Array[StringName]([&"wave_start", &"timer_reset"])
-is_interface = true
+[node name="SwoopDirector" parent="." instance=ExtResource("14_3rr66")]
+position = Vector2(648, 128)
+swooping_group = &"swooping_a"
+trigger_signal = &"spawning_complete_a"
+target = Vector2(120, 128)
+curve = SubResource("Resource_cf182")
+slot_spacing = 16.0
+entry_speed = 450.0
+checkpoint_spacing = null
+arrival_threshold = null
+component_category = 10
+
+[node name="PointTrapdoor2" parent="." instance=ExtResource("10_qh32t")]
+position = Vector2(648, 232)
+spawn_scene = ExtResource("9_q4h5u")
+spawn_count_equation = "12"
+offset_range = Vector2(0, 0)
+stagger_delay = 0.0
+spawn_context = SubResource("Resource_spawn_b")
+trigger_signals = Array[StringName]([&"wave_start_a"])
+on_spawning_complete = Array[StringName]([&"spawning_complete_b"])
+
+[node name="SwoopDirector2" parent="." instance=ExtResource("14_3rr66")]
+position = Vector2(648, 232)
+swooping_group = &"swooping_b"
+trigger_signal = &"spawning_complete_b"
+target = Vector2(120, 232)
+curve = SubResource("Resource_5v48x")
+slot_spacing = 16.0
+entry_speed = 500.0
+checkpoint_spacing = null
+arrival_threshold = null
+component_category = 10

@@ -25,7 +25,7 @@ func _on_initialize() -> void:
 	for sig in on_reset_wave:
 		game.bus_connect(sig, _reset_wave)
 
-func _advance_wave() -> void:
+func _advance_wave(_arg1 = null, _arg2 = null) -> void:
 	_update_label("Wave %d" % current_wave)
 	for sig in on_wave_start:
 		game.bus_emit(sig, [current_wave])
@@ -33,7 +33,7 @@ func _advance_wave() -> void:
 		game.bus_emit(sig, [current_wave])
 	current_wave += 1
 
-func _reset_wave() -> void:
+func _reset_wave(_arg1 = null, _arg2 = null) -> void:
 	current_wave = starting_wave
 	_update_label("Wave %d" % current_wave)
 	for sig in on_wave_changed:

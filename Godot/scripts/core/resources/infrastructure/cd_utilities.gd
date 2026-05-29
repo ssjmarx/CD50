@@ -24,6 +24,9 @@ static func apply_spawn_context(entity: CDEntity, context: CDSpawnContext) -> vo
 
 	entity.rotation = context.rotation
 
+	for group in context.additional_groups:
+		entity.add_to_group(group)
+
 ## evaluates a string expression with named variables, returns result as int
 static func evaluate_int(equation: String, var_names: PackedStringArray, var_values: Array, context_name: String) -> int:
 	var expr := Expression.new()
