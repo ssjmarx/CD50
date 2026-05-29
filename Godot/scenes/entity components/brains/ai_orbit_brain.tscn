@@ -1,6 +1,6 @@
 [gd_scene load_steps=2 format=3 uid="uid://yp618p76vm6y"]
 
-[ext_resource type="Script" uid="uid://duwkuurb16oye" path="res://scripts/entity components/brains/ai_orbit_brain.gd" id="1_fsupj"]
+[ext_resource type="Script" uid="uid://duwkuurb16oye" path="res://scripts/entity components/brains/ai movement/ai_orbit_brain.gd" id="1_fsupj"]
 
 [node name="AIOrbitBrain" type="Node2D"]
 script = ExtResource("1_fsupj")

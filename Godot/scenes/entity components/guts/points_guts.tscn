@@ -1,6 +1,6 @@
 [gd_scene load_steps=2 format=3 uid="uid://cj3hnjl0sj608"]
 
-[ext_resource type="Script" uid="uid://c0gmynvw84e72" path="res://scripts/entity components/guts/points_guts.gd" id="1_w3q5h"]
+[ext_resource type="Script" uid="uid://c0gmynvw84e72" path="res://scripts/entity components/guts/game logic/points_guts.gd" id="1_w3q5h"]
 
 [node name="PointsGuts" type="Node2D"]
 script = ExtResource("1_w3q5h")

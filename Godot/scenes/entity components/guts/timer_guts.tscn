@@ -1,6 +1,6 @@
 [gd_scene load_steps=2 format=3 uid="uid://dgvpukhg57el7"]
 
-[ext_resource type="Script" uid="uid://d200bu71plrtp" path="res://scripts/entity components/guts/timer_guts.gd" id="1_w12ht"]
+[ext_resource type="Script" uid="uid://d200bu71plrtp" path="res://scripts/entity components/guts/game logic/timer_guts.gd" id="1_w12ht"]
 
 [node name="TimerGuts" type="Node2D"]
 script = ExtResource("1_w12ht")

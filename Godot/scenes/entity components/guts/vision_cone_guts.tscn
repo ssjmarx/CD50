@@ -1,6 +1,6 @@
 [gd_scene load_steps=2 format=3 uid="uid://cm4v01c6n07ya"]
 
-[ext_resource type="Script" uid="uid://6vp13mfnagvo" path="res://scripts/entity components/guts/vision_cone_guts.gd" id="1_vc8t5"]
+[ext_resource type="Script" uid="uid://6vp13mfnagvo" path="res://scripts/entity components/guts/detection/vision_cone_guts.gd" id="1_vc8t5"]
 
 [node name="VisionConeGuts" type="Node2D"]
 script = ExtResource("1_vc8t5")

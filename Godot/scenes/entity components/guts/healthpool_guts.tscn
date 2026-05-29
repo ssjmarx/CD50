@@ -1,6 +1,6 @@
 [gd_scene load_steps=2 format=3 uid="uid://btr1f3svl7y3m"]
 
-[ext_resource type="Script" uid="uid://chcrvtemv2x4v" path="res://scripts/entity components/guts/healthpool_guts.gd" id="1_w3lcn"]
+[ext_resource type="Script" uid="uid://chcrvtemv2x4v" path="res://scripts/entity components/guts/pools/healthpool_guts.gd" id="1_w3lcn"]
 
 [node name="HealthpoolGuts" type="Node2D"]
 script = ExtResource("1_w3lcn")

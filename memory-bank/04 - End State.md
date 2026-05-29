@@ -182,11 +182,11 @@ Polybius is the digital jailer. He judges, mocks, and demands more. When a new h
 - **Physics-based grid:** Block Drop uses no grid data structure — all detection via physics queries
 - **Component toggleability:** Features enabled/disabled by including/excluding component scenes
 
-**V2 (in progress, core implemented):**
-- **10 core scripts** implemented (Plan 19): CDEntity, CDGame, CDComponent2D, CDStageComponent2D, CDCollisionBuffer, CDGroupRegistry, CDCollisionMatrix, CDInputRouter, CDEnums, CDCollisionGroup
+**V2 (in progress, Plans 19–24 complete, Plan 25 in progress):**
+- **153 scripts** implemented across Plans 19–24 — Core Infrastructure, Object Pooling, Stage, Brains+Legs, Arms+Guts, Spawners, Faces/Voices/Projections/Speakers, Directors, Curves, Triggers, Selectors, Effects, Resources
 - **Hybrid bus:** Entity bus (native signals) + Game bus (Dictionary)
 - **Deterministic priority cascade:** Registry(5) → Brains(10) → Legs(20) → Entity(30) → Buffer(35) → Arms(40) → Guts(50) → Faces(60) → Stage(70)
-- **Remaining:** Plans 19.5–26 (Object Pooling, Stage, Brains+Legs, Arms+Guts, Spawners, Faces/Voices, Swarm, Block Drop)
+- **Remaining:** Plan 25 (Swarm Controllers + Galaga, in progress) and Plan 26 (Block Drop V2)
 
 ---
 

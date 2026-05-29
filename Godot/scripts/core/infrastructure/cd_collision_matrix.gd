@@ -1,27 +1,39 @@
-## auto-configures physics layers from CDCollisionGroup resources.
+# CDCollisionMatrix
+# Auto-configures physics layers from CDCollisionGroup resources
+# Maps group names to layer bitmasks so components never touch layers directly
+
 class_name CDCollisionMatrix extends Node
 
+# one CDCollisionGroup per collision type (players, enemies, bullets, etc.)
 @export var collision_groups: Array[CDCollisionGroup] = []
 
+# internal maps: group name → layer bit, group name → combined mask
 var _layer_map: Dictionary = {}  # group_name : layer bit value
 var _mask_map: Dictionary = {}   # group_name : combined mask
 
+# build maps on ready (also called explicitly by CDGame._ready)
 func _ready() -> void:
 	_build_maps()
 
+# public entry point for CDGame to trigger a rebuild
 func build_maps() -> void:
 	_build_maps()
 
+# convert collision_groups array into layer and mask lookup dictionaries
 func _build_maps() -> void:
 	if collision_groups.is_empty():
 		return
 	if collision_groups.size() > 32:
 		return
+
+	# assign each group a unique bit (1 << index)
 	_layer_map.clear()
 	_mask_map.clear()
 	for i in range(collision_groups.size()):
 		var group = collision_groups[i]
 		_layer_map[group.group_name] = 1 << i
+
+	# build mask by OR-ing all target group layers
 	for group in collision_groups:
 		var mask = 0
 		for target_name in group.collides_with:
@@ -30,21 +42,23 @@ func _build_maps() -> void:
 			mask |= _layer_map[target_name]
 		_mask_map[group.group_name] = mask
 
-## returns the layer bit value for a collision group name.
-## used by CDEntity to resolve group-based handler registration to bitmasks.
+# --- Public API ---
+
+# resolve a group name to its layer bitmask (used by collision handler registration)
 func get_layer_for_group(group_name: StringName) -> int:
 	return _layer_map.get(group_name, 0)
 
-## sets collision_layer and collision_mask on CDEntity
+# set collision_layer and collision_mask on an entity from its groups array
 func configure(entity: CDEntity) -> void:
 	var layer = 0
 	var mask = 0
-	
+
+	# combine layers and masks from all groups the entity belongs to
 	for group_name in entity.groups:
 		if not _layer_map.has(group_name):
 			continue
 		layer |= _layer_map[group_name]
 		mask |= _mask_map[group_name]
-	
+
 	entity.collision_layer = layer
 	entity.collision_mask = mask

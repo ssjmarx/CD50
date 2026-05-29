@@ -1,7 +1,7 @@
 # Current Goal
 
-**Last Updated:** 2026-05-27  
-**Status:** Active — V2 Faces, Voices, Projections & Speakers (Plan 24)
+**Last Updated:** 2026-05-29  
+**Status:** Active — V2 Swarm Controllers + Galaga (Plan 25)
 
 ---
 
@@ -22,15 +22,15 @@ The itch.io demo is **code-locked** (12 games, all componentized). We are now bu
 | 3 | 21 — V2 Brains + Legs | 14 Brains, 15 Legs, 1 Gut, WallKickResource | ✅ Complete |
 | 4 | 22 — V2 Arms + Guts | 10 Arms, 15 Guts — collision response + internal state | ✅ Complete |
 | 5 | 23 — V2 Spawners | CDStageTrapdoor, Point/Edge/GridTrapdoor, Spawn Arms, CDGridLayout, CDGridEquation, SafeZoneMark | ✅ Complete |
-| 6 | 24 — V2 Faces, Voices, Projections & Speakers | CDFace, CDFaceBinding, CDVoice, CDSpeaker, CDSoundBank, CDProjection | 🔲 Next |
-| 7 | 25 — V2 Swarm Controllers + Galaga | SwarmGridStep, Formation, Flock, Shoot controllers + Galaga proof | 🔲 Planned |
+| 6 | 24 — V2 Faces, Voices, Projections & Speakers | 7 Faces, 2 Voices, 3 Speakers, 2 Projectors, 5 Directors, Triggers, Selectors, Curves, Effects, Resources | ✅ Complete |
+| 7 | 25 — V2 Swarm Controllers + Galaga | SwarmGridStep, Formation, Flock, Shoot controllers + Galaga proof | 🔨 In Progress |
 | 8 | 26 — Block Drop V2 | Full Block Drop remake proving Pseudogrid pattern | 🔲 Planned |
 
-### Immediate Next Step: Plan 24 — V2 Faces, Voices, Projections & Speakers
+### Immediate Next Step: Plan 25 — V2 Swarm Controllers + Galaga
 
-Build the visual and audio representation layer — CDFace (entity drawing), CDFaceBinding (config-driven face assembly), CDVoice (entity-level sound), CDSpeaker (scene-level sound), CDSoundBank (audio resource), CDProjection (camera/screen effects). See `planning/24 - V2 Faces, Voices, Projections & Speakers.md` for the full plan.
+Build swarm-level AI controllers (FormationDirector, SwarmShootingDirector, SwoopDirector are complete) and prove the architecture with a Galaga proof-of-concept game. See `planning/25 - V2 Swarm Controllers + Galaga.md` for the full plan.
 
-**90 V2 scripts written so far** across Core (10), Brains (14), Arms (13), Legs (15), Guts (15), Stage (16), Resources (7). Full catalogue: `memory-bank/07 - Component Catalogue V2.md`
+**153 V2 scripts written so far.** Full catalogue: `memory-bank/07 - Component Catalogue V2.md`
 
 ### Demo Status
 
@@ -131,6 +131,7 @@ The following plans have been **deleted** from the active pipeline:
 
 | Plan | Description | Completed |
 |------|-------------|-----------|
+| 24 | V2 Faces, Voices, Projections & Speakers (63 scripts — Faces, Voices, Speakers, Projectors, Directors, Curves, Triggers, Selectors, Effects, Resources) | 2026-05-29 |
 | 23 | V2 Spawners (4 Trapdoors, 3 Spawn Arms, 2 Marks, 4 Resources — 14 scripts) | 2026-05-27 |
 | 22 | V2 Arms + Guts (10 Arms, 15 Guts — 25 scripts) | 2026-05-26 |
 | 21 | V2 Brains + Legs (14 Brains, 15 Legs, 1 Gut, WallKickResource — 31 scripts) | 2026-05-24 |

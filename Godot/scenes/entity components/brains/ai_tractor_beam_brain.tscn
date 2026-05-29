@@ -1,6 +1,6 @@
 [gd_scene load_steps=2 format=3 uid="uid://cvhjugy48g6ax"]
 
-[ext_resource type="Script" uid="uid://boeshauxdtpfp" path="res://scripts/entity components/brains/ai_tractor_beam_brain.gd" id="1_ge7e2"]
+[ext_resource type="Script" uid="uid://boeshauxdtpfp" path="res://scripts/entity components/brains/ai action/ai_tractor_beam_brain.gd" id="1_ge7e2"]
 
 [node name="AITractorBeamBrain" type="Node2D"]
 script = ExtResource("1_ge7e2")

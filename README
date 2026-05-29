@@ -1,88 +1,171 @@
 # CD50
 
-"Balatro but with classic arcade games instead of poker."
+12 arcade games built from 153 reusable components. Zero game scripts.
 
-CD50 is a collection of classic arcade games from the 70s and 80s remade in Godot, and remixes of those games' nouns and verbs into unexpected combinations. These remakes and remixes are bound together by a Balatro-inspired system of modifiers, with the main goal of the game being to chase ever higher scores by breaking the logic of the game with combinations of these modifiers.
+CD50 is a modular arcade game collection built in [Godot](https://godotengine.org) using a composable component architecture. Every game — from Pong to Tetris to a Galaga-asteroids mashup — is assembled by attaching generic components to generic entities in the editor. No game-specific code exists anywhere in the project.
 
-# Polybius
+---
 
-"I hunger for score."
+## The Architecture
 
-Polybius is your digital jailer. He will judge you, he will mock you, and if you set a new high score, he will only demand more.
+### Three Rules
 
-# The Games
+1. **Composition over inheritance.** Entities are blank slates. All behavior comes from attached components.
+2. **Signals, not calls.** Components never call methods on other components. They emit signals and let the recipient decide what to do.
+3. **Single-purpose components.** Each component does one thing. A Brain generates intent. A Leg moves. An Arm affects the world. A Guts tracks internal state.
 
-## Dogfight
+### The Pipeline
 
-Survive a brutal gauntlet of enemies in this classic quarter muncher from 197■! They will stop at nothing, and your death is guaranteed — how many can you take down with you?
+Every frame, components execute in a deterministic priority cascade:
 
-## Meteor Rally
+```
+REGISTRATION → INTENT → STEERING → PHYSICS → COLLISION → INTERACTION → STATE → VISUAL → AUDIO → RULES
+ sync groups    "go!"    calc       moves     "you hit    damage      health   draw it   play it   score it
+                          speed +    the       something"  to target    drops    on screen out loud  check win
+                          direction  thing
+```
 
-The paddle. The void. Rocks that do not break — they BOUNCE. Meteor Rally dares to ask: what if Paddle Ball and Space Rocks collided? The answer is pure chaos. Keep the ball alive. Dodge the space_rocks. Accept that nothing is safe.
+Lower priority = runs earlier. Brains decide before Legs move. Legs move before Arms react to collisions. Guts track damage after Arms deal it. Faces draw the final state. Stage components update scores and check win conditions last.
 
-## Rock Breaker
+This eliminates frame-ordering bugs. Every component knows exactly when it runs relative to every other component, regardless of scene tree position.
 
-Someone put a Brick Breaker playfield inside an asteroid field. The rocks bounce off the walls. Your ball destroys everything in its path. The space_rocks fight back. Clear the field — or become part of it.
+### Component Categories
 
-## Bug Drop
+| Category | Priority | Role | Count | Examples |
+|----------|----------|------|-------|---------|
+| **Brains** | 10 | Generate intent from input or AI | 16 | PlayerMoveBrain, AIChaseBrain, AIFormationBrain, AIDiveBombBrain |
+| **Legs** | 20 | Execute movement from intent signals | 15 | DirectMovementLeg, EngineLeg, GridMovementLeg, ScreenWrapLeg |
+| **Arms** | 40 | Affect other entities and game state | 16 | DamageOnHitArm, DeathOnCrashArm, GunArm, ScoreOnCollisionArm |
+| **Guts** | 50 | Track internal entity state | 19 | HealthpoolGuts, DeflectorBounceGuts, LockDetectorGuts, StunGuts |
+| **Faces** | 60 | Draw entity appearance | 7 | PolygonFace, VectorFace, SpriteFace, DeathEffectFace |
+| **Voices** | 65 | Entity-level audio | 2 | SoundVoice, ContinuousVoice |
+| **Stage** | 70 | Game-level logic, UI, spawning | 28 | ScoreCard, GroupCountGoal, GridTrapdoor, FormationDirector, MusicSpeaker |
 
-They crawl UPWARD. You drop blocks DOWNWARD. Complete a row — any row — with tetrominos OR bugs and it clears. But the invaders march relentlessly toward the top, and one breach means GAME OVER. A nightmare fusion of Block Drop and Bug Blaster that should not exist — but it does.
+Plus 10 core infrastructure scripts (CDEntity, CDGame, CDCollisionBuffer, CDGroupRegistry, etc.) and 41 custom resources (curves, triggers, selectors, shapes, transitions, wall kicks, sound definitions).
 
-## Space Bugs
+---
 
-Space Rocks drift. Invaders attack. You are one ship against TWO extinction-level threats from completely different games. Space Bugs mashes Bug Blaster's relentless alien swarm with Space Rocks' drifting, splitting debris field into one beautiful, unsurvivable mess.
+## How It Works: Building Pong
 
-## Planetary Attack!
+Every game is a scene tree of generic nodes. Here's how Paddle Ball (Pong) is assembled:
 
-You ARE the invasion. Command the alien swarm — march left, march right, descend. Those pathetic defenders have shields, cannons, and the home field advantage. You have numbers. Reach the bottom and claim this world for the empire. A complete reversal of Bug Blaster that puts you in charge of the assault.
+```
+CDGame (game root, state machine)
+├── CDGroupRegistry
+├── CDCollisionBuffer
+├── CDCollisionMatrix
+├── ScoreCard (tracks score)
+├── LivesCard (tracks lives)
+├── GroupCountGoal (triggers victory/defeat when a group empties)
+│
+├── CDEntity "player_paddle"
+│   ├── PlayerMoveBrain (reads input → emits "move" signal)
+│   ├── DirectMovementLeg (hears "move" → sets velocity)
+│   └── PolygonFace (draws paddle shape)
+│
+├── CDEntity "ai_paddle"
+│   ├── AIChaseBrain (tracks ball position → emits "move" signal)
+│   ├── DirectMovementLeg (hears "move" → sets velocity)
+│   └── PolygonFace
+│
+└── CDEntity "ball"
+    ├── DeflectorBounceGuts (custom bounce physics off paddles)
+    ├── DeathOnCrashArm (self-destructs on wall collision → scores a point)
+    ├── DirectMovementLeg (constant velocity)
+    └── PolygonFace (draws ball)
+```
 
-## Space Rocks Inverted
+No Pong script exists. The game emerges from how generic components are wired together via configurable signal names.
 
-The rocks are back — but YOU are the rock. Drift. Bounce. Split. Destroy everything in your path. The hunters have become the hunted. A complete inversion of Space Rocks where you ARE the asteroid field.
+---
 
-## Paddle Ball
+## How It Works: Remixing into Meteor Rally
 
-The original. The classic. Two paddles, one ball, and nothing but your reflexes between you and defeat. First to score wins. There are no second chances in 197■.
+The architecture's real power: swapping components creates entirely new games.
 
-## Brick Breaker
+Meteor Rally = Pong + asteroids. The paddles, ball, and scoring stay. But now:
 
-Row after row of bricks. One paddle. One ball. An entire field of destruction standing between you and victory. Don't drop the ball.
+- Add asteroid entities: `AIIdleWanderBrain` + `EngineLeg` + `ScreenWrapLeg` + `DamageOnJoustArm` + `PolygonFace`
+- Add a `DeathOnCrashArm` to the ball (it dies on asteroid impact)
+- Add `HealthpoolGuts` to the player paddle (asteroids deal damage)
+- Add a `LivesCard` for the health display
 
-## Space Rocks
+Same base components. Different assembly. New game. This is how CD50 ships 12 games from one component library.
 
-Drift through an endless field of debris. Your ship is fragile, your ammo is limited, and the rocks keep coming. One touch means death — but the big ones always split into something worse.
+---
 
-## Block Drop
+## The Signal Bus
 
-Stack. Clear. Survive. The blocks fall faster, the gaps get tighter, and one wrong move can end everything. How long can you keep the pile down?
+Components communicate through two signal systems:
 
-## Bug Blaster
+**Entity Bus** — Native Godot signals on each CDEntity. High-frequency, typed. The hot path: Brains emit `"move"`, Legs consume it. Arms hear `"collision"`, deal damage to the collider's bus.
 
-They march. They descend. They will not stop until they have reached the ground and your defenses are rubble. Four shields are all that stand between you and extinction. Pick them off one by one — or be overwhelmed.
+**Game Bus** — Dictionary-based on CDGame. Low-frequency, configurable names. For game-level events: `"score_gained"`, `"wave_cleared"`, `"lives_depleted"`. Zero registration boilerplate — emit with no listeners is a no-op.
 
-# The Arcade Cabinet
+This hybrid approach gives type safety where it matters (per-entity, per-frame) and flexibility where it doesn't (game-level events that vary per game).
 
-Every game in CD50 runs inside a simulated CRT monitor. Barrel distortion bends the screen at the edges. Chromatic aberration splits light at the seams. Scanlines sweep across raster displays. A rolling hum bar crawls upward, because that's what real hardware does.
+---
 
-# The Modifiers
+## Project Structure
 
-Before each run, select from a locker of ILLEGAL MODIFICATIONS that rewrite the rules of every game:
+```
+Godot/
+├── scripts/
+│   ├── core/                    — CDEntity, CDGame, base classes, infrastructure
+│   ├── entity components/
+│   │   ├── brains/              — 16 intent generators
+│   │   ├── legs/                — 15 movement executors
+│   │   ├── arms/                — 16 world-interaction components
+│   │   ├── guts/                — 19 internal state trackers
+│   │   ├── faces/               — 7 visual representations
+│   │   └── voices/              — 2 entity audio components
+│   ├── game components/
+│   │   ├── cards/               — 4 UI display components
+│   │   ├── directors/           — 5 stage controllers
+│   │   ├── goals/               — 2 win/lose conditions
+│   │   ├── marks/               — 6 spatial triggers
+│   │   ├── projectors/          — 2 visual post-processing
+│   │   ├── speakers/            — 3 audio components
+│   │   └── trapdoors/           — 3 spawners
+│   └── effects/                 — 2 self-destructing visual effects
+├── scenes/                      — Scene assemblies (entity + game component instances)
+├── entities/                    — Entity prefabs (generic, player, nonplayer)
+├── games/                       — Game scene roots
+├── shaders/                     — CRT + persistence shaders
+├── assets/                      — Fonts, music, voice lines
+└── v1/                          — Archived V1 architecture (itch.io demo)
+```
 
-- **Scope Creep** — Double the health of the player. You're gonna need it.
-- **Shotgun Mode** — Why fire one bullet when you can fire three?
-- **Overclocked CPU** — Everything moves 25% faster. Including the enemies.
-- **Feature Creep** — Double the enemies. Double the chaos. Double the score.
-- **Crunch Time** — One life. Score multiplied by three. No pressure.
+---
 
-Modifiers unlock as your lifetime score climbs. Combine them freely. Break the game open.
+## The Games
 
-# Attribution
+12 playable games — all assembled from the same component library, no game-specific scripts:
+
+| Type | Games |
+|------|-------|
+| **Remakes** | Paddle Ball, Brick Breaker, Space Rocks, Bug Blaster, Block Drop |
+| **Remixes** | Dogfight, Meteor Rally, Rock Breaker, Bug Drop, Space Bugs |
+| **Inversions** | Planetary Attack!, Space Rocks Inverted |
+
+---
+
+## Tech Stack
+
+- **Engine:** Godot 4.5 (GDScript)
+- **Audio:** Procedural synthesis at runtime — all sound effects generated in real-time via `AudioStreamGenerator`
+- **Visuals:** Custom CRT shader (barrel warp, chromatic aberration, bloom, vignette, hum bar) + vector monitor mode with phosphor persistence
+- **Fonts:** [Kenney](https://kenney.nl) retro pixel fonts
+
+---
+
+## Attribution
 
 CD50 is built with [Godot Engine](https://godotengine.org).
 
 Fonts by [Kenney](https://kenney.nl), used under the terms in `LICENSE.ASSETS`.
 
-## Music
+### Music
 
 - **El Manisero** — Moisés Simons (1928) · Public Domain
 - **Son de la Loma** — Miguel Matamoros (1922) · Public Domain
@@ -90,7 +173,3 @@ Fonts by [Kenney](https://kenney.nl), used under the terms in `LICENSE.ASSETS`.
 Rendered with [RoyTheRailfanner's 8-Bit NES Soundfont](https://musical-artifacts.com/artifacts/2759) by RoyTheRailfanner, licensed under [CC-BY 3.0](https://creativecommons.org/licenses/by/3.0/).
 
 - **Hunted by Machines** — Music by [Karl Casey](https://www.youtube.com/@WhiteBatAudio) @ [White Bat Audio](https://whitebataudio.com/), licensed under [CC-BY 4.0](https://creativecommons.org/licenses/by/4.0/).
-
-## Audio
-
-Sound effects are procedurally generated at runtime. Some music tracks are pre-rendered OGG from public domain compositions using the soundfont above. Arcade music by Karl Casey @ White Bat Audio.

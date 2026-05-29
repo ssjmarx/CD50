@@ -1,6 +1,6 @@
 [gd_scene load_steps=2 format=3 uid="uid://cq0mp28h5n8rk"]
 
-[ext_resource type="Script" uid="uid://bbg0lw6qsdx6a" path="res://scripts/entity components/legs/direct_target_leg.gd" id="1_fkyjc"]
+[ext_resource type="Script" uid="uid://bbg0lw6qsdx6a" path="res://scripts/entity components/legs/positional setters/direct_target_leg.gd" id="1_fkyjc"]
 
 [node name="DirectTargetLeg" type="Node2D"]
 script = ExtResource("1_fkyjc")

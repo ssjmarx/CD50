@@ -1,6 +1,6 @@
 [gd_scene load_steps=2 format=3 uid="uid://c6nqrdptdc33k"]
 
-[ext_resource type="Script" uid="uid://dgyb54ieic62k" path="res://scripts/entity components/brains/ai_random_sweep_brain.gd" id="1_w861f"]
+[ext_resource type="Script" uid="uid://dgyb54ieic62k" path="res://scripts/entity components/brains/ai movement/ai_random_sweep_brain.gd" id="1_w861f"]
 
 [node name="AIRandomSweepBrain" type="Node2D"]
 script = ExtResource("1_w861f")

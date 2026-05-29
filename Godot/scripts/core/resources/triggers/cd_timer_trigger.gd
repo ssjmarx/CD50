@@ -1,15 +1,24 @@
-## fires on a configurable timer interval.
+# CDTimerTrigger
+# Event trigger — fires on a configurable timer interval
+# Optional random variance adds ±jitter to each interval
+
 class_name CDTimerTrigger extends CDTrigger
 
+# base time between fires (seconds)
 @export var interval: float = 5.0
+
+# ±random offset added to interval each cycle
 @export var random_variance: float = 0.0
 
+# countdown until next fire
 var _time_until_fire: float = 0.0
 
+# set initial timer on initialization
 func initialize(game: CDGame) -> void:
 	super.initialize(game)
 	_reset_timer()
 
+# count down and fire when time expires
 func evaluate(delta: float) -> bool:
 	_time_until_fire -= delta
 	if _time_until_fire <= 0.0:
@@ -17,10 +26,12 @@ func evaluate(delta: float) -> bool:
 		return true
 	return false
 
+# clear timer state on reset
 func reset() -> void:
 	super.reset()
 	_time_until_fire = 0.0
 
+# reset timer to interval ± random variance
 func _reset_timer() -> void:
 	_time_until_fire = interval
 	if random_variance > 0.0:

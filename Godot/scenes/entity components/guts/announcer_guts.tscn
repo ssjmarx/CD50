@@ -1,6 +1,6 @@
 [gd_scene load_steps=2 format=3 uid="uid://irkjutuwceju"]
 
-[ext_resource type="Script" uid="uid://cko6lx4i41uud" path="res://scripts/entity components/guts/announcer_guts.gd" id="1_fqnab"]
+[ext_resource type="Script" uid="uid://cko6lx4i41uud" path="res://scripts/entity components/guts/game logic/announcer_guts.gd" id="1_fqnab"]
 
 [node name="AnnouncerGuts" type="Node2D"]
 script = ExtResource("1_fqnab")

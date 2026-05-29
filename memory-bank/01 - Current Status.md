@@ -1,11 +1,11 @@
 # Current Status: CD50 — Arcade Cabinet
 
-**Last Updated:** 2026-05-27  
+**Last Updated:** 2026-05-29  
 **Engine:** Godot 4.5 (GDScript)  
 **Architecture:** V2 Composable Architecture (active development) — V1 archived to `Godot/v1/`  
 **Playable Games:** Paddle Ball, Brick Breaker, Space Rocks, Meteor Rally, Dogfight, Bug Blaster, Block Drop (Modern), Rock Breaker, Bug Drop, Space Bugs, Planetary Attack!, Space Rocks Inverted — ALL componentized, zero game scripts
-**In Progress:** V2 Architecture — Plans 19, 19.5, 20, 21, 22, 23 COMPLETE. Plan 24 (Faces, Voices, Projections & Speakers) is next.
-**Recent Completed:** Plan 23 — 4 Trapdoors, 3 Spawn Arms, 2 Marks, 4 Resources written. Plan 22 — all 10 Arms, 15 Guts written.
+**In Progress:** V2 Architecture — Plans 19–24 COMPLETE. Plan 25 (Swarm Controllers + Galaga) in progress. 153 V2 scripts written.
+**Recent Completed:** Plan 24 — 7 Faces, 2 Voices, 3 Speakers, 2 Projectors, 5 Directors, 5 Triggers, 5 Selectors, 12 Curves, 4 Behavior Resources, 3 Audio Resources, 2 Effects, plus new infrastructure (CDEffect, CDSoundBank, CDUpdater). Plans 19–23 complete as previously documented.
 **Demo Status:** Code-locked at 12 games. Only Steam wishlist link remains. Itch.io demo stays on V1 architecture.
 
 ---
@@ -199,11 +199,11 @@ Godot/Scripts/
 | 21 | Brains + Legs | ✅ Complete | `planning/21 - V2 Brains + Legs.md` |
 | 22 | Arms + Guts | ✅ Complete | `planning/22 - V2 Arms + Guts.md` |
 | 23 | Spawners | ✅ Complete | `planning/23 - V2 Spawners.md` |
-| 24 | Faces, Voices, Projections & Speakers | 🔲 Next | `planning/24 - V2 Faces, Voices, Projections & Speakers.md` |
-| 25 | Swarm Controllers + Galaga | 🔲 Planned | `planning/25 - V2 Swarm Controllers + Galaga.md` |
+| 24 | Faces, Voices, Projections & Speakers | ✅ Complete | `planning/24 - V2 Faces, Voices, Projections & Speakers.md` |
+| 25 | Swarm Controllers + Galaga | 🔨 In Progress | `planning/25 - V2 Swarm Controllers + Galaga.md` |
 | 26 | Block Drop V2 | 🔲 Planned | `planning/26 - Block Drop V2.md` |
 
-**Full V2 component catalogue:** `memory-bank/07 - Component Catalogue V2.md` (90 scripts written)
+**Full V2 component catalogue:** `memory-bank/07 - Component Catalogue V2.md` (153 scripts written)
 
 ---
 

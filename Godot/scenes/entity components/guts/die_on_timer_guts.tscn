@@ -1,6 +1,6 @@
 [gd_scene load_steps=2 format=3 uid="uid://bd5qh5p4li7tm"]
 
-[ext_resource type="Script" uid="uid://d14t6u7jmro23" path="res://scripts/entity components/guts/die_on_timer_guts.gd" id="1_o8iy8"]
+[ext_resource type="Script" uid="uid://d14t6u7jmro23" path="res://scripts/entity components/guts/death/die_on_timer_guts.gd" id="1_o8iy8"]
 
 [node name="DieOnTimerGuts" type="Node2D"]
 script = ExtResource("1_o8iy8")

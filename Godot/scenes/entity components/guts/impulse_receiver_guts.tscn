@@ -1,6 +1,6 @@
 [gd_scene load_steps=2 format=3 uid="uid://bpckjpmgt6ryw"]
 
-[ext_resource type="Script" uid="uid://cd63x80vmk0ul" path="res://scripts/entity components/guts/impulse_receiver_guts.gd" id="1_5fhfn"]
+[ext_resource type="Script" uid="uid://cd63x80vmk0ul" path="res://scripts/entity components/guts/physics/impulse_receiver_guts.gd" id="1_5fhfn"]
 
 [node name="ImpulseReceiverGuts" type="Node2D"]
 script = ExtResource("1_5fhfn")

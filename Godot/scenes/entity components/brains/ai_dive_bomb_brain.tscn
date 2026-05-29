@@ -1,6 +1,6 @@
 [gd_scene load_steps=2 format=3 uid="uid://b87neetldlje3"]
 
-[ext_resource type="Script" uid="uid://4i67t7buhl3d" path="res://scripts/entity components/brains/ai_dive_bomb_brain.gd" id="1_mafjy"]
+[ext_resource type="Script" uid="uid://4i67t7buhl3d" path="res://scripts/entity components/brains/ai movement/ai_dive_bomb_brain.gd" id="1_mafjy"]
 
 [node name="AIDiveBombBrain" type="Node2D"]
 script = ExtResource("1_mafjy")

@@ -1,30 +1,42 @@
 @tool
 
-## four vector engine flames in an X pattern
+# VectorThrusterFace
+# Draws four diagonal thruster flames in an X pattern
+# Activates individual flames based on move signal direction
+
 class_name VectorThrusterFace extends CDEntityComponent
 
+# distance each flame extends from center
 @export var flame_size: float = 4.0:
 	set(v):
 		flame_size = v
 		queue_redraw()
 
+# width of each flame base
 @export var flame_width: float = 3.0:
 	set(v):
 		flame_width = v
 		queue_redraw()
 
+# distance from center to flame base
 @export var distance: float = 6.0:
 	set(v):
 		distance = v
 		queue_redraw()
 
+# flame color
 @export var color: Color = Color.WHITE:
 	set(v):
 		color = v
 		queue_redraw()
 
+# seconds between flicker updates
 @export var flicker_speed: float = 0.08
+
+# max random variation in flame tip length
 @export var flicker_size: float = 2.0
+
+# line thickness
 @export var line_width: float = 1.5:
 	set(v):
 		line_width = v
@@ -38,47 +50,71 @@ var FLAME_DIRS: Array[Vector2] = [
 	Vector2(0.707107, 0.707107),    # LR
 ]
 
+# which flames are currently active
 var _active: Array[bool] = [false, false, false, false]
+
+# current move direction from entity signals
 var _direction: Vector2 = Vector2.ZERO
+
+# time since last flicker update
 var _timer: float = 0.0
+
+# per-flame random tip offsets
 var _tips: Array[float] = [0.0, 0.0, 0.0, 0.0]
+
+# whether any flame is active
 var _any_active: bool = false
 
+# --- lifecycle ---
+
+# connect move signal and disable physics processing until active
 func _on_initialize() -> void:
 	entity.connect("move", _on_move)
 	set_physics_process(false)
 
+# --- signal handlers ---
+
+# store move direction and enable physics processing on first move
 func _on_move(dir: Vector2) -> void:
 	_direction = dir
 	if dir != Vector2.ZERO and not _any_active:
 		set_physics_process(true)
 
+# --- processing ---
+
+# determine which flames fire based on local-space direction, update flicker
 func _physics_process(delta: float) -> void:
+	# convert world direction to local space relative to entity rotation
 	var local_dir: Vector2 = _direction.rotated(-entity.rotation)
 	
+	# reset active state each frame
 	_active = [false, false, false, false]
 	
+	# horizontal movement activates opposite-side thrusters (to push)
 	if local_dir.x > 0.1:
-		_active[0] = true
-		_active[2] = true
+		_active[0] = true  # UL fires for rightward push
+		_active[2] = true  # LL fires for rightward push
 	elif local_dir.x < -0.1:
-		_active[1] = true
-		_active[3] = true
+		_active[1] = true  # UR fires for leftward push
+		_active[3] = true  # LR fires for leftward push
 	
+	# vertical movement activates opposite-side thrusters
 	if local_dir.y > 0.1:
-		_active[0] = true
-		_active[1] = true
+		_active[0] = true  # UL fires for downward push
+		_active[1] = true  # UR fires for downward push
 	elif local_dir.y < -0.1:
-		_active[2] = true
-		_active[3] = true
+		_active[2] = true  # LL fires for upward push
+		_active[3] = true  # LR fires for upward push
 	
 	_any_active = _active[0] or _active[1] or _active[2] or _active[3]
 	
+	# stop processing if direction is zero
 	if _direction == Vector2.ZERO:
 		_any_active = false
 		set_physics_process(false)
 		return
 	
+	# update flicker tips on timer
 	_timer += delta
 	if _timer > flicker_speed:
 		for i in 4:
@@ -87,10 +123,14 @@ func _physics_process(delta: float) -> void:
 	
 	queue_redraw()
 
+# redraw each frame in editor for live preview
 func _process(_delta: float) -> void:
 	if Engine.is_editor_hint():
 		queue_redraw()
 
+# --- drawing ---
+
+# draw active thruster flames as V-shapes along their diagonal directions
 func _draw() -> void:
 	var is_editor: bool = Engine.is_editor_hint()
 	
@@ -102,6 +142,7 @@ func _draw() -> void:
 		var base_pos: Vector2 = flame_dir * distance
 		var tip: Vector2 = base_pos + flame_dir * (flame_size + _tips[i])
 		
+		# perpendicular for flame width
 		var perp: Vector2 = Vector2(-flame_dir.y, flame_dir.x)
 		var left: Vector2 = base_pos + perp * (flame_width / 2.0)
 		var right: Vector2 = base_pos - perp * (flame_width / 2.0)

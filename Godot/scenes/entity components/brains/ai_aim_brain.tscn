@@ -1,6 +1,6 @@
 [gd_scene load_steps=2 format=3 uid="uid://dh3dkd1k4xqvi"]
 
-[ext_resource type="Script" uid="uid://cvhyivkmm5oef" path="res://scripts/entity components/brains/ai_aim_brain.gd" id="1_8tkl0"]
+[ext_resource type="Script" uid="uid://cvhyivkmm5oef" path="res://scripts/entity components/brains/ai action/ai_aim_brain.gd" id="1_8tkl0"]
 
 [node name="AIAimBrain" type="Node2D"]
 script = ExtResource("1_8tkl0")

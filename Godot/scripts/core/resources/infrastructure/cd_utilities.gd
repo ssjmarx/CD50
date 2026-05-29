@@ -1,33 +1,45 @@
-## pure static utility functions used across V2
+# CDUtilities
+# Pure static utility functions used across V2
+# No state, no side effects — call directly via CDUtilities.func_name()
+
 class_name CDUtilities
 
-## for sound generation
+# sample rate for procedural sound generation
 const MIX_RATE: int = 11025
 
-## applies a CDSpawnContext to an entity before it enters the tree
+# --- Spawn & Entity ---
+
+# apply a CDSpawnContext to an entity before it enters the tree
 static func apply_spawn_context(entity: CDEntity, context: CDSpawnContext) -> void:
 	if context == null:
 		return
 
+	# set initial velocity from context
 	entity.velocity = context.velocity
 
+	# optionally randomize velocity direction within angle range
 	if context.use_random_angle:
 		var speed := entity.velocity.length()
 		var angle := Vector2.from_angle(randf_range(context.random_angle_min, context.random_angle_max))
 		entity.velocity = angle * speed
 
+	# optionally flip horizontal/vertical velocity components
 	if context.random_flip_h:
 		entity.velocity.x *= [-1, 1].pick_random()
 
 	if context.random_flip_v:
 		entity.velocity.y *= [-1, 1].pick_random()
 
+	# set initial rotation
 	entity.rotation = context.rotation
 
+	# add any extra groups the entity should belong to
 	for group in context.additional_groups:
 		entity.add_to_group(group)
 
-## evaluates a string expression with named variables, returns result as int
+# --- Expression Evaluation ---
+
+# evaluate a string expression with named variables, returns result as int
 static func evaluate_int(equation: String, var_names: PackedStringArray, var_values: Array, context_name: String) -> int:
 	var expr := Expression.new()
 	var error := expr.parse(equation, var_names)
@@ -40,11 +52,13 @@ static func evaluate_int(equation: String, var_names: PackedStringArray, var_val
 		return 0
 	return int(result)
 
-## converts MIDI note number to frequency in Hz
+# --- Audio / Waveform ---
+
+# convert MIDI note number to frequency in Hz
 static func freq_from_note(note: int) -> float:
 	return 440.0 * pow(2.0, (note - 69) / 12.0)
 
-## returns modified frequency after applying freq effects
+# return modified frequency after applying a frequency effect
 static func apply_freq_effect(freq: float, t: float, effect: int) -> float:
 	match effect:
 		CDEnums.Effect.WARBLE:
@@ -53,7 +67,7 @@ static func apply_freq_effect(freq: float, t: float, effect: int) -> float:
 			return freq * maxf(0.1, 1.0 - t * 2.0)
 	return freq
 
-## returns raw waveform sample from phase position
+# return raw waveform sample from phase position for a given wave shape
 static func wave_sample(phase: float, wave_shape: int) -> float:
 	match wave_shape:
 		CDEnums.WaveShape.SINE:
@@ -70,7 +84,7 @@ static func wave_sample(phase: float, wave_shape: int) -> float:
 			return lerp(tone, noise, 0.5)
 	return 0.0
 
-## returns modified sample after applying amplitude effects
+# return modified sample after applying an amplitude effect
 static func apply_amp_effect(sample: float, t: float, note_progress: float, effect: int) -> float:
 	match effect:
 		CDEnums.Effect.TREMOLO:

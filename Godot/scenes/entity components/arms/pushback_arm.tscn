@@ -1,6 +1,6 @@
 [gd_scene load_steps=2 format=3 uid="uid://bcjrlxge5bpm"]
 
-[ext_resource type="Script" uid="uid://b4ao6afg2ptk5" path="res://scripts/entity components/arms/pushback_arm.gd" id="1_fanar"]
+[ext_resource type="Script" uid="uid://b4ao6afg2ptk5" path="res://scripts/entity components/arms/collision reactions/pushback_arm.gd" id="1_fanar"]
 
 [node name="PushbackArm" type="Node2D"]
 script = ExtResource("1_fanar")

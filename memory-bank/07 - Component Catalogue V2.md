@@ -1,8 +1,9 @@
 # Component Catalogue V2
 
-**Last Updated:** 2026-05-27  
+**Last Updated:** 2026-05-29  
 **Architecture:** V2 Composable Architecture  
 **Canonical Reference:** `planning/V2 Rules.md`  
+**Total V2 Scripts:** 153
 
 ---
 
@@ -14,357 +15,498 @@ The V2 architecture replaces V1's `UniversalBody`/`UniversalComponent` system wi
 
 ---
 
-## Core — Base Classes (3)
+## Core — Base Classes (4)
 
-| Script | Class | Description |
-|--------|-------|-------------|
-| `cd_cue_card.gd` | `CDCueCard` | Base class for all cue cards (extends Control instead of Node2D) |
-| `cd_entity_component.gd` | `CDEntityComponent` | Base class for all V2 entity-attached components |
-| `cd_game_component.gd` | `CDStageComponent2D` | Base class for all V2 game-attached components |
-
----
-
-## Core — Infrastructure (7)
-
-| Script | Class | Description |
-|--------|-------|-------------|
-| `cd_entity.gd` | `CDEntity` | Base class for all V2 physical entities |
-| `cd_game.gd` | `CDGame` | Root node for every game scene — state machine and signal router |
-| `cd_input_router.gd` | `CDInputRouter` | Autoloaded pure signal-driven input handler |
-| `cd_group_registry.gd` | `CDGroupRegistry` | Frame-cached, typed access to entity groups |
-| `cd_collision_buffer.gd` | `CDCollisionBuffer` | Flushes collisions after all movement is complete |
-| `cd_collision_matrix.gd` | `CDCollisionMatrix` | Auto-configures physics layers from CDCollisionGroup resources |
-| `cd_object_pool.gd` | `CDObjectPool` | Per-type entity pool |
+| Script | Class | Summary |
+|--------|-------|---------|
+| `cd_cue_card.gd` | `CDCueCard extends Control` | Base class for all cue cards (Control-based, not Node2D) |
+| `cd_entity_component.gd` | `CDEntityComponent extends Node2D` | Base class for all V2 entity-attached components |
+| `cd_game_component.gd` | `CDGameComponent extends Node2D` | Base class for all V2 game-attached components |
+| `cd_stage_trapdoor.gd` | `CDStageTrapdoor extends CDGameComponent` | Base class for all stage trapdoors |
 
 ---
 
-## Core — Resources (7)
+## Core — Infrastructure (10)
 
-| Script | Class | Description |
-|--------|-------|-------------|
-| `cd_enums.gd` | `CDEnums` | Data bag for common enums across the codebase |
-| `cd_collision_group.gd` | `CDCollisionGroup` | Resource used by CDCollisionMatrix to configure collision layers |
-| `wall_kick_resource.gd` | `WallKickResource` | Wall-kick offset table data for Tetris-style rotation (8 kick arrays: 0→R, R→0, R→2, 2→R, 2→L, L→2, L→0, 0→L) |
-| `cd_spawn_context.gd` | `CDSpawnContext` | Lightweight resource describing how a newly spawned entity should be configured (velocity, random angle, flips, rotation) |
-| `cd_grid_layout.gd` | `CDGridLayout` | Data-driven grid definition — explicit PackedScene per cell, null = skip. Inner class `CDGridRow` |
-| `cd_grid_equation.gd` | `CDGridEquation` | Math-driven grid definition — uniform scene with randomized skips (columns, rows, skip_chance, min_skips_per_row) |
-| `cd_utilities.gd` | `CDUtilities` | Pure static utility functions — `apply_spawn_context()` and `evaluate_int()` (Expression-based equation evaluator) |
+| Script | Class | Summary |
+|--------|-------|---------|
+| `cd_collision_buffer.gd` | `CDCollisionBuffer extends Node` | Flushes collisions after all movement is complete |
+| `cd_collision_matrix.gd` | `CDCollisionMatrix extends Node` | Auto-configures physics layers from CDCollisionGroup resources |
+| `cd_effect.gd` | `CDEffect extends Node2D` | Lightweight visual effect — plays once and auto-frees |
+| `cd_entity.gd` | `CDEntity extends CharacterBody2D` | Base class for all V2 physical entities |
+| `cd_game.gd` | `CDGame extends Node2D` | Root node for every game scene — state machine and signal router |
+| `cd_group_registry.gd` | `CDGroupRegistry extends Node` | Frame-cached, typed access to entity groups |
+| `cd_input_router.gd` | `CDInputRouter extends Node` | Autoloaded pure signal-driven input handler |
+| `cd_object_pool.gd` | `CDObjectPool extends Node` | Per-type entity pool |
+| `cd_sound_bank.gd` | `CDSoundBank extends CDGameComponent` | Centralized audio engine for V2 |
+| `cd_updater.gd` | `CDUpdater extends Node` | Defers state updates (component and group changes) to end of frame |
 
 ---
 
-## Entity Components — Brains (14)
+## Core — Resources: Infrastructure (3)
 
-Pure intent generators (Priority 10). Never touch velocity, never move entities. Emit signals on the entity bus.
+| Script | Class | Summary |
+|--------|-------|---------|
+| `cd_collision_group.gd` | `CDCollisionGroup extends Resource` | Collision group config used by CDCollisionMatrix |
+| `cd_enums.gd` | `CDEnums` | Shared enumerations across the codebase |
+| `cd_utilities.gd` | `CDUtilities` | Pure static utility functions used across V2 |
 
-### Player Brains (3)
+---
 
-| Script | Class | Description |
-|--------|-------|-------------|
-| `player_move_brain.gd` | `PlayerMoveBrain` | Routes directional input from CDInputRouter to entity bus |
-| `player_aim_brain.gd` | `PlayerAimBrain` | Routes aim input from CDInputRouter to entity bus |
-| `player_action_brain.gd` | `PlayerActionBrain` | Routes action button presses/releases from CDInputRouter to entity bus |
+## Core — Resources: Audio (3)
+
+| Script | Class | Summary |
+|--------|-------|---------|
+| `cd_music_track.gd` | `CDMusicTrack extends Resource` | Defines a single music track for MusicSpeaker playlists |
+| `cd_note.gd` | `CDNote extends Resource` | Note definition for synthesized audio |
+| `cd_sound_def.gd` | `CDSoundDef extends Resource` | Sound definition resource |
+
+---
+
+## Core — Resources: Behavior (4)
+
+| Script | Class | Summary |
+|--------|-------|---------|
+| `cd_director_rule.gd` | `CDDirectorRule extends Resource` | Defines one entity swap rule for StageDirector |
+| `cd_shape.gd` | `CDShape extends Resource` | Defines a polygon shape from a set of 2D points |
+| `cd_transition.gd` | `CDTransition extends Resource` | Defines when and how entities move between groups |
+| `cd_wall_kick.gd` | `CDWallKick extends Resource` | Wall-kick offset table data for Tetris-style rotation |
+
+---
+
+## Core — Resources: Curves (12)
+
+Abstract base `CDCurve` plus 11 curve types for AI path generation.
+
+| Script | Class | Summary |
+|--------|-------|---------|
+| `cd_curve.gd` | `CDCurve extends Resource` | Abstract base class for all path curve resources |
+| `cd_arc_curve.gd` | `CDArcCurve extends CDCurve` | Arc/semicircle curve |
+| `cd_circle_curve.gd` | `CDCircleCurve extends CDCurve` | Circle/ellipse curve |
+| `cd_helix_curve.gd` | `CDHelixCurve extends CDCurve` | Helix/corkscrew curve |
+| `cd_lissajous_curve.gd` | `CDLissajousCurve extends CDCurve` | Lissajous curve |
+| `cd_parabola_curve.gd` | `CDParabolaCurve extends CDCurve` | Parabolic curve |
+| `cd_sawtooth_wave_curve.gd` | `CDSawtoothWaveCurve extends CDCurve` | Sawtooth wave curve |
+| `cd_sine_curve.gd` | `CDSineCurve extends CDCurve` | Sine wave curve |
+| `cd_spiral_curve.gd` | `CDSpiralCurve extends CDCurve` | Spiral curve |
+| `cd_square_wave_curve.gd` | `CDSquareWaveCurve extends CDCurve` | Square wave curve |
+| `cd_triangle_curve.gd` | `CDTriangleCurve extends CDCurve` | Triangle "curve" |
+| `cd_zigzag_curve.gd` | `CDZigzagCurve extends CDCurve` | Zigzag curve |
+
+---
+
+## Core — Resources: Selectors (5)
+
+Abstract base `CDSelector` plus 4 selection strategies for transition targeting.
+
+| Script | Class | Summary |
+|--------|-------|---------|
+| `cd_selector.gd` | `CDSelector extends Resource` | Abstract base class for transition entity selectors |
+| `cd_select_all.gd` | `CDSelectAll extends CDSelector` | Selects every candidate — no filtering |
+| `cd_select_n.gd` | `CDSelectN extends CDSelector` | Selects the first N candidates in iteration order |
+| `cd_select_nearest_n.gd` | `CDSelectNearestN extends CDSelector` | Selects N candidates nearest to closest entity in target group |
+| `cd_select_random_n.gd` | `CDSelectRandomN extends CDSelector` | Selects N random candidates, independently each evaluation |
+
+---
+
+## Core — Resources: Spawners (4)
+
+| Script | Class | Summary |
+|--------|-------|---------|
+| `cd_grid_equation.gd` | `CDGridEquation extends Resource` | Math-driven grid definition |
+| `cd_grid_layout.gd` | `CDGridLayout extends Resource` | Data-driven grid definition |
+| `cd_grid_row.gd` | `CDGridRow extends Resource` | One row of a CDGridLayout grid |
+| `cd_spawn_context.gd` | `CDSpawnContext extends Resource` | Configuration for spawned entities when they enter the tree |
+
+---
+
+## Core — Resources: Triggers (5)
+
+Abstract base `CDTrigger` plus 4 trigger types for state machine transitions.
+
+| Script | Class | Summary |
+|--------|-------|---------|
+| `cd_trigger.gd` | `CDTrigger extends Resource` | Abstract base class for all state machine transition triggers |
+| `cd_composite_trigger.gd` | `CDCompositeTrigger extends CDTrigger` | Combines multiple sub-triggers with AND/OR logic |
+| `cd_group_count_trigger.gd` | `CDGroupCountTrigger extends CDTrigger` | Checks group population against a threshold |
+| `cd_signal_trigger.gd` | `CDSignalTrigger extends CDTrigger` | Fires when a game bus signal is received |
+| `cd_timer_trigger.gd` | `CDTimerTrigger extends CDTrigger` | Fires on a configurable timer interval |
+
+---
+
+## Core — Resources: Visuals (1)
+
+| Script | Class | Summary |
+|--------|-------|---------|
+| `cd_face_binding.gd` | `CDFaceBinding extends Resource` | Pairs a signal name and frame index for face components |
+
+---
+
+## Effects (2)
+
+| Script | Class | Summary |
+|--------|-------|---------|
+| `broken_ship_effect.gd` | `BrokenTriangleEffect extends CDEffect` | Spinning line fragments that drift outward and fade |
+| `death_particle_effect.gd` | `DeathParticleEffect extends CDEffect` | Burst of single-pixel particles that fly outward |
+
+---
+
+## Entity Components — Brains (16)
+
+Pure intent generators (Priority 10). Never touch velocity, never move entities.
+
+### Player Brains (4)
+
+| Script | Class | Summary |
+|--------|-------|---------|
+| `player_move_brain.gd` | `PlayerMoveBrain extends CDEntityComponent` | Routes directional input from CDInputRouter to entity bus |
+| `player_aim_brain.gd` | `PlayerAimBrain extends CDEntityComponent` | Routes aim input from CDInputRouter to entity bus |
+| `player_action_brain.gd` | `PlayerActionBrain extends CDEntityComponent` | Routes action button presses/releases from CDInputRouter to entity bus |
+| `player_move_to_brain.gd` | `PlayerMoveToBrain extends CDEntityComponent` | Emits "move_to" with mouse global position each physics frame |
 
 ### AI: Targeting Brains (4)
 
-| Script | Class | Description |
-|--------|-------|-------------|
-| `ai_chase_brain.gd` | `AIChaseBrain` | Emits movement direction towards the nearest thing in target groups |
-| `ai_flee_brain.gd` | `AIFleeBrain` | Emits movement direction away from the nearest thing in target groups |
-| `ai_aim_brain.gd` | `AIAimBrain` | Emits aim direction towards the nearest thing in target groups |
-| `ai_orbit_brain.gd` | `AIOrbitBrain` | Emits movement direction orbiting a CDEntity with lock-on behavior |
+| Script | Class | Summary |
+|--------|-------|---------|
+| `ai_chase_brain.gd` | `AIChaseBrain extends CDEntityComponent` | Emits movement direction towards nearest target in groups |
+| `ai_flee_brain.gd` | `AIFleeBrain extends CDEntityComponent` | Emits movement direction away from nearest target in groups |
+| `ai_aim_brain.gd` | `AIAimAtNearestBrain extends CDEntityComponent` | Emits aim direction towards nearest target in groups |
+| `ai_orbit_brain.gd` | `AIOrbitBrain extends CDEntityComponent` | Emits movement direction orbiting a CDEntity with lock-on |
 
 ### AI: Action Brains (2)
 
-| Script | Class | Description |
-|--------|-------|-------------|
-| `ai_repeat_action_brain.gd` | `AIRepeatActionBrain` | Fires an action signal repeatedly on a timer while active; started and stopped by signal |
-| `ai_timed_step_brain.gd` | `AITimedStepBrain` | Emits a directional signal at a regular interval; listens on the entity bus for speed-up |
+| Script | Class | Summary |
+|--------|-------|---------|
+| `ai_repeat_action_brain.gd` | `AIRepeatActionBrain extends CDEntityComponent` | Fires action signal repeatedly on a timer while active |
+| `ai_timed_step_brain.gd` | `AITimedStepBrain extends CDEntityComponent` | Emits directional signal at regular interval |
 
-### AI: Path & Patrol Brains (4)
+### AI: Path & Patrol Brains (5)
 
-| Script | Class | Description |
-|--------|-------|-------------|
-| `ai_path_move_brain.gd` | `AIPathMoveBrain` | Follows a pre-defined Curve2D resource, emitting positional targets as waypoints |
-| `ai_random_sweep_brain.gd` | `AIRandomSweepBrain` | Generates a multi-waypoint sweep path across the play area |
-| `ai_idle_wander_brain.gd` | `AIIdleWanderBrain` | Picks random nearby points and meanders toward them with idles in between |
-| `ai_formation_brain.gd` | `AIFormationBrain` | Moves to an offset from a leader entity with target locking |
-| `ai_dive_bomb_brain.gd` | `AIDiveBombBrain` | On signal, generates a sine-wave dive path toward a target |
+| Script | Class | Summary |
+|--------|-------|---------|
+| `ai_path_move_brain.gd` | `AIPathMoveBrain extends CDEntityComponent` | Follows a Curve2D resource, emitting positional waypoints |
+| `ai_random_sweep_brain.gd` | `AIRandomSweepBrain extends CDEntityComponent` | Generates multi-waypoint sweep path across play area |
+| `ai_idle_wander_brain.gd` | `AIIdleWanderBrain extends CDEntityComponent` | Picks random nearby points, meanders with idle pauses |
+| `ai_formation_brain.gd` | `AIFormationBrain extends CDEntityComponent` | Moves to offset from leader entity with target locking |
+| `ai_dive_bomb_brain.gd` | `AIDiveBombBrain extends CDEntityComponent` | Generates sine-wave dive path toward target |
+
+### AI: Special Brains (1)
+
+| Script | Class | Summary |
+|--------|-------|---------|
+| `ai_tractor_beam_brain.gd` | `AITractorBeamBrain extends CDEntityComponent` | Interrupts dive to perform capture attempt |
 
 ---
 
-## Entity Components — Arms (13)
+## Entity Components — Arms (16)
 
-World-affecting components (Priority 40). Consume collision signals from the buffer flush and affect other entities or the game state.
+World-affecting components (Priority 40). Consume collision signals, affect other entities or game state.
 
 ### Collision Response Arms (6)
 
-On Hit / On Crash matrix — the 2×2 pattern for entity destruction and damage.
-
-| Script | Class | Description |
-|--------|-------|-------------|
-| `damage_on_hit_arm.gd` | `DamageOnHitArm` | Emits `take_damage` on collider's bus when this entity is the instigator in a hit |
-| `death_on_hit_arm.gd` | `DeathOnHitArm` | Emits `request_deactivate` on collider's bus when this entity is the instigator in a hit |
-| `damage_on_crash_arm.gd` | `DamageOnCrashArm` | Emits `take_damage` on collider's bus for any collision (mutual damage) |
-| `death_on_crash_arm.gd` | `DeathOnCrashArm` | Emits `request_deactivate` on collider's bus for any collision (mutual destruction) |
-| `damage_on_joust_arm.gd` | `DamageOnJoustArm` | Emits `take_damage` on the slower collider's bus (velocity comparison) |
-| `death_on_joust_arm.gd` | `DeathOnJoustArm` | Emits `request_deactivate` on the slower collider's bus (velocity comparison) |
+| Script | Class | Summary |
+|--------|-------|---------|
+| `damage_on_hit_arm.gd` | `DamageOnHitArm extends CDEntityComponent` | Deals flat damage to whatever entity collides with |
+| `death_on_hit_arm.gd` | `DeathOnHitArm extends CDEntityComponent` | Instantly kills whatever entity collides with |
+| `damage_on_crash_arm.gd` | `DamageOnCrashArm extends CDEntityComponent` | Deals damage to self on any collision (mutual) |
+| `death_on_crash_arm.gd` | `DeathOnCrashArm extends CDEntityComponent` | Kills self on any collision (mutual) |
+| `damage_on_joust_arm.gd` | `DamageOnJoustArm extends CDEntityComponent` | Deals damage based on comparative property check |
+| `death_on_joust_arm.gd` | `DeathOnJoustArm extends CDEntityComponent` | Kills based on comparative property check, bypasses health |
 
 ### Scoring Arms (2)
 
-| Script | Class | Description |
-|--------|-------|-------------|
-| `score_on_collision_arm.gd` | `ScoreOnCollisionArm` | Emits `add_score` on game bus when collision occurs with target groups |
-| `score_on_death_arm.gd` | `ScoreOnDeathArm` | Emits `add_score` on game bus when this entity deactivates |
+| Script | Class | Summary |
+|--------|-------|---------|
+| `score_on_collision_arm.gd` | `ScoreOnCollisionArm extends CDEntityComponent` | Emits score_gained on collision with valid target |
+| `score_on_death_arm.gd` | `ScoreOnDeathArm extends CDEntityComponent` | Emits score_gained when entity dies |
 
 ### Force & Status Arms (2)
 
-| Script | Class | Description |
-|--------|-------|-------------|
-| `pushback_arm.gd` | `PushbackArm` | Emits `external_impulse` on collider's bus based on collision normal |
-| `status_on_hit_arm.gd` | `StatusOnHitArm` | Emits `apply_status` on collider's bus with configurable status name and duration |
+| Script | Class | Summary |
+|--------|-------|---------|
+| `pushback_arm.gd` | `PushbackArm extends CDEntityComponent` | Applies physical impulse to target's ImpulseReceiverGuts |
+| `status_on_hit_arm.gd` | `StatusEffectArm extends CDEntityComponent` | Sends status effect signal and duration on collision |
 
 ### Spawn Arms (3)
 
-Entity-level spawners (Priority 40). Respond to entity bus signals, spawn immediately — no queue, no stagger, no wave tracking.
+| Script | Class | Summary |
+|--------|-------|---------|
+| `gun_arm.gd` | `GunArm extends CDEntityComponent` | Spawns projectile on fire signal, pool-backed with cooldown |
+| `spawn_on_death_arm.gd` | `SpawnOnDeathArm extends CDEntityComponent` | Spawns entities when parent entity dies |
+| `piece_splitter_arm.gd` | `PieceSplitterArm extends CDEntityComponent` | On piece_locked, spawns individual SettledCell entities |
 
-| Script | Class | Description |
-|--------|-------|-------------|
-| `gun_arm.gd` | `GunArm` | Spawns a projectile on fire signal, pool-backed with cooldown and rotation inheritance |
-| `spawn_on_death_arm.gd` | `SpawnOnDeathArm` | Spawns entities when the parent entity dies (death effects, asteroid splits, power-up drops) |
-| `piece_splitter_arm.gd` | `PieceSplitterArm` | Tetris-specific — spawns SettledCell entities at piece block positions, then deactivates parent |
+### Power-Up Arms (2)
+
+| Script | Class | Summary |
+|--------|-------|---------|
+| `powerup_delivery_arm.gd` | `PowerUpDeliveryArm extends CDEntityComponent` | Delivers a powerup to whatever entity collides with |
+| `powerup_wingman_arm.gd` | `PowerupWingmanArm extends CDEntityComponent` | Spawns companion entity at player position on powerup received |
+
+### Special Arms (1)
+
+| Script | Class | Summary |
+|--------|-------|---------|
+| `tractor_beam_arm.gd` | `TractorBeamArm extends CDEntityComponent` | Active-frames arm that captures entities in tractor beam zone |
 
 ---
 
-## Entity Components — Guts (15)
+## Entity Components — Guts (19)
 
-Internal state trackers (Priority 50). No world interaction — hold entity state and emit signals when state changes.
+Internal state trackers (Priority 50). Hold entity state and emit signals on change.
 
 ### Collision & Shape (2)
 
-| Script | Class | Description |
-|--------|-------|-------------|
-| `deflector_bounce_guts.gd` | `DeflectorBounceGuts` | Bounces entity velocity on collision using configurable response mode |
-| `shape_collider_guts.gd` | `ShapeColliderGuts` | Manages collision shape enable/disable (needed for pooled entities) |
+| Script | Class | Summary |
+|--------|-------|---------|
+| `deflector_bounce_guts.gd` | `DeflectorBounceGuts extends CDEntityComponent` | Deflects off target groups with angled bounce physics |
+| `shape_collider_guts.gd` | `ShapeColliderGuts extends CDEntityComponent` | Overrides CDEntity collision shape on setup and signal |
 
 ### Health & Death (3)
 
-| Script | Class | Description |
-|--------|-------|-------------|
-| `healthpool_guts.gd` | `HealthPoolGuts` | Tracks HP with configurable damage/heal, emits `health_changed` and `health_depleted` |
-| `die_at_zero_health_guts.gd` | `DieAtZeroHealthGuts` | Listens for `health_depleted` and calls `entity.deactivate()` |
-| `points_guts.gd` | `PointsGuts` | Holds point value for scoring — data holder consumed by ScoreOnDeathArm |
+| Script | Class | Summary |
+|--------|-------|---------|
+| `healthpool_guts.gd` | `HealthpoolGuts extends CDEntityComponent` | Single source of truth for entity health value |
+| `die_at_zero_health_guts.gd` | `DieAtZeroHealthGuts extends CDEntityComponent` | Kills entity when health reaches zero |
+| `points_guts.gd` | `PointsGuts extends CDEntityComponent` | Data holder for point value |
 
 ### Self-Destruction (3)
 
-| Script | Class | Description |
-|--------|-------|-------------|
-| `die_on_timer_guts.gd` | `DieOnTimerGuts` | Destroys entity after a configurable lifespan (bullets, bombs) |
-| `die_out_of_bounds_guts.gd` | `DieOutOfBoundsGuts` | Polling-based bounds check against `game.game_bounds` with spawn delay |
-| `die_offscreen_guts.gd` | `DieOffscreenGuts` | Camera-visibility-based cleanup via `VisibleOnScreenNotifier2D` (event-driven) |
+| Script | Class | Summary |
+|--------|-------|---------|
+| `die_on_timer_guts.gd` | `DieOnTimerGuts extends CDEntityComponent` | Destroys entity after set duration |
+| `die_out_of_bounds_guts.gd` | `DieOutOfBoundsGuts extends CDEntityComponent` | Destroys entity if it leaves game bounds |
+| `die_offscreen_guts.gd` | `DieOffscreenGuts extends CDEntityComponent` | Destroys entity when it leaves all camera views |
 
-### Force Reception (1)
+### Force & Input (3)
 
-| Script | Class | Description |
-|--------|-------|-------------|
-| `impulse_receiver_guts.gd` | `ImpulseReceiverGuts` | Listens for `external_impulse` and passes it to the velocity accumulator |
+| Script | Class | Summary |
+|--------|-------|---------|
+| `impulse_receiver_guts.gd` | `ImpulseReceiverGuts extends CDEntityComponent` | Applies external impulse forces to parent entity |
+| `kbm_guts.gd` | `KBMGuts extends CDEntityComponent` | Merges keyboard "move" and mouse "move_to" into single "steer" signal |
+| `move_adapter_guts.gd` | `MoveAdapterGuts extends CDEntityComponent` | Converts "move_to" target positions into "move" direction vectors |
 
 ### Resource Pools (2)
 
-| Script | Class | Description |
-|--------|-------|-------------|
-| `shieldpool_guts.gd` | `ShieldPoolGuts` | Rechargeable buffer on top of HealthPool — absorbs damage, overflows remainder |
-| `resourcepool_guts.gd` | `ResourcePoolGuts` | Generic spendable pool (stamina/mana/ammo) with regeneration and spend-fail signal |
+| Script | Class | Summary |
+|--------|-------|---------|
+| `shieldpool_guts.gd` | `ShieldpoolGuts extends CDEntityComponent` | Rechargeable health buffer, "catch and release" signal pattern |
+| `resourcepool_guts.gd` | `ResourcepoolGuts extends CDEntityComponent` | Generic pool for any entity resource |
 
 ### Status Effects (1)
 
-| Script | Class | Description |
-|--------|-------|-------------|
-| `stun_guts.gd` | `StunGuts` | Disables Brains and Legs for a duration, emits `status_began`/`status_ended` |
+| Script | Class | Summary |
+|--------|-------|---------|
+| `stun_guts.gd` | `StunGuts extends CDEntityComponent` | Temporarily disables Brains and Legs on stun status |
 
 ### Grid / Tetris (2)
 
-| Script | Class | Description |
-|--------|-------|-------------|
-| `lock_detector_guts.gd` | `LockDetectorGuts` | Detects when a grid piece can't fall further, manages lock delay with infinite-spin prevention |
-| `t_spin_detector_guts.gd` | `TSpinDetectorGuts` | SRS 3-corner rule T-Spin detection with full/mini classification, announces to game bus |
+| Script | Class | Summary |
+|--------|-------|---------|
+| `lock_detector_guts.gd` | `LockDetectorGuts extends CDEntityComponent` | Detects when grid entity can't fall further, manages lock delay |
+| `t_spin_detector_guts.gd` | `TSpinDetectorGuts extends CDEntityComponent` | SRS 3-corner rule T-Spin detection with full/mini classification |
+
+### Timers & Signals (2)
+
+| Script | Class | Summary |
+|--------|-------|---------|
+| `timer_guts.gd` | `TimerGuts extends CDEntityComponent` | Emits tick and expired signals on a timer |
+| `announcer_guts.gd` | `AnnouncerGuts extends CDEntityComponent` | Listens for entity bus signals, rebroadcasts on game bus |
 
 ### Vision (1)
 
-| Script | Class | Description |
-|--------|-------|-------------|
-| `vision_cone_guts.gd` | `VisionConeGuts` | Forward-facing vision cone that detects bodies |
+| Script | Class | Summary |
+|--------|-------|---------|
+| `vision_cone_guts.gd` | `VisionConeGuts extends CDEntityComponent` | Forward-facing vision cone that detects bodies |
 
 ---
 
 ## Entity Components — Legs (15)
 
-Movement executors (Priority 20). Consume entity bus signals and submit velocity/position requests. Never generate intent.
+Movement executors (Priority 20). Consume entity bus signals, submit velocity/position requests.
 
-### Continuous Physics Legs (6)
+### Continuous Physics (6)
 
-Velocity-based movement using the accumulator API.
+| Script | Class | Summary |
+|--------|-------|---------|
+| `direct_movement_leg.gd` | `DirectMovementLeg extends CDEntityComponent` | Hard-sets velocity from directional input |
+| `acceleration_movement_leg.gd` | `AccelerationLeg extends CDEntityComponent` | Accelerates toward input direction |
+| `engine_leg.gd` | `EngineLeg extends CDEntityComponent` | Forward velocity based on facing direction (Asteroids-style) |
+| `linear_friction_leg.gd` | `LinearFrictionLeg extends CDEntityComponent` | Linearly scaling friction from 0 to top speed |
+| `static_friction_leg.gd` | `FrictionStatic extends CDEntityComponent` | Constant deceleration until velocity reaches zero |
+| `boomerang_leg.gd` | `BoomerangLeg extends CDEntityComponent` | Constant return force toward spawn position |
 
-| Script | Class | Description | API |
-|--------|-------|-------------|-----|
-| `direct_movement_leg.gd` | `DirectMovementLeg` | Hard-sets velocity from a directional input signal | `velocity_set` |
-| `acceleration_movement_leg.gd` | `AccelerationMovementLeg` | Accelerates toward an input direction | `velocity_add` |
-| `engine_leg.gd` | `EngineLeg` | Adds forward velocity based on entity facing direction (Asteroids-style) | `velocity_add` |
-| `linear_friction_leg.gd` | `LinearFrictionLeg` | Linearly scaling friction from 0 to top speed | `velocity_add` |
-| `static_friction_leg.gd` | `StaticFrictionLeg` | Constant deceleration until velocity reaches zero | `velocity_add` |
-| `boomerang_leg.gd` | `BoomerangLeg` | Applies a constant return force toward spawn position | `velocity_add` |
+### Rotation (2)
 
-### Rotation Legs (2)
+| Script | Class | Summary |
+|--------|-------|---------|
+| `direct_rotation_leg.gd` | `DirectRotationLeg extends CDEntityComponent` | Tank-style continuous rotation |
+| `target_rotation_leg.gd` | `TargetRotationLeg extends CDEntityComponent` | Rotates toward aim direction |
 
-| Script | Class | Description | API |
-|--------|-------|-------------|-----|
-| `direct_rotation_leg.gd` | `DirectRotationLeg` | Tank-style continuous rotation from directional input and/or action signals | rotation |
-| `target_rotation_leg.gd` | `TargetRotationLeg` | Rotates toward an aim direction | rotation |
+### Grid (4)
 
-### Grid Legs (4)
+| Script | Class | Summary |
+|--------|-------|---------|
+| `grid_movement_leg.gd` | `GridMovementLeg extends CDEntityComponent` | Fixed grid step if target cell unoccupied |
+| `grid_rotation_leg.gd` | `GridRotationLeg extends CDEntityComponent` | Tetris-style rotation with wall-kick tables |
+| `grid_drop_leg.gd` | `GridDropLeg extends CDEntityComponent` | Drops entity by N grid cells |
+| `grid_alignment_leg.gd` | `GridAlignmentLeg extends CDEntityComponent` | Ensures entity stays snapped to pseudo-grid |
 
-Discrete instant displacement using the position API.
+### Position-Targeting (2)
 
-| Script | Class | Description | API |
-|--------|-------|-------------|-----|
-| `grid_movement_leg.gd` | `GridMovementLeg` | Moves entity by a fixed grid step if target cell is unoccupied | `position_add` |
-| `grid_rotation_leg.gd` | `GridRotationLeg` | Tetris-style rotation with wall-kick offset tables | rotation + `position_add` |
-| `grid_drop_leg.gd` | `GridDropLeg` | Drops entity by N grid cells; used for line clear settling | `position_add` |
-| `grid_alignment_leg.gd` | `GridAlignmentLeg` | Ensures entity stays snapped to a pseudo-grid | `position_set` |
+| Script | Class | Summary |
+|--------|-------|---------|
+| `direct_target_leg.gd` | `DirectTargetLeg extends CDEntityComponent` | Constant speed toward world-space target |
+| `acceleration_target_leg.gd` | `AccelerationTargetLeg extends CDEntityComponent` | Accelerates toward target, tapers on approach |
 
-### Position-Targeting Legs (2)
+### Spatial Utility (1)
 
-Consume positional signals (`move_to(Vector2)`) — the positional analog of directional legs.
+| Script | Class | Summary |
+|--------|-------|---------|
+| `screen_wrap_leg.gd` | `ScreenWrapLeg extends CDEntityComponent` | Wraps entity to opposite side when out of bounds |
 
-| Script | Class | Description | API |
-|--------|-------|-------------|-----|
-| `direct_target_leg.gd` | `DirectTargetLeg` | Moves at a constant speed toward a world-space target position | `velocity_set` |
-| `acceleration_target_leg.gd` | `AccelerationTargetLeg` | Accelerates toward a world-space target position, tapers based on distance | `velocity_add` |
+---
 
-### Spatial Utility Legs (1)
+## Entity Components — Faces (7)
 
-| Script | Class | Description | API |
-|--------|-------|-------------|-----|
-| `screen_wrap_leg.gd` | `ScreenWrapLeg` | Wraps entity to opposite side of screen when out of bounds | `position_set` |
+Visual representation components (Priority 60). Draw the entity's appearance.
+
+| Script | Class | Summary |
+|--------|-------|---------|
+| `polygon_face.gd` | `PolygonFace extends CDEntityComponent` | Draws filled polygons from CDShape resources |
+| `vector_face.gd` | `VectorFace extends CDEntityComponent` | Draws polylines from CDShape resources |
+| `menacing_vector_face.gd` | `MenacingVectorFace extends VectorFace` | Vector face with CRT menace effects: glitch, static, glow, scan, corrupt |
+| `sprite_face.gd` | `SpriteFace extends CDEntityComponent` | Draws Texture2D, swaps texture based on signal-to-frame bindings |
+| `death_effect_face.gd` | `DeathEffectFace extends CDEntityComponent` | Spawns CDEffect scenes at entity position when it dies |
+| `vector_engine_face.gd` | `VectorEngineFace extends CDEntityComponent` | Main engine exhaust flame for Asteroids-style ship |
+| `vector_thruster_face.gd` | `VectorThrusterFace extends CDEntityComponent` | Four vector engine flames in an X pattern |
+
+---
+
+## Entity Components — Voices (2)
+
+Entity-level audio components.
+
+| Script | Class | Summary |
+|--------|-------|---------|
+| `sound_voice.gd` | `SoundVoice extends CDEntityComponent` | One-shot or jingle triggered by entity bus signal |
+| `continuous_voice.gd` | `ContinuousVoice extends CDEntityComponent` | Ongoing sound tied to entity state |
 
 ---
 
 ## Game Components — Cue Cards (4)
 
-Stage-level components (Priority 70) that display game state. Extend CDCueCard (Control-based).
+Stage-level display components (Priority 70). Extend CDCueCard (Control-based).
 
-| Script | Class | Description |
-|--------|-------|-------------|
-| `score_card.gd` | `ScoreCard` | Tracks score with optional multiplier |
-| `lives_card.gd` | `LivesCard` | Tracks player lives |
-| `timer_card.gd` | `TimerCard` | Tracks time and emits signals |
-| `wave_card.gd` | `WaveCard` | Tracks current wave number and acts as a signal relay for spawners |
+| Script | Class | Summary |
+|--------|-------|---------|
+| `score_card.gd` | `ScoreCard extends CDCueCard` | Tracks score with optional multiplier |
+| `lives_card.gd` | `LivesCard extends CDCueCard` | Tracks player lives |
+| `timer_card.gd` | `TimerCard extends CDCueCard` | Tracks time and emits signals |
+| `wave_card.gd` | `WaveCard extends CDCueCard` | Tracks current wave number, signal relay for spawners |
+
+---
+
+## Game Components — Directors (5)
+
+Stage-level controllers that manage entity behavior at the game level.
+
+| Script | Class | Summary |
+|--------|-------|---------|
+| `stage_director.gd` | `StageDirector extends CDGameComponent` | Listens for game bus signals, performs entity swaps |
+| `state_director.gd` | `StateDirector extends CDGameComponent` | Updates entity groups for group-as-state management |
+| `formation_director.gd` | `FormationDirector extends CDGameComponent` | Manages a grid of named slots for formation entities |
+| `swarm_shooting_director.gd` | `SwarmShootingDirector extends CDGameComponent` | Periodically selects entities from target groups to shoot |
+| `swoop_director.gd` | `SwoopDirector extends CDGameComponent` | Generates curve from CDCurve resource, moves entities along it |
 
 ---
 
 ## Game Components — Goals (2)
 
-Stage-level components that trigger game-end conditions.
+Stage-level game-end condition triggers.
 
-| Script | Class | Description |
-|--------|-------|-------------|
-| `group_count_goal.gd` | `GroupCountGoal` | Triggers when group counts match a condition |
-| `score_threshold_goal.gd` | `ScoreThresholdGoal` | Triggers when score crosses a threshold |
+| Script | Class | Summary |
+|--------|-------|---------|
+| `group_count_goal.gd` | `GroupCountGoal extends CDGameComponent` | Triggers when group counts match a condition |
+| `score_threshold_goal.gd` | `ScoreThresholdGoal extends CDGameComponent` | Triggers when score crosses a threshold |
 
 ---
 
 ## Game Components — Marks (6)
 
-Stage-level spatial detectors. Area2D-based triggers that emit signals on body contact.
+Stage-level spatial detectors. Area2D-based triggers that emit on body contact.
 
-| Script | Class | Description |
-|--------|-------|-------------|
-| `cd_mark.gd` | `CDMark` | Emits signals on body entered and exited |
-| `count_mark.gd` | `CountMark` | Emits after N unique bodies have entered |
-| `mobile_mark.gd` | `MobileMark` | Mark that follows a target CDEntity with lock-on behavior |
-| `timed_mark.gd` | `TimedMark` | Emits while a body remains inside the zone for a configured duration |
-| `safe_zone_mark.gd` | `SafeZoneMark` | Spawn-safety monitor for trapdoors — emits `zone_safe`/`zone_unsafe` on game bus |
-| `occupancy_mark.gd` | `OccupancyMark` | Occupancy tracker — emits `occupancy_changed` with group name and count on game bus |
+| Script | Class | Summary |
+|--------|-------|---------|
+| `cd_mark.gd` | `CDMark extends Area2D` | Emits signals on body entered and exited |
+| `count_mark.gd` | `CountMark extends CDMark` | Emits after N unique bodies have entered |
+| `mobile_mark.gd` | `MobileMark extends CDMark` | Follows a target CDEntity with lock-on |
+| `timed_mark.gd` | `TimedMark extends CDMark` | Emits while body remains inside zone for configured duration |
+| `safe_zone_mark.gd` | `SafeZoneMark extends CDMark` | Spawn-safety monitor for trapdoors |
+| `occupancy_mark.gd` | `OccupancyMark extends CDMark` | Occupancy tracker, emits on enter/exit |
 
 ---
 
-## Game Components — Trapdoors (4)
+## Game Components — Projectors (2)
 
-Stage-level spawners (Priority 70, RULES category). Subscribe to game bus signals, queue and stagger-spawn entities. Extend `CDStageTrapdoor`.
+Stage-level visual post-processing.
 
-| Script | Class | Description |
-|--------|-------|-------------|
-| `cd_stage_trapdoor.gd` | `CDStageTrapdoor` | Abstract base class — provides trigger→queue→stagger→spawn lifecycle, telefrag, pool, safe zone |
-| `point_trapdoor.gd` | `PointTrapdoor` | Spawns at own position with random offset (UFOs, power-ups, bosses) |
-| `edge_trapdoor.gd` | `EdgeTrapdoor` | Distributes spawns along selected screen edges with jitter |
-| `grid_trapdoor.gd` | `GridTrapdoor` | 2D grid spawning — data-driven (CDGridLayout) or math-driven (CDGridEquation) with skip filtering |
+| Script | Class | Summary |
+|--------|-------|---------|
+| `crt_projector.gd` | `CRTProjector extends CDGameComponent` | CRT post-processing pipeline for V2 |
+| `credit_projection.gd` | `CreditProjection extends Control` | Floating credit overlay showing track title and artist |
+
+---
+
+## Game Components — Speakers (3)
+
+Stage-level audio components.
+
+| Script | Class | Summary |
+|--------|-------|---------|
+| `sound_speaker.gd` | `SoundSpeaker extends CDGameComponent` | Game-level one-shot or jingle triggered by game bus signal |
+| `continuous_speaker.gd` | `ContinuousSpeaker extends CDGameComponent` | Game-level continuous sound |
+| `music_speaker.gd` | `MusicSpeaker extends CDGameComponent` | Playlist + dual-player crossfade + loop-point logic |
+
+---
+
+## Game Components — Trapdoors (3)
+
+Stage-level spawners. Subscribe to game bus signals, queue and stagger-spawn entities.
+
+| Script | Class | Summary |
+|--------|-------|---------|
+| `point_trapdoor.gd` | `PointTrapdoor extends CDStageTrapdoor` | Spawns entities at its own position |
+| `edge_trapdoor.gd` | `EdgeTrapdoor extends CDStageTrapdoor` | Spawns entities along selected edges of game bounds |
+| `grid_trapdoor.gd` | `GridTrapdoor extends CDStageTrapdoor` | Spawns entities in a 2D grid using data or math |
 
 ---
 
 ## Component Count Summary
 
-| Category | Count | Status |
-|----------|-------|--------|
-| Core Base Classes | 3 | Complete |
-| Core Infrastructure | 7 | Complete |
-| Core Resources | 7 | Complete |
-| Brains | 14 | Complete |
-| Arms | 13 | Complete |
-| Guts | 15 | Complete |
-| Legs | 15 | Complete |
-| Cue Cards | 4 | Complete |
-| Goals | 2 | Complete |
-| Marks | 6 | Complete |
-| Trapdoors | 4 | Complete |
-| **Total V2 Scripts** | **90** | |
-
----
-
-## Not Yet Implemented (Planned)
-
-These categories are planned but not yet written:
-
-| Category | Plan | Expected Components |
-|----------|------|---------------------|
-| Faces | Plan 24 | CDFace, CDFaceBinding, etc. |
-| Voices | Plan 24 | CDVoice, CDSpeaker, CDSoundBank, etc. |
-| Stage Controllers | Plan 25 | SwarmGridStep, Formation, Flock, Shoot controllers |
-
----
-
-## V1 → V2 Name Migration
-
-| V1 Script | V2 Script(s) | Notes |
-|-----------|-------------|-------|
-| `player_control.gd` | `player_move_brain.gd` + `player_aim_brain.gd` + `player_action_brain.gd` | Split into 3 single-concern brains |
-| `interceptor_ai.gd` | `ai_chase_brain.gd` + `ai_aim_brain.gd` | Monolith split into targeting brains |
-| `aim_ai.gd` | `ai_aim_brain.gd` | Direct migration |
-| `clear_shot_ai.gd` | `ai_repeat_action_brain.gd` + `vision_cone_guts.gd` | Vision cone + repeated action |
-| `cover_ai.gd` | `ai_flee_brain.gd` + `ai_path_move_brain.gd` | Flee + patrol hybrid split |
-| `falling_ai.gd` | `ai_random_sweep_brain.gd` | 3-phase sweep pattern |
-| `patrol_ai.gd` | `ai_path_move_brain.gd` | Now uses Curve2D resources |
-| `shoot_ai.gd` | `ai_repeat_action_brain.gd` + `vision_cone_guts.gd` | Vision cone + repeated action |
-| `direct_movement.gd` | `direct_movement_leg.gd` | Now uses velocity accumulator |
-| `direct_acceleration.gd` | `acceleration_movement_leg.gd` | Now uses velocity accumulator |
-| `engine_simple.gd` / `engine_complex.gd` | `engine_leg.gd` + `direct_rotation_leg.gd` | Combined engine split |
-| `friction_linear.gd` | `linear_friction_leg.gd` | Direct migration |
-| `friction_static.gd` | `static_friction_leg.gd` | Direct migration |
-| `grid_movement.gd` | `grid_movement_leg.gd` | Direct migration |
-| `grid_rotation.gd` + `grid_rotation_advanced.gd` | `grid_rotation_leg.gd` | Merged — wall-kick via WallKickResource |
-| `grid_gravity.gd` | `ai_timed_step_brain.gd` + `grid_drop_leg.gd` | Brain + Leg split |
-| `rotation_direct.gd` | `direct_rotation_leg.gd` | Direct migration |
-| `rotation_target.gd` | `target_rotation_leg.gd` | Direct migration |
-| `warp_asteroids.gd` | `screen_wrap_leg.gd` | Direct migration |
-| *(new)* | `direct_target_leg.gd` | Positional targeting leg (no V1 equivalent) |
-| *(new)* | `acceleration_target_leg.gd` | Positional targeting leg (no V1 equivalent) |
-| *(new)* | `grid_alignment_leg.gd` | Grid snap + drift correction (no V1 equivalent) |
-| *(new)* | `boomerang_leg.gd` | Return-force leg (no V1 equivalent) |
-| `wave_spawner.gd` (POSITION) | `point_trapdoor.gd` | Pattern extracted into dedicated trapdoor |
-| `wave_spawner.gd` (SCREEN_EDGES) | `edge_trapdoor.gd` | Pattern extracted, uses game_bounds |
-| `wave_spawner.gd` (GRID) | `grid_trapdoor.gd` + `CDGridLayout` / `CDGridEquation` | Grid math → data resource or equation resource |
-| `wave_spawner.gd` (_wait_for_safe_zone) | `safe_zone_mark.gd` | Polling loop → signal-driven Area2D |
-| `wave_spawner.gd` (initial_velocity) | `cd_spawn_context.gd` | Extracted into reusable resource |
-| `wave_spawner.gd` (telefrag) | `cd_stage_trapdoor.gd` base class | Built into lifecycle, respects health pipeline |
-| `tetromino_spawner.gd` (lock/split) | `piece_splitter_arm.gd` | Entity handles its own lock+split |
-| `gun_simple.gd` | `gun_arm.gd` | Pool-backed, configurable fire signal |
-| `death_effect.gd` / `death_effect_brick.gd` | `spawn_on_death_arm.gd` | Unified, pool-backed, configurable death signal |
-| `property_override.gd` | `cd_spawn_context.gd` | Narrowed to velocity/rotation only |
+| Category | Count |
+|----------|-------|
+| Core Base Classes | 4 |
+| Core Infrastructure | 10 |
+| Core Resources: Infrastructure | 3 |
+| Core Resources: Audio | 3 |
+| Core Resources: Behavior | 4 |
+| Core Resources: Curves | 12 |
+| Core Resources: Selectors | 5 |
+| Core Resources: Spawners | 4 |
+| Core Resources: Triggers | 5 |
+| Core Resources: Visuals | 1 |
+| Effects | 2 |
+| Brains | 16 |
+| Arms | 16 |
+| Guts | 19 |
+| Legs | 15 |
+| Faces | 7 |
+| Voices | 2 |
+| Cue Cards | 4 |
+| Directors | 5 |
+| Goals | 2 |
+| Marks | 6 |
+| Projectors | 2 |
+| Speakers | 3 |
+| Trapdoors | 3 |
+| **Total V2 Scripts** | **153** |

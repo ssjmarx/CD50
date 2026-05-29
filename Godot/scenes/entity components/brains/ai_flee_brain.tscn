@@ -1,6 +1,6 @@
 [gd_scene load_steps=2 format=3 uid="uid://bcojxb21cqoug"]
 
-[ext_resource type="Script" uid="uid://jbcq4n6sgskq" path="res://scripts/entity components/brains/ai_flee_brain.gd" id="1_8m6jg"]
+[ext_resource type="Script" uid="uid://jbcq4n6sgskq" path="res://scripts/entity components/brains/ai movement/ai_flee_brain.gd" id="1_8m6jg"]
 
 [node name="AIFleeBrain" type="Node2D"]
 script = ExtResource("1_8m6jg")

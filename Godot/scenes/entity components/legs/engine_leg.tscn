@@ -1,6 +1,6 @@
 [gd_scene load_steps=2 format=3 uid="uid://pvv8fpsuq866"]
 
-[ext_resource type="Script" uid="uid://gy7alfctlo1w" path="res://scripts/entity components/legs/engine_leg.gd" id="1_2cc8r"]
+[ext_resource type="Script" uid="uid://gy7alfctlo1w" path="res://scripts/entity components/legs/directional adders/engine_leg.gd" id="1_2cc8r"]
 
 [node name="EngineLeg" type="Node2D"]
 script = ExtResource("1_2cc8r")

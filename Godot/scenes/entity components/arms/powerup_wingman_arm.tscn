@@ -1,6 +1,6 @@
 [gd_scene load_steps=2 format=3 uid="uid://cekryjqu7l0bd"]
 
-[ext_resource type="Script" uid="uid://b3dfbq2h5aq8i" path="res://scripts/entity components/arms/powerup_wingman_arm.gd" id="1_kuxpb"]
+[ext_resource type="Script" uid="uid://b3dfbq2h5aq8i" path="res://scripts/entity components/arms/powerup arms/powerup_wingman_arm.gd" id="1_kuxpb"]
 
 [node name="PowerupWingmanArm" type="Node2D"]
 script = ExtResource("1_kuxpb")

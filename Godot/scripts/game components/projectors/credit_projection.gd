@@ -1,21 +1,37 @@
-## floating credit overlay showing track title and artist
+# CreditProjection
+# Floating credit overlay showing track title and artist when music changes
+# Fades in, holds, then fades out using a Tween sequence
+
 class_name CreditProjection extends Control
 
+# --- exports ---
+
+# how long the credit stays visible before fading out
 @export var display_time: float = 5.0
+# font used for title and artist labels
 @export var font: Font
 
+# game bus signals that trigger the credit display
 @export_group("Listen Signals")
 @export var track_changed_signals: Array[StringName] = [&"track_changed"]
 
+# --- state ---
+
+# dynamically created container holding the labels
 var _container: Control = null
+# active tween driving the fade in/hold/fade out sequence
 var _tween: Tween = null
 
+# --- lifecycle ---
+
+# skip processing in editor, initialize after tree is ready
 func _ready() -> void:
 	if Engine.is_editor_hint():
 		return
 	process_physics_priority = 70
 	call_deferred("_on_initialize")
 
+# connect track change signals to the game bus
 func _on_initialize() -> void:
 	var game := CDGame.find_ancestor(self)
 	if not game:
@@ -23,13 +39,20 @@ func _on_initialize() -> void:
 	for sig in track_changed_signals:
 		game.bus_connect(sig, _on_track_changed)
 
+# --- signal handlers ---
+
+# clear existing credit and show new one if track has info
 func _on_track_changed(track: CDMusicTrack) -> void:
 	_clear_credit()
 	if not track or (track.title == "" and track.artist == ""):
 		return
 	_show_credit(track)
 
+# --- credit display ---
+
+# build label nodes and animate the credit overlay
 func _show_credit(track: CDMusicTrack) -> void:
+	# create container to hold labels
 	_container = Control.new()
 	_container.name = "CreditContainer"
 	_container.modulate.a = 0.0
@@ -39,6 +62,7 @@ func _show_credit(track: CDMusicTrack) -> void:
 	var left_margin: float = 16.0
 	var top_margin: float = 16.0
 
+	# add title label if track has a title
 	if track.title != "":
 		var title_label := Label.new()
 		title_label.name = "TitleLabel"
@@ -56,6 +80,7 @@ func _show_credit(track: CDMusicTrack) -> void:
 		_container.add_child(title_label)
 		top_margin += line_height
 
+	# add artist label if track has an artist
 	if track.artist != "":
 		var artist_label := Label.new()
 		artist_label.name = "ArtistLabel"
@@ -72,12 +97,16 @@ func _show_credit(track: CDMusicTrack) -> void:
 		artist_label.offset_bottom = top_margin + line_height
 		_container.add_child(artist_label)
 
+	# animate: fade in → hold → fade out → cleanup
 	_tween = create_tween()
 	_tween.tween_property(_container, "modulate:a", 1.0, 0.8).set_ease(Tween.EASE_IN)
 	_tween.tween_interval(display_time)
 	_tween.tween_property(_container, "modulate:a", 0.0, 1.0).set_ease(Tween.EASE_OUT)
 	_tween.tween_callback(_clear_credit)
 
+# --- cleanup ---
+
+# kill active tween and free container nodes
 func _clear_credit() -> void:
 	if _tween and _tween.is_valid():
 		_tween.kill()

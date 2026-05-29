@@ -1,6 +1,6 @@
 [gd_scene load_steps=2 format=3 uid="uid://c8njhv7s1q43b"]
 
-[ext_resource type="Script" uid="uid://dgjghqts6hme8" path="res://scripts/entity components/arms/score_on_collision_arm.gd" id="1_cuouv"]
+[ext_resource type="Script" uid="uid://dgjghqts6hme8" path="res://scripts/entity components/arms/collision reactions/score_on_collision_arm.gd" id="1_cuouv"]
 
 [node name="ScoreOnCollisionArm" type="Node2D"]
 script = ExtResource("1_cuouv")

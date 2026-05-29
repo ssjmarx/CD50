@@ -1,6 +1,6 @@
 [gd_scene load_steps=2 format=3 uid="uid://dub1ococos6me"]
 
-[ext_resource type="Script" uid="uid://br4vffqayd7hr" path="res://scripts/entity components/arms/status_on_hit_arm.gd" id="1_1vua4"]
+[ext_resource type="Script" uid="uid://br4vffqayd7hr" path="res://scripts/entity components/arms/collision reactions/status_on_hit_arm.gd" id="1_1vua4"]
 
 [node name="StatusOnHitArm" type="Node2D"]
 script = ExtResource("1_1vua4")

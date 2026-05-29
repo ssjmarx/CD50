@@ -1,6 +1,6 @@
 [gd_scene load_steps=2 format=3 uid="uid://b4jbsthnl18it"]
 
-[ext_resource type="Script" uid="uid://tkkfl2a77psw" path="res://scripts/entity components/arms/death_on_crash_arm.gd" id="1_feb63"]
+[ext_resource type="Script" uid="uid://tkkfl2a77psw" path="res://scripts/entity components/arms/collision reactions/death_on_crash_arm.gd" id="1_feb63"]
 
 [node name="DeathOnCrashArm" type="Node2D"]
 script = ExtResource("1_feb63")

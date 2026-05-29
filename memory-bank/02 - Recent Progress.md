@@ -1,6 +1,132 @@
 # Recent Progress
 
-**Last Updated:** 2026-05-27
+**Last Updated:** 2026-05-29
+
+---
+
+## Plan 24 — V2 Faces, Voices, Projections & Speakers (COMPLETE)
+
+Plan 24 is fully implemented. 63 new V2 scripts written — the largest single plan to date. Brings visual representation, entity audio, game-level audio, post-processing, AI path curves, state machine triggers, entity selectors, behavior resources, audio resources, effects, and new infrastructure online.
+
+### Faces — Visual Representation (7 scripts)
+
+| Script | Description |
+|--------|-------------|
+| `polygon_face.gd` | Draws filled polygons from CDShape resources |
+| `vector_face.gd` | Draws polylines from CDShape resources |
+| `menacing_vector_face.gd` | Vector face with CRT menace effects: glitch, static, glow, scan, corrupt |
+| `sprite_face.gd` | Draws Texture2D, swaps texture based on signal-to-frame bindings |
+| `death_effect_face.gd` | Spawns CDEffect scenes at entity position when it dies |
+| `vector_engine_face.gd` | Main engine exhaust flame for Asteroids-style ship |
+| `vector_thruster_face.gd` | Four vector engine flames in an X pattern |
+
+### Voices — Entity Audio (2 scripts)
+
+| Script | Description |
+|--------|-------------|
+| `sound_voice.gd` | One-shot or jingle triggered by entity bus signal |
+| `continuous_voice.gd` | Ongoing sound tied to entity state |
+
+### Speakers — Game-Level Audio (3 scripts)
+
+| Script | Description |
+|--------|-------------|
+| `sound_speaker.gd` | Game-level one-shot or jingle triggered by game bus signal |
+| `continuous_speaker.gd` | Game-level continuous sound |
+| `music_speaker.gd` | Playlist + dual-player crossfade + loop-point logic |
+
+### Projectors — Visual Post-Processing (2 scripts)
+
+| Script | Description |
+|--------|-------------|
+| `crt_projector.gd` | CRT post-processing pipeline for V2 |
+| `credit_projection.gd` | Floating credit overlay showing track title and artist |
+
+### Directors — Stage-Level Controllers (5 scripts)
+
+| Script | Description |
+|--------|-------------|
+| `stage_director.gd` | Listens for game bus signals, performs entity swaps |
+| `state_director.gd` | Updates entity groups for group-as-state management |
+| `formation_director.gd` | Manages a grid of named slots for formation entities |
+| `swarm_shooting_director.gd` | Periodically selects entities from target groups to shoot |
+| `swoop_director.gd` | Generates curve from CDCurve resource, moves entities along it |
+
+### Effects (2 scripts)
+
+| Script | Description |
+|--------|-------------|
+| `broken_ship_effect.gd` | Spinning line fragments that drift outward and fade |
+| `death_particle_effect.gd` | Burst of single-pixel particles that fly outward |
+
+### Resources — Curves (12 scripts)
+
+Abstract base `CDCurve` plus 11 curve types for AI path generation: arc, circle, helix, lissajous, parabola, sawtooth wave, sine, spiral, square wave, triangle, zigzag.
+
+### Resources — Triggers (5 scripts)
+
+Abstract base `CDTrigger` plus 4 trigger types: composite (AND/OR), group_count, signal, timer.
+
+### Resources — Selectors (5 scripts)
+
+Abstract base `CDSelector` plus 4 selection strategies: all, first N, nearest N, random N.
+
+### Resources — Behavior (4 scripts)
+
+| Script | Description |
+|--------|-------------|
+| `cd_director_rule.gd` | Defines one entity swap rule for StageDirector |
+| `cd_shape.gd` | Defines a polygon shape from a set of 2D points |
+| `cd_transition.gd` | Defines when and how entities move between groups |
+| `cd_wall_kick.gd` | Wall-kick offset table data for Tetris-style rotation |
+
+### Resources — Audio (3 scripts)
+
+| Script | Description |
+|--------|-------------|
+| `cd_music_track.gd` | Defines a single music track for MusicSpeaker playlists |
+| `cd_note.gd` | Note definition for synthesized audio |
+| `cd_sound_def.gd` | Sound definition resource |
+
+### Resources — Visuals (1 script)
+
+| Script | Description |
+|--------|-------------|
+| `cd_face_binding.gd` | Pairs a signal name and frame index for face components |
+
+### New Infrastructure (3 scripts)
+
+| Script | Description |
+|--------|-------------|
+| `cd_effect.gd` | Lightweight visual effect base — plays once and auto-frees |
+| `cd_sound_bank.gd` | Centralized audio engine for V2 (CDGameComponent-based) |
+| `cd_updater.gd` | Defers state updates (component and group changes) to end of frame |
+
+### Additional Brains (3 scripts)
+
+| Script | Description |
+|--------|-------------|
+| `ai_tractor_beam_brain.gd` | Interrupts dive to perform capture attempt |
+| `player_move_to_brain.gd` | Emits "move_to" with mouse global position each physics frame |
+
+### Additional Guts (4 scripts)
+
+| Script | Description |
+|--------|-------------|
+| `announcer_guts.gd` | Listens for entity bus signals, rebroadcasts on game bus |
+| `kbm_guts.gd` | Merges keyboard "move" and mouse "move_to" into single "steer" signal |
+| `move_adapter_guts.gd` | Converts "move_to" target positions into "move" direction vectors |
+| `timer_guts.gd` | Emits tick and expired signals on a timer |
+
+### Additional Arms (3 scripts)
+
+| Script | Description |
+|--------|-------------|
+| `powerup_delivery_arm.gd` | Delivers a powerup to whatever entity collides with |
+| `powerup_wingman_arm.gd` | Spawns companion entity at player position on powerup received |
+| `tractor_beam_arm.gd` | Active-frames arm that captures entities in tractor beam zone |
+
+### V2 Total Scripts Written: 153
 
 ---
 

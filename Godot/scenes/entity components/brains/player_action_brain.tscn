@@ -1,6 +1,6 @@
 [gd_scene load_steps=2 format=3 uid="uid://br86r51jieatg"]
 
-[ext_resource type="Script" uid="uid://xog452cpnqgp" path="res://scripts/entity components/brains/player_action_brain.gd" id="1_mrwsb"]
+[ext_resource type="Script" uid="uid://xog452cpnqgp" path="res://scripts/entity components/brains/player/player_action_brain.gd" id="1_mrwsb"]
 
 [node name="PlayeActionBrain" type="Node2D"]
 script = ExtResource("1_mrwsb")

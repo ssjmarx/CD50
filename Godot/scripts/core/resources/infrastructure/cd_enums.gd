@@ -1,7 +1,13 @@
-## data bag for common enums across the codebase
+# CDEnums
+# Shared enumerations for the entire V2 codebase
+# All component priorities, lifecycle states, and comparison types live here
+
 class_name CDEnums
 
-## CDComponent2D and CDStageComponent2D priority categories
+# --- Component Processing Priority ---
+
+# CDComponent2D and CDStageComponent2D priority categories
+# Controls the execution order of components each frame
 enum ComponentCategory {
 	REGISTRATION,   # 5  — group cache flush
 	INPUT,          # 8  — input routing
@@ -17,7 +23,7 @@ enum ComponentCategory {
 	UPDATE,         # 90 — state mutation flush, component lifecycle
 }
 
-# func to assign category to a priority inside of a component
+# convert a category enum to its numeric priority value
 static func category_to_priority(category: ComponentCategory) -> int:
 	match category:
 		ComponentCategory.REGISTRATION: return 5	# not intended for component use
@@ -34,14 +40,16 @@ static func category_to_priority(category: ComponentCategory) -> int:
 		ComponentCategory.UPDATE:		return 90	# not intended for component use
 		_: return 95
 
-## CDEntity lifecycle states
+# --- Entity & Game Lifecycle ---
+
+# CDEntity lifecycle states
 enum EntityState {
 	ACTIVE,
 	DEACTIVATING,
 	INACTIVE,
 }
 
-## CDGame state machine values
+# CDGame state machine values
 enum GameState {
 	ATTRACT,
 	PLAYING,
@@ -49,21 +57,33 @@ enum GameState {
 	GAME_OVER,
 }
 
-## game bus game_over argument
+# game bus game_over argument
 enum GameResult {
 	VICTORY,
 	DEFEAT,
 	DRAW,
 }
 
-## CDEntity physics processing type
+# --- Physics & Collision ---
+
+# CDEntity physics processing type
 enum CollisionResponse {
 	STOP,
 	BOUNCE,
 	SLIDE,
 }
 
-## comparison operators, used by GroupCountGoal, PointsGoal, others
+# screen edges for spawners
+enum Edge {
+	TOP,
+	BOTTOM,
+	LEFT,
+	RIGHT,
+}
+
+# --- Logic & Comparison ---
+
+# comparison operators, used by GroupCountGoal, PointsGoal, others
 enum CountComparison {
 	LESS_THAN,
 	EQUAL_TO,
@@ -72,15 +92,7 @@ enum CountComparison {
 	GREATER_OR_EQUAL,
 }
 
-## screen edges for spawners
-enum Edge {
-	TOP,
-	BOTTOM,
-	LEFT,
-	RIGHT,
-}
-
-## CDInputRouter input action types
+# CDInputRouter input action types
 enum InputAction {
 	MOVE,
 	AIM,
@@ -88,33 +100,35 @@ enum InputAction {
 	ACTION_RELEASED,
 }
 
-## patterns for "patrol" AI brains
+# patterns for "patrol" AI brains
 enum PatrolMode {
 	LOOP,
 	RETRACE,
 	ONCE,
 }
 
-## comparison modes for entity comparisons (ie OnJoust arms)
+# comparison modes for entity comparisons (ie OnJoust arms)
 enum EntityCompare {
 	VELOCITY,
 	Y_POSITION,
 	CUSTOM, # define any attribute located on a component
 }
 
-## tiebreaker behavior for entity comparisons
+# tiebreaker behavior for entity comparisons
 enum EntityCompareTiebreaker {
 	DONT_FIRE,
 	FIRE,
 }
 
-## invalid comparison handling for entity comparisons
+# invalid comparison handling for entity comparisons
 enum EntityCompareInvalidAction {
 	DONT_FIRE,
 	FIRE,
 }
 
-## CDSoundDef wave shapes
+# --- Audio / Sound ---
+
+# CDSoundDef wave shapes
 enum WaveShape {
 	SINE,
 	SQUARE,
@@ -123,7 +137,7 @@ enum WaveShape {
 	NOISE,
 }
 
-## CDSoundDef frequency/amplitude effects
+# CDSoundDef frequency/amplitude effects
 enum Effect {
 	NONE,
 	WARBLE,
@@ -132,7 +146,7 @@ enum Effect {
 	DECAY,
 }
 
-## MIDI note numbers for sound generation
+# MIDI note numbers for sound generation
 enum Semitone {
 	# Octave 3 (48-59)
 	C3 = 48, CS3 = 49, D3 = 50, DS3 = 51, E3 = 52,

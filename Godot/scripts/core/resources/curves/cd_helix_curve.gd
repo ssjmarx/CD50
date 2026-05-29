@@ -1,27 +1,34 @@
-@tool
+# CDHelixCurve
+# Helix / corkscrew curve oscillating around the base path
+# Combines forward travel with perpendicular rotation
 
-## helix/corkscrew curve
+@tool
 class_name CDHelixCurve extends CDCurve
 
+# helix radius perpendicular to travel direction
 @export var radius: float = 100.0:
 	set(v):
 		radius = v
 		emit_changed()
 
+# number of corkscrew rotations
 @export var turns: int = 3:
 	set(v):
 		turns = v
 		emit_changed()
 
+# generate a corkscrew path from start to end
 func generate_curve(start: Vector2, end: Vector2) -> Curve2D:
 	var curve := Curve2D.new()
 
+	# calculate travel and perpendicular axes
 	var travel := end - start
 	var travel_dir := travel.normalized()
 	var perp := Vector2(-travel_dir.y, travel_dir.x)
 
 	var phase := _get_phase()
 
+	# oscillate around the base path with rotating offset
 	for i in range(resolution + 1):
 		var t := float(i) / float(resolution)
 		var base := _base_position(start, end, t)
@@ -31,7 +38,6 @@ func generate_curve(start: Vector2, end: Vector2) -> Curve2D:
 		var offset_y := sin(angle) * radius
 
 		var pos := base + perp * offset_x + travel_dir * (offset_y * 0.3)
-
 		curve.add_point(pos)
 
 	return _finalize(curve)

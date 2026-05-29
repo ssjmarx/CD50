@@ -1,6 +1,6 @@
 [gd_scene load_steps=2 format=3 uid="uid://jq5qyf16nnxv"]
 
-[ext_resource type="Script" uid="uid://boqujpu0dokll" path="res://scripts/entity components/legs/direct_rotation_leg.gd" id="1_xcwbq"]
+[ext_resource type="Script" uid="uid://boqujpu0dokll" path="res://scripts/entity components/legs/directional setters/direct_rotation_leg.gd" id="1_xcwbq"]
 
 [node name="DirectRotationLeg" type="Node2D"]
 script = ExtResource("1_xcwbq")

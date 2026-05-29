@@ -1,6 +1,6 @@
 [gd_scene load_steps=2 format=3 uid="uid://bveld4c56vrh7"]
 
-[ext_resource type="Script" uid="uid://djrlfetkbqa0e" path="res://scripts/entity components/guts/die_out_of_bounds_guts.gd" id="1_nmcwv"]
+[ext_resource type="Script" uid="uid://djrlfetkbqa0e" path="res://scripts/entity components/guts/death/die_out_of_bounds_guts.gd" id="1_nmcwv"]
 
 [node name="DieOutOfBoundsGuts" type="Node2D"]
 script = ExtResource("1_nmcwv")

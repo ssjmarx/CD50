@@ -1,6 +1,6 @@
 [gd_scene load_steps=2 format=3 uid="uid://vup07axt54m2"]
 
-[ext_resource type="Script" uid="uid://c6f8e7aenq0l" path="res://scripts/entity components/brains/player_move_to_brain.gd" id="1_dyai6"]
+[ext_resource type="Script" uid="uid://c6f8e7aenq0l" path="res://scripts/entity components/brains/player/player_move_to_brain.gd" id="1_dyai6"]
 
 [node name="PlayerMoveToBrain" type="Node2D"]
 script = ExtResource("1_dyai6")
