@@ -8,11 +8,13 @@ class_name VectorFace extends CDEntityComponent
 @export var shapes: Array[CDShape] = []:
 	set(v):
 		shapes = v
+		_update_frame()
 		queue_redraw()
 
 @export var default_frame: int = 0:
 	set(v):
 		default_frame = v
+		_update_frame()
 		queue_redraw()
 
 @export var bindings: Array[CDFaceBinding] = []
@@ -33,14 +35,15 @@ var _restore_timer: SceneTreeTimer
 
 func _on_initialize() -> void:
 	for binding in bindings:
+		entity.ensure_signal(binding.signal_name)
 		entity.connect(binding.signal_name, _on_binding_signal.bind(binding))
 	
+	entity.ensure_signal("shape_changed")
 	entity.connect("shape_changed", _on_shape_changed)
 	
-	if not shapes.is_empty() and default_frame >= 0 and default_frame < shapes.size():
-		_current_points = shapes[default_frame].points
-		_current_closed = shapes[default_frame].closed
+	_update_frame()
 	queue_redraw()
+
 
 func _process(_delta: float) -> void:
 	if Engine.is_editor_hint():
@@ -82,3 +85,8 @@ func _draw() -> void:
 		draw_polyline(closed_points, color, width, true)
 	else:
 		draw_polyline(_current_points, color, width, true)
+
+func _update_frame() -> void:
+	if not shapes.is_empty() and default_frame >= 0 and default_frame < shapes.size():
+		_current_points = shapes[default_frame].points
+		_current_closed = shapes[default_frame].closed

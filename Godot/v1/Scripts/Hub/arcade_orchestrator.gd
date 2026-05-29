@@ -680,7 +680,6 @@ func _on_time_limit_reached() -> void:
 	var ugs = _get_current_ugs()
 	if ugs:
 		var crunch_mult: float = _modifier_manager.get_score_multiplier()
-		var elapsed: float = Time.get_ticks_msec() / 1000.0 - _game_start_time
 		var raw: int = ugs.current_score
 		_running_score += int(raw * crunch_mult)
 		on_points_changed.emit(_running_score)

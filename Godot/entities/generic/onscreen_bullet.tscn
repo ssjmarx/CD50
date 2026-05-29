@@ -1,0 +1,29 @@
+[gd_scene load_steps=8 format=3 uid="uid://r8hsi8qongqs"]
+
+[ext_resource type="Script" uid="uid://dfbv2tw3cl4pe" path="res://scripts/core/infrastructure/cd_entity.gd" id="1_y7u1c"]
+[ext_resource type="PackedScene" uid="uid://fhdnv8q56mfa" path="res://scenes/entity components/arms/damage_on_hit_arm.tscn" id="2_x5da3"]
+[ext_resource type="PackedScene" uid="uid://b4jbsthnl18it" path="res://scenes/entity components/arms/death_on_crash_arm.tscn" id="3_kpsfa"]
+[ext_resource type="PackedScene" uid="uid://bxcu3ebyva6rn" path="res://scenes/entity components/faces/polygon_face.tscn" id="5_biava"]
+[ext_resource type="Script" uid="uid://brwnooso7th47" path="res://scripts/core/resources/behavior/cd_shape.gd" id="6_knjh3"]
+[ext_resource type="PackedScene" uid="uid://ruar6jbjbodk" path="res://scenes/entity components/guts/die_offscreen_guts.tscn" id="6_y7u1c"]
+
+[sub_resource type="Resource" id="Resource_oq2jl"]
+script = ExtResource("6_knjh3")
+points = PackedVector2Array(-2, 0, 0, 1, 2, 0, 0, -1)
+metadata/_custom_type_script = "uid://brwnooso7th47"
+
+[node name="OnscreenBullet" type="CharacterBody2D"]
+script = ExtResource("1_y7u1c")
+groups = Array[StringName]([&"bullets"])
+collision_radius = 1.0
+collision_response = 1
+
+[node name="DamageOnHitArm" parent="." instance=ExtResource("2_x5da3")]
+
+[node name="DeathOnCrashArm" parent="." instance=ExtResource("3_kpsfa")]
+
+[node name="PolygonFace" parent="." instance=ExtResource("5_biava")]
+shapes = Array[ExtResource("6_knjh3")]([SubResource("Resource_oq2jl")])
+
+[node name="DieOffscreenGuts" parent="." instance=ExtResource("6_y7u1c")]
+activation_delay = 0.0

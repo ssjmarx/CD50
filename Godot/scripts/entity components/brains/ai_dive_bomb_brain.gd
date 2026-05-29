@@ -13,7 +13,7 @@ class_name AIDiveBombBrain extends CDEntityComponent
 
 @export_group("Emit Signals")
 @export var move_signals: Array[StringName] = [&"move_to"]
-@export var complete_signals: Array[StringName] = [&"dive_complete"]
+@export var complete_signals: Array[StringName] = [&"path_finished"]
 
 var _waypoints: Array[Vector2] = []
 var _current_index: int = 0

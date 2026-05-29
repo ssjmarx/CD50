@@ -12,6 +12,9 @@ func _ready() -> void:
 	super._ready()
 
 func _on_initialize() -> void:
+	# ensure each action name exists as a signal on the entity
+	for action in action_mappings:
+		entity.ensure_signal(action)
 	for sig in action_signals:
 		entity.ensure_signal(sig)
 	for sig in action_end_signals:
@@ -24,6 +27,9 @@ func _on_action_pressed(pid: int, action: StringName) -> void:
 		return
 	if action not in action_mappings:
 		return
+	# emit named signal (e.g., "fire") for specific arms like GunArm
+	entity.emit_signal(action)
+	# emit generic signal for catch-all listeners
 	for sig in action_signals:
 		entity.emit_signal(sig, action)
 
@@ -32,6 +38,10 @@ func _on_action_released(pid: int, action: StringName) -> void:
 		return
 	if action not in action_mappings:
 		return
+	# emit named end signal (e.g., "fire_end") 
+	var end_signal := StringName(action + &"_end")
+	if entity.has_signal(end_signal):
+		entity.emit_signal(end_signal)
 	for sig in action_end_signals:
 		entity.emit_signal(sig, action)
 

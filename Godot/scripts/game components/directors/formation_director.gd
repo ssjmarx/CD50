@@ -2,7 +2,6 @@
 class_name FormationDirector extends CDGameComponent
 
 @export var formation_group: StringName = &"formation"
-@export var slot_request_signal: StringName = &"request_formation_slot"
 @export var columns: int = 10
 @export var rows: int = 5
 @export var cell_size: Vector2 = Vector2(16, 16)
@@ -24,10 +23,6 @@ func _ready() -> void:
 	component_category = CDEnums.ComponentCategory.RULES
 	_init_slots()
 
-func _on_initialize() -> void:
-	if slot_request_signal != &"":
-		game.bus_connect(slot_request_signal, _on_slot_requested)
-
 ## per-frame: update animations, clean stale slots, broadcast move_to
 func _physics_process(delta: float) -> void:
 	_breathing_phase += delta * breathing_frequency * TAU
@@ -36,28 +31,28 @@ func _physics_process(delta: float) -> void:
 		if absf(_step_offset) >= step_distance:
 			_step_direction *= -1
 
+	_auto_assign_slots()
+
+	# clean stale slots
 	for i in _slots.size():
 		var slot_entity: CDEntity = _slots[i]
 		if slot_entity == null:
 			continue
-
 		if not is_instance_valid(slot_entity):
 			_slots[i] = null
 			continue
-
 		if _assigned_this_frame.has(slot_entity):
 			continue
-
 		if not slot_entity.is_in_group(formation_group):
 			_slots[i] = null
 
+	# broadcast move_to for all occupied slots
 	for i in _slots.size():
 		var slot_entity: CDEntity = _slots[i]
 		if slot_entity == null:
 			continue
 		if slot_entity.state != CDEnums.EntityState.ACTIVE:
 			continue
-
 		var target := _calculate_slot_position(i)
 		slot_entity.ensure_signal("move_to")
 		slot_entity.emit_signal("move_to", target)
@@ -109,6 +104,35 @@ func _calculate_slot_position(slot_index: int) -> Vector2:
 	var step := _step_offset if step_enabled else 0.0
 
 	return Vector2(base_x + step, base_y + breathing)
+
+## auto-detect: assign slots to any entity in formation_group that isn't tracked
+func _auto_assign_slots() -> void:
+	var entities := game.group_registry.get_group(formation_group)
+	for entity in entities:
+		if not is_instance_valid(entity):
+			continue
+		if entity.state != CDEnums.EntityState.ACTIVE:
+			continue
+		if entity in _slots:
+			continue
+		
+		# find first empty slot (row-major)
+		var slot_index := -1
+		for i in _slots.size():
+			if _slots[i] == null:
+				slot_index = i
+				break
+		
+		if slot_index == -1:
+			push_warning("FormationDirector '%s': no empty slots for '%s'." % [name, entity.name])
+			continue
+		
+		_slots[slot_index] = entity
+		_assigned_this_frame[entity] = true
+		
+		var target := _calculate_slot_position(slot_index)
+		entity.ensure_signal("move_to")
+		entity.emit_signal("move_to", target)
 
 func reset() -> void:
 	_init_slots()

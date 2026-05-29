@@ -1,8 +1,6 @@
 ## defers state updates (component and group changes) to the end of the frame
 class_name CDUpdater extends Node
 
-@onready var update: CDUpdater = $CDUpdater
-
 var _pending: Array[Dictionary] = []
 
 func _ready() -> void:

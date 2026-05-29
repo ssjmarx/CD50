@@ -11,26 +11,27 @@ var game: CDGame
 func _ready() -> void:
 	if Engine.is_editor_hint():
 		return
-	entity = CDEntity.find_ancestor(self)
-	game = CDGame.find_ancestor(self)
 	
+	process_physics_priority = CDEnums.category_to_priority(component_category)
+	
+	entity = CDEntity.find_ancestor(self)
 	if entity == null:
-		push_error("CDComponent2D '%s': no CDEntity ancestor found. Use CDStageComponent2D for CDGame children." % name)
+		push_error("CDComponent2D '%s': no CDEntity ancestor found." % name)
 		return
+	
+	game = CDGame.find_ancestor(self)
 	if game == null:
 		push_error("CDComponent2D '%s': no CDGame ancestor found." % name)
 		return
 	
-	process_physics_priority = CDEnums.category_to_priority(component_category)
-	
 	call_deferred("_initialize")
-	
-	entity.connect("entity_deactivating", _on_entity_deactivating)
-	entity.connect("entity_activated", _on_entity_activated)
 
 ## step two setup
 func _initialize() -> void:
+	entity.connect("entity_deactivating", _on_entity_deactivating)
+	entity.connect("entity_activated", _on_entity_activated)
 	_on_initialize()
+
 
 ## virtual method for subclass step two initialization
 func _on_initialize() -> void:

@@ -1,0 +1,6 @@
+[gd_scene load_steps=2 format=3 uid="uid://bmrctc2ru4yxf"]
+
+[ext_resource type="Script" uid="uid://dtu402e0ids3w" path="res://scripts/core/infrastructure/cd_effect.gd" id="1_asd4d"]
+
+[node name="CDEffect" type="Node2D"]
+script = ExtResource("1_asd4d")

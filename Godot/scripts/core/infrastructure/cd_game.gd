@@ -3,15 +3,15 @@ class_name CDGame extends Node2D
 
 @export var game_bounds: Rect2
 
-@export var collision_groups: Array[CDCollisionGroup] = []
-
 ## required nodes for game are placed in editor for easy configuration
 @onready var collision_buffer: CDCollisionBuffer = $CDCollisionBuffer
 @onready var group_registry: CDGroupRegistry = $CDGroupRegistry
 @onready var collision_matrix: CDCollisionMatrix = $CDCollisionMatrix
 @onready var input_router: CDInputRouter = $CDInputRouter
+@onready var update: CDUpdater = $CDUpdater
 
 var _current_state: CDEnums.GameState = CDEnums.GameState.ATTRACT
+var _attract_label: Label
 
 var current_state: CDEnums.GameState:
 	get:
@@ -20,6 +20,8 @@ var current_state: CDEnums.GameState:
 		if _current_state != value:
 			_current_state = value
 			bus_emit("game_state_changed", [value])
+			if _current_state == CDEnums.GameState.PLAYING:
+				_attract_label.visible = (current_state == CDEnums.GameState.ATTRACT)
 
 var _bus: Dictionary = {}  # {StringName: Array[Callable]}
 
@@ -31,20 +33,29 @@ func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
 	for child in get_children():
 		child.process_mode = Node.PROCESS_MODE_PAUSABLE
+	input_router.process_mode = Node.PROCESS_MODE_ALWAYS
 
 	# wait until the game starts
 	get_tree().paused = true
 
 	# setup collision matrix
-	if collision_matrix and not collision_groups.is_empty():
-		collision_matrix.collision_groups = collision_groups
+	if collision_matrix and not collision_matrix.collision_groups.is_empty():
+		collision_matrix.build_maps()
+		for entity in find_children("*", "CDEntity"):
+			collision_matrix.configure(entity)
 
 	# connect to input router
-	var router = get_node_or_null("/root/CDInputRouter")
-	if router:
-		router.start_pressed.connect(start_game)
-		router.restart_pressed.connect(reset_game)
-		router.quit_pressed.connect(_quit_game)
+	if input_router:
+		input_router.start_pressed.connect(start_game)
+		input_router.restart_pressed.connect(reset_game)
+		input_router.quit_pressed.connect(_quit_game)
+	
+	_attract_label = Label.new()
+	_attract_label.text = "PRESS ENTER TO START"
+	_attract_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	_attract_label.position = Vector2(0, 10)
+	_attract_label.size = Vector2(480, 20)
+	add_child(_attract_label)
 
 ### bus methods
 

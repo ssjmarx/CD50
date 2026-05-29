@@ -8,30 +8,30 @@ class_name SpriteFace extends CDEntityComponent
 @export var frames: Array[Texture2D] = []:
 	set(v):
 		frames = v
-		queue_redraw()
+		_show_frame(default_frame)
 
 @export var default_frame: int = 0:
 	set(v):
 		default_frame = v
-		queue_redraw()
+		_show_frame(default_frame)
 
 @export var bindings: Array[CDFaceBinding] = []
 
 var _sprite: Sprite2D
 var _restore_timer: SceneTreeTimer
 
-func _on_initialize() -> void:
+func _ready() -> void:
+	component_category = CDEnums.ComponentCategory.VISUAL
+	super._ready()
 	_sprite = Sprite2D.new()
 	add_child(_sprite)
-	
-	for binding in bindings:
-		entity.connect(binding.signal_name, _on_binding_signal.bind(binding))
-	
 	_show_frame(default_frame)
 
-func _process(_delta: float) -> void:
-	if Engine.is_editor_hint():
-		queue_redraw()
+func _on_initialize() -> void:
+	for binding in bindings:
+		entity.ensure_signal(binding.signal_name)
+		entity.connect(binding.signal_name, _on_binding_signal.bind(binding))
+	_show_frame(default_frame)
 
 func _on_binding_signal(_arg1 = null, _arg2 = null, binding: CDFaceBinding = null) -> void:
 	if binding == null:
@@ -48,5 +48,7 @@ func _on_restore() -> void:
 	_show_frame(default_frame)
 
 func _show_frame(index: int) -> void:
+	if _sprite == null:
+		return
 	if index >= 0 and index < frames.size():
 		_sprite.texture = frames[index]

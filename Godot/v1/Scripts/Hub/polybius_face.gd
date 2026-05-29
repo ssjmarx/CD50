@@ -635,12 +635,6 @@ func _draw_polyline_if_set(points: PackedVector2Array) -> void:
 func _do_mirror() -> void:
 	if eye_frames.size() == 0:
 		return
-	var eyes: PolybiusEyes = eye_frames[current_eye_frame]
-#	print("\n--- Mirrored frame ", current_eye_frame, " (center_x = ", center_x, ") ---")
-#	print("right_eye:     ", _mirror_points(eyes.left_eye))
-#	print("right_pupil:   ", _mirror_points(eyes.left_pupil))
-#	print("right_eyebrow: ", _mirror_points(eyes.left_eyebrow))
-#	print("---")
 
 func _mirror_points(points: PackedVector2Array) -> PackedVector2Array:
 	var result := PackedVector2Array()

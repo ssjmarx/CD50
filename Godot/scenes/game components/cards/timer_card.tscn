@@ -2,5 +2,7 @@
 
 [ext_resource type="Script" uid="uid://cchj5lt1pjaaw" path="res://scripts/game components/cards/timer_card.gd" id="1_gy83a"]
 
-[node name="TimerCard" type="Node2D"]
+[node name="TimerCard" type="Control"]
+layout_mode = 3
+anchors_preset = 0
 script = ExtResource("1_gy83a")

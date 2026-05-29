@@ -2,5 +2,5 @@
 
 [ext_resource type="Script" uid="uid://62cgd2pwcb3" path="res://scripts/core/infrastructure/cd_group_registry.gd" id="1_2gsyc"]
 
-[node name="CdGroupRegistry" type="Node2D"]
+[node name="CDGroupRegistry" type="Node2D"]
 script = ExtResource("1_2gsyc")

@@ -8,6 +8,7 @@ class_name CDEntity extends CharacterBody2D
 @export var lock_x: bool = false
 @export var lock_y: bool = false
 @export var clamp_to_bounds: bool = false
+@export var bounds_margin: float = 0.0
 
 ## angular velocity component, provides for newtonian rotation
 var angular_velocity: float = 0.0
@@ -48,12 +49,6 @@ const MAX_COLLISION_ITERATIONS: int = 4
 func _ready() -> void:
 	process_physics_priority = 30
 	
-	game = CDGame.find_ancestor(self)
-	if game == null:
-		push_error("CDEntity '%s': no CDGame ancestor found." % name)
-		return
-	
-	_collision_buffer = game.collision_buffer
 	_spawn_position = global_position
 	
 	add_user_signal("collision", 	[{"name": "collider", "type": TYPE_OBJECT},
@@ -71,6 +66,13 @@ func _ready() -> void:
 	connect("request_deactivate", _on_request_deactivate)
 	
 	_create_default_collision_shape()
+	
+	game = CDGame.find_ancestor(self)
+	if game == null:
+		push_error("CDEntity '%s': no CDGame ancestor found." % name)
+		return
+	
+	_collision_buffer = game.collision_buffer
 	
 	if game.collision_matrix:
 		game.collision_matrix.configure(self)
@@ -93,6 +95,12 @@ func _physics_process(delta: float) -> void:
 	angular_velocity += _accumulated_angular_add
 	if _angular_set_pending != null:
 		angular_velocity = _angular_set_pending
+	
+	# apply axis locks
+	if lock_x:
+		velocity.x = 0.0
+	if lock_y:
+		velocity.y = 0.0
 	
 	# get your spot
 	var old_position = global_position
@@ -135,9 +143,10 @@ func _physics_process(delta: float) -> void:
 	
 	# clamp
 	if clamp_to_bounds and game and game.game_bounds.has_area():
-		global_position.x = clampf(global_position.x, game.game_bounds.position.x, game.game_bounds.end.x)
-		global_position.y = clampf(global_position.y, game.game_bounds.position.y, game.game_bounds.end.y)
-	
+		var m := bounds_margin
+		global_position.x = clampf(global_position.x, game.game_bounds.position.x + m, game.game_bounds.end.x - m)
+		global_position.y = clampf(global_position.y, game.game_bounds.position.y + m, game.game_bounds.end.y - m)
+
 	# emit
 	if old_position != global_position:
 		emit_signal("moved", old_position, global_position)

@@ -1,0 +1,6 @@
+[gd_scene load_steps=2 format=3 uid="uid://cbxbwa418jmbk"]
+
+[ext_resource type="Script" uid="uid://bh5g5t4ouw126" path="res://scripts/entity components/arms/powerup_delivery_arm.gd" id="1_dsqoh"]
+
+[node name="PowerupDeliveryArm" type="Node2D"]
+script = ExtResource("1_dsqoh")

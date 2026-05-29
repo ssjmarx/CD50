@@ -43,10 +43,10 @@ func _physics_process(delta: float) -> void:
 			current_time -= delta
 			if current_time <= 0.0:
 				current_time = 0.0
+				_is_running = false
 				_update_label(_format_time(0.0))
 				for sig in on_timer_expired:
 					game.bus_emit(sig)
-				_is_running = false
 				return
 		TimerMode.COUNT_UP:
 			current_time += delta

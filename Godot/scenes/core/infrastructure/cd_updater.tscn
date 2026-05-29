@@ -2,5 +2,5 @@
 
 [ext_resource type="Script" uid="uid://bjrnfdolfxtqr" path="res://scripts/core/infrastructure/cd_updater.gd" id="1_nlt6t"]
 
-[node name="CdUpdater" type="Node2D"]
+[node name="CDUpdater" type="Node2D"]
 script = ExtResource("1_nlt6t")

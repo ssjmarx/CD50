@@ -8,11 +8,13 @@ class_name PolygonFace extends CDEntityComponent
 @export var shapes: Array[CDShape] = []:
 	set(v):
 		shapes = v
+		_update_frame()
 		queue_redraw()
 
 @export var default_frame: int = 0:
 	set(v):
 		default_frame = v
+		_update_frame()
 		queue_redraw()
 
 @export var bindings: Array[CDFaceBinding] = []
@@ -27,12 +29,13 @@ var _restore_timer: SceneTreeTimer
 
 func _on_initialize() -> void:
 	for binding in bindings:
+		entity.ensure_signal(binding.signal_name)
 		entity.connect(binding.signal_name, _on_binding_signal.bind(binding))
 	
+	entity.ensure_signal("shape_changed")
 	entity.connect("shape_changed", _on_shape_changed)
 	
-	if not shapes.is_empty() and default_frame >= 0 and default_frame < shapes.size():
-		_current_points = shapes[default_frame].points
+	_update_frame()
 	queue_redraw()
 
 func _process(_delta: float) -> void:
@@ -65,3 +68,7 @@ func _draw() -> void:
 	if _current_points.size() < 3:
 		return
 	draw_colored_polygon(_current_points, color)
+
+func _update_frame() -> void:
+	if not shapes.is_empty() and default_frame >= 0 and default_frame < shapes.size():
+		_current_points = shapes[default_frame].points

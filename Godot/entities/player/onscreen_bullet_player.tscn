@@ -1,0 +1,6 @@
+[gd_scene load_steps=2 format=3 uid="uid://rboxkmqfnro8"]
+
+[ext_resource type="PackedScene" uid="uid://r8hsi8qongqs" path="res://entities/generic/onscreen_bullet.tscn" id="1_7squr"]
+
+[node name="OnscreenBullet" instance=ExtResource("1_7squr")]
+groups = Array[StringName]([&"bullets", &"player_bullets"])

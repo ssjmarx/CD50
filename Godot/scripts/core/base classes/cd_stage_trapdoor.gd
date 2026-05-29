@@ -103,7 +103,7 @@ func _spawn_one(index: int) -> void:
 		entity.global_position = spawn_position
 
 	# telefrag: kill overlapping entities before the new one enters
-	if telefrag and not telefrag_targets.is_empty():
+	if telefrag:
 		_telefrag_at(spawn_position, entity)
 
 	# apply spawn context (velocity, rotation) before entity enters tree
@@ -129,13 +129,18 @@ func _telefrag_at(pos: Vector2, _exclude: CDEntity) -> void:
 		var body = result["collider"]
 		if not body or not is_instance_valid(body):
 			continue
-		for group in telefrag_targets:
-			if body.is_in_group(group):
-				body.emit_signal("request_deactivate")
-				break
+		if telefrag_targets.is_empty() or _matches_telefrag_targets(body):
+			print("telefrag!")
+			body.emit_signal("request_deactivate")
 
 func _on_zone_safe() -> void:
 	_zone_is_safe = true
 
 func _on_zone_unsafe() -> void:
 	_zone_is_safe = false
+
+func _matches_telefrag_targets(body: Node) -> bool:
+	for group in telefrag_targets:
+		if body.is_in_group(group):
+			return true
+	return false

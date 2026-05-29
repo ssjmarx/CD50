@@ -1,0 +1,82 @@
+[gd_scene load_steps=18 format=3 uid="uid://c0q0c0v84x80"]
+
+[ext_resource type="Script" uid="uid://dm0uehngpvbh7" path="res://scripts/core/infrastructure/cd_game.gd" id="1_8wwv7"]
+[ext_resource type="Script" uid="uid://b2ibop6r2cryj" path="res://scripts/core/resources/infrastructure/cd_collision_group.gd" id="2_6ihv4"]
+[ext_resource type="PackedScene" uid="uid://cmbx6xnct372t" path="res://scenes/core/infrastructure/cd_collision_buffer.tscn" id="3_q4h5u"]
+[ext_resource type="PackedScene" uid="uid://bcwv07gabsxif" path="res://scenes/core/infrastructure/cd_collision_matrix.tscn" id="4_qh32t"]
+[ext_resource type="PackedScene" uid="uid://25g1ygl8nuv6" path="res://scenes/core/infrastructure/cd_group_registry.tscn" id="5_dg5ky"]
+[ext_resource type="PackedScene" uid="uid://c6mp0pt27mfal" path="res://scenes/core/infrastructure/cd_input_router.tscn" id="6_7ar12"]
+[ext_resource type="PackedScene" uid="uid://csgdjkq3gf26a" path="res://scenes/core/infrastructure/cd_updater.tscn" id="8_3rr66"]
+[ext_resource type="PackedScene" uid="uid://crm6k3o4f76ok" path="res://entities/player/triangle_ship_player.tscn" id="8_hop8x"]
+[ext_resource type="PackedScene" uid="uid://b11x1mdy4g3un" path="res://entities/nonplayer/bug_ship_nonplayer.tscn" id="9_q4h5u"]
+[ext_resource type="PackedScene" uid="uid://b1e365cvr1e8p" path="res://scenes/game components/trapdoors/point_trapdoor.tscn" id="10_qh32t"]
+[ext_resource type="Script" uid="uid://dcu4ocnin0htu" path="res://scripts/core/resources/spawners/cd_spawn_context.gd" id="11_7ar12"]
+[ext_resource type="PackedScene" uid="uid://bs6bk8vnu652o" path="res://scenes/game components/cards/timer_card.tscn" id="11_dg5ky"]
+
+[sub_resource type="Resource" id="Resource_q4h5u"]
+script = ExtResource("2_6ihv4")
+group_name = &"players"
+metadata/_custom_type_script = "uid://b2ibop6r2cryj"
+
+[sub_resource type="Resource" id="Resource_qh32t"]
+script = ExtResource("2_6ihv4")
+group_name = &"enemies"
+metadata/_custom_type_script = "uid://b2ibop6r2cryj"
+
+[sub_resource type="Resource" id="Resource_dg5ky"]
+script = ExtResource("2_6ihv4")
+group_name = &"enemy_bullets"
+collides_with = Array[StringName]([&"players"])
+metadata/_custom_type_script = "uid://b2ibop6r2cryj"
+
+[sub_resource type="Resource" id="Resource_7ar12"]
+script = ExtResource("2_6ihv4")
+group_name = &"player_bullets"
+collides_with = Array[StringName]([&"enemies"])
+metadata/_custom_type_script = "uid://b2ibop6r2cryj"
+
+[sub_resource type="Resource" id="Resource_fiuet"]
+script = ExtResource("11_7ar12")
+rotation = 1.571
+metadata/_custom_type_script = "uid://dcu4ocnin0htu"
+
+[node name="BugBlaster2" type="Node2D"]
+script = ExtResource("1_8wwv7")
+game_bounds = Rect2(0, 0, 640, 360)
+
+[node name="CDCollisionBuffer" parent="." instance=ExtResource("3_q4h5u")]
+
+[node name="CDCollisionMatrix" parent="." instance=ExtResource("4_qh32t")]
+collision_groups = Array[ExtResource("2_6ihv4")]([SubResource("Resource_q4h5u"), SubResource("Resource_qh32t"), SubResource("Resource_dg5ky"), SubResource("Resource_7ar12")])
+
+[node name="CDGroupRegistry" parent="." instance=ExtResource("5_dg5ky")]
+
+[node name="CDInputRouter" parent="." instance=ExtResource("6_7ar12")]
+
+[node name="CDUpdater" parent="." instance=ExtResource("8_3rr66")]
+
+[node name="TriangleShip" parent="." instance=ExtResource("8_hop8x")]
+position = Vector2(30, 180)
+lock_x = true
+clamp_to_bounds = true
+bounds_margin = 6.0
+
+[node name="BugShip" parent="." instance=ExtResource("9_q4h5u")]
+position = Vector2(320, 180)
+rotation = 1.5707964
+
+[node name="PointTrapdoor" parent="." instance=ExtResource("10_qh32t")]
+position = Vector2(610, 180)
+spawn_scene = ExtResource("9_q4h5u")
+spawn_count_equation = "1"
+spawn_context = SubResource("Resource_fiuet")
+telefrag = true
+
+[node name="TimerCard" parent="." instance=ExtResource("11_dg5ky")]
+offset_left = 30.0
+offset_top = 30.0
+offset_right = 30.0
+offset_bottom = 30.0
+starting_time = 2.0
+on_timer_expired = Array[StringName]([&"wave_start", &"timer_reset"])
+is_interface = true

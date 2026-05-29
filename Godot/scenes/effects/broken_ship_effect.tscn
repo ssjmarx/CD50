@@ -1,0 +1,6 @@
+[gd_scene load_steps=2 format=3 uid="uid://dtobcb3r7eydx"]
+
+[ext_resource type="Script" uid="uid://74bor8tvrlsl" path="res://scripts/effects/broken_ship_effect.gd" id="1_6h158"]
+
+[node name="BrokenShipEffect" type="Node2D"]
+script = ExtResource("1_6h158")

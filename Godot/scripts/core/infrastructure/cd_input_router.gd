@@ -26,7 +26,7 @@ func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
 
 func _physics_process(_delta: float) -> void:
-	# system buttons
+	# system buttons — always active (needed to unpause!)
 	if Input.is_action_just_pressed("start"):
 		start_pressed.emit()
 	if Input.is_action_just_pressed("restart"):
@@ -36,7 +36,11 @@ func _physics_process(_delta: float) -> void:
 	if Input.is_action_just_pressed("pause"):
 		pause_pressed.emit()
 
-	# per player input
+	# gameplay input — only when unpaused
+	if get_tree().paused:
+		return
+
+	# per player input (movement + actions)
 	for i in range(player_count):
 		var player_id := i + 1
 		var prefix := "p%d_" % player_id if player_count > 1 else ""

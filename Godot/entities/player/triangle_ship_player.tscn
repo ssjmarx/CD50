@@ -1,0 +1,27 @@
+[gd_scene load_steps=7 format=3 uid="uid://crm6k3o4f76ok"]
+
+[ext_resource type="PackedScene" uid="uid://dn7jogkn4rxwn" path="res://entities/generic/triangle_ship.tscn" id="1_g07yh"]
+[ext_resource type="PackedScene" uid="uid://rboxkmqfnro8" path="res://entities/player/onscreen_bullet_player.tscn" id="2_ln661"]
+[ext_resource type="PackedScene" uid="uid://ctkdlo8fjay4c" path="res://scenes/entity components/brains/player_move_brain.tscn" id="2_tecdi"]
+[ext_resource type="PackedScene" uid="uid://br86r51jieatg" path="res://scenes/entity components/brains/player_action_brain.tscn" id="3_mt4bh"]
+[ext_resource type="PackedScene" uid="uid://vup07axt54m2" path="res://scenes/entity components/brains/player_move_to_brain.tscn" id="4_hrmiw"]
+[ext_resource type="PackedScene" uid="uid://bni0yctwc8qct" path="res://scenes/entity components/guts/kbm_guts.tscn" id="6_ln661"]
+
+[node name="TriangleShip" instance=ExtResource("1_g07yh")]
+groups = Array[StringName]([&"triangle_ships", &"ships", &"players"])
+
+[node name="DirectMovementLeg" parent="." index="1"]
+move_signals = Array[StringName]([&"steer"])
+
+[node name="GunArm" parent="." index="2"]
+bullet_scene = ExtResource("2_ln661")
+
+[node name="PlayerMoveToBrain" parent="." index="6" instance=ExtResource("4_hrmiw")]
+
+[node name="PlayerMoveBrain" parent="." index="7" instance=ExtResource("2_tecdi")]
+
+[node name="PlayeActionBrain" parent="." index="8" instance=ExtResource("3_mt4bh")]
+
+[node name="KBMGuts" parent="." index="9" instance=ExtResource("6_ln661")]
+
+[editable path="GunArm"]

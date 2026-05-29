@@ -15,6 +15,10 @@ func _ready() -> void:
 
 func _on_initialize() -> void:
 	_time_remaining = lifespan
+	for sig in timer_expired_signals:
+		entity.ensure_signal(sig)
+	for sig in death_signals:
+		entity.ensure_signal(sig)
 
 func _physics_process(delta: float) -> void:
 	_time_remaining -= delta

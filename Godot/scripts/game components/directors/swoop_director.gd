@@ -69,8 +69,7 @@ func _physics_process(delta: float) -> void:
 
 		# detect completion
 		if slot.progress >= 1.0:
-			entity.ensure_signal("swoop_complete")
-			entity.emit_signal("swoop_complete")
+			game.bus_emit("swoop_complete", [entity])
 			to_remove.append(entity)
 
 	for entity in to_remove:

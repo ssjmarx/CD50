@@ -7,24 +7,25 @@ var _layer_map: Dictionary = {}  # group_name : layer bit value
 var _mask_map: Dictionary = {}   # group_name : combined mask
 
 func _ready() -> void:
+	_build_maps()
+
+func build_maps() -> void:
+	_build_maps()
+
+func _build_maps() -> void:
 	if collision_groups.is_empty():
 		return
-	
-	# fail fast if misconfigured beyond godot's limit
 	if collision_groups.size() > 32:
-		push_error("CDCollisionMatrix: %d groups defined, but Godot supports a maximum of 32 physics layers. Remove a CDCollisionGroup or merge groups that share collision behavior." % collision_groups.size())
 		return
-	
-	# dont ask me how bit shifting works i copied this from a thing
+	_layer_map.clear()
+	_mask_map.clear()
 	for i in range(collision_groups.size()):
 		var group = collision_groups[i]
 		_layer_map[group.group_name] = 1 << i
-	
 	for group in collision_groups:
 		var mask = 0
 		for target_name in group.collides_with:
 			if not _layer_map.has(target_name):
-				push_error("CDCollisionMatrix: group '%s' lists unknown target '%s' in collides_with." % [group.group_name, target_name])
 				continue
 			mask |= _layer_map[target_name]
 		_mask_map[group.group_name] = mask

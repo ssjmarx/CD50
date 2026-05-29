@@ -34,8 +34,15 @@ func _on_initialize() -> void:
 	for sig in invincibility_signals:
 		entity.ensure_signal(sig)
 		entity.connect(sig, _on_set_invincible)
+		
+	for sig in health_changed_signals:
+		entity.ensure_signal(sig)
+		
+	for sig in zero_health_signals:
+		entity.ensure_signal(sig)
 
 func _on_take_damage(amount: int, _source: CDEntity) -> void:
+	#print("Bug taking %d damage from: %s" % [amount, _source.name if is_instance_valid(_source) else "invalid"])
 	if invincible or _current_health <= 0:
 		return
 	
