@@ -4,6 +4,64 @@
 
 ---
 
+## Plan 25 Post-Hoc — ShootingDirector + AimingDirector (2 new scripts)
+
+Replaced the monolithic `SwarmShootingDirector` with two data-driven directors that plug into the existing CDTrigger/CDSelector resource system.
+
+### New Directors (2 scripts)
+
+| Script | Class | Summary |
+|--------|-------|---------|
+| `shooting_director.gd` | `ShootingDirector extends CDGameComponent` | Data-driven shooting: CDTrigger decides WHEN, CDSelector decides WHO |
+| `aiming_director.gd` | `AimingDirector extends CDGameComponent` | Per-entity nearest-target aiming across groups with throttling and noise |
+
+### Design
+
+- **ShootingDirector**: Gathers candidates from `target_groups`, filters to valid/active, uses `CDSelector` to narrow the pool, emits `shoot` signal on each selected entity. Fully configurable via CDTimerTrigger + CDSelectRandomN for "every 2s, 1 random enemy shoots" patterns.
+- **AimingDirector**: Each shooter independently finds its nearest target across `target_groups`. Supports `update_interval` for throttled recalculation and `targeting_noise` for imprecision. Pattern lifted from `AIAimAtNearestBrain` but elevated to a director controlling many entities at once.
+
+### Files
+
+| File | Action |
+|------|--------|
+| `scripts/game components/directors/shooting_director.gd` | New |
+| `scripts/game components/directors/aiming_director.gd` | New |
+| `scenes/game components/directors/shooting_director.tscn` | New |
+| `scenes/game components/directors/aiming_director.tscn` | New |
+| `games/remakes/bug_blaster_2.tscn` | Updated — replaced SwarmShootingDirector |
+
+### V2 Total Scripts Written: 155
+
+---
+
+## Plan 25 — V2 Swarm Controllers + Galaga (COMPLETE — 0 new scripts)
+
+Plan 25 required zero new scripts. All proposed components were already built during Plans 21–24 under different names, or deemed redundant with existing components. The plan document was rewritten as an architectural reference.
+
+### Component Reconciliation
+
+| Plan 25 Proposed | Actual Name | Built In | Status |
+|---|---|---|---|
+| CDSwarmStateMachine | StateDirector | Plan 24 | Renamed |
+| SwoopController | SwoopDirector | Plan 24 | Renamed |
+| FormationController | FormationDirector | Plan 24 | Renamed |
+| SwarmShootingController | SwarmShootingDirector | Plan 24 | Renamed |
+| CaptureMonitor | StageDirector | Plan 24 | Renamed |
+| CDCaptureRule | CDDirectorRule | Plan 24 | Renamed |
+| CDBusBridge | AnnouncerGuts | Plan 24 | Renamed |
+| ShootIntervalBrain | AIRepeatActionBrain | Plan 21 | Renamed |
+| TractorBeamBrain | AITractorBeamBrain | Plan 24 | Renamed |
+| DiveBombBrain | AIDiveBombBrain | Plan 21 | Renamed |
+| ReturnController | FormationDirector | Plan 24 | Redundant |
+| FollowerAI | AIChaseBrain | Plan 21 | Redundant |
+| CompanionOffsetGuts | AIFormationBrain | Plan 21 | Redundant |
+
+### Key Deliverable
+- Rewrote `planning/25 - V2 Swarm Controllers + Galaga.md` as complete architectural reference with Galaga lifecycle, signal flow, entity compositions, state machine configuration, and validation checklist
+- Updated memory bank files (01, 02, 03) to reflect completion
+
+---
+
 ## USAGE.md — Architecture Documentation (COMPLETE)
 
 Created `USAGE.md` — the comprehensive guide to all patterns, anti-patterns, and code quality guidelines for the V2 composable architecture. Covers the priority pipeline, signal bus system, component lifecycle, per-category usage guides, core patterns, anti-patterns, code quality guidelines, and extension instructions.

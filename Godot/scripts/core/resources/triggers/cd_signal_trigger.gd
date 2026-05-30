@@ -1,27 +1,35 @@
 # CDSignalTrigger
-# Event trigger — fires when a game bus signal is received
+# Event trigger — fires when game bus signal(s) are received
 # Captures entity arguments for use by transitions and composite triggers
+# Supports require_all: true = all signals must be received before firing
 
 class_name CDSignalTrigger extends CDTrigger
 
-# bus signal name to listen for
-@export var signal_name: StringName = &""
+# bus signal names to listen for
+@export var signal_names: Array[StringName] = []
 
-# true when signal has been received, consumed on evaluate()
+# true = all signals must be received before firing; false = any signal fires immediately
+@export var require_all: bool = false
+
+# true when trigger should fire, consumed on evaluate()
 var _has_fired: bool = false
 
 # entities captured from signal arguments, consumed via consume_pending()
 var _pending_entities: Array[CDEntity] = []
 
-# connect to the game bus signal during initialization
+# tracks which signals have been received (for require_all mode)
+var _received: Dictionary = {}
+
+# connect to all game bus signals during initialization
 func initialize(game: CDGame) -> void:
 	super.initialize(game)
-	if signal_name != &"":
-		game.bus_connect(signal_name, _on_signal_received)
-	else:
-		push_error("CDSignalTrigger: signal_name is empty — trigger will never fire.")
+	for sig in signal_names:
+		if sig != &"":
+			game.bus_connect(sig, _on_signal_received.bind(sig))
+	if signal_names.is_empty():
+		push_warning("CDSignalTrigger: signal_names is empty — trigger will never fire.")
 
-# return true once per signal received, then auto-reset
+# return true once per fire, then auto-reset
 func evaluate(_delta: float) -> bool:
 	if _has_fired:
 		_has_fired = false
@@ -37,14 +45,25 @@ func consume_pending() -> Array[CDEntity]:
 
 # disconnect from bus and clear all state
 func reset() -> void:
-	if _game != null and signal_name != &"":
-		_game.bus_disconnect(signal_name, _on_signal_received)
+	if _game != null:
+		for sig in signal_names:
+			if sig != &"":
+				_game.bus_disconnect(sig, _on_signal_received.bind(sig))
 	_has_fired = false
 	_pending_entities.clear()
+	_received.clear()
 	super.reset()
 
-# bus callback — arg1 is the entity (must maintain this convention)
-func _on_signal_received(arg1: Variant = null, _arg2: Variant = null) -> void:
-	_has_fired = true
+# bus callback — capture entity from arg1, track which signal was received
+func _on_signal_received(arg1: Variant = null, _arg2: Variant = null, signal_name: StringName = &"") -> void:
 	if arg1 is CDEntity:
 		_pending_entities.append(arg1)
+	
+	if require_all:
+		# track that this specific signal has been received
+		_received[signal_name] = true
+		if _received.size() >= signal_names.size():
+			_has_fired = true
+			_received.clear()
+	else:
+		_has_fired = true

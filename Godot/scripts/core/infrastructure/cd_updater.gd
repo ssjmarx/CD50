@@ -17,14 +17,14 @@ func _physics_process(_delta: float) -> void:
 
 # --- Public API ---
 
-# queue a group transition: swap groups, emit exit/enter signals, mark dirty
-func queue_transition(entity: CDEntity, from_group: StringName, to_group: StringName, exit_signal: StringName = &"", enter_signal: StringName = &"") -> void:
+# queue a group transition: remove from groups, add to groups, emit exit/enter signals
+func queue_transition(entity: CDEntity, remove_groups: Array[StringName], add_groups: Array[StringName], exit_signals: Array[StringName] = [], emit_signals: Array[StringName] = []) -> void:
 	_pending.append({
 		"entity": entity,
-		"from": from_group,
-		"to": to_group,
-		"exit_signal": exit_signal,
-		"enter_signal": enter_signal,
+		"remove": remove_groups,
+		"add": add_groups,
+		"exit_signals": exit_signals,
+		"emit_signals": emit_signals,
 	})
 
 # --- Internal ---
@@ -36,26 +36,38 @@ func _flush() -> void:
 		if not is_instance_valid(entity):
 			continue
 
-		var from_group: StringName = op["from"]
-		var to_group: StringName = op["to"]
+		var remove_groups: Array = op["remove"]
+		var add_groups: Array = op["add"]
+		var exit_signals: Array = op["exit_signals"]
+		var emit_signals: Array = op["emit_signals"]
 
-		# swap groups
-		if from_group != &"" and entity.is_in_group(from_group):
-			entity.remove_from_group(from_group)
-		if to_group != &"" and not entity.is_in_group(to_group):
-			entity.add_to_group(to_group)
+		# remove from all specified groups
+		for group in remove_groups:
+			if group != &"" and entity.is_in_group(group):
+				entity.remove_from_group(group)
 
-		# mark both groups dirty in the registry
+		# add to all specified groups
+		for group in add_groups:
+			if group != &"" and not entity.is_in_group(group):
+				entity.add_to_group(group)
+
+		# mark dirty groups in the registry
 		if entity.game and entity.game.group_registry:
-			if from_group != &"":
-				entity.game.group_registry.mark_dirty(from_group)
-			if to_group != &"" and to_group != from_group:
-				entity.game.group_registry.mark_dirty(to_group)
+			for group in remove_groups:
+				if group != &"":
+					entity.game.group_registry.mark_dirty(group)
+			for group in add_groups:
+				if group != &"" and group not in remove_groups:
+					entity.game.group_registry.mark_dirty(group)
 
-		# emit exit/enter signals on the entity
-		if op["exit_signal"] != &"":
-			entity.emit_signal(op["exit_signal"])
-		if op["enter_signal"] != &"":
-			entity.emit_signal(op["enter_signal"])
+		# emit exit signals on the entity
+		for sig in exit_signals:
+			if sig != &"":
+				entity.emit_signal(sig)
+
+		# emit enter signals on the entity
+		for sig in emit_signals:
+			if sig != &"":
+				entity.emit_signal(sig)
 
 	_pending.clear()

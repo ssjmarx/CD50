@@ -7,10 +7,8 @@ class_name SwoopDirector extends CDGameComponent
 
 # --- exports ---
 
-# group name for entities that should swoop
-@export var swooping_group: StringName = &"swooping"
-# game bus signal that triggers swoop start
-@export var trigger_signal: StringName = &"wave_start"
+# groups containing entities that should swoop
+@export var swooping_groups: Array[StringName] = [&"swooping"]
 # destination point for the curve end
 @export var target: Vector2 = Vector2.ZERO:
 	set(v):
@@ -32,6 +30,14 @@ class_name SwoopDirector extends CDGameComponent
 @export var slot_spacing: float = 30.0
 # speed at which entities travel toward checkpoints
 @export var entry_speed: float = 200.0
+
+# game bus signals that trigger swoop start
+@export_group("Listen Signals")
+@export var trigger_signals: Array[StringName] = [&"spawning_complete"]
+
+# game bus signals emitted when each entity finishes its swoop path
+@export_group("Emit Signals")
+@export var on_swoop_complete: Array[StringName] = [&"swoop_complete"]
 
 # distance between generated checkpoints along the curve
 @export_group("Checkpoints")
@@ -98,10 +104,10 @@ func _request_redraw() -> void:
 	if is_inside_tree():
 		queue_redraw()
 
-# connect trigger signal to game bus
+# connect trigger signals to game bus
 func _on_initialize() -> void:
-	if trigger_signal != &"":
-		game.bus_connect(trigger_signal, _on_trigger)
+	for sig in trigger_signals:
+		game.bus_connect(sig, _on_trigger)
 
 # --- editor preview ---
 
@@ -137,7 +143,13 @@ func _generate_checkpoints() -> PackedVector2Array:
 
 # gather swooping entities, generate curve and checkpoints, assign staggered delays
 func _on_trigger(_wave_number: int = 0) -> void:
-	var entities := game.group_registry.get_group(swooping_group)
+	var seen: Dictionary = {}
+	var entities: Array[CDEntity] = []
+	for group_name in swooping_groups:
+		for entity in game.group_registry.get_group(group_name):
+			if not seen.has(entity):
+				seen[entity] = true
+				entities.append(entity)
 	if entities.is_empty():
 		return
 	
@@ -225,7 +237,8 @@ func _physics_process(delta: float) -> void:
 		_checkpoint_indices.erase(entity)
 		_entry_delays.erase(entity)
 		if is_instance_valid(entity) and entity.state == CDEnums.EntityState.ACTIVE:
-			game.bus_emit("swoop_complete", [entity])
+			for sig in on_swoop_complete:
+				game.bus_emit(sig, [entity])
 	
 	# stop processing when all entities have finished
 	if _slots.is_empty():

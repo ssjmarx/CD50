@@ -9,19 +9,19 @@
 ```
 trigger_signal (e.g. "wave_start")
   → _on_trigger(wave_number)
-      → _get_spawn_count(wave_number)      # how many to spawn
-      → build _spawn_queue of indices
-      → set_physics_process(true)
+	  → _get_spawn_count(wave_number)      # how many to spawn
+	  → build _spawn_queue of indices
+	  → set_physics_process(true)
 
 _physics_process(delta)
   → hold if _zone_is_safe == false
   → pop index from queue
   → _spawn_one(index)
-      → _get_spawn_scene(index, total)     # which scene to spawn (null = skip)
-      → _get_spawn_position(index, total)  # where to place it
-      → telefrag check (optional)
-      → apply spawn_context (velocity/rotation)
-      → activate entity (pool or fresh instantiate)
+	  → _get_spawn_scene(index, total)     # which scene to spawn (null = skip)
+	  → _get_spawn_position(index, total)  # where to place it
+	  → telefrag check (optional)
+	  → apply spawn_context (velocity/rotation)
+	  → activate entity (pool or fresh instantiate)
   → emit "spawning_complete" when queue empty
 ```
 

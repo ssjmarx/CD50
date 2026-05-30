@@ -3,7 +3,7 @@
 **Last Updated:** 2026-05-29  
 **Architecture:** V2 Composable Architecture  
 **Canonical Reference:** `planning/V2 Rules.md`  
-**Total V2 Scripts:** 153
+**Total V2 Scripts:** 155
 
 ---
 
@@ -406,7 +406,7 @@ Stage-level display components (Priority 70). Extend CDCueCard (Control-based).
 
 ---
 
-## Game Components — Directors (5)
+## Game Components — Directors (6)
 
 Stage-level controllers that manage entity behavior at the game level.
 
@@ -415,7 +415,8 @@ Stage-level controllers that manage entity behavior at the game level.
 | `stage_director.gd` | `StageDirector extends CDGameComponent` | Listens for game bus signals, performs entity swaps |
 | `state_director.gd` | `StateDirector extends CDGameComponent` | Updates entity groups for group-as-state management |
 | `formation_director.gd` | `FormationDirector extends CDGameComponent` | Manages a grid of named slots for formation entities |
-| `swarm_shooting_director.gd` | `SwarmShootingDirector extends CDGameComponent` | Periodically selects entities from target groups to shoot |
+| `shooting_director.gd` | `ShootingDirector extends CDGameComponent` | Data-driven shooting: CDTrigger decides WHEN, CDSelector decides WHO |
+| `aiming_director.gd` | `AimingDirector extends CDGameComponent` | Per-entity nearest-target aiming across groups |
 | `swoop_director.gd` | `SwoopDirector extends CDGameComponent` | Generates curve from CDCurve resource, moves entities along it |
 
 ---
@@ -503,10 +504,10 @@ Stage-level spawners. Subscribe to game bus signals, queue and stagger-spawn ent
 | Faces | 7 |
 | Voices | 2 |
 | Cue Cards | 4 |
-| Directors | 5 |
+| Directors | 6 |
 | Goals | 2 |
 | Marks | 6 |
 | Projectors | 2 |
 | Speakers | 3 |
 | Trapdoors | 3 |
-| **Total V2 Scripts** | **153** |
+| **Total V2 Scripts** | **155** |

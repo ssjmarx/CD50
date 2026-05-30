@@ -1,7 +1,7 @@
 # Current Goal
 
 **Last Updated:** 2026-05-29  
-**Status:** Active — V2 Swarm Controllers + Galaga (Plan 25)
+**Status:** Active — V2 Block Drop (Plan 26)
 
 ---
 
@@ -23,12 +23,12 @@ The itch.io demo is **code-locked** (12 games, all componentized). We are now bu
 | 4 | 22 — V2 Arms + Guts | 10 Arms, 15 Guts — collision response + internal state | ✅ Complete |
 | 5 | 23 — V2 Spawners | CDStageTrapdoor, Point/Edge/GridTrapdoor, Spawn Arms, CDGridLayout, CDGridEquation, SafeZoneMark | ✅ Complete |
 | 6 | 24 — V2 Faces, Voices, Projections & Speakers | 7 Faces, 2 Voices, 3 Speakers, 2 Projectors, 5 Directors, Triggers, Selectors, Curves, Effects, Resources | ✅ Complete |
-| 7 | 25 — V2 Swarm Controllers + Galaga | SwarmGridStep, Formation, Flock, Shoot controllers + Galaga proof | 🔨 In Progress |
-| 8 | 26 — Block Drop V2 | Full Block Drop remake proving Pseudogrid pattern | 🔲 Planned |
+| 7 | 25 — V2 Swarm Controllers + Galaga | All components already built in Plans 21–24; document rewritten as architectural reference | ✅ Complete |
+| 8 | 26 — Block Drop V2 | Full Block Drop remake proving Pseudogrid pattern | ? Next |
 
-### Immediate Next Step: Plan 25 — V2 Swarm Controllers + Galaga
+### Immediate Next Step: Plan 26 — Block Drop V2
 
-Build swarm-level AI controllers (FormationDirector, SwarmShootingDirector, SwoopDirector are complete) and prove the architecture with a Galaga proof-of-concept game. See `planning/25 - V2 Swarm Controllers + Galaga.md` for the full plan.
+Full Block Drop remake proving the Pseudogrid pattern. See `planning/26 - Block Drop V2.md` for the full plan.
 
 **153 V2 scripts written so far.** Full catalogue: `memory-bank/07 - Component Catalogue V2.md`
 
@@ -131,6 +131,7 @@ The following plans have been **deleted** from the active pipeline:
 
 | Plan | Description | Completed |
 |------|-------------|-----------|
+| 25 | V2 Swarm Controllers + Galaga (0 new scripts — all components already built in Plans 21–24; document rewritten as architectural reference) | 2026-05-29 |
 | 24 | V2 Faces, Voices, Projections & Speakers (63 scripts — Faces, Voices, Speakers, Projectors, Directors, Curves, Triggers, Selectors, Effects, Resources) | 2026-05-29 |
 | 23 | V2 Spawners (4 Trapdoors, 3 Spawn Arms, 2 Marks, 4 Resources — 14 scripts) | 2026-05-27 |
 | 22 | V2 Arms + Guts (10 Arms, 15 Guts — 25 scripts) | 2026-05-26 |

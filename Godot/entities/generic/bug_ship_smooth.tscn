@@ -1,0 +1,35 @@
+[gd_scene load_steps=7 format=3 uid="uid://dc5v6bawoxi2c"]
+
+[ext_resource type="PackedScene" uid="uid://crldddsx3c7ck" path="res://entities/generic/bug_ship.tscn" id="1_frmmk"]
+[ext_resource type="PackedScene" uid="uid://bet7mpf2gu8yp" path="res://scenes/entity components/legs/screen_wrap_leg.tscn" id="2_x51hn"]
+[ext_resource type="PackedScene" uid="uid://dnupvpm1xtec8" path="res://scenes/entity components/legs/acceleration_target_leg.tscn" id="3_upr7u"]
+[ext_resource type="PackedScene" uid="uid://bruvhn6v5bghr" path="res://scenes/entity components/legs/target_rotation_leg.tscn" id="4_upr7u"]
+[ext_resource type="PackedScene" uid="uid://cchd668j4pmmp" path="res://scenes/entity components/guts/MoveAdapterGuts.tscn" id="5_upr7u"]
+[ext_resource type="PackedScene" uid="uid://ci3gja75p0qed" path="res://scenes/entity components/legs/linear_friction_leg.tscn" id="7_7l8gu"]
+
+[node name="BugShip" instance=ExtResource("1_frmmk")]
+
+[node name="ScreenWrapLeg" parent="." index="0" instance=ExtResource("2_x51hn")]
+wrap_margin = 32.0
+
+[node name="AccelerationTargetLeg" parent="." index="1" instance=ExtResource("3_upr7u")]
+acceleration = 3200.0
+slow_distance = 50.0
+stop_distance = 1.0
+
+[node name="LinearFrictionLeg" parent="." index="2" instance=ExtResource("7_7l8gu")]
+max_friction = 3200.0
+max_speed = 400.0
+
+[node name="TargetRotationLeg" parent="." index="3" instance=ExtResource("4_upr7u")]
+rotation_speed = 0.0
+
+[node name="MoveAdapterGuts" parent="." index="4" instance=ExtResource("5_upr7u")]
+direction_signals = Array[StringName]([&"aim", &"move"])
+
+[node name="SpriteFace" parent="." index="5"]
+rotation = -1.5707964
+
+[node name="GunArm" parent="." index="6"]
+position = Vector2(6, 0)
+rotation = -1.5707964

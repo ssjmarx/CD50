@@ -1,17 +1,21 @@
 # CDGroupCountTrigger
-# Evaluative trigger — compares group entity count against a threshold
+# Evaluative trigger — compares group entity counts against a threshold
+# Supports multiple groups with require_all (AND) or any (OR) logic
 # Fires on rising edge only (false→true transition)
 
 class_name CDGroupCountTrigger extends CDTrigger
 
-# group to monitor via the group registry
-@export var group_name: StringName = &""
+# groups to monitor via the group registry
+@export var group_names: Array[StringName] = []
 
 # comparison operator for count vs threshold
 @export var comparison: CDEnums.CountComparison = CDEnums.CountComparison.LESS_OR_EQUAL
 
-# value to compare the group count against
+# value to compare each group count against
 @export var threshold: int = 0
+
+# true = ALL groups must satisfy the condition; false = ANY group satisfies
+@export var require_all: bool = true
 
 # tracks previous condition state for edge detection
 var _was_met: bool = false
@@ -38,11 +42,28 @@ func reset() -> void:
 	_was_met = false
 	super.reset()
 
-# compare group count against threshold using the configured operator
+# check if groups satisfy the condition based on require_all mode
 func _check_condition() -> bool:
-	if _game == null or group_name == &"":
+	if _game == null or group_names.is_empty():
 		return false
-	var count: int = _game.group_registry.get_count(group_name)
+	
+	if require_all:
+		for group_name in group_names:
+			if group_name == &"":
+				return false
+			if not _compare(_game.group_registry.get_count(group_name)):
+				return false
+		return true
+	else:
+		for group_name in group_names:
+			if group_name == &"":
+				continue
+			if _compare(_game.group_registry.get_count(group_name)):
+				return true
+		return false
+
+# compare a single count against threshold using the configured operator
+func _compare(count: int) -> bool:
 	match comparison:
 		CDEnums.CountComparison.LESS_THAN:
 			return count < threshold

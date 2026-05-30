@@ -1,16 +1,22 @@
 # CDTransition
 # Defines when and how entities move between groups
 # Used by Directors to orchestrate entity state changes via trigger → selector → group swap
+# remove_groups: entities are removed from each group listed
+# add_groups: entities are added to each group listed
+# target_groups: used for filtering candidates (entity must be in ALL target groups)
 
 class_name CDTransition extends Resource
 
 # --- Exports ---
 
-# source group — entities will be removed from here
-@export var from_group: StringName = &""
+# groups to remove entities from
+@export var remove_groups: Array[StringName] = []
 
-# destination group — entities will be added here
-@export var to_group: StringName = &""
+# groups to add entities to
+@export var add_groups: Array[StringName] = []
+
+# groups used for filtering candidates (entity must be in ALL of these)
+@export var target_groups: Array[StringName] = []
 
 # what activates this transition (timer, signal, group count, etc.)
 @export var trigger: CDTrigger
@@ -21,14 +27,11 @@ class_name CDTransition extends Resource
 # seconds between activations (0 = no cooldown)
 @export var cooldown: float = 0.0
 
-# signal emitted on entities entering the target group
-@export var emit_signal_name: StringName = &""
+# entity signals emitted when entering new groups
+@export var emit_signals: Array[StringName] = []
 
-# signal emitted on entities leaving the source group
-@export var exit_signal_name: StringName = &""
-
-# args passed with emit/exit signals
-@export var signal_args: Dictionary = {}
+# entity signals emitted when leaving old groups
+@export var exit_signals: Array[StringName] = []
 
 # --- Internal State ---
 
@@ -45,7 +48,7 @@ func initialize(game: CDGame) -> void:
 	if selector:
 		selector.initialize(game)
 	else:
-		push_error("CDTransition (%s → %s): no selector assigned." % [from_group, to_group])
+		push_warning("CDTransition: no selector assigned.")
 
 # full reset for game restart
 func reset() -> void:
@@ -73,6 +76,6 @@ func start_cooldown() -> void:
 
 # --- Validation ---
 
-# both groups must be set for this transition to be usable
+# at least one remove or add group must be set
 func is_valid() -> bool:
-	return from_group != &"" and to_group != &""
+	return not remove_groups.is_empty() or not add_groups.is_empty()

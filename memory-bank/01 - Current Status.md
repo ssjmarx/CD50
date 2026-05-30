@@ -4,14 +4,14 @@
 **Engine:** Godot 4.5 (GDScript)  
 **Architecture:** V2 Composable Architecture (active development) — V1 archived to `Godot/v1/`  
 **Playable Games:** Paddle Ball, Brick Breaker, Space Rocks, Meteor Rally, Dogfight, Bug Blaster, Block Drop (Modern), Rock Breaker, Bug Drop, Space Bugs, Planetary Attack!, Space Rocks Inverted — ALL componentized, zero game scripts
-**In Progress:** V2 Architecture — Plans 19–24 COMPLETE. Plan 25 (Swarm Controllers + Galaga) in progress. 153 V2 scripts written.
-**Recent Completed:** USAGE.md — comprehensive architecture documentation. Plan 24 complete (7 Faces, 2 Voices, 3 Speakers, 2 Projectors, 5 Directors, 5 Triggers, 5 Selectors, 12 Curves, plus infrastructure). Plans 19–23 complete as previously documented.
+**In Progress:** V2 Architecture — Plans 19–25 COMPLETE. Plan 26 (Block Drop V2) is next. 155 V2 scripts written.
+**Recent Completed:** Plan 25 post-hoc refinements — replaced monolithic SwarmShootingDirector with two data-driven directors: ShootingDirector (CDTrigger + CDSelector) and AimingDirector (per-entity nearest-target aiming). Bug Blaster 2 updated. Plans 19–24 complete as previously documented.
 **Demo Status:** Code-locked at 12 games. Only Steam wishlist link remains. Itch.io demo stays on V1 architecture.
 
 **Key Documentation:**
 - `USAGE.md` — Complete patterns, anti-patterns, and code quality guide for the V2 architecture
 - `memory-bank/05 - Patterns & Anti-Patterns.md` — Quick-reference index for AI agents
-- `memory-bank/07 - Component Catalogue V2.md` — Full V2 component inventory (153 scripts)
+- `memory-bank/07 - Component Catalogue V2.md` — Full V2 component inventory (155 scripts)
 - `planning/V2 Rules.md` — Canonical V2 design reference
 
 ---
@@ -57,9 +57,9 @@ All V2 core scripts live in `Godot/scripts/core/`. Full details in `USAGE.md`.
 | Guts (STATE) | 50 | 19 | Healthpool/Shieldpool/Resourcepool, DieAtZeroHealth/Offscreen/OnTimer/OutOfBounds, DeflectorBounce/ImpulseReceiver/ShapeCollider, LockDetector/VisionCone, KBM/MoveAdapter, Announcer/Points/Stun/TSpinDetector/Timer |
 | Faces (VISUAL) | 60 | 7 | VectorFace, PolygonFace, SpriteFace, VectorEngineFace, VectorThrusterFace, DeathEffectFace, MenacingVectorFace |
 | Voices (AUDIO) | 65 | 2 | SoundVoice, ContinuousVoice |
-| Stage (RULES) | 70 | 28 | ScoreCard, LivesCard, TimerCard, WaveCard, Goals, Directors, Marks, Speakers, Projectors, Trapdoors |
+| Stage (RULES) | 70 | 30 | ScoreCard, LivesCard, TimerCard, WaveCard, Goals, Directors, Marks, Speakers, Projectors, Trapdoors |
 
-**Total: ~153 V2 scripts + 41 custom resources**
+**Total: ~155 V2 scripts + 41 custom resources**
 
 Full catalogue: `memory-bank/07 - Component Catalogue V2.md`
 
@@ -113,10 +113,10 @@ Godot/Scripts/
 | 22 | Arms + Guts | ✅ Complete | `planning/22 - V2 Arms + Guts.md` |
 | 23 | Spawners | ✅ Complete | `planning/23 - V2 Spawners.md` |
 | 24 | Faces, Voices, Projections & Speakers | ✅ Complete | `planning/24 - V2 Faces, Voices, Projections & Speakers.md` |
-| 25 | Swarm Controllers + Galaga | 🔨 In Progress | `planning/25 - V2 Swarm Controllers + Galaga.md` |
-| 26 | Block Drop V2 | 🔲 Planned | `planning/26 - Block Drop V2.md` |
+| 25 | Swarm Controllers + Galaga | ✅ Complete | `planning/25 - V2 Swarm Controllers + Galaga.md` |
+| 26 | Block Drop V2 | � Next | `planning/26 - Block Drop V2.md` |
 
-**Full V2 component catalogue:** `memory-bank/07 - Component Catalogue V2.md` (153 scripts written)
+**Full V2 component catalogue:** `memory-bank/07 - Component Catalogue V2.md` (155 scripts written)
 
 ---
 

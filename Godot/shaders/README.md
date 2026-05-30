@@ -10,9 +10,9 @@
 Game Viewport
   → BackBufferCopy (captures SCREEN_TEXTURE)
   → Persistence SubViewport (CLEAR_MODE_NEVER)
-      → persistence.gdshader (phosphor decay accumulation)
+	  → persistence.gdshader (phosphor decay accumulation)
   → CRT ColorRect
-      → crt_light.gdshader (barrel warp, chroma, bloom, vignette, hum, flicker, gamma)
+	  → crt_light.gdshader (barrel warp, chroma, bloom, vignette, hum, flicker, gamma)
   → Scanlines TextureRect (PNG overlay, tiled)
   → Noise TextureRect (PNG overlay, scrolling)
 ```

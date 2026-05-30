@@ -1,6 +1,6 @@
 [gd_scene load_steps=2 format=3 uid="uid://33byjn5h6ujc"]
 
-[ext_resource type="Script" uid="uid://b22kexlwgl146" path="res://scripts/entity components/legs/directional setters/direct_movement_leg.gd" id="1_8tmv2"]
+[ext_resource type="Script" uid="uid://b22kexlwgl146" path="res://scripts/entity components/legs/directional adders/direct_movement_leg.gd" id="1_8tmv2"]
 
 [node name="DirectMovementLeg" type="Node2D"]
 script = ExtResource("1_8tmv2")

@@ -21,8 +21,11 @@ var _update: CDUpdater
 func _ready() -> void:
 	super._ready()
 	component_category = CDEnums.ComponentCategory.RULES
-	if game:
-		_update = game.update
+
+# cache updater reference and initialize all transitions
+func _on_initialize() -> void:
+	_update = game.update
+	initialize()
 
 # initialize all valid transitions
 func initialize() -> void:
@@ -57,10 +60,18 @@ func _process_trigger(t: CDTransition) -> void:
 	var candidates: Array[CDEntity]
 	if t.trigger is CDSignalTrigger:
 		candidates = t.trigger.consume_pending()
+	elif t.trigger is CDCompositeTrigger:
+		candidates = t.trigger.consume_pending()
+		# also gather from target_groups if set
+		if not t.target_groups.is_empty():
+			var group_candidates := _gather_from_groups(t)
+			for entity in group_candidates:
+				if not candidates.has(entity):
+					candidates.append(entity)
 	else:
-		candidates = game.group_registry.get_group(t.from_group)
+		candidates = _gather_from_groups(t)
 	
-	# filter: valid, active, not already transitioned, still in from_group
+	# filter: valid, active, not already transitioned, in all target groups
 	var filtered: Array[CDEntity] = []
 	for entity in candidates:
 		if not is_instance_valid(entity):
@@ -69,7 +80,7 @@ func _process_trigger(t: CDTransition) -> void:
 			continue
 		if _transitioned.has(entity):
 			continue
-		if not entity.is_in_group(t.from_group):
+		if not _is_in_all_groups(entity, t.target_groups):
 			continue
 		filtered.append(entity)
 	
@@ -83,8 +94,35 @@ func _process_trigger(t: CDTransition) -> void:
 	# queue transitions via CDUpdater (deferred to avoid mutation during iteration)
 	for entity in selected:
 		_transitioned[entity] = true
-		_update.queue_transition(entity, t.from_group, t.to_group, t.exit_signal_name, t.emit_signal_name)
+		_update.queue_transition(entity, t.remove_groups, t.add_groups, t.exit_signals, t.emit_signals)
 		t.start_cooldown()
+
+# gather candidates from all target groups (deduplicated)
+func _gather_from_groups(t: CDTransition) -> Array[CDEntity]:
+	if t.target_groups.is_empty():
+		# fallback: use first remove group for gathering
+		if t.remove_groups.is_empty():
+			return []
+		return game.group_registry.get_group(t.remove_groups[0])
+	
+	var seen: Dictionary = {}
+	var result: Array[CDEntity] = []
+	for group_name in t.target_groups:
+		for entity in game.group_registry.get_group(group_name):
+			if not seen.has(entity):
+				seen[entity] = true
+				result.append(entity)
+	return result
+
+# check if entity is a member of all specified groups
+func _is_in_all_groups(entity: CDEntity, groups: Array[StringName]) -> bool:
+	# if no target groups specified, check first remove group for backward compat
+	if groups.is_empty():
+		return true
+	for group_name in groups:
+		if not entity.is_in_group(group_name):
+			return false
+	return true
 
 # --- reset ---
 
