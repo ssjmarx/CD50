@@ -1,7 +1,7 @@
 # Current Goal
 
 **Last Updated:** 2026-05-29  
-**Status:** Active — V2 Block Drop (Plan 26)
+**Status:** Active — Bug Blaster 2 (Galaga) Capture Mechanics + Multi-Wave
 
 ---
 
@@ -26,11 +26,20 @@ The itch.io demo is **code-locked** (12 games, all componentized). We are now bu
 | 7 | 25 — V2 Swarm Controllers + Galaga | All components already built in Plans 21–24; document rewritten as architectural reference | ✅ Complete |
 | 8 | 26 — Block Drop V2 | Full Block Drop remake proving Pseudogrid pattern | ? Next |
 
-### Immediate Next Step: Plan 26 — Block Drop V2
+### Immediate Next Step: Bug Blaster 2 (Galaga) — Capture Mechanics + Multi-Wave
 
-Full Block Drop remake proving the Pseudogrid pattern. See `planning/26 - Block Drop V2.md` for the full plan.
+Bug Blaster 2 is partially implemented with formation, swoop/dive, and shooting all functional. Remaining features:
 
-**153 V2 scripts written so far.** Full catalogue: `memory-bank/07 - Component Catalogue V2.md`
+1. **Capture ships** — Bug ship variant with AITractorBeamBrain that attempts to capture the player
+2. **Capture mechanics** — Player gets captured by tractor beam, becomes prisoner; rescue the prisoner to get a dual fighter
+3. **Multiple waves** — Wave progression with escalating formation sizes, dive patterns, and enemy types
+4. **Bonus stages** — Optional bonus waves for extra points
+
+All components already exist (AITractorBeamBrain, TractorBeamArm, PowerupWingmanArm, WaveCard, StageDirector). This is primarily scene assembly work.
+
+**156 V2 scripts written so far.** Full catalogue: `memory-bank/07 - Component Catalogue V2.md`
+
+**After Galaga:** Plan 26 — Block Drop V2 (full Block Drop remake proving Pseudogrid pattern)
 
 ### Demo Status
 

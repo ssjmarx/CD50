@@ -3,7 +3,7 @@
 **Last Updated:** 2026-05-29  
 **Architecture:** V2 Composable Architecture  
 **Canonical Reference:** `planning/V2 Rules.md`  
-**Total V2 Scripts:** 155
+**Total V2 Scripts:** 156
 
 ---
 
@@ -180,7 +180,7 @@ Pure intent generators (Priority 10). Never touch velocity, never move entities.
 | `ai_repeat_action_brain.gd` | `AIRepeatActionBrain extends CDEntityComponent` | Fires action signal repeatedly on a timer while active |
 | `ai_timed_step_brain.gd` | `AITimedStepBrain extends CDEntityComponent` | Emits directional signal at regular interval |
 
-### AI: Path & Patrol Brains (5)
+### AI: Path & Patrol Brains (6)
 
 | Script | Class | Summary |
 |--------|-------|---------|
@@ -189,6 +189,7 @@ Pure intent generators (Priority 10). Never touch velocity, never move entities.
 | `ai_idle_wander_brain.gd` | `AIIdleWanderBrain extends CDEntityComponent` | Picks random nearby points, meanders with idle pauses |
 | `ai_formation_brain.gd` | `AIFormationBrain extends CDEntityComponent` | Moves to offset from leader entity with target locking |
 | `ai_dive_bomb_brain.gd` | `AIDiveBombBrain extends CDEntityComponent` | Generates sine-wave dive path toward target |
+| `ai_swoop_brain.gd` | `AISwoopBrain extends CDEntityComponent` | Follows CDCurve path via checkpoints, triggered by entity bus signal |
 
 ### AI: Special Brains (1)
 
@@ -414,7 +415,7 @@ Stage-level controllers that manage entity behavior at the game level.
 |--------|-------|---------|
 | `stage_director.gd` | `StageDirector extends CDGameComponent` | Listens for game bus signals, performs entity swaps |
 | `state_director.gd` | `StateDirector extends CDGameComponent` | Updates entity groups for group-as-state management |
-| `formation_director.gd` | `FormationDirector extends CDGameComponent` | Manages a grid of named slots for formation entities |
+| `formation_director.gd` | `FormationDirector extends CDGameComponent` | Manages a grid of named slots with fill-direction priority |
 | `shooting_director.gd` | `ShootingDirector extends CDGameComponent` | Data-driven shooting: CDTrigger decides WHEN, CDSelector decides WHO |
 | `aiming_director.gd` | `AimingDirector extends CDGameComponent` | Per-entity nearest-target aiming across groups |
 | `swoop_director.gd` | `SwoopDirector extends CDGameComponent` | Generates curve from CDCurve resource, moves entities along it |
@@ -497,7 +498,7 @@ Stage-level spawners. Subscribe to game bus signals, queue and stagger-spawn ent
 | Core Resources: Triggers | 5 |
 | Core Resources: Visuals | 1 |
 | Effects | 2 |
-| Brains | 16 |
+| Brains | 17 |
 | Arms | 16 |
 | Guts | 19 |
 | Legs | 15 |
@@ -510,4 +511,4 @@ Stage-level spawners. Subscribe to game bus signals, queue and stagger-spawn ent
 | Projectors | 2 |
 | Speakers | 3 |
 | Trapdoors | 3 |
-| **Total V2 Scripts** | **155** |
+| **Total V2 Scripts** | **156** |

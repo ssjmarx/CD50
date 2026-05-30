@@ -60,14 +60,16 @@ func _flush() -> void:
 				if group != &"" and group not in remove_groups:
 					entity.game.group_registry.mark_dirty(group)
 
-		# emit exit signals on the entity
+		# emit exit signals on the entity (ensure first — idempotent)
 		for sig in exit_signals:
 			if sig != &"":
+				entity.ensure_signal(sig)
 				entity.emit_signal(sig)
 
-		# emit enter signals on the entity
+		# emit enter signals on the entity (ensure first — idempotent)
 		for sig in emit_signals:
 			if sig != &"":
+				entity.ensure_signal(sig)
 				entity.emit_signal(sig)
 
 	_pending.clear()

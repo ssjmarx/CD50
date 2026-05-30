@@ -48,17 +48,24 @@ func _build_maps() -> void:
 func get_layer_for_group(group_name: StringName) -> int:
 	return _layer_map.get(group_name, 0)
 
-# set collision_layer and collision_mask on an entity from its groups array
-func configure(entity: CDEntity) -> void:
+# set collision_layer and collision_mask on any CollisionObject2D from its groups
+func configure(node: CollisionObject2D) -> void:
 	var layer = 0
 	var mask = 0
+	var source_groups := _get_groups_for(node)
 
-	# combine layers and masks from all groups the entity belongs to
-	for group_name in entity.groups:
+	# combine layers and masks from all groups the node belongs to
+	for group_name in source_groups:
 		if not _layer_map.has(group_name):
 			continue
 		layer |= _layer_map[group_name]
 		mask |= _mask_map[group_name]
 
-	entity.collision_layer = layer
-	entity.collision_mask = mask
+	node.collision_layer = layer
+	node.collision_mask = mask
+
+# resolve the group source for a node (CDEntity export vs Godot built-in)
+func _get_groups_for(node: CollisionObject2D) -> Array:
+	if node is CDEntity:
+		return node.groups
+	return node.get_groups()

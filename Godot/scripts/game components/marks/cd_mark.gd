@@ -35,6 +35,10 @@ func _ready() -> void:
 	_ensure_collision_shape()
 	body_entered.connect(_on_body_entered)
 	body_exited.connect(_on_body_exited)
+	# configure collision layer/mask from CDCollisionMatrix
+	# (CDMark extends Area2D, not CDGameComponent — no _on_initialize lifecycle)
+	if game and game.collision_matrix:
+		game.collision_matrix.configure(self)
 
 # connect listen signals to game bus
 func _on_initialize() -> void:
@@ -60,6 +64,7 @@ func _on_body_entered(body: Node2D) -> void:
 	if _passes_filter(body):
 		for sig in on_entered:
 			game.bus_emit(sig, [body])
+			#print("body entered!")
 
 # emit exited signals for bodies that pass the group filter
 func _on_body_exited(body: Node2D) -> void:

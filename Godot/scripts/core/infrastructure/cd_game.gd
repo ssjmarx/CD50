@@ -56,8 +56,8 @@ func _ready() -> void:
 	# build collision layer/mask maps from CDCollisionGroup resources
 	if collision_matrix and not collision_matrix.collision_groups.is_empty():
 		collision_matrix.build_maps()
-		for entity in find_children("*", "CDEntity"):
-			collision_matrix.configure(entity)
+		for node in find_children("*", "CollisionObject2D"):
+			collision_matrix.configure(node)
 
 	# wire input router system buttons to game lifecycle
 	if input_router:

@@ -4,6 +4,68 @@
 
 ---
 
+## Bug Blaster 2 (Galaga) — Partial Implementation (0 new scripts, scene-driven)
+
+Bug Blaster 2 is now a playable Galaga remake assembled entirely from existing V2 components. No new scripts were needed — the entire game is a scene assembly leveraging the V2 composable architecture.
+
+### What's Working
+
+- **Formation grid** — FormationDirector manages named slots, entities fill in via fill_direction priority
+- **Swoop/dive attacks** — SwoopDirector selects entities from formation, StateDirector transitions them through formation→diving→returning groups, AISwoopBrain follows CDCurve paths with checkpoint-based movement
+- **Shooting** — ShootingDirector (CDTimerTrigger + CDSelectRandomN) picks random enemies to fire, AimingDirector handles per-entity nearest-target aiming
+- **Collision detection** — CDMark zones at bottom of screen detect dive-complete entities via `_on_body_entered`, emit `dive_complete` on game bus
+- **StateDirector dive cycle** — CDSignalTrigger listens for `dive_complete` on game bus, CDTransition moves entities from `diving` to `returning` group, `return_to_formation` entity signal emitted
+- **AISwoopBrain stop signals** — Added `stop_signals: Array[StringName]` (array-based exports), entity hears `return_to_formation` and aborts swoop early
+- **Entity composition** — `bug_ship_swooping_nonplayer.tscn` with AISwoopBrain (CDSpiralCurve) + AnnouncerGuts (rebroadcasts `swoop_complete` to game bus)
+
+### AISwoopBrain Refactor
+
+Converted all signal exports from single StringName to arrays:
+- `start_signal` → `start_signals: Array[StringName]`
+- Added `stop_signals: Array[StringName]` — signals that abort the swoop early
+- `move_signal` → `move_signals: Array[StringName]`
+- `complete_signal` → `complete_signals: Array[StringName]`
+
+### Remaining for Full Galaga
+
+- Capture ships (bug ship variant with tractor beam)
+- Capture mechanics (player gets captured → becomes dual fighter when rescued)
+- Multiple waves with escalating patterns
+- Bonus stages
+
+### Files
+
+| File | Action |
+|------|--------|
+| `scripts/entity components/brains/ai movement/ai_swoop_brain.gd` | Modified — array exports, stop_signals |
+| `entities/nonplayer/bug_ship_swooping_nonplayer.tscn` | Updated — start_signals, stop_signals arrays |
+| `games/remakes/bug_blaster_2.tscn` | Updated — full Galaga assembly |
+
+### V2 Total Scripts Written: 156 (unchanged — scene-driven implementation)
+
+---
+
+## Plan 25 Post-Hoc — FormationDirector fill_direction + AISwoopBrain (1 new script, 1 modified)
+
+### FormationDirector — Fill Direction Priority
+
+Added `fill_direction: Vector2` export to FormationDirector. Rewrote `_find_empty_slot()` with priority scoring:
+- `Vector2.ZERO` → center-out fill (closest to center first)
+- Non-zero → directional fill (dot product scoring, e.g. `Vector2.RIGHT` fills right side first)
+
+### AISwoopBrain — Entity-Level Curve Path Following
+
+New brain: entity-level narrow-phase counterpart to SwoopDirector. Uses `CDCurve` resources for path generation, triggered on/off via entity bus signals (emitted by StateDirector). Direction + distance targeting instead of group targeting. One-shot path, emits `swoop_complete` when done.
+
+| File | Action |
+|------|--------|
+| `formation_director.gd` | Modified — added fill_direction export, rewrote _find_empty_slot() |
+| `ai_swoop_brain.gd` | New — CDCurve checkpoint path following brain |
+
+### V2 Total Scripts Written: 156
+
+---
+
 ## Plan 25 Post-Hoc — ShootingDirector + AimingDirector (2 new scripts)
 
 Replaced the monolithic `SwarmShootingDirector` with two data-driven directors that plug into the existing CDTrigger/CDSelector resource system.

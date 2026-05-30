@@ -1,7 +1,6 @@
 # CDSignalTrigger
 # Event trigger — fires when game bus signal(s) are received
 # Captures entity arguments for use by transitions and composite triggers
-# Supports require_all: true = all signals must be received before firing
 
 class_name CDSignalTrigger extends CDTrigger
 

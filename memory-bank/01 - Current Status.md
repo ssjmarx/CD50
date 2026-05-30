@@ -4,14 +4,14 @@
 **Engine:** Godot 4.5 (GDScript)  
 **Architecture:** V2 Composable Architecture (active development) — V1 archived to `Godot/v1/`  
 **Playable Games:** Paddle Ball, Brick Breaker, Space Rocks, Meteor Rally, Dogfight, Bug Blaster, Block Drop (Modern), Rock Breaker, Bug Drop, Space Bugs, Planetary Attack!, Space Rocks Inverted — ALL componentized, zero game scripts
-**In Progress:** V2 Architecture — Plans 19–25 COMPLETE. Plan 26 (Block Drop V2) is next. 155 V2 scripts written.
-**Recent Completed:** Plan 25 post-hoc refinements — replaced monolithic SwarmShootingDirector with two data-driven directors: ShootingDirector (CDTrigger + CDSelector) and AimingDirector (per-entity nearest-target aiming). Bug Blaster 2 updated. Plans 19–24 complete as previously documented.
+**In Progress:** Bug Blaster 2 (Galaga) — partially implemented. Formation movement, swoop/dive bombing, shooting directors, CDMark collision detection, StateDirector dive cycle, and AISwoopBrain stop signals all functional. Remaining: capture ships, capture mechanics, multiple waves.
+**Recent Completed:** Bug Blaster 2 (Galaga) first playable — formation grid, swoop/dive attacks with curve paths, ShootingDirector + AimingDirector, CDMark dive-complete zones, StateDirector group-as-state dive cycle, AISwoopBrain array exports + stop signals. Plans 19–25 complete. 156 V2 scripts written.
 **Demo Status:** Code-locked at 12 games. Only Steam wishlist link remains. Itch.io demo stays on V1 architecture.
 
 **Key Documentation:**
 - `USAGE.md` — Complete patterns, anti-patterns, and code quality guide for the V2 architecture
 - `memory-bank/05 - Patterns & Anti-Patterns.md` — Quick-reference index for AI agents
-- `memory-bank/07 - Component Catalogue V2.md` — Full V2 component inventory (155 scripts)
+- `memory-bank/07 - Component Catalogue V2.md` — Full V2 component inventory (156 scripts)
 - `planning/V2 Rules.md` — Canonical V2 design reference
 
 ---
@@ -51,7 +51,7 @@ All V2 core scripts live in `Godot/scripts/core/`. Full details in `USAGE.md`.
 | Category | Priority | Count | Key Components |
 |----------|----------|-------|----------------|
 | Core | varies | ~12 | CDEntity, CDGame, CDComponent2D, CDStageComponent2D, CDCollisionBuffer, CDGroupRegistry, etc. |
-| Brains (INTENT) | 10 | 16 | PlayerMove/Aim/Action/MoveToBrain, AIChase/Flee/Orbit/Formation/DiveBomb/Aim/RepeatAction/TractorBeam/PathMove/RandomSweep/TimedStep/IdleWanderBrain |
+| Brains (INTENT) | 10 | 17 | PlayerMove/Aim/Action/MoveToBrain, AIChase/Flee/Orbit/Formation/DiveBomb/Aim/RepeatAction/TractorBeam/PathMove/RandomSweep/TimedStep/IdleWanderBrain, AISwoopBrain |
 | Legs (STEERING) | 20 | 15 | DirectMovement/Acceleration/Engine/Target/RotationLeg, GridMovement/Rotation/Drop/AlignmentLeg, Friction, ScreenWrap |
 | Arms (INTERACTION) | 40 | 16 | DamageOnHit/Crash/Joust, DeathOnHit/Crash/Joust, ScoreOnCollision/Death, Pushback, StatusOnHit, GunArm, SpawnOnDeath, PowerupDelivery/Wingman, TractorBeam, PieceSplitter |
 | Guts (STATE) | 50 | 19 | Healthpool/Shieldpool/Resourcepool, DieAtZeroHealth/Offscreen/OnTimer/OutOfBounds, DeflectorBounce/ImpulseReceiver/ShapeCollider, LockDetector/VisionCone, KBM/MoveAdapter, Announcer/Points/Stun/TSpinDetector/Timer |
@@ -59,7 +59,7 @@ All V2 core scripts live in `Godot/scripts/core/`. Full details in `USAGE.md`.
 | Voices (AUDIO) | 65 | 2 | SoundVoice, ContinuousVoice |
 | Stage (RULES) | 70 | 30 | ScoreCard, LivesCard, TimerCard, WaveCard, Goals, Directors, Marks, Speakers, Projectors, Trapdoors |
 
-**Total: ~155 V2 scripts + 41 custom resources**
+**Total: ~156 V2 scripts + 41 custom resources**
 
 Full catalogue: `memory-bank/07 - Component Catalogue V2.md`
 
@@ -116,7 +116,7 @@ Godot/Scripts/
 | 25 | Swarm Controllers + Galaga | ✅ Complete | `planning/25 - V2 Swarm Controllers + Galaga.md` |
 | 26 | Block Drop V2 | � Next | `planning/26 - Block Drop V2.md` |
 
-**Full V2 component catalogue:** `memory-bank/07 - Component Catalogue V2.md` (155 scripts written)
+**Full V2 component catalogue:** `memory-bank/07 - Component Catalogue V2.md` (156 scripts written)
 
 ---
 

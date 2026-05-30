@@ -1,4 +1,4 @@
-[gd_scene load_steps=35 format=3 uid="uid://c0q0c0v84x80"]
+[gd_scene load_steps=44 format=3 uid="uid://c0q0c0v84x80"]
 
 [ext_resource type="Script" uid="uid://dm0uehngpvbh7" path="res://scripts/core/infrastructure/cd_game.gd" id="1_8wwv7"]
 [ext_resource type="Script" uid="uid://b2ibop6r2cryj" path="res://scripts/core/resources/infrastructure/cd_collision_group.gd" id="2_6ihv4"]
@@ -9,8 +9,8 @@
 [ext_resource type="PackedScene" uid="uid://csgdjkq3gf26a" path="res://scenes/core/infrastructure/cd_updater.tscn" id="8_3rr66"]
 [ext_resource type="PackedScene" uid="uid://crm6k3o4f76ok" path="res://entities/player/triangle_ship_player.tscn" id="8_hop8x"]
 [ext_resource type="PackedScene" uid="uid://b1e365cvr1e8p" path="res://scenes/game components/trapdoors/point_trapdoor.tscn" id="10_qh32t"]
-[ext_resource type="PackedScene" uid="uid://chwnucggyf6va" path="res://entities/nonplayer/bug_ship_smooth_nonplayer.tscn" id="11_3rr66"]
 [ext_resource type="Script" uid="uid://dcu4ocnin0htu" path="res://scripts/core/resources/spawners/cd_spawn_context.gd" id="11_7ar12"]
+[ext_resource type="PackedScene" uid="uid://dn4605ei3ylto" path="res://entities/nonplayer/bug_ship_swooping_nonplayer.tscn" id="11_unqoe"]
 [ext_resource type="PackedScene" uid="uid://mxejpxipdbii" path="res://scenes/game components/cards/wave_card.tscn" id="13_fiuet"]
 [ext_resource type="PackedScene" uid="uid://ca4qbo05yiya" path="res://scenes/game components/directors/swoop_director.tscn" id="14_3rr66"]
 [ext_resource type="Script" uid="uid://dpgs8b1skt7t2" path="res://scripts/core/resources/curves/cd_sine_curve.gd" id="14_cf182"]
@@ -23,6 +23,7 @@
 [ext_resource type="PackedScene" path="res://scenes/game components/directors/shooting_director.tscn" id="21_wnhbq"]
 [ext_resource type="Script" uid="uid://dm2djsydyr0u1" path="res://scripts/core/resources/triggers/cd_timer_trigger.gd" id="22_wnhbq"]
 [ext_resource type="Script" uid="uid://bgl0fyqd8o0w5" path="res://scripts/core/resources/selectors/cd_select_random_n.gd" id="23_unqoe"]
+[ext_resource type="PackedScene" uid="uid://d4b42pvesykqo" path="res://scenes/game components/marks/cd_mark.tscn" id="24_ksc8u"]
 
 [sub_resource type="Resource" id="Resource_q4h5u"]
 script = ExtResource("2_6ihv4")
@@ -46,6 +47,12 @@ group_name = &"player_bullets"
 collides_with = Array[StringName]([&"enemies"])
 metadata/_custom_type_script = "uid://b2ibop6r2cryj"
 
+[sub_resource type="Resource" id="Resource_v3fjy"]
+script = ExtResource("2_6ihv4")
+group_name = &"top_zone"
+collides_with = Array[StringName]([&"enemies"])
+metadata/_custom_type_script = "uid://b2ibop6r2cryj"
+
 [sub_resource type="Resource" id="Resource_fiuet"]
 script = ExtResource("11_7ar12")
 additional_groups = Array[StringName]([&"swooping"])
@@ -53,7 +60,7 @@ metadata/_custom_type_script = "uid://dcu4ocnin0htu"
 
 [sub_resource type="Resource" id="Resource_jv0aj"]
 script = ExtResource("14_cf182")
-amplitude = 100.0
+amplitude = 50.0
 frequency = 2
 metadata/_custom_type_script = "uid://dpgs8b1skt7t2"
 
@@ -75,15 +82,58 @@ trigger = SubResource("Resource_xlfik")
 selector = SubResource("Resource_03duf")
 metadata/_custom_type_script = "uid://2krdfmhel0jp"
 
+[sub_resource type="Resource" id="Resource_g7qkd"]
+script = ExtResource("23_unqoe")
+metadata/_custom_type_script = "uid://bgl0fyqd8o0w5"
+
+[sub_resource type="Resource" id="Resource_88uy8"]
+script = ExtResource("22_wnhbq")
+interval = 6.0
+random_variance = 6.0
+metadata/_custom_type_script = "uid://dm2djsydyr0u1"
+
+[sub_resource type="Resource" id="Resource_hbxsa"]
+script = ExtResource("17_pi3o1")
+remove_groups = Array[StringName]([&"formation"])
+add_groups = Array[StringName]([&"diving"])
+target_groups = Array[StringName]([&"formation"])
+trigger = SubResource("Resource_88uy8")
+selector = SubResource("Resource_g7qkd")
+cooldown = 2.0
+emit_signals = Array[StringName]([&"begin_dive"])
+metadata/_custom_type_script = "uid://2krdfmhel0jp"
+
+[sub_resource type="Resource" id="Resource_ejj48"]
+script = ExtResource("18_pi3o1")
+metadata/_custom_type_script = "uid://c0vh1ticpmvx5"
+
+[sub_resource type="Resource" id="Resource_j0fbb"]
+script = ExtResource("18_03duf")
+signal_names = Array[StringName]([&"dive_complete"])
+metadata/_custom_type_script = "uid://ca0k2u53egerl"
+
+[sub_resource type="Resource" id="Resource_sqowu"]
+script = ExtResource("17_pi3o1")
+remove_groups = Array[StringName]([&"diving"])
+add_groups = Array[StringName]([&"formation"])
+target_groups = Array[StringName]([&"diving"])
+trigger = SubResource("Resource_j0fbb")
+selector = SubResource("Resource_ejj48")
+emit_signals = Array[StringName]([&"return_to_formation"])
+metadata/_custom_type_script = "uid://2krdfmhel0jp"
+
 [sub_resource type="Resource" id="Resource_unqoe"]
 script = ExtResource("22_wnhbq")
-interval = 1.0
+interval = 6.0
 random_variance = 1.0
 metadata/_custom_type_script = "uid://dm2djsydyr0u1"
 
 [sub_resource type="Resource" id="Resource_ksc8u"]
 script = ExtResource("23_unqoe")
 metadata/_custom_type_script = "uid://bgl0fyqd8o0w5"
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_88uy8"]
+size = Vector2(656, 20)
 
 [node name="BugBlaster2" type="Node2D"]
 script = ExtResource("1_8wwv7")
@@ -92,7 +142,7 @@ game_bounds = Rect2(0, 0, 640, 360)
 [node name="CDCollisionBuffer" parent="." instance=ExtResource("3_q4h5u")]
 
 [node name="CDCollisionMatrix" parent="." instance=ExtResource("4_qh32t")]
-collision_groups = Array[ExtResource("2_6ihv4")]([SubResource("Resource_q4h5u"), SubResource("Resource_qh32t"), SubResource("Resource_dg5ky"), SubResource("Resource_7ar12")])
+collision_groups = Array[ExtResource("2_6ihv4")]([SubResource("Resource_q4h5u"), SubResource("Resource_qh32t"), SubResource("Resource_dg5ky"), SubResource("Resource_7ar12"), SubResource("Resource_v3fjy")])
 
 [node name="CDGroupRegistry" parent="." instance=ExtResource("5_dg5ky")]
 
@@ -101,24 +151,25 @@ collision_groups = Array[ExtResource("2_6ihv4")]([SubResource("Resource_q4h5u"),
 [node name="CDUpdater" parent="." instance=ExtResource("8_3rr66")]
 
 [node name="TriangleShip" parent="." instance=ExtResource("8_hop8x")]
-position = Vector2(30, 180)
-lock_x = true
+position = Vector2(320, 344)
+rotation = -1.5707964
+lock_y = true
 clamp_to_bounds = true
 bounds_margin = 6.0
 
 [node name="WaveCard" parent="." instance=ExtResource("13_fiuet")]
 
 [node name="PointTrapdoor" parent="." instance=ExtResource("10_qh32t")]
-position = Vector2(656, 180)
-spawn_scene = ExtResource("11_3rr66")
+position = Vector2(320, -16)
+spawn_scene = ExtResource("11_unqoe")
 spawn_count_equation = "50"
 offset_range = Vector2(0, 0)
 stagger_delay = 0.0
 spawn_context = SubResource("Resource_fiuet")
 
 [node name="SwoopDirector" parent="." instance=ExtResource("14_3rr66")]
-position = Vector2(608, 180)
-target = Vector2(180, 180)
+position = Vector2(320, 16)
+target = Vector2(320, 264)
 curve = SubResource("Resource_jv0aj")
 slot_spacing = 32.0
 entry_speed = 400.0
@@ -126,21 +177,27 @@ checkpoint_spacing = 64.0
 arrival_threshold = 32.0
 
 [node name="FormationDirector" parent="." instance=ExtResource("15_cf182")]
-position = Vector2(558, 180)
-columns = 5
-rows = 10
-breathing_amplitude = 4.0
-breathing_duration = 20.0
+position = Vector2(320, 64)
+breathing_amplitude = 1.0
+breathing_duration = 10.0
 preview_color = Color(1, 0.64705884, 0, 1)
 component_category = 10
 
 [node name="StateDirector" parent="." instance=ExtResource("16_2xwwf")]
-transitions = Array[ExtResource("17_pi3o1")]([SubResource("Resource_wnhbq")])
+transitions = Array[ExtResource("17_pi3o1")]([SubResource("Resource_wnhbq"), SubResource("Resource_hbxsa"), SubResource("Resource_sqowu")])
 
 [node name="AimingDirector" parent="." instance=ExtResource("20_xlfik")]
+targeting_noise = 16.0
 component_category = 10
 
 [node name="ShootingDirector" parent="." instance=ExtResource("21_wnhbq")]
 trigger = SubResource("Resource_unqoe")
 selector = SubResource("Resource_ksc8u")
 component_category = 10
+
+[node name="CdMark" parent="." groups=["top_zone"] instance=ExtResource("24_ksc8u")]
+position = Vector2(320, -16)
+on_entered = Array[StringName]([&"dive_complete"])
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="CdMark"]
+shape = SubResource("RectangleShape2D_88uy8")
