@@ -1,6 +1,40 @@
 # Recent Progress
 
-**Last Updated:** 2026-05-29
+**Last Updated:** 2026-05-30
+
+---
+
+## Plan 27 — V2 Blackboard Architecture (DESIGN COMPLETE — 0 scripts, 1 planning doc)
+
+Architectural overhaul of V2 signal communication. Discovered three pain points while assembling Bug Blaster 2 (Galaga): typed signal friction between interoperable components, bandage code (`_arg1 = null, _arg2 = null`) in multi-signal listeners, and the signal type contract being unenforced (all `add_user_signal()` calls already create zero-arg signals).
+
+### Design Decisions
+
+| Decision | Rationale |
+|----------|-----------|
+| All user-defined signals become zero-arg | Eliminates typed signal friction, bandage args, and adapter components |
+| CDEntity + CDGame get `blackboard: Dictionary` | Simple transient state storage for continuous data flow |
+| Two communication modes: poll blackboard vs signal + blackboard | Continuous components (Brains, Legs, Faces) poll; intermittent components (Arms on collision, Guts on damage) use signals |
+| Both entity bus and game bus get parallel treatment | Game bus `bus_emit()` drops args parameter; game components read from `game.blackboard` |
+| Legs accumulator API unchanged | `request_velocity_set()`/`request_velocity_add()` stay — universal accumulator deferred to Phase 2 |
+| Hardcoded physics/lifecycle signals stay typed | `collision(CDEntity, Vector2)` and lifecycle signals don't cause interop pain |
+| MoveAdapterGuts eliminated | Brain writes `"target_position"`, Leg reads it directly |
+| KBMGuts eliminated | Both input Brains write to same `"move_intent"` key |
+
+### Key Naming Convention
+
+- Intent keys: `"move_intent"`, `"aim_direction"`, `"target_position"`, `"rotation_intent"`
+- State keys: `"health"`, `"points"`, `"shield"`, `"resource"`
+- Event data keys: `"incoming_damage"`, `"action_name"`, `"pushback_force"`
+- Physics keys: `"position"`, `"rotation"`, `"velocity"` (written by CDEntity post-resolution)
+
+### Files
+
+| File | Action |
+|------|--------|
+| `planning/27 - V2 Blackboard Architecture.md` | New — complete architecture spec with 7 rules, key conventions, category-by-category migration guide |
+
+### V2 Total Scripts Written: 156 (unchanged — design only)
 
 ---
 

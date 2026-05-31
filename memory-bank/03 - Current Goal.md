@@ -25,6 +25,7 @@ The itch.io demo is **code-locked** (12 games, all componentized). We are now bu
 | 6 | 24 — V2 Faces, Voices, Projections & Speakers | 7 Faces, 2 Voices, 3 Speakers, 2 Projectors, 5 Directors, Triggers, Selectors, Curves, Effects, Resources | ✅ Complete |
 | 7 | 25 — V2 Swarm Controllers + Galaga | All components already built in Plans 21–24; document rewritten as architectural reference | ✅ Complete |
 | 8 | 26 — Block Drop V2 | Full Block Drop remake proving Pseudogrid pattern | ? Next |
+| 9 | 27 — V2 Blackboard Architecture | Zero-arg signals + blackboard overhaul for both buses | 📋 Planned |
 
 ### Immediate Next Step: Ship Itch.io Demo
 
