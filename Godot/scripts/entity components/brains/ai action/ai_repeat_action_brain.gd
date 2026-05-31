@@ -7,6 +7,9 @@ class_name AIRepeatActionBrain extends CDEntityComponent
 # seconds between each action fire
 @export var fire_interval: float = 0.3
 
+# optional wave scaler — overrides fire_interval when assigned
+@export var wave_scaler: CDWaveScaler
+
 @export_group("Listen Signals")
 @export var start_signals: Array[StringName] = [&"start_shooting"]
 @export var stop_signals: Array[StringName] = [&"stop_shooting"]
@@ -31,6 +34,9 @@ func _ready() -> void:
 
 # ensure signals exist and connect start/stop listeners
 func _on_initialize() -> void:
+	# initialize wave scaler if assigned
+	if wave_scaler:
+		wave_scaler.initialize(entity.game)
 	# ensure the named action signal and its _end variant exist
 	entity.ensure_signal(fire_action)
 	var end_signal := StringName(fire_action + &"_end")
@@ -51,8 +57,11 @@ func _on_initialize() -> void:
 func _physics_process(delta: float) -> void:
 	if not _is_active:
 		return
+	var effective_interval := fire_interval
+	if wave_scaler:
+		effective_interval = wave_scaler.evaluate()
 	_timer += delta
-	if _timer >= fire_interval:
+	if _timer >= effective_interval:
 		_timer = 0.0
 		# emit named signal (e.g., "shoot") for specific arms like GunArm
 		entity.emit_signal(fire_action)

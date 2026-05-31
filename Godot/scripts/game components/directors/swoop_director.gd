@@ -9,6 +9,8 @@ class_name SwoopDirector extends CDGameComponent
 
 # groups containing entities that should swoop
 @export var swooping_groups: Array[StringName] = [&"swooping"]
+# when true, entity must be in ALL listed groups (intersection); false = any group (union)
+@export var require_all: bool = false
 # destination point for the curve end
 @export var target: Vector2 = Vector2.ZERO:
 	set(v):
@@ -143,13 +145,7 @@ func _generate_checkpoints() -> PackedVector2Array:
 
 # gather swooping entities, generate curve and checkpoints, assign staggered delays
 func _on_trigger(_wave_number: int = 0) -> void:
-	var seen: Dictionary = {}
-	var entities: Array[CDEntity] = []
-	for group_name in swooping_groups:
-		for entity in game.group_registry.get_group(group_name):
-			if not seen.has(entity):
-				seen[entity] = true
-				entities.append(entity)
+	var entities: Array[CDEntity] = _gather_entities()
 	if entities.is_empty():
 		return
 	
@@ -177,6 +173,36 @@ func _on_trigger(_wave_number: int = 0) -> void:
 		slot_index += 1
 	
 	set_physics_process(true)
+
+# --- entity gathering ---
+
+# collect entities from swooping_groups using union (OR) or intersection (AND) logic
+func _gather_entities() -> Array[CDEntity]:
+	var entities: Array[CDEntity] = []
+	
+	if require_all and swooping_groups.size() > 1:
+		# AND: start with first group, keep only entities in ALL remaining groups
+		var first_group: StringName = swooping_groups[0]
+		for entity in game.group_registry.get_group(first_group):
+			if not is_instance_valid(entity):
+				continue
+			var in_all := true
+			for i in range(1, swooping_groups.size()):
+				if not entity.is_in_group(swooping_groups[i]):
+					in_all = false
+					break
+			if in_all:
+				entities.append(entity)
+	else:
+		# OR: union of all groups, deduplicated
+		var seen: Dictionary = {}
+		for group_name in swooping_groups:
+			for entity in game.group_registry.get_group(group_name):
+				if not seen.has(entity):
+					seen[entity] = true
+					entities.append(entity)
+	
+	return entities
 
 # --- processing ---
 
@@ -248,6 +274,8 @@ func _physics_process(delta: float) -> void:
 
 # clear all swoop state for game restart
 func reset() -> void:
+	if curve:
+		curve.reset()
 	_curve = null
 	_curve_length = 0.0
 	_checkpoints.clear()

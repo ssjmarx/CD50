@@ -6,7 +6,7 @@
 **Playable Games:** Paddle Ball, Brick Breaker, Space Rocks, Meteor Rally, Dogfight, Bug Blaster, Block Drop (Modern), Rock Breaker, Bug Drop, Space Bugs, Planetary Attack!, Space Rocks Inverted — ALL componentized, zero game scripts
 **In Progress:** Bug Blaster 2 (Galaga) — partially implemented. Formation movement, swoop/dive bombing, shooting directors, CDMark collision detection, StateDirector dive cycle, and AISwoopBrain stop signals all functional. Remaining: capture ships, capture mechanics, multiple waves.
 **Recent Completed:** Bug Blaster 2 (Galaga) first playable — formation grid, swoop/dive attacks with curve paths, ShootingDirector + AimingDirector, CDMark dive-complete zones, StateDirector group-as-state dive cycle, AISwoopBrain array exports + stop signals. Plans 19–25 complete. 156 V2 scripts written.
-**Demo Status:** Code-locked at 12 games. Only Steam wishlist link remains. Itch.io demo stays on V1 architecture.
+**Demo Status:** Code-locked at 12 games. Polybius character complete (7 scripts, 5 voice lines, full AO intro/outro integration). Only shipping tasks remain (flip itch to public, add Steam wishlist link). Itch.io demo stays on V1 architecture.
 
 **Key Documentation:**
 - `USAGE.md` — Complete patterns, anti-patterns, and code quality guide for the V2 architecture

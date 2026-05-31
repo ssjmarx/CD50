@@ -13,6 +13,9 @@ class_name CDStageTrapdoor extends CDGameComponent
 # optional resource for velocity/rotation applied before entity enters tree
 @export var spawn_context: CDSpawnContext = null
 
+# seconds to wait before starting the spawn after trigger signal fires
+@export var trigger_delay: float = 0.0
+
 # kill overlapping entities at spawn point before spawning
 @export var telefrag: bool = false
 @export var telefrag_targets: Array[StringName] = [&"enemies"]
@@ -35,6 +38,10 @@ var _spawn_timer: float = 0.0
 var _current_wave: int = 0
 # paused while a SafeZoneMark reports the spawn area is occupied
 var _zone_is_safe: bool = true
+# countdown for trigger_delay before spawning begins
+var _delay_remaining: float = 0.0
+# wave number saved during delay phase
+var _pending_wave: int = 0
 
 # disable processing until a trigger signal arrives
 func _ready() -> void:
@@ -45,16 +52,37 @@ func _ready() -> void:
 # connect all trigger, safe, and unsafe signals to the game bus
 func _on_initialize() -> void:
 	for sig in trigger_signals:
-		game.bus_connect(sig, _on_trigger)
+		if trigger_delay > 0.0:
+			game.bus_connect(sig, _on_delayed_trigger)
+		else:
+			game.bus_connect(sig, _on_trigger)
 	for sig in safe_signals:
 		game.bus_connect(sig, _on_zone_safe)
 	for sig in unsafe_signals:
 		game.bus_connect(sig, _on_zone_unsafe)
 
+# --- Delay Gate ---
+
+# receives trigger signal and enters delay phase before spawning
+func _on_delayed_trigger(wave_number: int = 0) -> void:
+	if game.current_state == CDEnums.GameState.GAME_OVER:
+		return
+	_pending_wave = wave_number
+	_delay_remaining = trigger_delay
+	set_physics_process(true)
+
 # --- Stagger Loop ---
 
 # drain spawn queue one entity at a time with stagger delay
 func _physics_process(delta: float) -> void:
+	# phase 1: countdown trigger_delay before spawning
+	if _delay_remaining > 0.0:
+		_delay_remaining -= delta
+		if _delay_remaining <= 0.0:
+			_delay_remaining = 0.0
+			_on_trigger(_pending_wave)
+		return
+
 	if _spawn_queue.is_empty():
 		set_physics_process(false)
 		return

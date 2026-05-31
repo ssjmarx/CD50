@@ -4,6 +4,39 @@
 
 ---
 
+## Polybius Character — COMPLETE (7 V1 scripts, 5 voice lines)
+
+Plan 15 Phase 2 is fully implemented in V1. The Polybius character is a complete narrator/face for the arcade cabinet experience, with full ArcadeOrchestrator integration.
+
+### What's Done
+
+- **7 Polybius scripts:** `polybius_face.gd`, `polybius_eyes.gd`, `polybius_mouth.gd`, `polybius_nose.gd`, `polybius_beat.gd`, `polybius_line.gd`, `polybius_phrase.gd`
+- **5 voice lines recorded:** `again.ogg`, `for_score.ogg`, `i_hunger.ogg`, `leaderboard.ogg`, `pathetic.ogg`
+- **2 phrase resources:** `i_hunger.tres`, `leaderboard.tres`
+- **Full AO integration:** `POLYBIUS` state in orchestrator state machine, intro plays before first game (`_show_polybius_screen("intro", ...)`), outro plays after final defeat (`_show_polybius_outro()`), SubViewport slide transitions between Polybius and games/game-over
+
+### Files
+
+| File | Purpose |
+|------|---------|
+| `v1/Scripts/Hub/polybius_face.gd` | Main Polybius face controller |
+| `v1/Scripts/Hub/polybius_eyes.gd` | Eye drawing and animation |
+| `v1/Scripts/Hub/polybius_mouth.gd` | Mouth drawing and animation |
+| `v1/Scripts/Hub/polybius_nose.gd` | Nose drawing |
+| `v1/Scripts/Hub/polybius_beat.gd` | Beat/timing system for phrase delivery |
+| `v1/Scripts/Hub/polybius_line.gd` | Individual line delivery |
+| `v1/Scripts/Hub/polybius_phrase.gd` | Phrase resource definition |
+| `v1/Scenes/Hub/polybius_face.tscn` | Polybius face scene |
+| `v1/Scenes/Hub/PolybiusPhrases/i_hunger.tres` | "I hunger" phrase |
+| `v1/Scenes/Hub/PolybiusPhrases/leaderboard.tres` | "Leaderboard" phrase |
+| `v1/Assets/Voice/again.ogg` | "Again" voice line |
+| `v1/Assets/Voice/for_score.ogg` | "For score" voice line |
+| `v1/Assets/Voice/i_hunger.ogg` | "I hunger" voice line |
+| `v1/Assets/Voice/leaderboard.ogg` | "Leaderboard" voice line |
+| `v1/Assets/Voice/pathetic.ogg` | "Pathetic" voice line |
+
+---
+
 ## Bug Blaster 2 (Galaga) — Partial Implementation (0 new scripts, scene-driven)
 
 Bug Blaster 2 is now a playable Galaga remake assembled entirely from existing V2 components. No new scripts were needed — the entire game is a scene assembly leveraging the V2 composable architecture.

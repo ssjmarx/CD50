@@ -1,7 +1,7 @@
 # Current Goal
 
 **Last Updated:** 2026-05-29  
-**Status:** Active — Bug Blaster 2 (Galaga) Capture Mechanics + Multi-Wave
+**Status:** Active — Bug Blaster 2 (Galaga) Capture Mechanics + Multi-Wave. Itch.io demo ready to ship.
 
 ---
 
@@ -26,7 +26,15 @@ The itch.io demo is **code-locked** (12 games, all componentized). We are now bu
 | 7 | 25 — V2 Swarm Controllers + Galaga | All components already built in Plans 21–24; document rewritten as architectural reference | ✅ Complete |
 | 8 | 26 — Block Drop V2 | Full Block Drop remake proving Pseudogrid pattern | ? Next |
 
-### Immediate Next Step: Bug Blaster 2 (Galaga) — Capture Mechanics + Multi-Wave
+### Immediate Next Step: Ship Itch.io Demo
+
+The itch.io demo is feature-complete. All 12 games, Polybius character, 5 modifiers, and mini progression system are done. Remaining shipping tasks only:
+
+1. Flip itch page from private to public
+2. Add "Wishlist on Steam" button on the itch page
+3. Add teaser line with Steam link
+
+### After Shipping: Bug Blaster 2 (Galaga) — Capture Mechanics + Multi-Wave
 
 Bug Blaster 2 is partially implemented with formation, swoop/dive, and shooting all functional. Remaining features:
 
@@ -43,7 +51,7 @@ All components already exist (AITractorBeamBrain, TractorBeamArm, PowerupWingman
 
 ### Demo Status
 
-The itch.io demo is code-locked at 12 games. The only unimplemented feature is the Steam wishlist link. Polybius character work (Plan 15 Phase 2) is paused — voice lines remain unrecorded but the face drawing system exists and works.
+The itch.io demo is **feature-complete and ready to ship**. All 12 games, Polybius character (7 scripts, 5 voice lines, full AO integration), 5 Balatro-like modifiers, and mini progression system are done. Only shipping tasks remain (flip itch to public, add Steam wishlist link).
 
 ### Demo Game Roster — FINAL (12 games)
 
@@ -71,10 +79,10 @@ The itch.io demo is code-locked at 12 games. The only unimplemented feature is t
 - Phase 1.7: Music system (MusicPlayer + MusicTrack resources), flag palette overhaul, Brick Breaker random launch angle
 - Phase 1.8: All 9 web perf optimizations — 60fps on T480 browser target. SoundBank autoload, flag palette web fix.
 
-**Phase 2 IN PROGRESS — Polybius Character:**
-- Step 2a ✅: `polybius_face.gd`, `polybius_eyes.gd`, `polybius_mouth.gd`, `polybius_nose.gd`, `polybius_face.tscn` created
-- **Step 2b (ACTIVE):** Drawing facial frames — filling in point data for expression/mouth resources
-- Remaining: voice lines, typewriter text, animations, AO integration (steps 2c–2j)
+**Phase 2 COMPLETE — Polybius Character:**
+- ✅ All 7 scripts written (polybius_face, polybius_eyes, polybius_mouth, polybius_nose, polybius_beat, polybius_line, polybius_phrase)
+- ✅ 5 voice lines recorded (again, for_score, i_hunger, leaderboard, pathetic)
+- ✅ Full AO integration (intro before first game, outro after final defeat, SubViewport slide transitions)
 
 ### Plan 16 — Cambrian Remix Explosion
 **Status:** COMPLETE  

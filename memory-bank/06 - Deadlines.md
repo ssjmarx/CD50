@@ -1,6 +1,6 @@
 # Deadlines: CD50 — Arcade Cabinet
 
-**Last Updated:** 2026-05-20  
+**Last Updated:** 2026-05-29  
 **Source:** Commercial shipping schedule — itch.io demo + Steam Coming Soon + Next Fest
 
 ---
@@ -41,7 +41,7 @@
 
 ## Phase 2 — Mid–Late May (May 12–31) — SHIP THE DEMO
 
-**Game roster FINALIZED at 12 games.** No more games will be built for the demo. **One feature remains** (Polybius), then ship.
+**Game roster FINALIZED at 12 games.** No more games will be built for the demo. **All features complete** — only shipping tasks remain.
 
 ### Demo Game Roster — FINAL
 
@@ -51,18 +51,18 @@
 | Remixes | 5 | Dogfight, Meteor Rally, Rock Breaker, Bug Drop, Space Bugs |
 | Inversions | 2 | Planetary Attack!, Space Rocks Inverted |
 
-### Remaining Work — 1 Feature
+### Remaining Work — Shipping Only (all features complete)
 
-**1. Polybius Character (Plan 15 Phase 2)**
-- [ ] Complete facial frame drawing (Step 2b — in progress)
-- [ ] Record voice lines + bitcrush → export as .ogg (Step 2c)
-- [ ] Implement typewriter text + voice playback sync (Step 2d)
-- [ ] Implement face animations — roll up/down, quick flash (Step 2e)
-- [ ] Add INTRO state to AO + face integration on run start (Step 2f)
-- [ ] Add quick-comment integration on RESULT state (Step 2g)
-- [ ] Add game-over integration on GAME_OVER state (Step 2h)
-- [ ] Add random in-game taunt during PLAYING state (Step 2i)
-- [ ] Playtest full arcade run with Polybius (Step 2j)
+**~~1. Polybius Character (Plan 15 Phase 2)~~ ✅ COMPLETE**
+- [x] Complete facial frame drawing (Step 2b)
+- [x] Record voice lines + bitcrush → export as .ogg (Step 2c)
+- [x] Implement typewriter text + voice playback sync (Step 2d)
+- [x] Implement face animations — roll up/down, quick flash (Step 2e)
+- [x] Add INTRO state to AO + face integration on run start (Step 2f)
+- [x] Add quick-comment integration on RESULT state (Step 2g)
+- [x] Add game-over integration on GAME_OVER state (Step 2h)
+- [x] Add random in-game taunt during PLAYING state (Step 2i)
+- [x] Playtest full arcade run with Polybius (Step 2j)
 
 **~~2. 5 Balatro-like Modifiers~~ ✅ COMPLETE (May 19)**
 - [x] Shotgun Mode — gun_simple fires 3 bullets with 15° spread

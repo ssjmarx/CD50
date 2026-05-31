@@ -27,6 +27,9 @@ class_name CDTransition extends Resource
 # seconds between activations (0 = no cooldown)
 @export var cooldown: float = 0.0
 
+# optional wave scaler — overrides cooldown when assigned
+@export var wave_scaler: CDWaveScaler
+
 # entity signals emitted when entering new groups
 @export var emit_signals: Array[StringName] = []
 
@@ -43,6 +46,8 @@ var _cooldown_timer: float = 0.0
 # reset timer and initialize trigger + selector with game refs
 func initialize(game: CDGame) -> void:
 	_cooldown_timer = 0.0
+	if wave_scaler:
+		wave_scaler.initialize(game)
 	if trigger:
 		trigger.initialize(game)
 	if selector:
@@ -53,6 +58,8 @@ func initialize(game: CDGame) -> void:
 # full reset for game restart
 func reset() -> void:
 	_cooldown_timer = 0.0
+	if wave_scaler:
+		wave_scaler.reset()
 	if trigger:
 		trigger.reset()
 	if selector:
@@ -71,8 +78,11 @@ func is_on_cooldown() -> bool:
 
 # begin cooldown after a successful activation
 func start_cooldown() -> void:
-	if cooldown > 0.0:
-		_cooldown_timer = cooldown
+	var effective_cooldown := cooldown
+	if wave_scaler:
+		effective_cooldown = wave_scaler.evaluate()
+	if effective_cooldown > 0.0:
+		_cooldown_timer = effective_cooldown
 
 # --- Validation ---
 

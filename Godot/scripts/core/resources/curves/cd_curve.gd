@@ -68,6 +68,12 @@ func _reverse_curve(curve: Curve2D) -> Curve2D:
 func _finalize(curve: Curve2D) -> Curve2D:
 	return _reverse_curve(_apply_offset(curve))
 
+# --- Reset ---
+
+# override in subclasses that hold mutable state (e.g. CDSequenceCurve)
+func reset() -> void:
+	pass
+
 # --- Utility ---
 
 # golden-ratio-based phase offset for per-instance variation
