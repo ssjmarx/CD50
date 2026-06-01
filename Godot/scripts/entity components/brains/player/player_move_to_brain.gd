@@ -1,30 +1,24 @@
 # PlayerMoveToBrain
-# Emits move_to with the mouse global position each physics frame
-# Used for entities that follow the cursor (e.g., paddle in Pong)
+# Writes the mouse global position to the blackboard
+# Uses direction + distance paradigm (eliminates need for conversion)
 
 class_name PlayerMoveToBrain extends CDEntityComponent
 
-@export_group("Emit Signals")
-@export var move_to_signals: Array[StringName] = [&"move_to"]
+@export var move_direction_key: StringName = &"move_direction"
+@export var move_distance_key: StringName = &"move_distance"
 
 func _ready() -> void:
 	component_category = CDEnums.ComponentCategory.INTENT
 	super._ready()
 
-# ensure move_to signals exist on entity
-func _on_initialize() -> void:
-	for sig in move_to_signals:
-		entity.ensure_signal(sig)
-
-# emit mouse position as move_to target each frame
 func _physics_process(_delta: float) -> void:
 	if Engine.is_editor_hint():
 		return
 	var target := entity.get_global_mouse_position()
-	for sig in move_to_signals:
-		entity.emit_signal(sig, target)
+	var to_target := target - entity.global_position
+	entity.blackboard[move_direction_key] = to_target.normalized()
+	entity.blackboard[move_distance_key] = to_target.length()
 
-# disable physics processing on deactivation
 func _on_entity_deactivating() -> void:
 	super._on_entity_deactivating()
 	set_physics_process(false)

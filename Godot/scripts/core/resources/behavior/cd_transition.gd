@@ -1,9 +1,6 @@
 # CDTransition
 # Defines when and how entities move between groups
 # Used by Directors to orchestrate entity state changes via trigger → selector → group swap
-# remove_groups: entities are removed from each group listed
-# add_groups: entities are added to each group listed
-# target_groups: used for filtering candidates (entity must be in ALL target groups)
 
 class_name CDTransition extends Resource
 
@@ -30,11 +27,9 @@ class_name CDTransition extends Resource
 # optional wave scaler — overrides cooldown when assigned
 @export var wave_scaler: CDWaveScaler
 
-# entity signals emitted when entering new groups
-@export var emit_signals: Array[StringName] = []
-
-# entity signals emitted when leaving old groups
-@export var exit_signals: Array[StringName] = []
+# signals on transition
+@export var entity_signals: Array[StringName] = []
+@export var game_signals: Array[StringName] = []
 
 # --- Internal State ---
 

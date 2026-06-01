@@ -53,41 +53,46 @@ var _tip_flicker: float = 0.0
 
 # --- lifecycle ---
 
-# connect thrust signals and disable physics processing until active
+# connect thrust signals and disable processing until active
 func _on_initialize() -> void:
-	entity.connect("thrust", _on_thrust)
-	entity.connect("end_thrust", _on_end_thrust)
-	set_physics_process(false)
+	entity.bus_connect("thrust", _on_thrust)
+	entity.bus_connect("end_thrust", _on_end_thrust)
+	set_process(false)
 
 # --- signal handlers ---
 
 # enable thrusting and start physics processing
 func _on_thrust() -> void:
 	_is_thrusting = true
-	set_physics_process(true)
+	set_process(true)
 
 # disable thrusting and stop physics processing
 func _on_end_thrust() -> void:
 	_is_thrusting = false
-	set_physics_process(false)
+	set_process(false)
 	queue_redraw()
 
 # --- processing ---
 
-# update flicker tip on timer, redraw each frame while thrusting
-func _physics_process(delta: float) -> void:
-	_timer += delta
-	if _timer > flicker_speed:
-		_tip_flicker = randf_range(0.0, flicker_size)
-		_timer = 0.0
-	queue_redraw()
-
 # redraw each frame in editor for live preview
-func _process(_delta: float) -> void:
+func _process(delta: float) -> void:
 	if Engine.is_editor_hint():
+		queue_redraw()
+	else:
+		_timer += delta
+		if _timer > flicker_speed:
+			_tip_flicker = randf_range(0.0, flicker_size)
+			_timer = 0.0
 		queue_redraw()
 
 # --- drawing ---
+
+func _on_entity_deactivating() -> void:
+	super._on_entity_deactivating()
+	entity.bus_disconnect("thrust", _on_thrust)
+	entity.bus_disconnect("end_thrust", _on_end_thrust)
+	_is_thrusting = false
+	set_process(false)
 
 # draw the V-shaped flame behind the entity
 func _draw() -> void:

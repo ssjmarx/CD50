@@ -7,6 +7,8 @@ class_name CDUpdater extends Node
 # queued transition operations
 var _pending: Array[Dictionary] = []
 
+@onready var game = CDGame.find_ancestor(self)
+
 # runs at UPDATE priority — after all gameplay components finish
 func _ready() -> void:
 	process_physics_priority = CDEnums.category_to_priority(CDEnums.ComponentCategory.UPDATE)
@@ -18,13 +20,13 @@ func _physics_process(_delta: float) -> void:
 # --- Public API ---
 
 # queue a group transition: remove from groups, add to groups, emit exit/enter signals
-func queue_transition(entity: CDEntity, remove_groups: Array[StringName], add_groups: Array[StringName], exit_signals: Array[StringName] = [], emit_signals: Array[StringName] = []) -> void:
+func queue_transition(entity: CDEntity, remove_groups: Array[StringName], add_groups: Array[StringName], entity_signals: Array[StringName] = [], game_signals: Array[StringName] = []) -> void:
 	_pending.append({
 		"entity": entity,
 		"remove": remove_groups,
 		"add": add_groups,
-		"exit_signals": exit_signals,
-		"emit_signals": emit_signals,
+		"entity_signals": entity_signals,
+		"game_signals": game_signals,
 	})
 
 # --- Internal ---
@@ -38,8 +40,8 @@ func _flush() -> void:
 
 		var remove_groups: Array = op["remove"]
 		var add_groups: Array = op["add"]
-		var exit_signals: Array = op["exit_signals"]
-		var emit_signals: Array = op["emit_signals"]
+		var entity_signals: Array = op["entity_signals"]
+		var game_signals: Array = op["game_signals"]
 
 		# remove from all specified groups
 		for group in remove_groups:
@@ -61,15 +63,11 @@ func _flush() -> void:
 					entity.game.group_registry.mark_dirty(group)
 
 		# emit exit signals on the entity (ensure first — idempotent)
-		for sig in exit_signals:
+		for sig in entity_signals:
 			if sig != &"":
-				entity.ensure_signal(sig)
-				entity.emit_signal(sig)
-
-		# emit enter signals on the entity (ensure first — idempotent)
-		for sig in emit_signals:
+				entity.bus_emit(sig)
+		for sig in game_signals:
 			if sig != &"":
-				entity.ensure_signal(sig)
-				entity.emit_signal(sig)
+				game.bus_emit(sig)
 
 	_pending.clear()

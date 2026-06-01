@@ -19,8 +19,11 @@ class_name AIPathMoveBrain extends CDEntityComponent
 # if false, offset waypoints by entity's spawn position
 @export var use_global_coords: bool = false
 
+@export_group("Blackboard Keys")
+@export var move_key: StringName = &"move_direction"
+@export var distance_key: StringName = &"move_distance"
+
 @export_group("Emit Signals")
-@export var move_signals: Array[StringName] = [&"move_to"]
 @export var complete_signals: Array[StringName] = [&"patrol_complete"]
 
 # baked waypoint positions
@@ -36,12 +39,8 @@ func _ready() -> void:
 	component_category = CDEnums.ComponentCategory.INTENT
 	super._ready()
 
-# ensure signals exist and bake waypoints from the curve
+# bake waypoints from the curve
 func _on_initialize() -> void:
-	for sig in move_signals:
-		entity.ensure_signal(sig)
-	for sig in complete_signals:
-		entity.ensure_signal(sig)
 	_build_waypoints()
 
 # sample the curve at regular intervals to build waypoint array
@@ -65,9 +64,10 @@ func _physics_process(_delta: float) -> void:
 		return
 	
 	var target := _waypoints[_current_index]
+	var to_target = target - entity.global_position
 	
-	for sig in move_signals:
-		entity.emit_signal(sig, target)
+	entity.blackboard[move_key] = to_target.normalized()
+	entity.blackboard[distance_key] = to_target.length()
 	
 	# check if close enough to advance
 	if entity.global_position.distance_to(target) < arrival_distance:
@@ -86,7 +86,7 @@ func _advance_waypoint() -> void:
 					_direction = -1
 				CDEnums.PatrolMode.ONCE:
 					for sig in complete_signals:
-						entity.emit_signal(sig)
+						entity.bus_emit(sig)
 					set_physics_process(false)
 	else:
 		_current_index -= 1
@@ -99,7 +99,7 @@ func _advance_waypoint() -> void:
 					_direction = 1
 				CDEnums.PatrolMode.ONCE:
 					for sig in complete_signals:
-						entity.emit_signal(sig)
+						entity.bus_emit(sig)
 					set_physics_process(false)
 
 func _on_entity_deactivating() -> void:

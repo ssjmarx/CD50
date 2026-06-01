@@ -1,6 +1,6 @@
-# StatusEffectArm
+# StatusOnHitArm
 # Sends a status effect signal and duration to another entity on collision
-# Emits apply_status(status_name, duration) on the collider
+# Emits on the collider and writes pending status to blackboard
 
 class_name StatusEffectArm extends CDEntityComponent
 
@@ -12,6 +12,10 @@ class_name StatusEffectArm extends CDEntityComponent
 
 # if non-empty, only apply to colliders in these groups
 @export var target_groups: Array[StringName]
+
+@export_group("Blackboard Keys")
+@export var status_keys: Array[StringName] = [&"pending_status"]
+@export var duration_keys: Array[StringName] = [&"pending_status_duration"]
 
 @export_group("Listen Signals")
 @export var collision_signals: Array[StringName] = [&"collision"]
@@ -34,9 +38,12 @@ func _on_collision(collider: CDEntity, _normal: Vector2) -> void:
 		return
 	if not _is_valid_target(collider):
 		return
+	for key in status_keys:
+		collider.blackboard[key] = status_name
+	for key in duration_keys:
+		collider.blackboard[key] = duration
 	for sig in status_signals:
-		if collider.has_signal(sig):
-			collider.emit_signal(sig, status_name, duration)
+		collider.bus_emit(sig)
 
 # return true if target_groups is empty or collider is in one of them
 func _is_valid_target(collider: CDEntity) -> bool:

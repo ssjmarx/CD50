@@ -108,11 +108,11 @@ func _on_initialize() -> void:
 	super._on_initialize()
 
 	for sig in trigger_glitch:
-		entity.connect(sig, _force_glitch)
+		entity.bus_connect(sig, _force_glitch)
 	for sig in trigger_corrupt:
-		entity.connect(sig, _force_corrupt)
+		entity.bus_connect(sig, _force_corrupt)
 	for sig in trigger_static:
-		entity.connect(sig, _force_static)
+		entity.bus_connect(sig, _force_static)
 
 # update elapsed time, menace effects, and redraw each frame
 func _process(delta: float) -> void:
@@ -128,19 +128,19 @@ func _process(delta: float) -> void:
 ### signal handlers force an immediate effect flash
 
 # force an immediate glitch burst with random duration
-func _force_glitch(_arg = null) -> void:
+func _force_glitch() -> void:
 	_glitch_active = true
 	_glitch_timer = randf_range(0.06, 0.15)
 	_generate_glitch_slices()
 
 # force an immediate corrupt burst with random duration
-func _force_corrupt(_arg = null) -> void:
+func _force_corrupt() -> void:
 	_corrupt_active = true
 	_corrupt_timer = randf_range(0.05, 0.12)
 	_corrupt_seed = randi()
 
 # force an immediate static burst
-func _force_static(_arg = null) -> void:
+func _force_static() -> void:
 	_static_active = true
 	_generate_static_particles()
 
@@ -236,6 +236,15 @@ func _get_glitch_offset(y: float) -> float:
 		if y >= slice.y_start and y <= slice.y_end:
 			return slice.x_offset
 	return 0.0
+
+func _on_entity_deactivating() -> void:
+	for sig in trigger_glitch:
+		entity.bus_disconnect(sig, _force_glitch)
+	for sig in trigger_corrupt:
+		entity.bus_disconnect(sig, _force_corrupt)
+	for sig in trigger_static:
+		entity.bus_disconnect(sig, _force_static)
+	super._on_entity_deactivating()
 
 # displace a point using seeded pseudo-random corruption
 func _corrupt_point(p: Vector2) -> Vector2:

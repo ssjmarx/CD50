@@ -64,10 +64,10 @@ func _on_initialize() -> void:
 # --- Delay Gate ---
 
 # receives trigger signal and enters delay phase before spawning
-func _on_delayed_trigger(wave_number: int = 0) -> void:
+func _on_delayed_trigger() -> void:
 	if game.current_state == CDEnums.GameState.GAME_OVER:
 		return
-	_pending_wave = wave_number
+	_pending_wave = game.blackboard.get("wave_number", 0)
 	_delay_remaining = trigger_delay
 	set_physics_process(true)
 
@@ -80,7 +80,7 @@ func _physics_process(delta: float) -> void:
 		_delay_remaining -= delta
 		if _delay_remaining <= 0.0:
 			_delay_remaining = 0.0
-			_on_trigger(_pending_wave)
+			_on_trigger()
 		return
 
 	if _spawn_queue.is_empty():
@@ -100,8 +100,9 @@ func _physics_process(delta: float) -> void:
 
 	# emit completion signal when entire wave is done
 	if _spawn_queue.is_empty():
+		game.blackboard["spawned_wave"] = _current_wave
 		for sig in on_spawning_complete:
-			game.bus_emit(sig, [_current_wave])
+			game.bus_emit(sig)
 
 # --- Virtual Methods for Concrete Trapdoors ---
 
@@ -121,12 +122,12 @@ func _get_spawn_scene(_index: int, _total: int) -> PackedScene:
 # --- Trigger Handling ---
 
 # receive trigger signal, queue all spawn indices, start stagger loop
-func _on_trigger(wave_number: int = 0) -> void:
+func _on_trigger() -> void:
 	if game.current_state == CDEnums.GameState.GAME_OVER:
 		return
 
-	_current_wave = wave_number
-	var total: int = _get_spawn_count(wave_number)
+	_current_wave = game.blackboard.get("wave_number", 0)
+	var total: int = _get_spawn_count(_current_wave)
 
 	# build queue of indices to spawn
 	_spawn_queue.clear()

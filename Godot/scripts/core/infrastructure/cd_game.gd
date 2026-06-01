@@ -14,6 +14,9 @@ class_name CDGame extends Node2D
 @onready var input_router: CDInputRouter = $CDInputRouter
 @onready var update: CDUpdater = $CDUpdater
 
+# blackboard for shared game state
+var blackboard: Dictionary = {}
+
 # --- State Machine ---
 
 var _current_state: CDEnums.GameState = CDEnums.GameState.ATTRACT
@@ -26,14 +29,9 @@ var current_state: CDEnums.GameState:
 	set(value):
 		if _current_state != value:
 			_current_state = value
-			bus_emit("game_state_changed", [value])
+			bus_emit("game_state_changed")
 			if _current_state == CDEnums.GameState.PLAYING:
 				_attract_label.visible = (current_state == CDEnums.GameState.ATTRACT)
-
-# --- Game Bus ---
-
-# Dictionary-based signal router — emit with no listeners is a safe no-op
-var _bus: Dictionary = {}  # {StringName: Array[Callable]}
 
 # --- Setup ---
 
@@ -75,34 +73,18 @@ func _ready() -> void:
 
 # --- Game Bus API ---
 
-# subscribe a callable to a named event
 func bus_connect(signal_name: StringName, callable: Callable) -> void:
-	if not _bus.has(signal_name):
-		_bus[signal_name] = []
-	_bus[signal_name].append(callable)
+	if not has_signal(signal_name):
+		add_user_signal(signal_name)
+	connect(signal_name, callable)
 
-# unsubscribe a callable from a named event
 func bus_disconnect(signal_name: StringName, callable: Callable) -> void:
-	if _bus.has(signal_name):
-		_bus[signal_name].erase(callable)
-		if _bus[signal_name].is_empty():
-			_bus.erase(signal_name)
+	if has_signal(signal_name) and is_connected(signal_name, callable):
+		disconnect(signal_name, callable)
 
-# emit a named event with optional args — no-op if nobody is listening
-func bus_emit(signal_name: StringName, args: Array = []) -> void:
-	if not _bus.has(signal_name):
-		return
-	var callables = _bus[signal_name]
-	# fast paths for common arg counts
-	if args.is_empty():
-		for c in callables:
-			c.call()
-	elif args.size() == 1:
-		for c in callables:
-			c.call(args[0])
-	else:
-		for c in callables:
-			c.callv(args)
+func bus_emit(signal_name: StringName) -> void:
+	if has_signal(signal_name):
+		emit_signal(signal_name)
 
 # --- State Transitions ---
 
@@ -111,6 +93,7 @@ func start_game() -> void:
 	if _current_state != CDEnums.GameState.ATTRACT:
 		return
 	get_tree().paused = false
+	blackboard.clear()
 	current_state = CDEnums.GameState.PLAYING
 	bus_emit("game_play")
 
@@ -118,9 +101,10 @@ func start_game() -> void:
 func end_game(result: CDEnums.GameResult) -> void:
 	if _current_state == CDEnums.GameState.GAME_OVER:
 		return
+	blackboard["game_result"] = result
 	get_tree().paused = true
 	current_state = CDEnums.GameState.GAME_OVER
-	bus_emit("game_over", [result])
+	bus_emit("game_over")
 
 # toggle pause state
 func pause_game() -> void:
@@ -134,6 +118,7 @@ func unpause_game() -> void:
 
 # full scene reload via Godot
 func reset_game() -> void:
+	blackboard.clear()
 	get_tree().reload_current_scene()
 
 # exit the application

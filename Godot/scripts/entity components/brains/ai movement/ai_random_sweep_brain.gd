@@ -25,9 +25,7 @@ class_name AIRandomSweepBrain extends CDEntityComponent
 # how to behave when the sweep path ends
 @export var patrol_mode: CDEnums.PatrolMode = CDEnums.PatrolMode.ONCE
 
-@export_group("Emit Signals")
-@export var move_signals: Array[StringName] = [&"move"]
-@export var complete_signals: Array[StringName] = [&"sweep_complete"]
+@export var move_key: StringName = &"move_direction"
 
 # generated waypoint positions
 var _waypoints: Array[Vector2] = []
@@ -44,10 +42,6 @@ func _ready() -> void:
 
 # ensure signals exist and generate the sweep waypoints
 func _on_initialize() -> void:
-	for sig in move_signals:
-		entity.ensure_signal(sig)
-	for sig in complete_signals:
-		entity.ensure_signal(sig)
 	_generate_waypoints()
 
 # generate random waypoints clamped to screen bounds, plus an exit point
@@ -109,8 +103,7 @@ func _physics_process(_delta: float) -> void:
 	
 	# emit direction toward waypoint if not yet arrived
 	if distance > arrival_distance:
-		for sig in move_signals:
-			entity.emit_signal(sig, to_target.normalized())
+		entity.blackboard[move_key] = to_target.normalized()
 	else:
 		_advance_waypoint()
 
@@ -126,8 +119,6 @@ func _advance_waypoint() -> void:
 					_current_waypoint = _waypoints.size() - 1
 					_direction = -1.0
 				CDEnums.PatrolMode.ONCE:
-					for sig in complete_signals:
-						entity.emit_signal(sig)
 					set_physics_process(false)
 	else:
 		_current_waypoint -= 1
@@ -139,8 +130,6 @@ func _advance_waypoint() -> void:
 					_current_waypoint = 0
 					_direction = 1.0
 				CDEnums.PatrolMode.ONCE:
-					for sig in complete_signals:
-						entity.emit_signal(sig)
 					set_physics_process(false)
 
 func _on_entity_deactivating() -> void:

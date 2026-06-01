@@ -16,8 +16,7 @@ class_name AIFleeBrain extends CDEntityComponent
 # random offset added to threat position for imprecision
 @export var targeting_noise: float = 0.0
 
-@export_group("Emit Signals")
-@export var move_signals: Array[StringName] = [&"move"]
+@export var move_key: StringName = &"move_direction"
 
 # timer for throttled updates
 var _update_timer: float = 0.0
@@ -29,19 +28,13 @@ func _ready() -> void:
 	component_category = CDEnums.ComponentCategory.INTENT
 	super._ready()
 
-# ensure move signals exist on entity
-func _on_initialize() -> void:
-	for sig in move_signals:
-		entity.ensure_signal(sig)
-
 # emit move direction each frame, recalculate target on interval
 func _physics_process(delta: float) -> void:
 	# if throttled, emit cached direction until interval expires
 	if update_interval > 0.0:
 		_update_timer += delta
 		if _update_timer < update_interval:
-			for sig in move_signals:
-				entity.emit_signal(sig, _last_direction)
+			entity.blackboard[move_key] = _last_direction
 			return
 		_update_timer = 0.0
 
@@ -49,8 +42,7 @@ func _physics_process(delta: float) -> void:
 	var nearest := _find_nearest()
 	if nearest == null:
 		_last_direction = Vector2.ZERO
-		for sig in move_signals:
-			entity.emit_signal(sig, Vector2.ZERO)
+		entity.blackboard[move_key] = _last_direction
 		return
 
 	var threat_pos := _apply_noise(nearest.global_position)
@@ -59,14 +51,12 @@ func _physics_process(delta: float) -> void:
 	# stop fleeing if far enough away
 	if distance > flee_distance:
 		_last_direction = Vector2.ZERO
-		for sig in move_signals:
-			entity.emit_signal(sig, Vector2.ZERO)
+		entity.blackboard[move_key] = _last_direction
 		return
 
 	# emit direction away from threat
 	_last_direction = threat_pos.direction_to(entity.global_position)
-	for sig in move_signals:
-		entity.emit_signal(sig, _last_direction)
+	entity.blackboard[move_key] = _last_direction
 
 # search all threat groups for the nearest entity
 func _find_nearest() -> CDEntity:

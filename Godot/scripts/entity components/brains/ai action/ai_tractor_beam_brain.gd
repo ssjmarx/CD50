@@ -4,10 +4,7 @@
 
 class_name AITractorBeamBrain extends CDEntityComponent
 
-# entity must be in one of these groups to trigger
 @export var qualifying_groups: Array[StringName] = [&"diving"]
-
-# Y position threshold to trigger the capture
 @export var trigger_height: float = 200.0
 
 @export_group("Listen Signals")
@@ -18,52 +15,43 @@ class_name AITractorBeamBrain extends CDEntityComponent
 @export var capture_started_signals: Array[StringName] = [&"capture_phase_started"]
 @export var capture_ended_signals: Array[StringName] = [&"capture_phase_ended"]
 
-# whether currently in capture phase
+@export_group("Game Blackboard")
+@export var capturing_entity_key: StringName = &"capturing_entity"
+
 var _is_capturing: bool = false
 
-func _ready() -> void:
-	component_category = CDEnums.ComponentCategory.INTENT
-	super._ready()
-
-# ensure signals exist and connect arm completion listener
 func _on_initialize() -> void:
-	for sig in arm_fire_signals:
-		entity.ensure_signal(sig)
-	for sig in capture_started_signals:
-		entity.ensure_signal(sig)
-	for sig in capture_ended_signals:
-		entity.ensure_signal(sig)
 	for sig in arm_complete_signals:
-		entity.ensure_signal(sig)
-		entity.connect(sig, _on_arm_complete)
+		entity.bus_connect(sig, _on_arm_complete)
 
-# check trigger conditions and begin capture when entity is low enough
 func _physics_process(_delta: float) -> void:
-	if _is_capturing:
-		return
-	if not _qualifies():
+	if _is_capturing or not _qualifies():
 		return
 	if entity.global_position.y >= trigger_height:
 		_begin_capture()
 
-# halt movement, notify game, and fire the tractor beam arm
 func _begin_capture() -> void:
 	_is_capturing = true
 	entity.request_velocity_set(Vector2.ZERO)
+	game.blackboard[capturing_entity_key] = entity
 	for sig in capture_started_signals:
-		game.bus_emit(sig, [entity])
+		game.bus_emit(sig)
 	for sig in arm_fire_signals:
-		entity.emit_signal(sig)
+		entity.bus_emit(sig)
 
-# resume from capture when the tractor beam arm completes
-func _on_arm_complete(_arg1: Variant = null) -> void:
-	if not _is_capturing:
-		return
+func _on_arm_complete() -> void:
+	if not _is_capturing: return
 	_is_capturing = false
+	game.blackboard[capturing_entity_key] = entity
 	for sig in capture_ended_signals:
-		game.bus_emit(sig, [entity])
+		game.bus_emit(sig)
 
-# return true if entity is in at least one qualifying group (empty = always qualifies)
+func _on_entity_deactivating() -> void:
+	super._on_entity_deactivating()
+	_is_capturing = false
+	for sig in arm_complete_signals:
+		entity.bus_disconnect(sig, _on_arm_complete)
+
 func _qualifies() -> bool:
 	if qualifying_groups.is_empty():
 		return true
@@ -71,11 +59,3 @@ func _qualifies() -> bool:
 		if entity.is_in_group(group_name):
 			return true
 	return false
-
-# clean up capture state and disconnect signals
-func _on_entity_deactivating() -> void:
-	super._on_entity_deactivating()
-	_is_capturing = false
-	for sig in arm_complete_signals:
-		if entity.has_signal(sig) and entity.is_connected(sig, _on_arm_complete):
-			entity.disconnect(sig, _on_arm_complete)

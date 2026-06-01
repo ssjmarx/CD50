@@ -36,10 +36,7 @@ func _on_initialize() -> void:
 func _on_any_input(_arg1: Variant = null, _arg2: Variant = null) -> void:
 	# relay to game bus with or without entity reference
 	for rebroadcast: StringName in rebroadcast_signals:
-		if include_self:
-			game.bus_emit(rebroadcast, [entity])
-		else:
-			game.bus_emit(rebroadcast)
+		game.bus_emit(rebroadcast)
 
 # --- cleanup ---
 

@@ -4,3 +4,4 @@
 
 [node name="SpriteFace" type="Node2D"]
 script = ExtResource("1_mqcor")
+component_category = 8

@@ -28,6 +28,10 @@ class_name DamageOnJoustArm extends CDEntityComponent
 # if non-empty, only damage colliders in these groups
 @export var target_groups: Array[StringName]
 
+@export_group("Blackboard Keys")
+@export var damage_keys: Array[StringName] = [&"incoming_damage"]
+@export var source_keys: Array[StringName] = [&"damage_source"]
+
 @export_group("Listen Signals")
 @export var collision_signals: Array[StringName] = [&"collision"]
 
@@ -85,10 +89,13 @@ func _calculate_damage(diff: float) -> int:
 	return minimum_damage
 
 # emit damage signals on the collider
-func _deal_damage(collider: CDEntity, amount: int) -> void:
+func _deal_damage(collider: CDEntity, damage_amount: int) -> void:
+	for key in damage_keys:
+		collider.blackboard[key] = damage_amount
+	for key in source_keys:
+		collider.blackboard[key] = entity
 	for sig in damage_signals:
-		if collider.has_signal(sig):
-			collider.emit_signal(sig, amount, entity)
+		collider.bus_emit(sig)
 
 # read the comparison value from an entity based on mode
 func _read_compare_value(ent: CDEntity) -> Variant:

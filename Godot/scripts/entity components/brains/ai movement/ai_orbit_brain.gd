@@ -16,14 +16,15 @@ class_name AIOrbitBrain extends CDEntityComponent
 # random offset added to leader position for imprecision
 @export var targeting_noise: float = 0.0
 
+@export_group("Blackboard Keys")
+@export var move_key: StringName = &"move_direction"
+@export var distance_key: StringName = &"move_distance"
+
 @export_group("Target")
 # direct NodePath to leader (optional — falls back to group search)
 @export var target_entity_path: NodePath = ""
 # groups to search if no direct path is set
 @export var target_groups: Array[StringName] = [&"leader"]
-
-@export_group("Emit Signals")
-@export var move_signals: Array[StringName] = [&"move_to"]
 
 # cached reference to the leader entity
 var _leader: CDEntity
@@ -43,9 +44,6 @@ func _ready() -> void:
 
 # ensure move_to signals exist and try to resolve leader from NodePath
 func _on_initialize() -> void:
-	for sig in move_signals:
-		entity.ensure_signal(sig)
-		
 	if target_entity_path:
 		var node := get_node_or_null(target_entity_path)
 		if node is CDEntity:
@@ -66,22 +64,26 @@ func _physics_process(delta: float) -> void:
 	if not _leader:
 		return
 
-	# if throttled, emit cached position until interval expires
-	if update_interval > 0.0:
-		_update_timer += delta
-		if _update_timer < update_interval:
-			for sig in move_signals:
-				entity.emit_signal(sig, _last_target_pos)
-			return
-		_update_timer = 0.0
-
 	# compute orbit target: leader position + circular offset
 	var leader_pos := _apply_noise(_leader.global_position)
 	var angle := _elapsed * orbit_speed
 	var offset := Vector2(cos(angle), sin(angle)) * orbit_radius
-	_last_target_pos = leader_pos + offset
-	for sig in move_signals:
-		entity.emit_signal(sig, _last_target_pos)
+	var orbit_target := leader_pos + offset
+
+	# if throttled, use cached target until interval expires
+	if update_interval > 0.0:
+		_update_timer += delta
+		if _update_timer < update_interval:
+			var to_cached := _last_target_pos - entity.global_position
+			entity.blackboard[move_key] = to_cached.normalized()
+			entity.blackboard[distance_key] = to_cached.length()
+			return
+		_update_timer = 0.0
+
+	_last_target_pos = orbit_target
+	var to_target := orbit_target - entity.global_position
+	entity.blackboard[move_key] = to_target.normalized()
+	entity.blackboard[distance_key] = to_target.length()
 
 # search target groups for the nearest leader candidate
 func _acquire_leader() -> void:

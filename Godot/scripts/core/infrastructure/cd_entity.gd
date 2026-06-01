@@ -20,6 +20,9 @@ class_name CDEntity extends CharacterBody2D
 # angular velocity for newtonian rotation
 var angular_velocity: float = 0.0
 
+# blackboard for shared state between components
+var blackboard: Dictionary = {}
+
 # accumulators: multiple components add to these per frame
 var _accumulated_velocity_add: Vector2 = Vector2.ZERO
 var _accumulated_angular_add: float = 0.0
@@ -67,10 +70,6 @@ func _ready() -> void:
 	add_user_signal("request_deactivate", [])
 	add_user_signal("entity_deactivating", [])
 	add_user_signal("entity_activated", [])
-	add_user_signal("moved",	[{"name": "old_pos", "type": TYPE_VECTOR2},
-							   	{"name": "new_pos", "type": TYPE_VECTOR2}])
-	add_user_signal("rotated", 	[{"name": "old_rot", "type": TYPE_FLOAT},
-								{"name": "new_rot", "type": TYPE_FLOAT}])
 
 	# wire self-deactivation signal
 	connect("request_deactivate", _on_request_deactivate)
@@ -120,10 +119,6 @@ func _physics_process(delta: float) -> void:
 	if lock_y:
 		velocity.y = 0.0
 
-	# snapshot position before physics for moved/rotated signals
-	var old_position = global_position
-	var old_rotation = global_rotation
-
 	# iterate move_and_collide up to MAX_COLLISION_ITERATIONS per frame
 	var remaining = velocity * delta
 	for i in range(MAX_COLLISION_ITERATIONS):
@@ -166,11 +161,10 @@ func _physics_process(delta: float) -> void:
 		global_position.x = clampf(global_position.x, game.game_bounds.position.x + m, game.game_bounds.end.x - m)
 		global_position.y = clampf(global_position.y, game.game_bounds.position.y + m, game.game_bounds.end.y - m)
 
-	# emit movement signals for components that track position
-	if old_position != global_position:
-		emit_signal("moved", old_position, global_position)
-	if old_rotation != global_rotation:
-		emit_signal("rotated", old_rotation, global_rotation)
+	# write final physical state to blackboard
+	blackboard["position"] = global_position
+	blackboard["rotation"] = global_rotation
+	blackboard["velocity"] = velocity
 
 	# register with collision buffer if any collisions happened
 	if _pending_collisions.size() > 0 and _collision_buffer:
@@ -245,6 +239,7 @@ func deactivate() -> void:
 		return
 	state = CDEnums.EntityState.DEACTIVATING
 	set_physics_process(false)
+	blackboard.clear()
 	call_deferred("_complete_deactivation")
 
 # phase 2: deferred cleanup — runs at end of frame after all components finish
@@ -279,6 +274,9 @@ func activate() -> void:
 	if state != CDEnums.EntityState.INACTIVE:
 		return
 	state = CDEnums.EntityState.ACTIVE
+	
+	# make sure the blackboard is clean
+	blackboard.clear()
 
 	# re-enable collision shapes
 	for child in get_children():
@@ -326,12 +324,22 @@ func set_collision_rect(width: float, height: float) -> void:
 	node.shape = shape
 	add_child(node)
 
-# --- Utility ---
+# --- Universal Bus API ---
 
-# create a user signal on this entity if it doesn't already exist
-func ensure_signal(signal_name: StringName) -> void:
+func bus_connect(signal_name: StringName, callable: Callable) -> void:
 	if not has_signal(signal_name):
 		add_user_signal(signal_name)
+	connect(signal_name, callable)
+
+func bus_disconnect(signal_name: StringName, callable: Callable) -> void:
+	if has_signal(signal_name) and is_connected(signal_name, callable):
+		disconnect(signal_name, callable)
+
+func bus_emit(signal_name: StringName) -> void:
+	if has_signal(signal_name):
+		emit_signal(signal_name)
+
+# --- Utility ---
 
 # walk up the tree to find the nearest CDEntity ancestor
 static func find_ancestor(node: Node) -> CDEntity:

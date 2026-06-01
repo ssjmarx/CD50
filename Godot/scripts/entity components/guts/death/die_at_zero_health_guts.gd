@@ -16,31 +16,23 @@ class_name DieAtZeroHealthGuts extends CDEntityComponent
 
 # --- lifecycle ---
 
-# set component category
 func _ready() -> void:
 	component_category = CDEnums.ComponentCategory.STATE
 	super._ready()
 
-# connect zero_health listener and ensure death signals exist
 func _on_initialize() -> void:
 	for sig in zero_health_signals:
-		entity.ensure_signal(sig)
-		entity.connect(sig, _on_zero_health)
-	for sig in death_signals:
-		entity.ensure_signal(sig)
+		entity.bus_connect(sig, _on_zero_health)
 
 # --- signal handlers ---
 
-# emit death signals to trigger entity deactivation
 func _on_zero_health() -> void:
 	for sig in death_signals:
-		entity.emit_signal(sig)
+		entity.bus_emit(sig)
 
 # --- cleanup ---
 
-# disconnect zero_health listener for pool reuse
 func _on_entity_deactivating() -> void:
 	super._on_entity_deactivating()
 	for sig in zero_health_signals:
-		if entity.is_connected(sig, _on_zero_health):
-			entity.disconnect(sig, _on_zero_health)
+		entity.bus_disconnect(sig, _on_zero_health)

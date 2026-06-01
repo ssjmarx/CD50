@@ -40,14 +40,13 @@ func _ready() -> void:
 # connect bindings and show default frame
 func _on_initialize() -> void:
 	for binding in bindings:
-		entity.ensure_signal(binding.signal_name)
-		entity.connect(binding.signal_name, _on_binding_signal.bind(binding))
+		entity.bus_connect(binding.signal_name, _on_binding_signal.bind(binding))
 	_show_frame(default_frame)
 
 # --- signal handlers ---
 
 # switch to binding's frame, optionally schedule restore
-func _on_binding_signal(_arg1 = null, _arg2 = null, binding: CDFaceBinding = null) -> void:
+func _on_binding_signal(binding: CDFaceBinding = null):
 	if binding == null:
 		return
 	_show_frame(binding.frame_index)
@@ -62,6 +61,11 @@ func _on_binding_signal(_arg1 = null, _arg2 = null, binding: CDFaceBinding = nul
 # restore to the default frame after a binding's timer expires
 func _on_restore() -> void:
 	_show_frame(default_frame)
+
+func _on_entity_deactivating() -> void:
+	super._on_entity_deactivating()
+	for binding in bindings:
+		entity.bus_disconnect(binding.signal_name, _on_binding_signal.bind(binding))
 
 # --- helpers ---
 

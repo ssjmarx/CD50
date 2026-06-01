@@ -31,6 +31,8 @@ class_name PolygonFace extends CDEntityComponent
 		color = v
 		queue_redraw()
 
+@export var shape_key: StringName = &"shape_points"
+
 # currently active polygon points
 var _current_points: PackedVector2Array = PackedVector2Array()
 
@@ -39,14 +41,10 @@ var _restore_timer: SceneTreeTimer
 
 # --- lifecycle ---
 
-# connect bindings and shape_changed signal, set default frame
+# connect bindings and set default frame
 func _on_initialize() -> void:
 	for binding in bindings:
-		entity.ensure_signal(binding.signal_name)
-		entity.connect(binding.signal_name, _on_binding_signal.bind(binding))
-	
-	entity.ensure_signal("shape_changed")
-	entity.connect("shape_changed", _on_shape_changed)
+		entity.bus_connect(binding.signal_name, _on_binding_signal.bind(binding))
 	
 	_update_frame()
 	queue_redraw()
@@ -55,11 +53,16 @@ func _on_initialize() -> void:
 func _process(_delta: float) -> void:
 	if Engine.is_editor_hint():
 		queue_redraw()
+	else:
+		var points = entity.blackboard.get(shape_key)
+		if points and points != _current_points:
+			_current_points = points
+			queue_redraw()
 
 # --- signal handlers ---
 
 # switch to binding's frame, optionally schedule restore
-func _on_binding_signal(_arg1 = null, _arg2 = null, binding: CDFaceBinding = null) -> void:
+func _on_binding_signal(binding: CDFaceBinding = null) -> void:
 	if binding == null:
 		return
 	if binding.frame_index >= 0 and binding.frame_index < shapes.size():
@@ -72,11 +75,6 @@ func _on_binding_signal(_arg1 = null, _arg2 = null, binding: CDFaceBinding = nul
 			_restore_timer.timeout.disconnect(_on_restore)
 		_restore_timer = get_tree().create_timer(binding.restore_after)
 		_restore_timer.timeout.connect(_on_restore)
-
-# switch to externally provided points (e.g., from a shape generator)
-func _on_shape_changed(points: PackedVector2Array) -> void:
-	_current_points = points
-	queue_redraw()
 
 # restore to the default frame after a binding's timer expires
 func _on_restore() -> void:
@@ -93,6 +91,11 @@ func _draw() -> void:
 	draw_colored_polygon(_current_points, color)
 
 # --- helpers ---
+
+func _on_entity_deactivating() -> void:
+	super._on_entity_deactivating()
+	for binding in bindings:
+		entity.bus_disconnect(binding.signal_name, _on_binding_signal.bind(binding))
 
 # set _current_points from the default frame's shape
 func _update_frame() -> void:

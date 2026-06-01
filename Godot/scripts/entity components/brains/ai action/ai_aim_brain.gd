@@ -1,5 +1,5 @@
 # AIAimAtNearestBrain
-# Emits aim direction toward the nearest entity in target groups
+# Writes aim direction to the blackboard toward the nearest entity in target groups
 # Supports update_interval for throttled targeting and targeting_noise for imprecision
 
 class_name AIAimAtNearestBrain extends CDEntityComponent
@@ -13,8 +13,8 @@ class_name AIAimAtNearestBrain extends CDEntityComponent
 # random offset added to target position for imprecision
 @export var targeting_noise: float = 0.0
 
-@export_group("Emit Signals")
-@export var aim_signals: Array[StringName] = [&"aim"]
+@export_group("Blackboard Keys")
+@export var aim_key: StringName = &"aim_direction"
 
 # timer for throttled updates
 var _update_timer: float = 0.0
@@ -26,19 +26,13 @@ func _ready() -> void:
 	component_category = CDEnums.ComponentCategory.INTENT
 	super._ready()
 
-# ensure aim signals exist on entity
-func _on_initialize() -> void:
-	for sig in aim_signals:
-		entity.ensure_signal(sig)
-
-# emit aim direction each frame, recalculate target on interval
+# write aim direction to blackboard each frame, recalculate target on interval
 func _physics_process(delta: float) -> void:
-	# if throttled, emit cached direction until interval expires
+	# if throttled, write cached direction until interval expires
 	if update_interval > 0.0:
 		_update_timer += delta
 		if _update_timer < update_interval:
-			for sig in aim_signals:
-				entity.emit_signal(sig, _last_direction)
+			entity.blackboard[aim_key] = _last_direction
 			return
 		_update_timer = 0.0
 
@@ -48,8 +42,7 @@ func _physics_process(delta: float) -> void:
 		if target:
 			var target_pos := _apply_noise(target.global_position)
 			_last_direction = entity.global_position.direction_to(target_pos)
-			for sig in aim_signals:
-				entity.emit_signal(sig, _last_direction)
+			entity.blackboard[aim_key] = _last_direction
 			return
 
 # add random offset to target position if noise is configured

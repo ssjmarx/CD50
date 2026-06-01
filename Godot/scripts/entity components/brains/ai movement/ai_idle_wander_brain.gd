@@ -16,8 +16,9 @@ class_name AIIdleWanderBrain extends CDEntityComponent
 # if stuck this long without reaching target, pick a new one
 @export var stuck_timeout: float = 3.0
 
-@export_group("Emit Signals")
-@export var move_signals: Array[StringName] = [&"move_to"]
+@export_group("Blackboard Keys")
+@export var move_key: StringName = &"move_direction"
+@export var distance_key: StringName = &"move_distance"
 
 # center of the wander area (set to spawn position)
 var _center: Vector2
@@ -38,10 +39,8 @@ func _ready() -> void:
 	component_category = CDEnums.ComponentCategory.INTENT
 	super._ready()
 
-# ensure move_to signals exist and pick the first wander target
+# pick the first wander target
 func _on_initialize() -> void:
-	for sig in move_signals:
-		entity.ensure_signal(sig)
 	_center = entity._spawn_position
 	_pick_new_target()
 
@@ -55,9 +54,10 @@ func _physics_process(delta: float) -> void:
 			_pick_new_target()
 		return
 
-	# emit current wander target
-	for sig in move_signals:
-		entity.emit_signal(sig, _target)
+	# write current wander target to blackboard
+	var to_target := _target - entity.global_position
+	entity.blackboard[move_key] = to_target.normalized()
+	entity.blackboard[distance_key] = to_target.length()
 
 	# detect stuck state — pick new target if stuck too long
 	_stuck_timer += delta

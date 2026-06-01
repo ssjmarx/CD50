@@ -4,3 +4,10 @@
 
 [node name="AITractorBeamBrain" type="Node2D"]
 script = ExtResource("1_ge7e2")
+qualifying_groups = null
+trigger_height = null
+arm_complete_signals = null
+arm_fire_signals = null
+capture_started_signals = null
+capture_ended_signals = null
+component_category = null

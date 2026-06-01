@@ -13,6 +13,10 @@ class_name PushbackArm extends CDEntityComponent
 # if non-empty, only push colliders in these groups
 @export var target_groups: Array[StringName]
 
+
+@export_group("Blackboard Keys")
+@export var impulse_keys: Array[StringName] = [&"external_impulse"]
+
 @export_group("Listen Signals")
 @export var collision_signals: Array[StringName] = [&"collision"]
 
@@ -44,10 +48,13 @@ func _on_collision(collider: CDEntity, normal: Vector2) -> void:
 
 	var impulse = impulse_direction * push_force
 
+	# write to blackboard
+	for key in impulse_keys:
+		collider.blackboard[key] = impulse
+
 	# emit impulse signal on the collider
 	for sig in impulse_signals:
-		if collider.has_signal(sig):
-			collider.emit_signal(sig, impulse)
+		collider.bus_emit(sig)
 
 # return true if target_groups is empty or collider is in one of them
 func _is_valid_target(collider: CDEntity) -> bool:

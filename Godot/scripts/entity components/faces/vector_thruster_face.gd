@@ -42,6 +42,8 @@ class_name VectorThrusterFace extends CDEntityComponent
 		line_width = v
 		queue_redraw()
 
+@export var move_key: StringName = &"move_direction"
+
 # pre-normalized diagonal directions: UL, UR, LL, LR
 var FLAME_DIRS: Array[Vector2] = [
 	Vector2(-0.707107, -0.707107),  # UL
@@ -67,65 +69,56 @@ var _any_active: bool = false
 
 # --- lifecycle ---
 
-# connect move signal and disable physics processing until active
+# start processing — direction is read from blackboard each frame
 func _on_initialize() -> void:
-	entity.connect("move", _on_move)
-	set_physics_process(false)
-
-# --- signal handlers ---
-
-# store move direction and enable physics processing on first move
-func _on_move(dir: Vector2) -> void:
-	_direction = dir
-	if dir != Vector2.ZERO and not _any_active:
-		set_physics_process(true)
+	set_process(true)
 
 # --- processing ---
 
-# determine which flames fire based on local-space direction, update flicker
-func _physics_process(delta: float) -> void:
-	# convert world direction to local space relative to entity rotation
-	var local_dir: Vector2 = _direction.rotated(-entity.rotation)
-	
-	# reset active state each frame
-	_active = [false, false, false, false]
-	
-	# horizontal movement activates opposite-side thrusters (to push)
-	if local_dir.x > 0.1:
-		_active[0] = true  # UL fires for rightward push
-		_active[2] = true  # LL fires for rightward push
-	elif local_dir.x < -0.1:
-		_active[1] = true  # UR fires for leftward push
-		_active[3] = true  # LR fires for leftward push
-	
-	# vertical movement activates opposite-side thrusters
-	if local_dir.y > 0.1:
-		_active[0] = true  # UL fires for downward push
-		_active[1] = true  # UR fires for downward push
-	elif local_dir.y < -0.1:
-		_active[2] = true  # LL fires for upward push
-		_active[3] = true  # LR fires for upward push
-	
-	_any_active = _active[0] or _active[1] or _active[2] or _active[3]
-	
-	# stop processing if direction is zero
-	if _direction == Vector2.ZERO:
-		_any_active = false
-		set_physics_process(false)
-		return
-	
-	# update flicker tips on timer
-	_timer += delta
-	if _timer > flicker_speed:
-		for i in 4:
-			_tips[i] = randf_range(0.0, flicker_size)
-		_timer = 0.0
-	
-	queue_redraw()
-
 # redraw each frame in editor for live preview
-func _process(_delta: float) -> void:
+func _process(delta: float) -> void:
 	if Engine.is_editor_hint():
+		queue_redraw()
+	else:
+		_direction = entity.blackboard.get(move_key, Vector2.ZERO)
+		
+		# convert world direction to local space relative to entity rotation
+		var local_dir: Vector2 = _direction.rotated(-entity.rotation)
+		
+		# reset active state each frame
+		_active = [false, false, false, false]
+		
+		# horizontal movement activates opposite-side thrusters (to push)
+		if local_dir.x > 0.1:
+			_active[0] = true  # UL fires for rightward push
+			_active[2] = true  # LL fires for rightward push
+		elif local_dir.x < -0.1:
+			_active[1] = true  # UR fires for leftward push
+			_active[3] = true  # LR fires for leftward push
+		
+		# vertical movement activates opposite-side thrusters
+		if local_dir.y > 0.1:
+			_active[0] = true  # UL fires for downward push
+			_active[1] = true  # UR fires for downward push
+		elif local_dir.y < -0.1:
+			_active[2] = true  # LL fires for upward push
+			_active[3] = true  # LR fires for upward push
+		
+		_any_active = _active[0] or _active[1] or _active[2] or _active[3]
+		
+		# stop processing if direction is zero
+		if _direction == Vector2.ZERO:
+			_any_active = false
+			set_process(false)
+			return
+		
+		# update flicker tips on timer
+		_timer += delta
+		if _timer > flicker_speed:
+			for i in 4:
+				_tips[i] = randf_range(0.0, flicker_size)
+			_timer = 0.0
+		
 		queue_redraw()
 
 # --- drawing ---

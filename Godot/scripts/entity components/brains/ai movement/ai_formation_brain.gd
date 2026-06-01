@@ -13,8 +13,9 @@ class_name AIFormationBrain extends CDEntityComponent
 # position offset from the leader (rotated by leader's facing)
 @export var offset: Vector2 = Vector2(20, 0)
 
-@export_group("Emit Signals")
-@export var move_signals: Array[StringName] = [&"move_to"]
+@export_group("Blackboard Keys")
+@export var move_key: StringName = &"move_direction"
+@export var distance_key: StringName = &"move_distance"
 
 # cached reference to the leader entity
 var _leader: CDEntity
@@ -25,8 +26,6 @@ func _ready() -> void:
 
 # ensure move_to signals exist and try to resolve leader from NodePath
 func _on_initialize() -> void:
-	for sig in move_signals:
-		entity.ensure_signal(sig)
 	if target_entity_path:
 		var node := get_node_or_null(target_entity_path)
 		if node is CDEntity:
@@ -47,8 +46,10 @@ func _physics_process(_delta: float) -> void:
 
 	# compute formation position: leader position + offset rotated by leader facing
 	var target_pos := _leader.global_position + offset.rotated(_leader.global_rotation)
-	for sig in move_signals:
-		entity.emit_signal(sig, target_pos)
+	var to_target = target_pos - entity.global_position
+	
+	entity.blackboard[move_key] = to_target.normalized()
+	entity.blackboard[distance_key] = to_target.length()
 
 # search target groups for the nearest leader candidate
 func _acquire_leader() -> void:

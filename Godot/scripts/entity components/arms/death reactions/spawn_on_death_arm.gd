@@ -23,7 +23,7 @@ class_name SpawnOnDeathArm extends CDEntityComponent
 @export var inherit_velocity: bool = false
 
 @export_group("Listen Signals")
-@export var death_signals: Array[StringName] = [&"zero_health"]
+@export var death_signals: Array[StringName] = [&"entity_deactivating"]
 
 func _ready() -> void:
 	component_category = CDEnums.ComponentCategory.INTERACTION

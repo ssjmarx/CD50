@@ -10,6 +10,10 @@ class_name DamageOnHitArm extends CDEntityComponent
 # if non-empty, only damage colliders in these groups
 @export var target_groups: Array[StringName]
 
+@export_group("Blackboard Keys")
+@export var damage_keys: Array[StringName] = [&"incoming_damage"]
+@export var source_keys: Array[StringName] = [&"damage_source"]
+
 @export_group("Listen Signals")
 @export var collision_signals: Array[StringName] = [&"collision"]
 
@@ -31,9 +35,12 @@ func _on_collision(collider: CDEntity, _normal: Vector2) -> void:
 		return
 	if not _is_valid_target(collider):
 		return
+	for key in damage_keys:
+		collider.blackboard[key] = damage_amount
+	for key in source_keys:
+		collider.blackboard[key] = entity
 	for sig in damage_signals:
-		if collider.has_signal(sig):
-			collider.emit_signal(sig, damage_amount, entity)
+		collider.bus_emit(sig)
 
 # return true if target_groups is empty or collider is in one of them
 func _is_valid_target(collider: CDEntity) -> bool:

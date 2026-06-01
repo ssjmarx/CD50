@@ -22,6 +22,10 @@ class_name AISwoopBrain extends CDEntityComponent
 # how far the curve extends from the entity
 @export var target_distance: float = 400.0
 
+@export_group("Blackboard Keys")
+@export var move_key: StringName = &"move_direction"
+@export var distance_key: StringName = &"move_distance"
+
 @export_group("Checkpoints")
 # distance between generated checkpoints along the curve
 @export var checkpoint_spacing: float = 30.0
@@ -35,8 +39,6 @@ class_name AISwoopBrain extends CDEntityComponent
 @export var stop_signals: Array[StringName] = []
 
 @export_group("Emit Signals")
-# entity bus signals for movement commands
-@export var move_signals: Array[StringName] = [&"move_to"]
 # entity bus signals emitted when swoop path completes or is aborted
 @export var complete_signals: Array[StringName] = [&"swoop_complete"]
 
@@ -115,23 +117,13 @@ func _process(_delta: float) -> void:
 	if not Engine.is_editor_hint():
 		return
 
-# ensure signals exist and connect start/stop triggers
+# connect start/stop triggers (complete signals auto-created by bus_emit)
 func _on_initialize() -> void:
-	# ensure all emit signals exist on the entity
-	for sig in move_signals:
-		entity.ensure_signal(sig)
-	for sig in complete_signals:
-		entity.ensure_signal(sig)
-
-	# ensure and connect all start signals
 	for sig in start_signals:
-		entity.ensure_signal(sig)
-		entity.connect(sig, _on_start_swoop)
+		entity.bus_connect(sig, _on_start_swoop)
 
-	# ensure and connect all stop signals
 	for sig in stop_signals:
-		entity.ensure_signal(sig)
-		entity.connect(sig, _on_stop_swoop)
+		entity.bus_connect(sig, _on_stop_swoop)
 
 # --- swoop triggers ---
 
@@ -188,8 +180,10 @@ func _physics_process(_delta: float) -> void:
 		return
 
 	var target_pos := _checkpoints[_current_index]
-	for sig in move_signals:
-		entity.emit_signal(sig, target_pos)
+	var to_checkpoint = target_pos - entity.global_position
+	
+	entity.blackboard[move_key] = to_checkpoint.normalized()
+	entity.blackboard[distance_key] = to_checkpoint.length()
 
 	# advance to next checkpoint when close enough
 	if entity.global_position.distance_to(target_pos) < arrival_threshold:
@@ -205,7 +199,7 @@ func _end_swoop() -> void:
 	_curve2d = null
 	_curve_length = 0.0
 	for sig in complete_signals:
-		entity.emit_signal(sig)
+		entity.bus_emit(sig)
 	set_physics_process(false)
 
 # --- cleanup ---
@@ -219,11 +213,9 @@ func _on_entity_deactivating() -> void:
 	_curve2d = null
 	_curve_length = 0.0
 	for sig in start_signals:
-		if entity.has_signal(sig) and entity.is_connected(sig, _on_start_swoop):
-			entity.disconnect(sig, _on_start_swoop)
+		entity.bus_disconnect(sig, _on_start_swoop)
 	for sig in stop_signals:
-		if entity.has_signal(sig) and entity.is_connected(sig, _on_stop_swoop):
-			entity.disconnect(sig, _on_stop_swoop)
+		entity.bus_disconnect(sig, _on_stop_swoop)
 
 # disable physics processing on activation (waits for start signal)
 func _on_entity_activated() -> void:
