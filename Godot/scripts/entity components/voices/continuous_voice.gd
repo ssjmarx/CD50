@@ -19,8 +19,6 @@ class_name ContinuousVoice extends CDEntityComponent
 @export var start_signal: StringName = &""
 # signal name that stops playback
 @export var stop_signal: StringName = &""
-# if set, only respond when signal arg matches this value
-@export var filter_value: StringName = &""
 # pause sound when game state is not PLAYING
 @export var gameplay_only: bool = false
 # register with sound bank immediately on spawn
@@ -89,16 +87,12 @@ func _build_signature() -> String:
 
 # --- signal handlers ---
 
-# start playback, optionally filtering by signal arg
-func _on_start(arg1 = null) -> void:
-	if filter_value != &"" and arg1 != filter_value:
-		return
+# start playback
+func _on_start() -> void:
 	_register()
 
-# stop playback, optionally filtering by signal arg
-func _on_stop(arg1 = null) -> void:
-	if filter_value != &"" and arg1 != filter_value:
-		return
+# stop playback
+func _on_stop() -> void:
 	_deregister()
 
 # --- processing ---

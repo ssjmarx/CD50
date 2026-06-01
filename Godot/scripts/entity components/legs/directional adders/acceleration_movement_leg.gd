@@ -1,5 +1,5 @@
 # AccelerationMovementLeg
-# Adds directional force each frame, building momentum over time
+# Adds directional force each frame from blackboard direction, building momentum over time
 # Pair with a friction leg for speed control and deceleration
 
 class_name AccelerationLeg extends CDEntityComponent
@@ -9,47 +9,28 @@ class_name AccelerationLeg extends CDEntityComponent
 # acceleration magnitude in pixels per second squared
 @export var acceleration: float = 800.0
 
-# directional input signals (Vector2 direction)
-@export_group("Listen Signals")
-@export var move_signals: Array[StringName] = [&"move"]
-
-# --- state ---
-
-# last received direction, normalized
-var _direction: Vector2 = Vector2.ZERO
+@export_group("Blackboard Keys")
+# key to read movement direction from (Vector2)
+@export var direction_key: StringName = &"move_direction"
 
 # --- lifecycle ---
 
-# set component category
 func _ready() -> void:
 	component_category = CDEnums.ComponentCategory.STEERING
 	super._ready()
 
-# connect move listeners
 func _on_initialize() -> void:
-	for sig in move_signals:
-		entity.ensure_signal(sig)
-		entity.connect(sig, _on_move)
-
-# --- signal handlers ---
-
-# store normalized direction
-func _on_move(direction: Vector2) -> void:
-	_direction = direction.normalized()
+	pass
 
 # --- processing ---
 
-# add acceleration force in the stored direction each frame
+# add acceleration force in the polled direction each frame
 func _physics_process(delta: float) -> void:
-	if _direction != Vector2.ZERO:
-		entity.request_velocity_add(_direction * acceleration * delta)
+	var direction: Vector2 = entity.blackboard.get(direction_key, Vector2.ZERO)
+	if direction != Vector2.ZERO:
+		entity.request_velocity_add(direction.normalized() * acceleration * delta)
 
 # --- cleanup ---
 
-# reset state and disconnect for pool reuse
 func _on_entity_deactivating() -> void:
 	super._on_entity_deactivating()
-	_direction = Vector2.ZERO
-	for sig in move_signals:
-		if entity.has_signal(sig) and entity.is_connected(sig, _on_move):
-			entity.disconnect(sig, _on_move)

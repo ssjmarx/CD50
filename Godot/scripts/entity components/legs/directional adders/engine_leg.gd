@@ -1,72 +1,38 @@
 # EngineLeg
 # Adds forward velocity based on entity facing direction (Asteroids-style)
-# Pair with LinearFrictionLeg for speed control and natural deceleration
+# Reads thrust state from entity blackboard each frame
 
 class_name EngineLeg extends CDEntityComponent
 
 # --- exports ---
 
-# action name that activates thrust
-@export var thrust_action: StringName = &"thrust"
 # force added per second while thrusting
 @export var thrust_power: float = 400.0
 
-# action press/release signals (StringName action)
-@export_group("Listen Signals")
-@export var action_signals: Array[StringName] = [&"action"]
-@export var action_end_signals: Array[StringName] = [&"action_end"]
-
-# --- state ---
-
-# whether thrust is currently active
-var _is_thrusting: bool = false
+@export_group("Blackboard Keys")
+# key to read thrust state from (bool)
+@export var thrust_key: StringName = &"thrust_active"
 
 # --- lifecycle ---
 
-# set component category
 func _ready() -> void:
 	component_category = CDEnums.ComponentCategory.STEERING
 	super._ready()
 
-# connect action and action_end listeners
 func _on_initialize() -> void:
-	for sig in action_signals:
-		entity.ensure_signal(sig)
-		entity.connect(sig, _on_action)
-	for sig in action_end_signals:
-		entity.ensure_signal(sig)
-		entity.connect(sig, _on_action_end)
-
-# --- signal handlers ---
-
-# start thrusting on matching action press
-func _on_action(action: StringName) -> void:
-	if action == thrust_action:
-		_is_thrusting = true
-
-# stop thrusting on matching action release
-func _on_action_end(action: StringName) -> void:
-	if action == thrust_action:
-		_is_thrusting = false
+	pass
 
 # --- processing ---
 
-# add forward thrust force each frame while active
+# add forward thrust force each frame while blackboard key is true
 func _physics_process(delta: float) -> void:
-	if not _is_thrusting:
+	var is_thrusting: bool = entity.blackboard.get(thrust_key, false)
+	if not is_thrusting:
 		return
 	var forward := Vector2(cos(entity.rotation), sin(entity.rotation))
 	entity.request_velocity_add(forward * thrust_power * delta)
 
 # --- cleanup ---
 
-# reset state and disconnect for pool reuse
 func _on_entity_deactivating() -> void:
 	super._on_entity_deactivating()
-	_is_thrusting = false
-	for sig in action_signals:
-		if entity.has_signal(sig) and entity.is_connected(sig, _on_action):
-			entity.disconnect(sig, _on_action)
-	for sig in action_end_signals:
-		if entity.has_signal(sig) and entity.is_connected(sig, _on_action_end):
-			entity.disconnect(sig, _on_action_end)

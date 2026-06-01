@@ -70,7 +70,7 @@ func _exit_tree() -> void:
 # --- signal handlers ---
 
 # register continuous tone with the sound bank
-func _on_start(_arg1 = null) -> void:
+func _on_start() -> void:
 	if _bank == null or _is_registered:
 		return
 	var sound_position: Vector2 = game.game_bounds.get_center() if game.game_bounds.has_area() else Vector2.ZERO
@@ -78,7 +78,7 @@ func _on_start(_arg1 = null) -> void:
 		note, volume, game.get_instance_id(), sound_position, false)
 
 # stop the continuous tone
-func _on_stop(_arg1 = null) -> void:
+func _on_stop() -> void:
 	_deregister()
 
 # --- bank management ---

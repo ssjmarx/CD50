@@ -1,6 +1,7 @@
 # AimingDirector
 # Per-entity nearest-target aiming across groups
 # Each shooter independently finds its closest threat — a large formation can aim in multiple directions
+# Writes aim_direction to entity blackboard (distinct from move_direction)
 
 @tool
 class_name AimingDirector extends CDGameComponent
@@ -21,9 +22,9 @@ class_name AimingDirector extends CDGameComponent
 # random offset added to target position for imprecision
 @export var targeting_noise: float = 0.0
 
-@export_group("Signals")
-# signal emitted on each shooter with the aim direction
-@export var aim_signal: StringName = &"aim"
+@export_group("Blackboard Keys")
+# key for writing aim direction to entity blackboard (Vector2, normalized)
+@export var aim_key: StringName = &"aim_direction"
 
 # --- state ---
 
@@ -49,11 +50,11 @@ func _physics_process(delta: float) -> void:
 	if shooters.is_empty():
 		return
 	
-	# throttled mode: emit cached directions until interval expires
+	# throttled mode: write cached directions until interval expires
 	if update_interval > 0.0:
 		_update_timer += delta
 		if _update_timer < update_interval:
-			_emit_cached(shooters)
+			_write_cached(shooters)
 			return
 		_update_timer = 0.0
 	
@@ -63,8 +64,7 @@ func _physics_process(delta: float) -> void:
 		var direction := _calculate_aim(shooter)
 		if direction != Vector2.ZERO:
 			_cached_directions[shooter] = direction
-			shooter.ensure_signal(aim_signal)
-			shooter.emit_signal(aim_signal, direction)
+			shooter.blackboard[aim_key] = direction
 
 # --- aiming ---
 
@@ -95,12 +95,11 @@ func _apply_noise(pos: Vector2) -> Vector2:
 		randf_range(-targeting_noise, targeting_noise)
 	)
 
-# emit cached aim directions for all shooters
-func _emit_cached(shooters: Array[CDEntity]) -> void:
+# write cached aim directions to entity blackboards
+func _write_cached(shooters: Array[CDEntity]) -> void:
 	for shooter in shooters:
 		if _cached_directions.has(shooter):
-			shooter.ensure_signal(aim_signal)
-			shooter.emit_signal(aim_signal, _cached_directions[shooter])
+			shooter.blackboard[aim_key] = _cached_directions[shooter]
 
 # gather entities from all shooter groups (deduplicated, valid, active)
 func _gather_shooters() -> Array[CDEntity]:
@@ -118,7 +117,6 @@ func _gather_shooters() -> Array[CDEntity]:
 
 # --- reset ---
 
-# clear all aiming state for game restart
 func reset() -> void:
 	_update_timer = 0.0
 	_cached_directions.clear()

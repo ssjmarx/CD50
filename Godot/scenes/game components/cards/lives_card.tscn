@@ -2,5 +2,7 @@
 
 [ext_resource type="Script" uid="uid://c1owaij4mu564" path="res://scripts/game components/cards/lives_card.gd" id="1_5gukn"]
 
-[node name="LivesCard" type="Node2D"]
+[node name="LivesCard" type="Control"]
+layout_mode = 3
+anchors_preset = 0
 script = ExtResource("1_5gukn")

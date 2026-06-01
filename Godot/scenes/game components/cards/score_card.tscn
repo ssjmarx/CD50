@@ -2,5 +2,7 @@
 
 [ext_resource type="Script" uid="uid://cs1d11nti0fik" path="res://scripts/game components/cards/score_card.gd" id="1_2tg6o"]
 
-[node name="ScoreCard" type="Node2D"]
+[node name="ScoreCard" type="Control"]
+layout_mode = 3
+anchors_preset = 0
 script = ExtResource("1_2tg6o")

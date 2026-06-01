@@ -51,7 +51,7 @@ func _build_signal_map() -> void:
 # --- signal handling ---
 
 # dispatch triggered signal to all matching rules
-func _on_trigger(_arg1 = null, _arg2 = null, signal_name: StringName = &"") -> void:
+func _on_trigger(signal_name: StringName = &"") -> void:
 	var matched_rules: Array = _signal_to_rules.get(signal_name, [])
 	for rule: CDDirectorRule in matched_rules:
 		_process_rule(rule)

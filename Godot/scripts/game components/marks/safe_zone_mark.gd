@@ -9,7 +9,7 @@ class_name SafeZoneMark extends CDMark
 # groups that make the zone unsafe when present
 @export var unsafe_groups: Array[StringName] = [&"enemies"]
 
-# game bus signals for zone safety transitions
+# game bus signals for zone safety transitions (zero-arg)
 @export_group("Emit Signals")
 @export var on_zone_safe: Array[StringName] = [&"zone_safe"]
 @export var on_zone_unsafe: Array[StringName] = [&"zone_unsafe"]
@@ -30,7 +30,7 @@ func _on_body_entered(body: Node2D) -> void:
 			# transition from safe to unsafe
 			if was_safe:
 				for sig in on_zone_unsafe:
-					game.bus_emit(sig, [])
+					game.bus_emit(sig)
 			return
 
 # decrement unsafe count and emit safe when cleared
@@ -42,5 +42,5 @@ func _on_body_exited(body: Node2D) -> void:
 			if _unsafe_count <= 0:
 				_unsafe_count = 0
 				for sig in on_zone_safe:
-					game.bus_emit(sig, [])
+					game.bus_emit(sig)
 			return

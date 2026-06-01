@@ -94,7 +94,7 @@ func _process_trigger(t: CDTransition) -> void:
 	# queue transitions via CDUpdater (deferred to avoid mutation during iteration)
 	for entity in selected:
 		_transitioned[entity] = true
-		_update.queue_transition(entity, t.remove_groups, t.add_groups, t.exit_signals, t.emit_signals)
+		_update.queue_transition(entity, t.remove_groups, t.add_groups, t.entity_signals, t.game_signals)
 		t.start_cooldown()
 
 # gather candidates from all target groups (deduplicated)

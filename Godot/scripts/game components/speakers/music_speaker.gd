@@ -21,6 +21,10 @@ class_name MusicSpeaker extends CDGameComponent
 # crossfade duration between tracks (seconds)
 @export var crossfade_duration: float = 1.0
 
+@export_group("Blackboard Keys")
+# key for writing current track to game blackboard (CDMusicTrack)
+@export var track_key: StringName = &"current_track"
+
 # --- state ---
 
 # two players for seamless crossfade transitions
@@ -74,7 +78,7 @@ func _on_game_play() -> void:
 	_start_playlist()
 
 # fade out and stop when the game ends
-func _on_game_over(_result = null) -> void:
+func _on_game_over() -> void:
 	_fade_out_and_stop()
 
 # --- playlist management ---
@@ -121,7 +125,8 @@ func _play_next() -> void:
 	tween.tween_callback(fade_out_player.stop)
 	
 	# notify other components of the track change
-	game.bus_emit("track_changed", [track])
+	game.blackboard[track_key] = track
+	game.bus_emit("track_changed")
 	
 	# schedule what happens when this track ends
 	if track.loop_end > 0.0:

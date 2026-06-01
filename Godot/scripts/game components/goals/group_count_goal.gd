@@ -15,6 +15,11 @@ class_name GroupCountGoal extends CDGameComponent
 # true = ALL groups must match, false = ANY group must match
 @export var require_all_groups: bool = true
 
+@export_group("Blackboard Keys")
+# key pattern for writing group counts to game blackboard (group_name appended at runtime)
+# e.g. "enemies_count" for group &"enemies"
+@export var count_key_suffix: StringName = &"_count"
+
 # game bus signals emitted on condition match and count change
 @export_group("Emit Signals")
 @export var on_condition_met: Array[StringName] = [&"game_end_victory"]
@@ -33,9 +38,12 @@ func _on_group_count_changed(group_name: StringName, count: int) -> void:
 	if group_name not in target_groups:
 		return
 	
-	# relay the new count to listeners
+	# write count to game blackboard for downstream consumers
+	game.blackboard[StringName(group_name + String(count_key_suffix))] = count
+	
+	# relay count change as zero-arg signal
 	for sig in on_count_changed:
-		game.bus_emit(sig, [count])
+		game.bus_emit(sig)
 	
 	# emit condition_met if the comparison passes
 	if _check_condition():

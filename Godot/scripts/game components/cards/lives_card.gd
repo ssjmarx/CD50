@@ -1,6 +1,6 @@
 # LivesCard
 # Tracks player lives and displays the count
-# Emits changed/depleted signals on the game bus
+# Emits zero-arg changed/depleted signals, publishes current_lives to game blackboard
 
 class_name LivesCard extends CDCueCard
 
@@ -8,6 +8,10 @@ class_name LivesCard extends CDCueCard
 
 # number of lives at game start
 @export var starting_lives: int = 3
+
+@export_group("Blackboard Keys")
+# key for publishing current lives to game blackboard
+@export var lives_key: StringName = &"current_lives"
 
 # game bus signals that decrement lives
 @export_group("Listen Signals")
@@ -27,7 +31,7 @@ var current_lives: int
 
 # --- lifecycle ---
 
-# initialize lives count and display
+# initialize lives count, display, and blackboard
 func _ready() -> void:
 	super._ready()
 	current_lives = starting_lives
@@ -36,6 +40,7 @@ func _ready() -> void:
 
 # connect listen signals to the game bus
 func _on_initialize() -> void:
+	_publish_tracked(lives_key, current_lives)
 	for sig in on_life_lost:
 		game.bus_connect(sig, _on_life_lost)
 	for sig in on_life_gained:
@@ -47,10 +52,9 @@ func _on_initialize() -> void:
 func _on_life_lost() -> void:
 	current_lives -= 1
 	_update_label(str(current_lives))
-	# notify listeners of new count
+	_publish_tracked(lives_key, current_lives)
 	for sig in on_lives_changed:
-		game.bus_emit(sig, [current_lives])
-	# check for game over
+		game.bus_emit(sig)
 	if current_lives <= 0:
 		for sig in on_lives_depleted:
 			game.bus_emit(sig)
@@ -59,5 +63,6 @@ func _on_life_lost() -> void:
 func _on_life_gained() -> void:
 	current_lives += 1
 	_update_label(str(current_lives))
+	_publish_tracked(lives_key, current_lives)
 	for sig in on_lives_changed:
-		game.bus_emit(sig, [current_lives])
+		game.bus_emit(sig)

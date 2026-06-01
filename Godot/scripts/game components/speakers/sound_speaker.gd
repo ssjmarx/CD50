@@ -51,7 +51,7 @@ func _exit_tree() -> void:
 # --- signal handlers ---
 
 # play the sound via the bank when triggered
-func _on_trigger(_arg1 = null, _arg2 = null) -> void:
+func _on_trigger() -> void:
 	if sound == null or _bank == null:
 		return
 	# skip if gameplay-only and not currently playing

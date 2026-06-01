@@ -1,5 +1,5 @@
 # ScoreThresholdGoal
-# Monitors score via game bus and triggers when it crosses a threshold
+# Monitors score via game blackboard and triggers when it crosses a threshold
 # Uses CDEnums.CountComparison for flexible comparison operators
 
 class_name ScoreThresholdGoal extends CDGameComponent
@@ -11,7 +11,11 @@ class_name ScoreThresholdGoal extends CDGameComponent
 # comparison operator applied to the observed score
 @export var comparison: CDEnums.CountComparison = CDEnums.CountComparison.GREATER_OR_EQUAL
 
-# game bus signals that provide score updates
+@export_group("Blackboard Keys")
+# key to read current score from game blackboard (int)
+@export var score_key: StringName = &"current_score"
+
+# game bus signals that indicate score has changed (zero-arg)
 @export_group("Listen Signals")
 @export var on_score_changed: Array[StringName] = [&"score_changed"]
 
@@ -33,9 +37,10 @@ func _on_initialize() -> void:
 
 # --- signal handlers ---
 
-# check condition whenever score updates
-func _on_score_updated(new_score: int) -> void:
-	if _compare(new_score):
+# read score from blackboard and check condition (zero-arg)
+func _on_score_updated() -> void:
+	var score: int = game.blackboard.get(score_key, 0)
+	if _compare(score):
 		for sig in on_condition_met:
 			game.bus_emit(sig)
 

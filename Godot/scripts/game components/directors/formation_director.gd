@@ -1,6 +1,7 @@
 # FormationDirector
 # Manages a grid of named slots for formation entities (Galaga-style)
-# Auto-assigns group members to slots, animates breathing, commands move_to
+# Auto-assigns group members to slots, animates breathing
+# Writes move_direction + move_distance to entity blackboard each frame
 
 @tool
 class_name FormationDirector extends CDGameComponent
@@ -31,9 +32,11 @@ class_name FormationDirector extends CDGameComponent
 # duration in seconds for one full breathe-in/breathe-out cycle
 @export var breathing_duration: float = 4.0
 
-# distance threshold — skip move_to if entity is already this close to target
-@export_group("Movement")
-@export var arrival_threshold: float = 2.0
+@export_group("Blackboard Keys")
+# key for writing movement direction to entity blackboard (Vector2)
+@export var direction_key: StringName = &"move_direction"
+# key for writing remaining distance to entity blackboard (float)
+@export var distance_key: StringName = &"move_distance"
 
 # editor preview drawing settings
 @export_group("Preview")
@@ -86,7 +89,7 @@ func _draw() -> void:
 
 # --- processing ---
 
-# advance breathing, clean stale slots, broadcast move_to
+# advance breathing, clean stale slots, write move data to entity blackboards
 func _physics_process(delta: float) -> void:
 	if Engine.is_editor_hint():
 		return
@@ -111,7 +114,7 @@ func _physics_process(delta: float) -> void:
 		if not _is_in_formation_groups(slot_entity):
 			_slots[i] = null
 	
-	# broadcast move_to for all occupied, active slots
+	# write move_direction + move_distance to entity blackboards
 	for i in _slots.size():
 		var slot = _slots[i]
 		if slot == null:
@@ -124,11 +127,14 @@ func _physics_process(delta: float) -> void:
 			continue
 		
 		var target := _calculate_slot_position(i)
+		var distance := slot_entity.global_position.distance_to(target)
 		
-		# only emit move_to if entity is far enough from target
-		if slot_entity.global_position.distance_to(target) > arrival_threshold:
-			slot_entity.ensure_signal("move_to")
-			slot_entity.emit_signal("move_to", target)
+		# write direction and distance for positional legs
+		if distance > 0.001:
+			slot_entity.blackboard[direction_key] = slot_entity.global_position.direction_to(target)
+			slot_entity.blackboard[distance_key] = distance
+		else:
+			slot_entity.blackboard[distance_key] = 0.0
 	
 	_assigned_this_frame.clear()
 
@@ -144,26 +150,6 @@ func _get_breathing_scale() -> float:
 	return 1.0 + abs(sin(_breathing_phase)) * breathing_amplitude
 
 # --- slot management ---
-
-# assign an entity to the best available slot (per fill_direction priority)
-func _on_slot_requested(entity: CDEntity) -> void:
-	if not is_instance_valid(entity):
-		return
-	
-	if entity in _slots:
-		return
-	
-	var slot_index := _find_empty_slot()
-	if slot_index == -1:
-		push_warning("FormationDirector '%s': no empty slots for '%s'." % [name, entity.name])
-		return
-	
-	_slots[slot_index] = entity
-	_assigned_this_frame[entity] = true
-	
-	var target := _calculate_slot_position(slot_index)
-	entity.ensure_signal("move_to")
-	entity.emit_signal("move_to", target)
 
 # find the best empty slot based on fill_direction priority
 func _find_empty_slot() -> int:
@@ -230,10 +216,6 @@ func _auto_assign_slots() -> void:
 		
 		_slots[slot_index] = entity
 		_assigned_this_frame[entity] = true
-		
-		var target := _calculate_slot_position(slot_index)
-		entity.ensure_signal("move_to")
-		entity.emit_signal("move_to", target)
 
 # gather entities from all formation groups (deduplicated)
 func _gather_formation_entities() -> Array[CDEntity]:

@@ -1,6 +1,6 @@
 # ScoreCard
 # Tracks score with optional multiplier applied on add (not on set)
-# Leave multiplier signal arrays empty to disable multiplier behavior
+# Other components write pending deltas to game blackboard, then emit trigger signal
 
 class_name ScoreCard extends CDCueCard
 
@@ -11,11 +11,24 @@ class_name ScoreCard extends CDCueCard
 # multiplier at game start
 @export var starting_multiplier: float = 1.0
 
+@export_group("Blackboard Keys")
+# key for pending score add delta (int, consumed on trigger)
+@export var pending_add_key: StringName = &"pending_score_add"
+# key for pending score set value (int, consumed on trigger)
+@export var pending_set_key: StringName = &"pending_score_set"
+# key for publishing current score to game blackboard
+@export var score_key: StringName = &"current_score"
+# key for pending multiplier add delta (float, consumed on trigger)
+@export var pending_mult_add_key: StringName = &"pending_mult_add"
+# key for pending multiplier set value (float, consumed on trigger)
+@export var pending_mult_set_key: StringName = &"pending_mult_set"
+# key for publishing current multiplier to game blackboard
+@export var multiplier_key: StringName = &"current_multiplier"
+
 # game bus signals for score changes
 @export_group("Listen Signals")
 @export var on_add_score: Array[StringName] = [&"add_score"]
 @export var on_set_score: Array[StringName] = [&"set_score"]
-
 # game bus signals for multiplier changes (leave empty to disable)
 @export var on_add_multiplier: Array[StringName] = []
 @export var on_set_multiplier: Array[StringName] = []
@@ -44,12 +57,13 @@ func _ready() -> void:
 
 # connect all listen signals to the game bus
 func _on_initialize() -> void:
+	_publish_tracked(score_key, current_score)
+	_publish_tracked(multiplier_key, current_multiplier)
+	
 	for sig in on_add_score:
 		game.bus_connect(sig, _on_add_score)
 	for sig in on_set_score:
 		game.bus_connect(sig, _on_set_score)
-	
-	# connect multiplier signals only if configured
 	for sig in on_add_multiplier:
 		game.bus_connect(sig, _on_add_multiplier)
 	for sig in on_set_multiplier:
@@ -57,30 +71,42 @@ func _on_initialize() -> void:
 
 # --- score handlers ---
 
-# add amount multiplied by current multiplier
-func _on_add_score(amount: int) -> void:
-	current_score += int(amount * current_multiplier)
+# read pending add delta from blackboard, apply multiplier, publish new score
+func _on_add_score() -> void:
+	var delta: int = _consume_pending(pending_add_key, 0)
+	if delta == 0:
+		return
+	current_score += int(delta * current_multiplier)
 	_update_label(str(current_score))
+	_publish_tracked(score_key, current_score)
 	for sig in on_score_changed:
-		game.bus_emit(sig, [current_score])
+		game.bus_emit(sig)
 
-# set score to an exact value (ignores multiplier)
-func _on_set_score(new_score: int) -> void:
+# read pending set value from blackboard, set directly (ignores multiplier)
+func _on_set_score() -> void:
+	var new_score: int = _consume_pending(pending_set_key, current_score)
 	current_score = new_score
 	_update_label(str(current_score))
+	_publish_tracked(score_key, current_score)
 	for sig in on_score_changed:
-		game.bus_emit(sig, [current_score])
+		game.bus_emit(sig)
 
 # --- multiplier handlers ---
 
-# add to the current multiplier
-func _on_add_multiplier(amount: float) -> void:
-	current_multiplier += amount
+# read pending multiplier add delta from blackboard
+func _on_add_multiplier() -> void:
+	var delta: float = _consume_pending(pending_mult_add_key, 0.0)
+	if delta == 0.0:
+		return
+	current_multiplier += delta
+	_publish_tracked(multiplier_key, current_multiplier)
 	for sig in on_multiplier_changed:
-		game.bus_emit(sig, [current_multiplier])
+		game.bus_emit(sig)
 
-# set the multiplier to an exact value
-func _on_set_multiplier(new_mult: float) -> void:
+# read pending multiplier set value from blackboard
+func _on_set_multiplier() -> void:
+	var new_mult: float = _consume_pending(pending_mult_set_key, current_multiplier)
 	current_multiplier = new_mult
+	_publish_tracked(multiplier_key, current_multiplier)
 	for sig in on_multiplier_changed:
-		game.bus_emit(sig, [current_multiplier])
+		game.bus_emit(sig)

@@ -1,37 +1,35 @@
 # TargetRotationLeg
-# Rotates toward an aim direction with configurable rotation speed
-# Supports instant snap (speed ≤ 0) or smooth rotation with overshoot prevention
+# Rotates entity to face the move_direction vector polled from the entity blackboard
+# Supports instant snap (rotation_speed <= 0) and smooth rotation with overshoot prevention
 
 class_name TargetRotationLeg extends CDEntityComponent
 
 # --- exports ---
 
-# rotation speed in degrees per second; 0 = instant snap
+# rotation speed in degrees per second (0 or below = instant snap)
 @export var rotation_speed: float = 360.0
 
-# aim direction signals (Vector2 direction)
-@export_group("Listen Signals")
-@export var aim_signals: Array[StringName] = [&"aim"]
+@export_group("Blackboard Keys")
+# key to read move direction from (Vector2 — rotates to face this direction)
+@export var direction_key: StringName = &"move_direction"
 
 # --- lifecycle ---
 
-# set component category
 func _ready() -> void:
 	component_category = CDEnums.ComponentCategory.STEERING
 	super._ready()
 
-# connect aim listeners
 func _on_initialize() -> void:
-	for sig in aim_signals:
-		entity.ensure_signal(sig)
-		entity.connect(sig, _on_aim)
+	pass
 
-# --- signal handlers ---
+# --- processing ---
 
-# rotate toward the aim direction, snapping if close enough
-func _on_aim(direction: Vector2) -> void:
+# poll move_direction, rotate to face it
+func _physics_process(_delta: float) -> void:
+	var direction: Vector2 = entity.blackboard.get(direction_key, Vector2.ZERO)
 	if direction == Vector2.ZERO:
 		return
+	
 	var target_angle := direction.angle()
 	var current := entity.global_rotation
 	var angle_diff := angle_difference(current, target_angle)
@@ -49,9 +47,5 @@ func _on_aim(direction: Vector2) -> void:
 
 # --- cleanup ---
 
-# disconnect aim listener for pool reuse
 func _on_entity_deactivating() -> void:
 	super._on_entity_deactivating()
-	for sig in aim_signals:
-		if entity.has_signal(sig) and entity.is_connected(sig, _on_aim):
-			entity.disconnect(sig, _on_aim)

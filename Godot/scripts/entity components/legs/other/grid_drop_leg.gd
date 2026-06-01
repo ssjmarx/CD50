@@ -1,6 +1,6 @@
 # GridDropLeg
-# Drops entity by N grid cells on signal (used for line clear settling)
-# Instantly shifts position downward by cell_size_y * drop_count
+# Drops entity by N grid cells via edge detection on the entity blackboard
+# Used for line clear settling — game component writes drop_count, leg applies it once
 
 class_name GridDropLeg extends CDEntityComponent
 
@@ -9,36 +9,44 @@ class_name GridDropLeg extends CDEntityComponent
 # height of one grid cell in pixels
 @export var cell_size_y: float = 18.0
 
-# signals requesting a downward drop (int cell_count)
-@export_group("Listen Signals")
-@export var drop_signals: Array[StringName] = [&"grid_drop"]
+@export_group("Blackboard Keys")
+# key to read drop count from (int — number of cells to drop)
+@export var drop_count_key: StringName = &"drop_count"
+
+# --- state ---
+
+# previous frame's drop count for edge detection
+var _prev_drop_count: int = 0
 
 # --- lifecycle ---
 
-# set component category
 func _ready() -> void:
 	component_category = CDEnums.ComponentCategory.STEERING
 	super._ready()
 
-# connect drop listeners
 func _on_initialize() -> void:
-	for sig in drop_signals:
-		entity.ensure_signal(sig)
-		entity.connect(sig, _on_drop)
+	pass
 
-# --- signal handlers ---
+# --- processing ---
 
-# shift position downward by drop_count * cell_size_y
-func _on_drop(drop_count: int) -> void:
-	if drop_count <= 0:
+# edge-detect drop_count changes, apply instant vertical drop
+func _physics_process(_delta: float) -> void:
+	if not entity:
 		return
-	entity.request_position_add(Vector2(0, drop_count * cell_size_y))
+	
+	var drop_count: int = entity.blackboard.get(drop_count_key, 0)
+	
+	# edge detection — only act when count changes to a positive value
+	if drop_count > 0 and drop_count != _prev_drop_count:
+		entity.request_position_add(Vector2(0, drop_count * cell_size_y))
+		# clear the key after consuming
+		entity.blackboard.erase(drop_count_key)
+		_prev_drop_count = 0
+	else:
+		_prev_drop_count = drop_count
 
 # --- cleanup ---
 
-# disconnect drop listener for pool reuse
 func _on_entity_deactivating() -> void:
 	super._on_entity_deactivating()
-	for sig in drop_signals:
-		if entity.has_signal(sig) and entity.is_connected(sig, _on_drop):
-			entity.disconnect(sig, _on_drop)
+	_prev_drop_count = 0

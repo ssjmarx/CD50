@@ -1,6 +1,7 @@
 # SwoopDirector
 # Moves entities along a generated curve path via checkpoints with staggered entry
-# Emits swoop_complete on the game bus when each entity finishes its path
+# Writes move_direction + move_distance to entity blackboard each frame
+# Emits zero-arg swoop_complete on game bus when each entity finishes
 
 @tool
 class_name SwoopDirector extends CDGameComponent
@@ -30,8 +31,14 @@ class_name SwoopDirector extends CDGameComponent
 # spacing between entities in the entry line
 @export_group("Line Formation")
 @export var slot_spacing: float = 30.0
-# speed at which entities travel toward checkpoints
-@export var entry_speed: float = 200.0
+
+@export_group("Blackboard Keys")
+# key for writing movement direction to entity blackboard (Vector2)
+@export var direction_key: StringName = &"move_direction"
+# key for writing remaining distance to entity blackboard (float)
+@export var distance_key: StringName = &"move_distance"
+# key for writing completed entity to game blackboard (CDEntity)
+@export var completed_entity_key: StringName = &"swoop_completed_entity"
 
 # game bus signals that trigger swoop start
 @export_group("Listen Signals")
@@ -41,10 +48,9 @@ class_name SwoopDirector extends CDGameComponent
 @export_group("Emit Signals")
 @export var on_swoop_complete: Array[StringName] = [&"swoop_complete"]
 
-# distance between generated checkpoints along the curve
+# distance threshold to consider a checkpoint reached
 @export_group("Checkpoints")
 @export var checkpoint_spacing: float = 30.0
-# distance threshold to consider a checkpoint reached
 @export var arrival_threshold: float = 8.0
 
 # editor preview drawing settings
@@ -91,17 +97,14 @@ func _exit_tree() -> void:
 
 # --- curve resource management ---
 
-# disconnect from curve resource change notifications
 func _disconnect_curve() -> void:
 	if curve and curve.changed.is_connected(_request_redraw):
 		curve.changed.disconnect(_request_redraw)
 
-# connect to curve resource change notifications
 func _connect_curve() -> void:
 	if curve and not curve.changed.is_connected(_request_redraw):
 		curve.changed.connect(_request_redraw)
 
-# request a redraw when curve resource changes
 func _request_redraw() -> void:
 	if is_inside_tree():
 		queue_redraw()
@@ -113,7 +116,6 @@ func _on_initialize() -> void:
 
 # --- editor preview ---
 
-# draw the curve as a polyline in the editor
 func _draw() -> void:
 	if not Engine.is_editor_hint() or not curve:
 		return
@@ -127,7 +129,6 @@ func _draw() -> void:
 
 # --- checkpoint generation ---
 
-# generate evenly-spaced checkpoints along the baked curve
 func _generate_checkpoints() -> PackedVector2Array:
 	var points: PackedVector2Array = []
 	var dist := 0.0
@@ -144,7 +145,7 @@ func _generate_checkpoints() -> PackedVector2Array:
 # --- swoop trigger ---
 
 # gather swooping entities, generate curve and checkpoints, assign staggered delays
-func _on_trigger(_wave_number: int = 0) -> void:
+func _on_trigger() -> void:
 	var entities: Array[CDEntity] = _gather_entities()
 	if entities.is_empty():
 		return
@@ -169,19 +170,17 @@ func _on_trigger(_wave_number: int = 0) -> void:
 			continue
 		_slots.append(entity)
 		_checkpoint_indices[entity] = 0
-		_entry_delays[entity] = slot_index * slot_spacing / entry_speed
+		_entry_delays[entity] = slot_index * slot_spacing
 		slot_index += 1
 	
 	set_physics_process(true)
 
 # --- entity gathering ---
 
-# collect entities from swooping_groups using union (OR) or intersection (AND) logic
 func _gather_entities() -> Array[CDEntity]:
 	var entities: Array[CDEntity] = []
 	
 	if require_all and swooping_groups.size() > 1:
-		# AND: start with first group, keep only entities in ALL remaining groups
 		var first_group: StringName = swooping_groups[0]
 		for entity in game.group_registry.get_group(first_group):
 			if not is_instance_valid(entity):
@@ -194,7 +193,6 @@ func _gather_entities() -> Array[CDEntity]:
 			if in_all:
 				entities.append(entity)
 	else:
-		# OR: union of all groups, deduplicated
 		var seen: Dictionary = {}
 		for group_name in swooping_groups:
 			for entity in game.group_registry.get_group(group_name):
@@ -206,7 +204,7 @@ func _gather_entities() -> Array[CDEntity]:
 
 # --- processing ---
 
-# advance each entity along its checkpoint path each frame
+# write move_direction + move_distance to each entity's blackboard each frame
 func _physics_process(delta: float) -> void:
 	if Engine.is_editor_hint():
 		return
@@ -236,7 +234,7 @@ func _physics_process(delta: float) -> void:
 			completed.append(entity)
 			continue
 		
-		# move toward current checkpoint
+		# calculate direction and distance to current checkpoint
 		var target_pos: Vector2 = _checkpoints[idx]
 		var dist_to_target := entity.global_position.distance_to(target_pos)
 		
@@ -249,13 +247,15 @@ func _physics_process(delta: float) -> void:
 				completed.append(entity)
 				continue
 			
-			# command entity toward next checkpoint
-			entity.ensure_signal("move_to")
-			entity.emit_signal("move_to", _checkpoints[_checkpoint_indices[entity]])
+			# write next checkpoint data to blackboard
+			var next_pos: Vector2 = _checkpoints[_checkpoint_indices[entity]]
+			var next_dist := entity.global_position.distance_to(next_pos)
+			entity.blackboard[direction_key] = entity.global_position.direction_to(next_pos)
+			entity.blackboard[distance_key] = next_dist
 		else:
-			# command entity toward current checkpoint
-			entity.ensure_signal("move_to")
-			entity.emit_signal("move_to", target_pos)
+			# write current checkpoint data to blackboard
+			entity.blackboard[direction_key] = entity.global_position.direction_to(target_pos)
+			entity.blackboard[distance_key] = dist_to_target
 	
 	# clean up completed entities
 	for entity in completed:
@@ -263,8 +263,10 @@ func _physics_process(delta: float) -> void:
 		_checkpoint_indices.erase(entity)
 		_entry_delays.erase(entity)
 		if is_instance_valid(entity) and entity.state == CDEnums.EntityState.ACTIVE:
+			# write completed entity to game blackboard for downstream consumers
+			game.blackboard[completed_entity_key] = entity
 			for sig in on_swoop_complete:
-				game.bus_emit(sig, [entity])
+				game.bus_emit(sig)
 	
 	# stop processing when all entities have finished
 	if _slots.is_empty():
@@ -272,7 +274,6 @@ func _physics_process(delta: float) -> void:
 
 # --- reset ---
 
-# clear all swoop state for game restart
 func reset() -> void:
 	if curve:
 		curve.reset()

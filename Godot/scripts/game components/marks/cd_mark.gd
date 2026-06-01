@@ -1,6 +1,7 @@
 # CDMark
-# Base Area2D mark that detects body enter/exit and emits game bus signals
+# Base Area2D mark that detects body enter/exit and emits zero-arg game bus signals
 # Provides group filtering and auto-created collision shapes for subclasses
+# Writes detected body to game blackboard before emitting
 
 class_name CDMark extends Area2D
 
@@ -11,7 +12,15 @@ class_name CDMark extends Area2D
 # group whitelist for body filtering (empty = allow all)
 @export var filter_groups: Array[StringName] = []
 
-# game bus signals emitted on body enter/exit
+@export_group("Blackboard Keys")
+# key for writing the last entered body to game blackboard (Node2D)
+@export var entered_body_key: StringName = &"mark_entered_body"
+# key for writing the last exited body to game blackboard (Node2D)
+@export var exited_body_key: StringName = &"mark_exited_body"
+# key for reading a new shape from game blackboard (Shape2D)
+@export var shape_key: StringName = &"mark_shape"
+
+# game bus signals emitted on body enter/exit (zero-arg)
 @export_group("Emit Signals")
 @export var on_entered: Array[StringName] = [&"body_entered"]
 @export var on_exited: Array[StringName] = []
@@ -36,7 +45,6 @@ func _ready() -> void:
 	body_entered.connect(_on_body_entered)
 	body_exited.connect(_on_body_exited)
 	# configure collision layer/mask from CDCollisionMatrix
-	# (CDMark extends Area2D, not CDGameComponent — no _on_initialize lifecycle)
 	if game and game.collision_matrix:
 		game.collision_matrix.configure(self)
 
@@ -51,33 +59,38 @@ func _on_initialize() -> void:
 func _ensure_collision_shape() -> void:
 	for child in get_children():
 		if child is CollisionShape2D:
+			_auto_shape = child
 			return
 	var shape := CollisionShape2D.new()
 	shape.shape = CircleShape2D.new()
 	shape.shape.radius = shape_size
 	add_child(shape)
+	_auto_shape = shape
 
 # --- body detection ---
 
-# emit entered signals for bodies that pass the group filter
+# write body to blackboard and emit zero-arg entered signals
 func _on_body_entered(body: Node2D) -> void:
 	if _passes_filter(body):
+		game.blackboard[entered_body_key] = body
 		for sig in on_entered:
-			game.bus_emit(sig, [body])
-			#print("body entered!")
+			game.bus_emit(sig)
 
-# emit exited signals for bodies that pass the group filter
+# write body to blackboard and emit zero-arg exited signals
 func _on_body_exited(body: Node2D) -> void:
 	if _passes_filter(body):
+		game.blackboard[exited_body_key] = body
 		for sig in on_exited:
-			game.bus_emit(sig, [body])
+			game.bus_emit(sig)
 
 # --- runtime shape swap ---
 
-# replace the auto-created collision shape
-func _on_change_shape(new_shape: Shape2D) -> void:
+# read new shape from game blackboard and apply
+func _on_change_shape() -> void:
 	if _auto_shape:
-		_auto_shape.shape = new_shape
+		var new_shape: Shape2D = game.blackboard.get(shape_key, null)
+		if new_shape:
+			_auto_shape.shape = new_shape
 
 # --- filtering ---
 

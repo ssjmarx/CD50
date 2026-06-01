@@ -28,11 +28,11 @@ var _grid_rows: int = 0
 # --- trigger override ---
 
 # dispatch to Mode A or Mode B based on configured resources
-func _on_trigger(wave_number: int = 0) -> void:
+func _on_trigger() -> void:
 	if game.current_state == CDEnums.GameState.GAME_OVER:
 		return
 
-	_current_wave = wave_number
+	_current_wave = game.blackboard.get("wave_number", 0)
 
 	_spawn_queue.clear()
 

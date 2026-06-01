@@ -15,6 +15,10 @@ enum TimerMode { COUNT_UP, COUNT_DOWN }
 # seconds between label updates and tick signals
 @export var tick_interval: float = 1.0
 
+@export_group("Blackboard Keys")
+# key for publishing current time to game blackboard
+@export var time_key: StringName = &"current_time"
+
 # game bus signals for timer control
 @export_group("Listen Signals")
 @export var on_timer_pause: Array[StringName] = [&"timer_pause"]
@@ -46,6 +50,7 @@ func _ready() -> void:
 
 # connect control signals to the game bus
 func _on_initialize() -> void:
+	_publish_tracked(time_key, current_time)
 	for sig in on_timer_pause:
 		game.bus_connect(sig, _on_timer_paused)
 	for sig in on_timer_resume:
@@ -59,7 +64,7 @@ func _on_initialize() -> void:
 func _physics_process(delta: float) -> void:
 	if not _is_running:
 		return
-	
+
 	# update time based on mode
 	match mode:
 		TimerMode.COUNT_DOWN:
@@ -68,20 +73,22 @@ func _physics_process(delta: float) -> void:
 			if current_time <= 0.0:
 				current_time = 0.0
 				_is_running = false
+				_publish_tracked(time_key, current_time)
 				_update_label(_format_time(0.0))
 				for sig in on_timer_expired:
 					game.bus_emit(sig)
 				return
 		TimerMode.COUNT_UP:
 			current_time += delta
-	
+
 	# emit tick at configured interval
 	_tick_accumulator += delta
 	if _tick_accumulator >= tick_interval:
 		_tick_accumulator -= tick_interval
+		_publish_tracked(time_key, current_time)
 		_update_label(_format_time(current_time))
 		for sig in on_timer_tick:
-			game.bus_emit(sig, [current_time])
+			game.bus_emit(sig)
 
 # --- control handlers ---
 
@@ -98,6 +105,7 @@ func _on_timer_reset() -> void:
 	current_time = starting_time
 	_tick_accumulator = 0.0
 	_is_running = true
+	_publish_tracked(time_key, current_time)
 	_update_label(_format_time(current_time))
 
 # --- formatting ---

@@ -1,6 +1,6 @@
 # SoundVoice
 # Plays a one-shot procedural sound or jingle via CDSoundBank
-# Triggered by entity bus signal, supports filtering and exclusive playback
+# Triggered by entity bus signal, supports exclusive playback
 
 @tool
 class_name SoundVoice extends CDEntityComponent
@@ -11,8 +11,6 @@ class_name SoundVoice extends CDEntityComponent
 @export var sound: CDSoundDef
 # signal name that triggers playback
 @export var trigger_signal: StringName = &""
-# if set, only play when first signal arg matches this value
-@export var filter_value: String = &""
 # play immediately when entity initializes
 @export var play_on_spawn: bool = false
 # update positional audio based on entity world position
@@ -61,11 +59,8 @@ func _on_initialize() -> void:
 
 # --- signal handlers ---
 
-# play sound when triggered, optionally filtering by signal arg
-func _on_trigger(arg1 = null, _arg2 = null) -> void:
-	if filter_value != &"":
-		if str(arg1) != filter_value:
-			return
+# play sound when triggered
+func _on_trigger() -> void:
 	_try_play()
 
 # --- playback ---

@@ -1,6 +1,6 @@
 # GridRotationLeg
 # Tetris-style rotation with SRS wall-kick offset tables
-# Falls back to simple rotation if no TetrominoGuts sibling is found
+# Uses edge detection on blackboard rotation_spin — only acts when spin changes to non-zero
 
 class_name GridRotationLeg extends CDEntityComponent
 
@@ -11,33 +11,45 @@ class_name GridRotationLeg extends CDEntityComponent
 # rotation increment per step in radians (90° for Tetris)
 @export var rotation_step: float = PI / 2.0
 
-# rotation request signals (float spin: +1 CW, -1 CCW)
-@export_group("Listen Signals")
-@export var rotate_signals: Array[StringName] = [&"rotate"]
-# emitted when all kick positions are blocked
+@export_group("Blackboard Keys")
+# key to read rotation spin from (float: +1 CW, -1 CCW)
+@export var spin_key: StringName = &"rotation_spin"
+
+@export_group("Emit Signals")
+# emitted when all kick positions are blocked (zero-arg)
 @export var rotation_blocked_signals: Array[StringName] = [&"rotation_blocked"]
 
 # --- state ---
 
+# previous frame's spin for edge detection
+var _prev_spin: float = 0.0
 # sibling TetrominoGuts for cell offset data (loosely typed to avoid hard dep)
 var _tetromino_guts
 
 # --- lifecycle ---
 
-# set component category
 func _ready() -> void:
 	component_category = CDEnums.ComponentCategory.STEERING
 	super._ready()
 
-# connect rotation listener and find sibling TetrominoGuts
 func _on_initialize() -> void:
-	for sig in rotate_signals:
-		entity.ensure_signal(sig)
-		entity.connect(sig, _on_rotate)
 	for sig in rotation_blocked_signals:
 		entity.ensure_signal(sig)
-	
 	_tetromino_guts = _find_tetromino_guts()
+
+# --- processing ---
+
+func _physics_process(_delta: float) -> void:
+	if not entity:
+		return
+	
+	var spin: float = entity.blackboard.get(spin_key, 0.0)
+	
+	# edge detection — only act on change to non-zero (new discrete rotation input)
+	if spin != 0.0 and spin != _prev_spin:
+		_on_rotate(spin)
+	
+	_prev_spin = spin
 
 # --- helpers ---
 
@@ -48,7 +60,7 @@ func _find_tetromino_guts():
 			return child
 	return null
 
-# --- signal handlers ---
+# --- rotation ---
 
 # attempt rotation with wall kicks, fall back to simple rotation without guts
 func _on_rotate(spin: float) -> void:
@@ -56,22 +68,22 @@ func _on_rotate(spin: float) -> void:
 		# no guts — fall back to simple rotation
 		entity.request_rotation_add(spin * rotation_step)
 		return
-	
+
 	# calculate current and target rotation indices (0-3)
 	var current_index: int = _tetromino_guts.get_rotation_index()
 	var target_index: int = (current_index + int(spin)) % 4
 	if target_index < 0:
 		target_index += 4
-	
+
 	# get the target cell offsets and cell size
 	var target_offsets: Array = _tetromino_guts.get_offsets_for_rotation(target_index)
 	var cell_size := _get_cell_size()
-	
+
 	# try base position first (no kick)
 	if _validate_cells(target_offsets, Vector2i.ZERO, cell_size):
 		_apply_rotation(target_index, Vector2i.ZERO)
 		return
-	
+
 	# try wall kicks from the kick table
 	if kick_table:
 		var kicks: Array[Vector2i] = kick_table.get_kicks(current_index, target_index)
@@ -79,10 +91,10 @@ func _on_rotate(spin: float) -> void:
 			if _validate_cells(target_offsets, kick, cell_size):
 				_apply_rotation(target_index, kick)
 				return
-	
+
 	# all positions blocked — notify listeners
 	for sig in rotation_blocked_signals:
-		entity.emit_signal(sig)
+		entity.bus_emit(sig)
 
 # --- validation ---
 
@@ -121,10 +133,7 @@ func _get_cell_size() -> Vector2:
 
 # --- cleanup ---
 
-# reset state and disconnect for pool reuse
 func _on_entity_deactivating() -> void:
 	super._on_entity_deactivating()
-	for sig in rotate_signals:
-		if entity.has_signal(sig) and entity.is_connected(sig, _on_rotate):
-			entity.disconnect(sig, _on_rotate)
+	_prev_spin = 0.0
 	_tetromino_guts = null
