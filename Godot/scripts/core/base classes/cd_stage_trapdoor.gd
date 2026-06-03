@@ -16,6 +16,10 @@ class_name CDStageTrapdoor extends CDGameComponent
 # seconds to wait before starting the spawn after trigger signal fires
 @export var trigger_delay: float = 0.0
 
+@export_group("Blackboard Keys")
+# key for reading current wave number from game blackboard
+@export var wave_key: StringName = &"wave_number"
+
 # kill overlapping entities at spawn point before spawning
 @export var telefrag: bool = false
 @export var telefrag_targets: Array[StringName] = [&"enemies"]
@@ -67,7 +71,7 @@ func _on_initialize() -> void:
 func _on_delayed_trigger() -> void:
 	if game.current_state == CDEnums.GameState.GAME_OVER:
 		return
-	_pending_wave = game.blackboard.get("wave_number", 0)
+	_pending_wave = game.blackboard.get(wave_key, 0)
 	_delay_remaining = trigger_delay
 	set_physics_process(true)
 
@@ -126,7 +130,7 @@ func _on_trigger() -> void:
 	if game.current_state == CDEnums.GameState.GAME_OVER:
 		return
 
-	_current_wave = game.blackboard.get("wave_number", 0)
+	_current_wave = game.blackboard.get(wave_key, 0)
 	var total: int = _get_spawn_count(_current_wave)
 
 	# build queue of indices to spawn

@@ -11,7 +11,7 @@ class_name DamageOnHitArm extends CDEntityComponent
 @export var target_groups: Array[StringName]
 
 @export_group("Blackboard Keys")
-@export var damage_keys: Array[StringName] = [&"incoming_damage"]
+@export var damage_keys: Array[StringName] = [&"health_delta"]
 @export var source_keys: Array[StringName] = [&"damage_source"]
 
 @export_group("Listen Signals")

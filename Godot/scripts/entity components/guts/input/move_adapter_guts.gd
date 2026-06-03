@@ -24,10 +24,7 @@ func _ready() -> void:
 # connect target listener and ensure direction signal exists
 func _on_initialize() -> void:
 	for sig in target_signals:
-		entity.ensure_signal(sig)
-		entity.connect(sig, _on_target)
-	for sig in direction_signals:
-		entity.ensure_signal(sig)
+		entity.bus_connect(sig, _on_target)
 
 # --- signal handlers ---
 

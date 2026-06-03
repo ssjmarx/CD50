@@ -1,9 +1,8 @@
-[gd_scene load_steps=14 format=3 uid="uid://dn7jogkn4rxwn"]
+[gd_scene load_steps=16 format=3 uid="uid://dn7jogkn4rxwn"]
 
 [ext_resource type="Script" uid="uid://dfbv2tw3cl4pe" path="res://scripts/core/infrastructure/cd_entity.gd" id="1_uodbi"]
 [ext_resource type="PackedScene" uid="uid://bnh8758v4ajwd" path="res://scenes/entity components/faces/vector_face.tscn" id="2_mi252"]
 [ext_resource type="Script" uid="uid://brwnooso7th47" path="res://scripts/core/resources/behavior/cd_shape.gd" id="3_8vgcw"]
-[ext_resource type="PackedScene" uid="uid://33byjn5h6ujc" path="res://scenes/entity components/legs/direct_movement_leg.tscn" id="4_8vgcw"]
 [ext_resource type="PackedScene" uid="uid://1vgoj6bqs80e" path="res://scenes/entity components/arms/gun_arm.tscn" id="5_k8hfx"]
 [ext_resource type="Script" uid="uid://dcu4ocnin0htu" path="res://scripts/core/resources/spawners/cd_spawn_context.gd" id="7_gtdi7"]
 [ext_resource type="PackedScene" uid="uid://btr1f3svl7y3m" path="res://scenes/entity components/guts/healthpool_guts.tscn" id="7_rjpix"]
@@ -11,6 +10,9 @@
 [ext_resource type="PackedScene" uid="uid://bisjhhp8r5a4p" path="res://scenes/entity components/faces/death_effect_face.tscn" id="9_3pkji"]
 [ext_resource type="PackedScene" uid="uid://dtobcb3r7eydx" path="res://scenes/effects/broken_ship_effect.tscn" id="10_3on82"]
 [ext_resource type="PackedScene" uid="uid://dnt5g5mntk0nk" path="res://scenes/effects/death_particle_effect.tscn" id="11_3on82"]
+[ext_resource type="PackedScene" uid="uid://pvv8fpsuq866" path="res://scenes/entity components/legs/engine_leg.tscn" id="11_7xph1"]
+[ext_resource type="PackedScene" uid="uid://cw4irq1blk1ug" path="res://scenes/entity components/faces/vector_engine_face.tscn" id="12_7xph1"]
+[ext_resource type="PackedScene" uid="uid://jq5qyf16nnxv" path="res://scenes/entity components/legs/direct_rotation_leg.tscn" id="13_w3wyt"]
 
 [sub_resource type="Resource" id="Resource_k8hfx"]
 script = ExtResource("3_8vgcw")
@@ -29,9 +31,7 @@ collision_radius = 1.0
 
 [node name="VectorFace" parent="." instance=ExtResource("2_mi252")]
 shapes = Array[ExtResource("3_8vgcw")]([SubResource("Resource_k8hfx")])
-
-[node name="DirectMovementLeg" parent="." instance=ExtResource("4_8vgcw")]
-speed = 300.0
+shape_key = &"shape_points"
 
 [node name="GunArm" parent="." instance=ExtResource("5_k8hfx")]
 position = Vector2(16, 0)
@@ -47,3 +47,13 @@ max_health = 1
 
 [node name="DeathEffectFace" parent="." instance=ExtResource("9_3pkji")]
 effect_scenes = Array[PackedScene]([ExtResource("11_3on82"), ExtResource("10_3on82")])
+
+[node name="EngineLeg" parent="." instance=ExtResource("11_7xph1")]
+thrust_power = 200.0
+
+[node name="VectorEngineFace" parent="." instance=ExtResource("12_7xph1")]
+rotation = 1.5707964
+line_width = 1.0
+
+[node name="DirectRotationLeg" parent="." instance=ExtResource("13_w3wyt")]
+rotation_speed = 360.0

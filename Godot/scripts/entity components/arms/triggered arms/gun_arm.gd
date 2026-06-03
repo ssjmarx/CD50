@@ -38,8 +38,7 @@ func _ready() -> void:
 # connect fire signals
 func _on_initialize() -> void:
 	for sig in fire_signals:
-		entity.ensure_signal(sig)
-		entity.connect(sig, _on_fire)
+		entity.bus_connect(sig, _on_fire)
 
 # spawn a projectile if cooldown and max bullet limits allow
 func _on_fire() -> void:

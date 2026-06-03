@@ -67,13 +67,10 @@ var _tips: Array[float] = [0.0, 0.0, 0.0, 0.0]
 # whether any flame is active
 var _any_active: bool = false
 
-# --- lifecycle ---
+# --- processing ---
 
-# start processing — direction is read from blackboard each frame
 func _on_initialize() -> void:
 	set_process(true)
-
-# --- processing ---
 
 # redraw each frame in editor for live preview
 func _process(delta: float) -> void:
@@ -109,7 +106,7 @@ func _process(delta: float) -> void:
 		# stop processing if direction is zero
 		if _direction == Vector2.ZERO:
 			_any_active = false
-			set_process(false)
+			queue_redraw()
 			return
 		
 		# update flicker tips on timer

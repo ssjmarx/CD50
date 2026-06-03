@@ -1,0 +1,6 @@
+[gd_scene load_steps=2 format=3 uid="uid://b6ppea72ukeug"]
+
+[ext_resource type="Script" uid="uid://ghbmn7btv1ll" path="res://scripts/entity components/brains/player/player_kbm_move_brain.gd" id="1_lk2hv"]
+
+[node name="PlayerKBMMoveBrain" type="Node2D"]
+script = ExtResource("1_lk2hv")

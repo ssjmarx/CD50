@@ -1,19 +1,16 @@
 # ScreenWrapLeg
-# Wraps entity to the opposite side of game bounds when it leaves the screen
+# Wraps entity to opposite side of game bounds when it leaves the screen
 # Checks at configurable intervals to reduce overhead
 
 class_name ScreenWrapLeg extends CDEntityComponent
 
 # --- exports ---
 
-# pixels beyond bounds before wrapping triggers
 @export var wrap_margin: float = 20.0
-# seconds between wrap checks
 @export var check_interval: float = 0.1
 
 # --- state ---
 
-# accumulator for check interval
 var _check_timer: float = 0.0
 
 # --- lifecycle ---
@@ -54,7 +51,6 @@ func _physics_process(delta: float) -> void:
 		pos.y = bounds.end.y + wrap_margin
 		wrapped = true
 	
-	# teleport to wrapped position
 	if wrapped:
 		entity.request_position_set(pos)
 

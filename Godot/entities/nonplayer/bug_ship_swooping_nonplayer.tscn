@@ -1,6 +1,6 @@
 [gd_scene load_steps=6 format=3 uid="uid://dn4605ei3ylto"]
 
-[ext_resource type="PackedScene" uid="uid://chwnucggyf6va" path="res://scenes/entity components/brains/bug_ship_smooth_nonplayer.tscn" id="1_18u38"]
+[ext_resource type="PackedScene" uid="uid://dc5v6bawoxi2c" path="res://entities/generic/bug_ship_smooth.tscn" id="1_18u38"]
 [ext_resource type="PackedScene" uid="uid://wghixqf83pas" path="res://scenes/entity components/brains/ai_swoop_brain.tscn" id="2_f0fqv"]
 [ext_resource type="Script" uid="uid://c5eo3m6tfj1b" path="res://scripts/core/resources/curves/cd_spiral_curve.gd" id="3_4lxl2"]
 [ext_resource type="PackedScene" uid="uid://irkjutuwceju" path="res://scenes/entity components/guts/announcer_guts.tscn" id="4_mqv8h"]
@@ -13,6 +13,7 @@ offset = Vector2(10, -25)
 metadata/_custom_type_script = "uid://c5eo3m6tfj1b"
 
 [node name="BugShip" instance=ExtResource("1_18u38")]
+groups = Array[StringName]([&"bug_ships", &"ships", &"enemies"])
 
 [node name="AISwoopBrain" parent="." index="10" instance=ExtResource("2_f0fqv")]
 curve = SubResource("Resource_mqv8h")

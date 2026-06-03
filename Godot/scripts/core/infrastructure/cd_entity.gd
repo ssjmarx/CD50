@@ -152,8 +152,10 @@ func _physics_process(delta: float) -> void:
 	# position overrides: teleport or offset (skips physics)
 	if _position_set_pending != null:
 		global_position = _position_set_pending
+		reset_physics_interpolation()
 	elif _position_add_pending != null:
 		global_position += _position_add_pending
+		reset_physics_interpolation()
 
 	# clamp to game bounds if entity is constrained
 	if clamp_to_bounds and game and game.game_bounds.has_area():

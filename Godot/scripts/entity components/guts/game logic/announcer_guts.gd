@@ -27,13 +27,12 @@ func _ready() -> void:
 # connect all listen signals to the unified handler
 func _on_initialize() -> void:
 	for sig_name: StringName in listen_signals:
-		entity.ensure_signal(sig_name)
-		entity.connect(sig_name, _on_any_input)
+		entity.bus_connect(sig_name, _on_any_input)
 
 # --- signal handlers ---
 
 # called when any listen_signal fires; rebroadcasts on game bus if qualified
-func _on_any_input(_arg1: Variant = null, _arg2: Variant = null) -> void:
+func _on_any_input() -> void:
 	# relay to game bus with or without entity reference
 	for rebroadcast: StringName in rebroadcast_signals:
 		game.bus_emit(rebroadcast)

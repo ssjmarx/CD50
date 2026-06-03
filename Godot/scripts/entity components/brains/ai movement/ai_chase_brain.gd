@@ -17,12 +17,15 @@ class_name AIChaseBrain extends CDEntityComponent
 @export var targeting_noise: float = 0.0
 
 @export var move_key: StringName = &"move_direction"
+@export var distance_key: StringName = &"move_distance"
 
 # timer for throttled updates
 var _update_timer: float = 0.0
 
 # cached direction for throttled frames
 var _last_direction: Vector2 = Vector2.ZERO
+# cached distance for throttled frames
+var _last_distance: float = 0.0
 
 func _ready() -> void:
 	component_category = CDEnums.ComponentCategory.INTENT
@@ -35,6 +38,7 @@ func _physics_process(delta: float) -> void:
 		_update_timer += delta
 		if _update_timer < update_interval:
 			entity.blackboard[move_key] = _last_direction
+			entity.blackboard[distance_key] = _last_distance
 			return
 		_update_timer = 0.0
 
@@ -42,7 +46,9 @@ func _physics_process(delta: float) -> void:
 	var target := _find_nearest()
 	if target == null:
 		_last_direction = Vector2.ZERO
+		_last_distance = 0.0
 		entity.blackboard[move_key] = _last_direction
+		entity.blackboard[distance_key] = _last_distance
 		return
 
 	var target_pos := _apply_noise(target.global_position)
@@ -51,12 +57,16 @@ func _physics_process(delta: float) -> void:
 	# stop if within range
 	if distance <= stop_distance:
 		_last_direction = Vector2.ZERO
+		_last_distance = 0.0
 		entity.blackboard[move_key] = _last_direction
+		entity.blackboard[distance_key] = _last_distance
 		return
 
 	# emit direction toward target
 	_last_direction = entity.global_position.direction_to(target_pos)
+	_last_distance = distance
 	entity.blackboard[move_key] = _last_direction
+	entity.blackboard[distance_key] = _last_distance
 
 # search all target groups for the nearest entity
 func _find_nearest() -> CDEntity:
@@ -79,3 +89,4 @@ func _on_entity_deactivating() -> void:
 	super._on_entity_deactivating()
 	_update_timer = 0.0
 	_last_direction = Vector2.ZERO
+	_last_distance = 0.0

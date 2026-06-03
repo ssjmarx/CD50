@@ -11,7 +11,7 @@ class_name WaveCard extends CDCueCard
 
 @export_group("Blackboard Keys")
 # key for publishing current wave to game blackboard
-@export var wave_key: StringName = &"current_wave"
+@export var wave_key: StringName = &"wave_number"
 
 # game bus signals that trigger wave advance
 @export_group("Listen Signals")

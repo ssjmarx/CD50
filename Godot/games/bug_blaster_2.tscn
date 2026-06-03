@@ -1,0 +1,145 @@
+[gd_scene load_steps=34 format=3 uid="uid://c0q0c0v84x80"]
+
+[ext_resource type="Script" uid="uid://dm0uehngpvbh7" path="res://scripts/core/infrastructure/cd_game.gd" id="1_62wb8"]
+[ext_resource type="PackedScene" uid="uid://cmbx6xnct372t" path="res://scenes/core/infrastructure/cd_collision_buffer.tscn" id="2_7y1r2"]
+[ext_resource type="PackedScene" uid="uid://bcwv07gabsxif" path="res://scenes/core/infrastructure/cd_collision_matrix.tscn" id="3_wnudv"]
+[ext_resource type="Script" uid="uid://b2ibop6r2cryj" path="res://scripts/core/resources/infrastructure/cd_collision_group.gd" id="4_xb0do"]
+[ext_resource type="PackedScene" uid="uid://25g1ygl8nuv6" path="res://scenes/core/infrastructure/cd_group_registry.tscn" id="5_qyrdw"]
+[ext_resource type="PackedScene" uid="uid://c6mp0pt27mfal" path="res://scenes/core/infrastructure/cd_input_router.tscn" id="6_2v676"]
+[ext_resource type="PackedScene" uid="uid://csgdjkq3gf26a" path="res://scenes/core/infrastructure/cd_updater.tscn" id="7_fjsfa"]
+[ext_resource type="PackedScene" uid="uid://crm6k3o4f76ok" path="res://entities/player/triangle_ship_player.tscn" id="8_7y1r2"]
+[ext_resource type="PackedScene" uid="uid://33byjn5h6ujc" path="res://scenes/entity components/legs/direct_movement_leg.tscn" id="9_wnudv"]
+[ext_resource type="PackedScene" uid="uid://b1e365cvr1e8p" path="res://scenes/game components/trapdoors/point_trapdoor.tscn" id="10_xb0do"]
+[ext_resource type="PackedScene" uid="uid://dn4605ei3ylto" path="res://entities/nonplayer/bug_ship_swooping_nonplayer.tscn" id="11_2v676"]
+[ext_resource type="PackedScene" uid="uid://mxejpxipdbii" path="res://scenes/game components/cards/wave_card.tscn" id="11_qyrdw"]
+[ext_resource type="Script" uid="uid://dcu4ocnin0htu" path="res://scripts/core/resources/spawners/cd_spawn_context.gd" id="12_rgict"]
+[ext_resource type="PackedScene" uid="uid://ca4qbo05yiya" path="res://scenes/game components/directors/swoop_director.tscn" id="14_bnks8"]
+[ext_resource type="Script" uid="uid://dlalvxnq5qb5x" path="res://scripts/core/resources/curves/cd_curve.gd" id="15_34iby"]
+[ext_resource type="Script" uid="uid://dpgs8b1skt7t2" path="res://scripts/core/resources/curves/cd_sine_curve.gd" id="16_4yrl4"]
+[ext_resource type="Script" uid="uid://dakcd8kk2xm44" path="res://scripts/core/resources/curves/cd_sequence_curve.gd" id="17_hm20g"]
+[ext_resource type="PackedScene" uid="uid://b7uyqydnog2th" path="res://scenes/game components/directors/formation_director.tscn" id="18_156p0"]
+[ext_resource type="PackedScene" uid="uid://bf43dpgnegd46" path="res://scenes/game components/directors/state_director.tscn" id="19_g3xn7"]
+[ext_resource type="Script" uid="uid://2krdfmhel0jp" path="res://scripts/core/resources/behavior/cd_transition.gd" id="20_k70bp"]
+[ext_resource type="Script" uid="uid://ca0k2u53egerl" path="res://scripts/core/resources/triggers/cd_signal_trigger.gd" id="21_g3xn7"]
+[ext_resource type="Script" uid="uid://c0vh1ticpmvx5" path="res://scripts/core/resources/selectors/cd_select_all.gd" id="21_k70bp"]
+
+[sub_resource type="Resource" id="Resource_q4h5u"]
+script = ExtResource("4_xb0do")
+group_name = &"players"
+metadata/_custom_type_script = "uid://b2ibop6r2cryj"
+
+[sub_resource type="Resource" id="Resource_qh32t"]
+script = ExtResource("4_xb0do")
+group_name = &"enemies"
+metadata/_custom_type_script = "uid://b2ibop6r2cryj"
+
+[sub_resource type="Resource" id="Resource_dg5ky"]
+script = ExtResource("4_xb0do")
+group_name = &"enemy_bullets"
+collides_with = Array[StringName]([&"players"])
+metadata/_custom_type_script = "uid://b2ibop6r2cryj"
+
+[sub_resource type="Resource" id="Resource_7ar12"]
+script = ExtResource("4_xb0do")
+group_name = &"player_bullets"
+collides_with = Array[StringName]([&"enemies"])
+metadata/_custom_type_script = "uid://b2ibop6r2cryj"
+
+[sub_resource type="Resource" id="Resource_v3fjy"]
+script = ExtResource("4_xb0do")
+group_name = &"top_zone"
+collides_with = Array[StringName]([&"enemies"])
+metadata/_custom_type_script = "uid://b2ibop6r2cryj"
+
+[sub_resource type="Resource" id="Resource_owvki"]
+script = ExtResource("12_rgict")
+additional_groups = Array[StringName]([&"swooping"])
+metadata/_custom_type_script = "uid://dcu4ocnin0htu"
+
+[sub_resource type="Resource" id="Resource_156p0"]
+script = ExtResource("16_4yrl4")
+amplitude = 25.0
+frequency = 2
+metadata/_custom_type_script = "uid://dpgs8b1skt7t2"
+
+[sub_resource type="Resource" id="Resource_g3xn7"]
+script = ExtResource("17_hm20g")
+curves = Array[ExtResource("15_34iby")]([SubResource("Resource_156p0")])
+metadata/_custom_type_script = "uid://dakcd8kk2xm44"
+
+[sub_resource type="Resource" id="Resource_r24yj"]
+script = ExtResource("21_k70bp")
+metadata/_custom_type_script = "uid://c0vh1ticpmvx5"
+
+[sub_resource type="Resource" id="Resource_k70bp"]
+script = ExtResource("21_g3xn7")
+signal_names = Array[StringName]([&"swoop_complete"])
+metadata/_custom_type_script = "uid://ca0k2u53egerl"
+
+[sub_resource type="Resource" id="Resource_5kasm"]
+script = ExtResource("20_k70bp")
+remove_groups = Array[StringName]([&"swooping"])
+add_groups = Array[StringName]([&"formation"])
+target_groups = Array[StringName]([&"swooping"])
+trigger = SubResource("Resource_k70bp")
+selector = SubResource("Resource_r24yj")
+metadata/_custom_type_script = "uid://2krdfmhel0jp"
+
+[node name="BugBlaster2" type="Node2D"]
+script = ExtResource("1_62wb8")
+game_bounds = Rect2(0, 0, 640, 360)
+
+[node name="CDCollisionBuffer" parent="." instance=ExtResource("2_7y1r2")]
+
+[node name="CDCollisionMatrix" parent="." instance=ExtResource("3_wnudv")]
+collision_groups = Array[ExtResource("4_xb0do")]([SubResource("Resource_q4h5u"), SubResource("Resource_qh32t"), SubResource("Resource_dg5ky"), SubResource("Resource_7ar12"), SubResource("Resource_v3fjy")])
+
+[node name="CDGroupRegistry" parent="." instance=ExtResource("5_qyrdw")]
+
+[node name="CDInputRouter" parent="." instance=ExtResource("6_2v676")]
+tracked_actions = Array[StringName]([&"fire", &"thrust", &"thrust_end"])
+
+[node name="CDUpdater" parent="." instance=ExtResource("7_fjsfa")]
+
+[node name="TriangleShip" parent="." instance=ExtResource("8_7y1r2")]
+position = Vector2(320, 340)
+rotation = -1.5707964
+lock_y = true
+clamp_to_bounds = true
+
+[node name="DirectRotationLeg" parent="TriangleShip" index="7"]
+rotation_speed = 0.0
+
+[node name="DirectMovementLeg" parent="TriangleShip" instance=ExtResource("9_wnudv")]
+speed = 300.0
+
+[node name="PointTrapdoor" parent="." instance=ExtResource("10_xb0do")]
+position = Vector2(320, -16)
+spawn_scene = ExtResource("11_2v676")
+spawn_count_equation = "4 + wave_number"
+offset_range = Vector2(0, 0)
+stagger_delay = 0.0
+spawn_context = SubResource("Resource_owvki")
+
+[node name="WaveCard" parent="." instance=ExtResource("11_qyrdw")]
+
+[node name="SwoopDirector" parent="." instance=ExtResource("14_bnks8")]
+position = Vector2(320, -16)
+target = Vector2(320, 308)
+curve = SubResource("Resource_g3xn7")
+swoop_speed = 400.0
+formation_offset = 32.0
+
+[node name="FormationDirector" parent="." instance=ExtResource("18_156p0")]
+position = Vector2(320, 69)
+columns = 20
+breathing_amplitude = 2.0
+breathing_duration = 20.0
+preview_color = Color(1, 0.64705884, 0, 1)
+component_category = 10
+
+[node name="StateDirector" parent="." instance=ExtResource("19_g3xn7")]
+transitions = Array[ExtResource("20_k70bp")]([SubResource("Resource_5kasm")])
+
+[editable path="TriangleShip"]
+[editable path="TriangleShip/GunArm"]
