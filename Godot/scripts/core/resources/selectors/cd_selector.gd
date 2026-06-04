@@ -12,7 +12,8 @@ func initialize(game: CDGame) -> void:
 	_game = game
 
 ## override in subclasses — returns a subset of candidates
-func select(candidates: Array[CDEntity]) -> Array[CDEntity]:
+## source_position is the director's global_position for distance-based selectors
+func select(candidates: Array[CDEntity], _source_position: Vector2 = Vector2.ZERO) -> Array[CDEntity]:
 	return candidates
 
 ## clear the game reference on reset

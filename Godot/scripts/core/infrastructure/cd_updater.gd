@@ -13,9 +13,10 @@ var _pending: Array[Dictionary] = []
 func _ready() -> void:
 	process_physics_priority = CDEnums.category_to_priority(CDEnums.ComponentCategory.UPDATE)
 
-## flush all pending transitions each frame
+## flush all pending transitions each frame, then clear emitter registries
 func _physics_process(_delta: float) -> void:
 	_flush()
+	game._signal_emitters.clear()
 
 ## --- Public API ---
 

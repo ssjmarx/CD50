@@ -1,4 +1,4 @@
-[gd_scene load_steps=34 format=3 uid="uid://c0q0c0v84x80"]
+[gd_scene load_steps=55 format=3 uid="uid://c0q0c0v84x80"]
 
 [ext_resource type="Script" uid="uid://dm0uehngpvbh7" path="res://scripts/core/infrastructure/cd_game.gd" id="1_62wb8"]
 [ext_resource type="PackedScene" uid="uid://cmbx6xnct372t" path="res://scenes/core/infrastructure/cd_collision_buffer.tscn" id="2_7y1r2"]
@@ -16,12 +16,21 @@
 [ext_resource type="PackedScene" uid="uid://ca4qbo05yiya" path="res://scenes/game components/directors/swoop_director.tscn" id="14_bnks8"]
 [ext_resource type="Script" uid="uid://dlalvxnq5qb5x" path="res://scripts/core/resources/curves/cd_curve.gd" id="15_34iby"]
 [ext_resource type="Script" uid="uid://dpgs8b1skt7t2" path="res://scripts/core/resources/curves/cd_sine_curve.gd" id="16_4yrl4"]
+[ext_resource type="Script" uid="uid://3trxdccdneqx" path="res://scripts/core/resources/curves/cd_lissajous_curve.gd" id="17_20wdp"]
 [ext_resource type="Script" uid="uid://dakcd8kk2xm44" path="res://scripts/core/resources/curves/cd_sequence_curve.gd" id="17_hm20g"]
+[ext_resource type="Script" uid="uid://b7yxnmuk1vkya" path="res://scripts/core/resources/curves/cd_parabola_curve.gd" id="17_la2sg"]
 [ext_resource type="PackedScene" uid="uid://b7uyqydnog2th" path="res://scenes/game components/directors/formation_director.tscn" id="18_156p0"]
 [ext_resource type="PackedScene" uid="uid://bf43dpgnegd46" path="res://scenes/game components/directors/state_director.tscn" id="19_g3xn7"]
+[ext_resource type="Script" uid="uid://c0l1od3pky1y1" path="res://scripts/core/resources/curves/cd_helix_curve.gd" id="19_sx6bc"]
 [ext_resource type="Script" uid="uid://2krdfmhel0jp" path="res://scripts/core/resources/behavior/cd_transition.gd" id="20_k70bp"]
 [ext_resource type="Script" uid="uid://ca0k2u53egerl" path="res://scripts/core/resources/triggers/cd_signal_trigger.gd" id="21_g3xn7"]
-[ext_resource type="Script" uid="uid://c0vh1ticpmvx5" path="res://scripts/core/resources/selectors/cd_select_all.gd" id="21_k70bp"]
+[ext_resource type="Script" uid="uid://3ciu0vvrmmb7" path="res://scripts/core/resources/selectors/cd_select_signal_emitter.gd" id="21_k70bp"]
+[ext_resource type="PackedScene" path="res://scenes/game components/directors/shooting_director.tscn" id="23_7jcia"]
+[ext_resource type="Script" uid="uid://dm2djsydyr0u1" path="res://scripts/core/resources/triggers/cd_timer_trigger.gd" id="24_gc4j8"]
+[ext_resource type="Script" uid="uid://bd5apwoshu3n6" path="res://scripts/core/resources/behavior/cd_wave_scaler.gd" id="25_hc4eh"]
+[ext_resource type="Script" uid="uid://b3xaxo1yp2dn1" path="res://scripts/core/resources/selectors/cd_select_nearest_n_to_group.gd" id="26_gc4j8"]
+[ext_resource type="PackedScene" path="res://scenes/game components/directors/aiming_director.tscn" id="27_hc4eh"]
+[ext_resource type="PackedScene" uid="uid://b4uqwn5l54hms" path="res://scenes/game components/goals/group_count_goal.tscn" id="29_blp8l"]
 
 [sub_resource type="Resource" id="Resource_q4h5u"]
 script = ExtResource("4_xb0do")
@@ -51,25 +60,97 @@ group_name = &"top_zone"
 collides_with = Array[StringName]([&"enemies"])
 metadata/_custom_type_script = "uid://b2ibop6r2cryj"
 
+[sub_resource type="Resource" id="Resource_la2sg"]
+script = ExtResource("12_rgict")
+additional_groups = Array[StringName]([&"swooping", &"left"])
+metadata/_custom_type_script = "uid://dcu4ocnin0htu"
+
 [sub_resource type="Resource" id="Resource_owvki"]
 script = ExtResource("12_rgict")
-additional_groups = Array[StringName]([&"swooping"])
+additional_groups = Array[StringName]([&"swooping", &"right"])
 metadata/_custom_type_script = "uid://dcu4ocnin0htu"
 
 [sub_resource type="Resource" id="Resource_156p0"]
 script = ExtResource("16_4yrl4")
-amplitude = 25.0
+amplitude = 64.0
 frequency = 2
+offset = Vector2(0, 64)
 metadata/_custom_type_script = "uid://dpgs8b1skt7t2"
+
+[sub_resource type="Resource" id="Resource_qhmbs"]
+script = ExtResource("17_la2sg")
+amplitude = 64.0
+curvature = 4.0
+direction = 2
+curve_seed = 1
+offset = Vector2(0, 32)
+metadata/_custom_type_script = "uid://b7yxnmuk1vkya"
+
+[sub_resource type="Resource" id="Resource_sx6bc"]
+script = ExtResource("17_20wdp")
+amplitude_x = -64.0
+amplitude_y = 64.0
+loops = 2
+curve_seed = 3
+metadata/_custom_type_script = "uid://3trxdccdneqx"
+
+[sub_resource type="Resource" id="Resource_4psr8"]
+script = ExtResource("19_sx6bc")
+radius = 64.0
+turns = 2
+offset = Vector2(64, 64)
+reverse = true
+metadata/_custom_type_script = "uid://c0l1od3pky1y1"
+
+[sub_resource type="Resource" id="Resource_jix4n"]
+script = ExtResource("17_hm20g")
+curves = Array[ExtResource("15_34iby")]([SubResource("Resource_156p0"), SubResource("Resource_qhmbs"), SubResource("Resource_sx6bc"), SubResource("Resource_4psr8")])
+preview_index = 3
+reverse = true
+metadata/_custom_type_script = "uid://dakcd8kk2xm44"
+
+[sub_resource type="Resource" id="Resource_1tdfd"]
+script = ExtResource("16_4yrl4")
+amplitude = 64.0
+frequency = 2
+offset = Vector2(0, 64)
+reverse = true
+metadata/_custom_type_script = "uid://dpgs8b1skt7t2"
+
+[sub_resource type="Resource" id="Resource_1nsuk"]
+script = ExtResource("17_la2sg")
+amplitude = -64.0
+curvature = 4.0
+direction = 2
+curve_seed = 1
+offset = Vector2(0, 32)
+metadata/_custom_type_script = "uid://b7yxnmuk1vkya"
+
+[sub_resource type="Resource" id="Resource_1k33r"]
+script = ExtResource("17_20wdp")
+amplitude_x = 64.0
+amplitude_y = 64.0
+loops = 2
+curve_seed = 3
+metadata/_custom_type_script = "uid://3trxdccdneqx"
+
+[sub_resource type="Resource" id="Resource_acn14"]
+script = ExtResource("19_sx6bc")
+radius = -64.0
+turns = 2
+offset = Vector2(-64, 64)
+metadata/_custom_type_script = "uid://c0l1od3pky1y1"
 
 [sub_resource type="Resource" id="Resource_g3xn7"]
 script = ExtResource("17_hm20g")
-curves = Array[ExtResource("15_34iby")]([SubResource("Resource_156p0")])
+curves = Array[ExtResource("15_34iby")]([SubResource("Resource_1tdfd"), SubResource("Resource_1nsuk"), SubResource("Resource_1k33r"), SubResource("Resource_acn14")])
+preview_index = 3
+reverse = true
 metadata/_custom_type_script = "uid://dakcd8kk2xm44"
 
 [sub_resource type="Resource" id="Resource_r24yj"]
 script = ExtResource("21_k70bp")
-metadata/_custom_type_script = "uid://c0vh1ticpmvx5"
+signal_name = &"swoop_complete"
 
 [sub_resource type="Resource" id="Resource_k70bp"]
 script = ExtResource("21_g3xn7")
@@ -84,6 +165,23 @@ target_groups = Array[StringName]([&"swooping"])
 trigger = SubResource("Resource_k70bp")
 selector = SubResource("Resource_r24yj")
 metadata/_custom_type_script = "uid://2krdfmhel0jp"
+
+[sub_resource type="Resource" id="Resource_20wdp"]
+script = ExtResource("25_hc4eh")
+base = 6.0
+per_wave = -1.0
+metadata/_custom_type_script = "uid://bd5apwoshu3n6"
+
+[sub_resource type="Resource" id="Resource_blp8l"]
+script = ExtResource("24_gc4j8")
+interval = 6.0
+wave_scaler = SubResource("Resource_20wdp")
+random_variance = 1.0
+metadata/_custom_type_script = "uid://dm2djsydyr0u1"
+
+[sub_resource type="Resource" id="Resource_hc4eh"]
+script = ExtResource("26_gc4j8")
+metadata/_custom_type_script = "uid://b3xaxo1yp2dn1"
 
 [node name="BugBlaster2" type="Node2D"]
 script = ExtResource("1_62wb8")
@@ -114,21 +212,44 @@ rotation_speed = 0.0
 speed = 300.0
 
 [node name="PointTrapdoor" parent="." instance=ExtResource("10_xb0do")]
-position = Vector2(320, -16)
+position = Vector2(256, -16)
 spawn_scene = ExtResource("11_2v676")
-spawn_count_equation = "4 + wave_number"
+spawn_count_equation = "10 + wave_number"
+offset_range = Vector2(0, 0)
+stagger_delay = 0.0
+spawn_context = SubResource("Resource_la2sg")
+on_spawning_complete = Array[StringName]([&"spawning_complete_left"])
+
+[node name="PointTrapdoor2" parent="." instance=ExtResource("10_xb0do")]
+position = Vector2(384, -16)
+spawn_scene = ExtResource("11_2v676")
+spawn_count_equation = "10 + wave_number"
 offset_range = Vector2(0, 0)
 stagger_delay = 0.0
 spawn_context = SubResource("Resource_owvki")
+on_spawning_complete = Array[StringName]([&"spawning_complete_right"])
 
 [node name="WaveCard" parent="." instance=ExtResource("11_qyrdw")]
 
 [node name="SwoopDirector" parent="." instance=ExtResource("14_bnks8")]
-position = Vector2(320, -16)
-target = Vector2(320, 308)
+position = Vector2(256, -16)
+swooping_groups = Array[StringName]([&"swooping", &"left"])
+require_all = true
+target = Vector2(256, 212)
+curve = SubResource("Resource_jix4n")
+swoop_speed = 400.0
+formation_offset = 32.0
+trigger_signals = Array[StringName]([&"spawning_complete_left"])
+
+[node name="SwoopDirector2" parent="." instance=ExtResource("14_bnks8")]
+position = Vector2(384, -16)
+swooping_groups = Array[StringName]([&"swooping", &"right"])
+require_all = true
+target = Vector2(384, 212)
 curve = SubResource("Resource_g3xn7")
 swoop_speed = 400.0
 formation_offset = 32.0
+trigger_signals = Array[StringName]([&"spawning_complete_right"])
 
 [node name="FormationDirector" parent="." instance=ExtResource("18_156p0")]
 position = Vector2(320, 69)
@@ -139,7 +260,20 @@ preview_color = Color(1, 0.64705884, 0, 1)
 component_category = 10
 
 [node name="StateDirector" parent="." instance=ExtResource("19_g3xn7")]
+position = Vector2(320, -16)
 transitions = Array[ExtResource("20_k70bp")]([SubResource("Resource_5kasm")])
+
+[node name="ShootingDirector" parent="." instance=ExtResource("23_7jcia")]
+trigger = SubResource("Resource_blp8l")
+selector = SubResource("Resource_hc4eh")
+component_category = 10
+
+[node name="AimingDirector" parent="." instance=ExtResource("27_hc4eh")]
+targeting_noise = 4.0
+component_category = 10
+
+[node name="GroupCountGoal" parent="." instance=ExtResource("29_blp8l")]
+on_condition_met = Array[StringName]([&"wave_cleared"])
 
 [editable path="TriangleShip"]
 [editable path="TriangleShip/GunArm"]

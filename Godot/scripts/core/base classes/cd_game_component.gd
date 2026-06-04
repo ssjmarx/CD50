@@ -11,7 +11,7 @@ var game: CDGame
 
 ## --- Two-Phase Lifecycle ---
 
-## Phase 1: resolve game ref, set priority, defer phase 2
+## Phase 1: resolve game ref, defer phase 2 (priority set in _initialize after subclass _ready)
 func _ready() -> void:
 	if Engine.is_editor_hint():
 		return
@@ -22,12 +22,11 @@ func _ready() -> void:
 		push_error("CDGameComponent '%s': no CDGame ancestor found." % name)
 		return
 
-	process_physics_priority = CDEnums.category_to_priority(component_category)
-
 	call_deferred("_initialize")
 
-## Phase 2: call virtual init for subclasses
+## Phase 2: set priority from category (subclass _ready has already run), call virtual init
 func _initialize() -> void:
+	process_physics_priority = CDEnums.category_to_priority(component_category)
 	_on_initialize()
 
 ## --- Virtual Methods ---

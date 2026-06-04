@@ -8,6 +8,6 @@ class_name CDSelectN extends CDSelector
 @export var count: int = 1
 
 ## return the first N candidates (or fewer if not enough exist)
-func select(candidates: Array[CDEntity]) -> Array[CDEntity]:
+func select(candidates: Array[CDEntity], _source_position: Vector2 = Vector2.ZERO) -> Array[CDEntity]:
 	var n: int = mini(count, candidates.size())
 	return candidates.slice(0, n)

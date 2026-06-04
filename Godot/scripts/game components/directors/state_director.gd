@@ -20,8 +20,8 @@ var _update: CDUpdater
 
 ## ready
 func _ready() -> void:
-	super._ready()
 	component_category = CDEnums.ComponentCategory.RULES
+	super._ready()
 
 ## cache updater reference and initialize all transitions
 func _on_initialize() -> void:
@@ -54,23 +54,11 @@ func _physics_process(delta: float) -> void:
 
 ## --- transition logic ---
 
-## gather candidates, filter, select, and queue transitions via CDUpdater
+## gather candidates from target_groups, filter, select, and queue transitions via CDUpdater
 func _process_trigger(t: CDTransition) -> void:
-	## build candidates from trigger type
-	var candidates: Array[CDEntity]
-	if t.trigger is CDSignalTrigger:
-		candidates = t.trigger.consume_pending()
-	elif t.trigger is CDCompositeTrigger:
-		candidates = t.trigger.consume_pending()
-		## also gather from target_groups if set
-		if not t.target_groups.is_empty():
-			var group_candidates := _gather_from_groups(t)
-			for entity in group_candidates:
-				if not candidates.has(entity):
-					candidates.append(entity)
-	else:
-		candidates = _gather_from_groups(t)
-	
+	## gather candidates from target_groups (universal — no trigger type branching)
+	var candidates := _gather_from_groups(t)
+
 	## filter: valid, active, not already transitioned, in all target groups
 	var filtered: Array[CDEntity] = []
 	for entity in candidates:
@@ -83,14 +71,14 @@ func _process_trigger(t: CDTransition) -> void:
 		if not _is_in_all_groups(entity, t.target_groups):
 			continue
 		filtered.append(entity)
-	
-	## selector narrows the pool
+
+	## selector narrows the pool (receives director position for distance-based selectors)
 	var selected: Array[CDEntity]
 	if t.selector:
-		selected = t.selector.select(filtered)
+		selected = t.selector.select(filtered, global_position)
 	else:
 		selected = filtered
-	
+
 	## queue transitions via CDUpdater (deferred to avoid mutation during iteration)
 	for entity in selected:
 		_transitioned[entity] = true

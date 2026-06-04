@@ -4,3 +4,6 @@
 
 [node name="OnscreenBullet" instance=ExtResource("1_clnf3")]
 groups = Array[StringName]([&"bullets", &"enemy_bullets"])
+
+[node name="PolygonFace" parent="." index="2"]
+shape_key = &"shape_points"

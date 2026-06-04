@@ -24,8 +24,8 @@ class_name ShootingDirector extends CDGameComponent
 
 ## ready
 func _ready() -> void:
-	super._ready()
 	component_category = CDEnums.ComponentCategory.RULES
+	super._ready()
 
 ## on initialize
 func _on_initialize() -> void:
@@ -65,8 +65,7 @@ func _fire() -> void:
 	## command selected entities to shoot
 	for entity in selected:
 		if is_instance_valid(entity) and entity.state == CDEnums.EntityState.ACTIVE:
-			entity.ensure_signal(shoot_signal)
-			entity.emit_signal(shoot_signal)
+			entity.bus_emit(shoot_signal)
 
 ## query all target groups and deduplicate, filtering to valid + active
 func _gather_candidates() -> Array[CDEntity]:

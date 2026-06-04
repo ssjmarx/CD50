@@ -17,6 +17,9 @@ class_name CDGame extends Node2D
 ## blackboard for shared game state
 var blackboard: Dictionary = {}
 
+## per-frame signal emitter tracking (populated by bus_emit_from, cleared by CDUpdater)
+var _signal_emitters: Dictionary = {}  # {StringName: Array}
+
 ## --- State Machine ---
 
 var _current_state: CDEnums.GameState = CDEnums.GameState.ATTRACT
@@ -81,10 +84,20 @@ func bus_disconnect(signal_name: StringName, callable: Callable) -> void:
 	if has_signal(signal_name) and is_connected(signal_name, callable):
 		disconnect(signal_name, callable)
 
-## bus emit
+## bus emit — zero-arg signal, no emitter tracking (default)
 func bus_emit(signal_name: StringName) -> void:
 	if has_signal(signal_name):
 		emit_signal(signal_name)
+
+## bus emit from — zero-arg signal + tracks the emitting entity for this frame
+func bus_emit_from(signal_name: StringName, emitter: Object) -> void:
+	if not has_signal(signal_name):
+		push_warning("CDGame.bus_emit_from: signal '%s' not registered" % signal_name)
+		return
+	emit_signal(signal_name)
+	if not _signal_emitters.has(signal_name):
+		_signal_emitters[signal_name] = []
+	_signal_emitters[signal_name].append(emitter)
 
 ## --- State Transitions ---
 

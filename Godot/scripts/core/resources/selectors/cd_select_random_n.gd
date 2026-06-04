@@ -8,7 +8,7 @@ class_name CDSelectRandomN extends CDSelector
 @export var count: int = 1
 
 ## pick N random candidates from the list (no duplicates)
-func select(candidates: Array[CDEntity]) -> Array[CDEntity]:
+func select(candidates: Array[CDEntity], _source_position: Vector2 = Vector2.ZERO) -> Array[CDEntity]:
 	var available: Array[CDEntity] = []
 	available.assign(candidates)
 	var n: int = mini(count, available.size())

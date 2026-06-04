@@ -35,6 +35,9 @@ var _position_add_pending: Variant = null
 var _rotation_set_pending: Variant = null
 var _rotation_add_pending: Variant = null
 
+## per-frame signal emitter tracking (populated by bus_emit, cleared by CDUpdater)
+var _signal_emitters: Dictionary = {}  # {StringName: Array}
+
 ## collision buffer: detected in physics, flushed by CDCollisionBuffer at priority 35
 var _pending_collisions: Array = []
 var _collision_buffer: CDCollisionBuffer
@@ -98,6 +101,9 @@ func _ready() -> void:
 func _physics_process(delta: float) -> void:
 	if state != CDEnums.EntityState.ACTIVE:
 		return
+
+	## clear last frame's emitter tracking
+	_signal_emitters.clear()
 
 	velocity += _accumulated_velocity_add
 	if _velocity_set_pending != null:
@@ -325,10 +331,14 @@ func bus_disconnect(signal_name: StringName, callable: Callable) -> void:
 	if has_signal(signal_name) and is_connected(signal_name, callable):
 		disconnect(signal_name, callable)
 
-## bus emit
+## bus emit — zero-arg signal, automatically tracks self as emitter
 func bus_emit(signal_name: StringName) -> void:
 	if has_signal(signal_name):
 		emit_signal(signal_name)
+		## track emitter for this frame (entity bus: always self)
+		if not _signal_emitters.has(signal_name):
+			_signal_emitters[signal_name] = []
+		_signal_emitters[signal_name].append(self)
 
 ## --- Utility ---
 

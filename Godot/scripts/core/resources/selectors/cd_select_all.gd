@@ -5,5 +5,5 @@
 class_name CDSelectAll extends CDSelector
 
 ## no filtering, return the full candidate list
-func select(candidates: Array[CDEntity]) -> Array[CDEntity]:
+func select(candidates: Array[CDEntity], _source_position: Vector2 = Vector2.ZERO) -> Array[CDEntity]:
 	return candidates

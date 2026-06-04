@@ -26,14 +26,6 @@ func evaluate(delta: float) -> bool:
 	else:
 		return _evaluate_or(delta)
 
-## collect pending entities from all signal sub-triggers
-func consume_pending() -> Array[CDEntity]:
-	var all_pending: Array[CDEntity] = []
-	for trigger in triggers:
-		if trigger is CDSignalTrigger:
-			all_pending.append_array(trigger.consume_pending())
-	return all_pending
-
 ## check if all evaluative sub-trigger conditions are currently met
 func is_condition_met() -> bool:
 	for trigger in triggers:

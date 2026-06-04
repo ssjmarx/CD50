@@ -63,8 +63,8 @@ var _assigned_this_frame: Dictionary = {}
 
 ## initialize slots array
 func _ready() -> void:
-	super._ready()
 	component_category = CDEnums.ComponentCategory.RULES
+	super._ready()
 	_init_slots()
 
 ## --- editor preview ---

@@ -66,8 +66,8 @@ var _release_countdown: int = 0
 
 ## ready
 func _ready() -> void:
-	super._ready()
 	component_category = CDEnums.ComponentCategory.RULES
+	super._ready()
 
 ## enter tree
 func _enter_tree() -> void:
@@ -242,7 +242,7 @@ func _physics_process(_delta: float) -> void:
 		if is_instance_valid(entity) and entity.state == CDEnums.EntityState.ACTIVE:
 			game.blackboard[completed_entity_key] = entity
 			for sig in on_swoop_complete:
-				game.bus_emit(sig)
+				game.bus_emit_from(sig, entity)
 	
 	if _slots.is_empty() and _pending.is_empty():
 		set_physics_process(false)

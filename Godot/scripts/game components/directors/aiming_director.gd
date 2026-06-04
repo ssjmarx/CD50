@@ -36,8 +36,8 @@ var _cached_directions: Dictionary = {}
 
 ## ready
 func _ready() -> void:
-	super._ready()
 	component_category = CDEnums.ComponentCategory.RULES
+	super._ready()
 
 ## --- processing ---
 

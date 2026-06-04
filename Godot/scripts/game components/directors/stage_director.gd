@@ -18,8 +18,8 @@ var _signal_to_rules: Dictionary = {}
 
 ## ready
 func _ready() -> void:
-	super._ready()
 	component_category = CDEnums.ComponentCategory.RULES
+	super._ready()
 
 ## build signal map and connect all trigger signals
 func _on_initialize() -> void:

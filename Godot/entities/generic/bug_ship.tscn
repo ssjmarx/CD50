@@ -19,7 +19,7 @@ frame_1/duration = 1.0
 
 [sub_resource type="Resource" id="Resource_xrbuo"]
 script = ExtResource("8_bm3eg")
-velocity = Vector2(0, 800)
+velocity = Vector2(0, 600)
 metadata/_custom_type_script = "uid://dcu4ocnin0htu"
 
 [node name="BugShip" type="CharacterBody2D"]
@@ -28,7 +28,6 @@ groups = Array[StringName]([&"bug_ships", &"ships"])
 
 [node name="SpriteFace" parent="." instance=ExtResource("2_w6l0f")]
 frames = Array[Texture2D]([SubResource("AnimatedTexture_5lf82")])
-component_category = 8
 
 [node name="GunArm" parent="." instance=ExtResource("6_4d6mp")]
 position = Vector2(0, 6)

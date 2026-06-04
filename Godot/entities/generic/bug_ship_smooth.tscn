@@ -23,6 +23,7 @@ max_speed = 400.0
 
 [node name="TargetRotationLeg" parent="." index="3" instance=ExtResource("4_upr7u")]
 rotation_speed = 0.0
+direction_key = &"aim_direction"
 
 [node name="MoveAdapterGuts" parent="." index="4" instance=ExtResource("5_upr7u")]
 direction_signals = Array[StringName]([&"aim", &"move"])

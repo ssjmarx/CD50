@@ -1,35 +1,23 @@
 ## CDSelectNearestN
-## Selects N candidates nearest to the closest entity in a target group
-## Sorts by distance to reference point, falls back to first-N if no reference
+## Selects N candidates nearest to the StateDirector's position
+## Sorts by distance to source_position, returns the closest N
 
 class_name CDSelectNearestN extends CDSelector
 
 ## maximum number of entities to select
 @export var count: int = 1
 
-## group to find the reference point from (nearest entity to first candidate)
-@export var target_group: StringName = &"players"
-
-## sort candidates by distance to reference entity, return nearest N
-func select(candidates: Array[CDEntity]) -> Array[CDEntity]:
+## sort candidates by distance to source_position, return nearest N
+func select(candidates: Array[CDEntity], source_position: Vector2 = Vector2.ZERO) -> Array[CDEntity]:
 	if candidates.is_empty():
 		return []
 
-	var reference_point: CDEntity = _game.group_registry.get_nearest_to_entity(target_group, candidates[0])
-
-	## fallback: no reference entity found, return first N
-	if reference_point == null:
-		@warning_ignore("confusable_local_declaration")
-		var n: int = mini(count, candidates.size())
-		return candidates.slice(0, n)
-
-	## sort candidates by distance to the reference point
+	## sort candidates by distance to the director's position
 	var sorted: Array[CDEntity] = []
 	sorted.assign(candidates)
 	sorted.sort_custom(func(a: CDEntity, b: CDEntity) -> bool:
-		var dist_a = a.global_position.distance_squared_to(reference_point.global_position)
-		var dist_b = b.global_position.distance_squared_to(reference_point.global_position)
-		return dist_a < dist_b
+		return a.global_position.distance_squared_to(source_position) < \
+			b.global_position.distance_squared_to(source_position)
 	)
 
 	var n: int = mini(count, sorted.size())
