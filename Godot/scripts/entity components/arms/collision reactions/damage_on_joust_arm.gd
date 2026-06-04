@@ -1,31 +1,31 @@
-# DamageOnJoustArm
-# Deals damage to the collider based on a comparative property check (velocity, Y position, or custom)
-# Emits take_damage on the collider, scaled by comparison difference
+## DamageOnJoustArm
+## Deals damage to the collider based on a comparative property check (velocity, Y position, or custom)
+## Emits take_damage on the collider, scaled by comparison difference
 
 class_name DamageOnJoustArm extends CDEntityComponent
 
-# which property to compare between self and collider
+## which property to compare between self and collider
 @export var comparison_mode: CDEnums.EntityCompare = CDEnums.EntityCompare.VELOCITY
 
-# multiplier for velocity-based damage scaling
+## multiplier for velocity-based damage scaling
 @export var velocity_damage_scale: float = 0.01
 
-# minimum damage dealt on a successful joust
+## minimum damage dealt on a successful joust
 @export var minimum_damage: int = 1
 
-# tolerance range for tie detection
+## tolerance range for tie detection
 @export var comparison_tolerance: float = 0.0
 
-# what to do on a tie (within tolerance)
+## what to do on a tie (within tolerance)
 @export var tiebreaker: CDEnums.EntityCompareTiebreaker = CDEnums.EntityCompareTiebreaker.DONT_FIRE
 
-# what to do when a comparison property is missing
+## what to do when a comparison property is missing
 @export var invalid_action: CDEnums.EntityCompareInvalidAction = CDEnums.EntityCompareInvalidAction.DONT_FIRE
 
-# property name for CUSTOM comparison mode
+## property name for CUSTOM comparison mode
 @export var custom_property_name: StringName = &""
 
-# if non-empty, only damage colliders in these groups
+## if non-empty, only damage colliders in these groups
 @export var target_groups: Array[StringName]
 
 @export_group("Blackboard Keys")
@@ -38,27 +38,27 @@ class_name DamageOnJoustArm extends CDEntityComponent
 @export_group("Emit Signals")
 @export var damage_signals: Array[StringName] = [&"take_damage"]
 
+## ready
 func _ready() -> void:
 	component_category = CDEnums.ComponentCategory.INTERACTION
 	super._ready()
 
-# connect collision signals
+## connect collision signals
 func _on_initialize() -> void:
 	for sig in collision_signals:
 		entity.connect(sig, _on_collision)
 
-# compare self vs collider and deal damage if self wins
+## compare self vs collider and deal damage if self wins
 func _on_collision(collider: CDEntity, _normal: Vector2) -> void:
 	if not is_instance_valid(collider):
 		return
 	if not _is_valid_target(collider):
 		return
 
-	# read the comparison values from both entities
 	var self_value: Variant = _read_compare_value(entity)
 	var collider_value: Variant = _read_compare_value(collider)
 
-	# handle missing properties
+	## handle missing properties
 	if self_value == null or collider_value == null:
 		if invalid_action == CDEnums.EntityCompareInvalidAction.FIRE:
 			_deal_damage(collider, minimum_damage)
@@ -66,29 +66,28 @@ func _on_collision(collider: CDEntity, _normal: Vector2) -> void:
 
 	var diff := float(self_value) - float(collider_value)
 
-	# handle tie (within tolerance)
+	## handle tie (within tolerance)
 	if absf(diff) <= comparison_tolerance:
 		if tiebreaker == CDEnums.EntityCompareTiebreaker.FIRE:
 			_deal_damage(collider, minimum_damage)
 		return
 
-	# self wins — deal scaled damage
 	if _self_wins(diff):
 		_deal_damage(collider, _calculate_damage(diff))
 
-# determine if self wins the comparison (Y_POSITION is inverted)
+## determine if self wins the comparison (Y_POSITION is inverted)
 func _self_wins(diff: float) -> bool:
 	if comparison_mode == CDEnums.EntityCompare.Y_POSITION:
 		return diff < 0.0
 	return diff > 0.0
 
-# calculate damage based on difference and mode
+## calculate damage based on difference and mode
 func _calculate_damage(diff: float) -> int:
 	if comparison_mode == CDEnums.EntityCompare.VELOCITY:
 		return maxi(int(absf(diff) * velocity_damage_scale), minimum_damage)
 	return minimum_damage
 
-# emit damage signals on the collider
+## emit damage signals on the collider
 func _deal_damage(collider: CDEntity, damage_amount: int) -> void:
 	for key in damage_keys:
 		collider.blackboard[key] = damage_amount
@@ -97,7 +96,7 @@ func _deal_damage(collider: CDEntity, damage_amount: int) -> void:
 	for sig in damage_signals:
 		collider.bus_emit(sig)
 
-# read the comparison value from an entity based on mode
+## read the comparison value from an entity based on mode
 func _read_compare_value(ent: CDEntity) -> Variant:
 	match comparison_mode:
 		CDEnums.EntityCompare.VELOCITY:
@@ -108,7 +107,7 @@ func _read_compare_value(ent: CDEntity) -> Variant:
 			return _read_custom_property(ent)
 	return null
 
-# search entity and its children for the custom property
+## search entity and its children for the custom property
 func _read_custom_property(ent: CDEntity) -> Variant:
 	var val = ent.get(custom_property_name)
 	if val != null:
@@ -119,7 +118,7 @@ func _read_custom_property(ent: CDEntity) -> Variant:
 			return val
 	return null
 
-# return true if target_groups is empty or collider is in one of them
+## return true if target_groups is empty or collider is in one of them
 func _is_valid_target(collider: CDEntity) -> bool:
 	if target_groups.is_empty():
 		return true
@@ -128,7 +127,7 @@ func _is_valid_target(collider: CDEntity) -> bool:
 			return true
 	return false
 
-# disconnect all collision signals on deactivation
+## disconnect all collision signals on deactivation
 func _on_entity_deactivating() -> void:
 	super._on_entity_deactivating()
 	for sig in collision_signals:

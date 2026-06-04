@@ -1,47 +1,48 @@
-# HealthpoolGuts
-# Single source of truth for an entity's health value
-# Writes current value and delta to entity blackboard; emits zero-arg signals on events
-# Supports damage, healing, invincibility, and zero-health detection
+## HealthpoolGuts
+## Single source of truth for an entity's health value
+## Writes current value and delta to entity blackboard; emits zero-arg signals on events Supports damage, healing, invincibility, and zero-health detection
 
 class_name HealthpoolGuts extends CDEntityComponent
 
-# --- exports ---
+## --- exports ---
 
-# maximum health the entity can have
+## maximum health the entity can have
 @export var max_health: int = 3
-# starting health; -1 means use max_health
+## starting health; -1 means use max_health
 @export var starting_health: int = -1
-# if true, all damage is ignored (e.g., spawn protection)
+## if true, all damage is ignored (e.g., spawn protection)
 @export var invincible: bool = false
 
 @export_group("Blackboard Keys")
 @export var value_key: StringName = &"health"
 @export var delta_key: StringName = &"health_delta"
 
-# signals that trigger damage
+## signals that trigger damage
 @export_group("Listen Signals")
 @export var damage_signals: Array[StringName] = [&"take_damage"]
-# signals that trigger healing
+## signals that trigger healing
 @export var heal_signals: Array[StringName] = [&"heal"]
-# signals that toggle invincibility
+## signals that toggle invincibility
 @export var invincibility_signals: Array[StringName] = [&"set_invincible"]
 
-# emitted when health changes
+## emitted when health changes
 @export_group("Emit Signals")
 @export var health_changed_signals: Array[StringName] = [&"health_changed"]
-# emitted when health reaches zero
+## emitted when health reaches zero
 @export var zero_health_signals: Array[StringName] = [&"zero_health"]
 
-# --- state ---
+## --- state ---
 
 var _current_health: int = 0
 
-# --- lifecycle ---
+## --- lifecycle ---
 
+## ready
 func _ready() -> void:
 	component_category = CDEnums.ComponentCategory.STATE
 	super._ready()
 
+## on initialize
 func _on_initialize() -> void:
 	_current_health = starting_health if starting_health >= 0 else max_health
 	entity.blackboard[value_key] = _current_health
@@ -54,12 +55,13 @@ func _on_initialize() -> void:
 	for sig in invincibility_signals:
 		entity.bus_connect(sig, _on_set_invincible)
 
-# --- signal handlers ---
+## --- signal handlers ---
 
+## on take damage
 func _on_take_damage() -> void:
 	if invincible or _current_health <= 0:
 		return
-	# read damage amount from blackboard delta key (writer's responsibility)
+	## read damage amount from blackboard delta key (writer's responsibility)
 	var amount: int = entity.blackboard.get(delta_key, 1)
 	_current_health -= amount
 	entity.blackboard[value_key] = _current_health
@@ -71,6 +73,7 @@ func _on_take_damage() -> void:
 		for sig in zero_health_signals:
 			entity.bus_emit(sig)
 
+## on heal
 func _on_heal() -> void:
 	if _current_health <= 0:
 		return
@@ -83,11 +86,13 @@ func _on_heal() -> void:
 		for sig in health_changed_signals:
 			entity.bus_emit(sig)
 
+## on set invincible
 func _on_set_invincible() -> void:
 	invincible = not invincible
 
-# --- cleanup ---
+## --- cleanup ---
 
+## on entity deactivating
 func _on_entity_deactivating() -> void:
 	super._on_entity_deactivating()
 	_current_health = starting_health if starting_health >= 0 else max_health

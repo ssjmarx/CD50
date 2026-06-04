@@ -2,3 +2,4 @@ temp
 build/
 deploy.sh
 planning/brainstorming/
+__pycache__

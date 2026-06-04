@@ -1,16 +1,16 @@
-# StatusOnHitArm
-# Sends a status effect signal and duration to another entity on collision
-# Emits on the collider and writes pending status to blackboard
+## StatusOnHitArm
+## Sends a status effect signal and duration to another entity on collision
+## Emits on the collider and writes pending status to blackboard
 
 class_name StatusEffectArm extends CDEntityComponent
 
-# name of the status effect to apply (e.g. "stun", "slow")
+## name of the status effect to apply (e.g. "stun", "slow")
 @export var status_name: StringName = &"stun"
 
-# duration of the status effect in seconds
+## duration of the status effect in seconds
 @export var duration: float = 2.0
 
-# if non-empty, only apply to colliders in these groups
+## if non-empty, only apply to colliders in these groups
 @export var target_groups: Array[StringName]
 
 @export_group("Blackboard Keys")
@@ -23,16 +23,17 @@ class_name StatusEffectArm extends CDEntityComponent
 @export_group("Emit Signals")
 @export var status_signals: Array[StringName] = [&"apply_status"]
 
+## ready
 func _ready() -> void:
 	component_category = CDEnums.ComponentCategory.INTERACTION
 	super._ready()
 
-# connect collision signals
+## connect collision signals
 func _on_initialize() -> void:
 	for sig in collision_signals:
 		entity.connect(sig, _on_collision)
 
-# apply status effect to the collider if it's a valid target
+## apply status effect to the collider if it's a valid target
 func _on_collision(collider: CDEntity, _normal: Vector2) -> void:
 	if not is_instance_valid(collider):
 		return
@@ -45,7 +46,7 @@ func _on_collision(collider: CDEntity, _normal: Vector2) -> void:
 	for sig in status_signals:
 		collider.bus_emit(sig)
 
-# return true if target_groups is empty or collider is in one of them
+## return true if target_groups is empty or collider is in one of them
 func _is_valid_target(collider: CDEntity) -> bool:
 	if target_groups.is_empty():
 		return true
@@ -54,7 +55,7 @@ func _is_valid_target(collider: CDEntity) -> bool:
 			return true
 	return false
 
-# disconnect all collision signals on deactivation
+## disconnect all collision signals on deactivation
 func _on_entity_deactivating() -> void:
 	super._on_entity_deactivating()
 	for sig in collision_signals:

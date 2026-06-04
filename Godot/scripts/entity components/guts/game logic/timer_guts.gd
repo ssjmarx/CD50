@@ -1,15 +1,14 @@
-# TimerGuts
-# Count-down or count-up timer that emits tick and expired signals
-# Writes current time to entity blackboard; emits zero-arg signals on events
-# Supports pause, resume, and reset via entity signals
+## TimerGuts
+## Count-down or count-up timer that emits tick and expired signals
+## Writes current time to entity blackboard; emits zero-arg signals on events Supports pause, resume, and reset via entity signals
 
 class_name TimerGuts extends CDEntityComponent
 
-# --- enums ---
+## --- enums ---
 
 enum TimerMode { COUNT_DOWN, COUNT_UP }
 
-# --- exports ---
+## --- exports ---
 
 @export var mode: TimerMode = TimerMode.COUNT_DOWN
 @export var starting_time: float = 60.0
@@ -28,18 +27,20 @@ enum TimerMode { COUNT_DOWN, COUNT_UP }
 @export var tick_signals: Array[StringName] = [&"timer_tick"]
 @export var expired_signals: Array[StringName] = [&"timer_expired"]
 
-# --- state ---
+## --- state ---
 
 var current_time: float
 var _tick_accumulator: float = 0.0
 var _is_running: bool = false
 
-# --- lifecycle ---
+## --- lifecycle ---
 
+## ready
 func _ready() -> void:
 	component_category = CDEnums.ComponentCategory.STATE
 	super._ready()
 
+## on initialize
 func _on_initialize() -> void:
 	for sig in pause_signals:
 		entity.bus_connect(sig, _on_paused)
@@ -52,8 +53,9 @@ func _on_initialize() -> void:
 	entity.blackboard[value_key] = current_time
 	_is_running = auto_start
 
-# --- processing ---
+## --- processing ---
 
+## physics process
 func _physics_process(delta: float) -> void:
 	if not _is_running:
 		return
@@ -79,22 +81,26 @@ func _physics_process(delta: float) -> void:
 		for sig in tick_signals:
 			entity.bus_emit(sig)
 
-# --- control signal handlers ---
+## --- control signal handlers ---
 
+## on paused
 func _on_paused() -> void:
 	_is_running = false
 
+## on resumed
 func _on_resumed() -> void:
 	_is_running = true
 
+## on reset
 func _on_reset() -> void:
 	current_time = starting_time
 	_tick_accumulator = 0.0
 	_is_running = true
 	entity.blackboard[value_key] = current_time
 
-# --- cleanup ---
+## --- cleanup ---
 
+## on entity deactivating
 func _on_entity_deactivating() -> void:
 	super._on_entity_deactivating()
 	_is_running = false

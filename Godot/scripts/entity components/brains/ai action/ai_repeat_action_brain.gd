@@ -1,6 +1,6 @@
-# AIRepeatActionBrain
-# Repeats an action signal at a given interval
-# Responds to start/stop signals
+## AIRepeatActionBrain
+## Repeats an action signal at a given interval
+## Responds to start/stop signals
 
 class_name AIRepeatActionBrain extends CDEntityComponent
 
@@ -17,6 +17,7 @@ class_name AIRepeatActionBrain extends CDEntityComponent
 var _timer: float = 0.0
 var _is_active: bool = false
 
+## on initialize
 func _on_initialize() -> void:
 	if wave_scaler:
 		wave_scaler.initialize(entity.game)
@@ -25,6 +26,7 @@ func _on_initialize() -> void:
 	for sig in stop_signals:
 		entity.bus_connect(sig, _on_stop)
 
+## physics process
 func _physics_process(delta: float) -> void:
 	if not _is_active:
 		return
@@ -36,17 +38,20 @@ func _physics_process(delta: float) -> void:
 		_timer = 0.0
 		entity.bus_emit(fire_action)
 
+## on start
 func _on_start() -> void:
 	if _is_active: return
 	_is_active = true
 	_timer = fire_interval
 
+## on stop
 func _on_stop() -> void:
 	if not _is_active: return
 	_is_active = false
 	_timer = 0.0
 	entity.bus_emit(StringName(fire_action + &"_end"))
 
+## on entity deactivating
 func _on_entity_deactivating() -> void:
 	super._on_entity_deactivating()
 	if _is_active: _on_stop()

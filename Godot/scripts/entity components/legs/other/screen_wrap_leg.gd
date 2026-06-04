@@ -1,28 +1,28 @@
-# ScreenWrapLeg
-# Wraps entity to opposite side of game bounds when it leaves the screen
-# Checks at configurable intervals to reduce overhead
+## ScreenWrapLeg
+## Wraps entity to opposite side of game bounds when it leaves the screen
+## Checks at configurable intervals to reduce overhead
 
 class_name ScreenWrapLeg extends CDEntityComponent
 
-# --- exports ---
+## --- exports ---
 
 @export var wrap_margin: float = 20.0
 @export var check_interval: float = 0.1
 
-# --- state ---
+## --- state ---
 
 var _check_timer: float = 0.0
 
-# --- lifecycle ---
+## --- lifecycle ---
 
-# set component category
+## set component category
 func _ready() -> void:
 	component_category = CDEnums.ComponentCategory.STEERING
 	super._ready()
 
-# --- processing ---
+## --- processing ---
 
-# check bounds at intervals and wrap to opposite side if needed
+## check bounds at intervals and wrap to opposite side if needed
 func _physics_process(delta: float) -> void:
 	if not entity:
 		return
@@ -31,7 +31,6 @@ func _physics_process(delta: float) -> void:
 		return
 	_check_timer = 0.0
 	
-	# check horizontal wrap
 	var pos := entity.global_position
 	var bounds := game.game_bounds
 	var wrapped := false
@@ -43,7 +42,7 @@ func _physics_process(delta: float) -> void:
 		pos.x = bounds.end.x + wrap_margin
 		wrapped = true
 	
-	# check vertical wrap
+	## check vertical wrap
 	if pos.y > bounds.end.y + wrap_margin:
 		pos.y = bounds.position.y - wrap_margin
 		wrapped = true
@@ -54,9 +53,9 @@ func _physics_process(delta: float) -> void:
 	if wrapped:
 		entity.request_position_set(pos)
 
-# --- cleanup ---
+## --- cleanup ---
 
-# reset timer for pool reuse
+## reset timer for pool reuse
 func _on_entity_deactivating() -> void:
 	super._on_entity_deactivating()
 	_check_timer = 0.0

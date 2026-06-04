@@ -1,71 +1,68 @@
-# DieOutOfBoundsGuts
-# Destroys entity if it leaves the game bounds
-# Uses game.game_bounds with configurable margin and activation delay
+## DieOutOfBoundsGuts
+## Destroys entity if it leaves the game bounds
+## Uses game.game_bounds with configurable margin and activation delay
 
 class_name DieOutOfBoundsGuts extends CDEntityComponent
 
-# --- exports ---
+## --- exports ---
 
-# extra pixels beyond game bounds before triggering death
+## extra pixels beyond game bounds before triggering death
 @export var margin: float = 16.0
-# seconds to wait before checking bounds (prevents dying on spawn)
+## seconds to wait before checking bounds (prevents dying on spawn)
 @export var activation_delay: float = 3.0
 
-# --- state ---
+## --- state ---
 
-# countdown before bounds checking begins
+## countdown before bounds checking begins
 var _delay_remaining: float = 0.0
-# whether bounds checking is active
+## whether bounds checking is active
 var _active: bool = false
 
-# --- lifecycle ---
+## --- lifecycle ---
 
-# set component category
+## set component category
 func _ready() -> void:
 	component_category = CDEnums.ComponentCategory.STATE
 	super._ready()
 
-# begin delay countdown
+## begin delay countdown
 func _on_initialize() -> void:
 	_delay_remaining = activation_delay
 	_active = true
 
-# --- processing ---
+## --- processing ---
 
-# wait for delay, then deactivate if entity is outside game bounds + margin
+## wait for delay, then deactivate if entity is outside game bounds + margin
 func _physics_process(delta: float) -> void:
 	if not _active:
 		return
 	
-	# wait for activation delay to expire
 	if _delay_remaining > 0.0:
 		_delay_remaining -= delta
 		return
 	
-	# bail if game or bounds aren't available
 	if not game or not game.game_bounds.has_area():
 		return
 	
-	# check horizontal bounds
+	## check horizontal bounds
 	var pos = entity.global_position
 	var bounds = game.game_bounds
 	if pos.x < bounds.position.x - margin or pos.x > bounds.end.x + margin:
 		entity.deactivate()
 		_active = false
-	# check vertical bounds
 	elif pos.y < bounds.position.y - margin or pos.y > bounds.end.y + margin:
 		entity.deactivate()
 		_active = false
 
-# --- cleanup ---
+## --- cleanup ---
 
-# stop processing for pool reuse
+## stop processing for pool reuse
 func _on_entity_deactivating() -> void:
 	super._on_entity_deactivating()
 	_active = false
 	set_physics_process(false)
 
-# restart delay cycle on reactivation
+## restart delay cycle on reactivation
 func _on_entity_activated() -> void:
 	super._on_entity_activated()
 	_delay_remaining = activation_delay

@@ -1,22 +1,22 @@
-# CDCompositeTrigger
-# Combines multiple sub-triggers with AND/OR logic
-# Correctly separates evaluative (condition) and event (moment) sub-triggers
+## CDCompositeTrigger
+## Combines multiple sub-triggers with AND/OR logic
+## Correctly separates evaluative (condition) and event (moment) sub-triggers
 
 class_name CDCompositeTrigger extends CDTrigger
 
-# sub-triggers to evaluate as a group
+## sub-triggers to evaluate as a group
 @export var triggers: Array[CDTrigger] = []
 
-# true = all must be met (AND), false = any can be met (OR)
+## true = all must be met (AND), false = any can be met (OR)
 @export var require_all: bool = true
 
-# initialize all sub-triggers with the game reference
+## initialize all sub-triggers with the game reference
 func initialize(game: CDGame) -> void:
 	super.initialize(game)
 	for trigger in triggers:
 		trigger.initialize(game)
 
-# dispatch to AND or OR evaluation based on require_all
+## dispatch to AND or OR evaluation based on require_all
 func evaluate(delta: float) -> bool:
 	if triggers.is_empty():
 		return false
@@ -26,7 +26,7 @@ func evaluate(delta: float) -> bool:
 	else:
 		return _evaluate_or(delta)
 
-# collect pending entities from all signal sub-triggers
+## collect pending entities from all signal sub-triggers
 func consume_pending() -> Array[CDEntity]:
 	var all_pending: Array[CDEntity] = []
 	for trigger in triggers:
@@ -34,7 +34,7 @@ func consume_pending() -> Array[CDEntity]:
 			all_pending.append_array(trigger.consume_pending())
 	return all_pending
 
-# check if all evaluative sub-trigger conditions are currently met
+## check if all evaluative sub-trigger conditions are currently met
 func is_condition_met() -> bool:
 	for trigger in triggers:
 		if trigger.is_evaluative:
@@ -45,23 +45,23 @@ func is_condition_met() -> bool:
 				return false
 	return true
 
-# reset all sub-triggers then self
+## reset all sub-triggers then self
 func reset() -> void:
 	for trigger in triggers:
 		trigger.reset()
 	super.reset()
 
-# --- Private Evaluation ---
+## --- Private Evaluation ---
 
-# AND: all evaluative conditions must be met AND all event triggers must fire
+## AND: all evaluative conditions must be met AND all event triggers must fire
 func _evaluate_and(delta: float) -> bool:
-	# check all evaluative conditions first (cheap)
+	## check all evaluative conditions first (cheap)
 	for trigger in triggers:
 		if trigger.is_evaluative:
 			if not trigger.is_condition_met():
 				return false
 
-	# then check all event triggers (may consume events)
+	## then check all event triggers (may consume events)
 	for trigger in triggers:
 		if not trigger.is_evaluative:
 			if not trigger.evaluate(delta):
@@ -69,15 +69,15 @@ func _evaluate_and(delta: float) -> bool:
 
 	return true
 
-# OR: any evaluative condition met OR any event trigger fires
+## OR: any evaluative condition met OR any event trigger fires
 func _evaluate_or(delta: float) -> bool:
-	# check all evaluative conditions first
+	## check all evaluative conditions first
 	for trigger in triggers:
 		if trigger.is_evaluative:
 			if trigger.is_condition_met():
 				return true
 
-	# then check all event triggers
+	## then check all event triggers
 	for trigger in triggers:
 		if not trigger.is_evaluative:
 			if trigger.evaluate(delta):

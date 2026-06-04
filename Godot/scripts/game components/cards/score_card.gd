@@ -1,53 +1,53 @@
-# ScoreCard
-# Tracks score with optional multiplier applied on add (not on set)
-# Other components write pending deltas to game blackboard, then emit trigger signal
+## ScoreCard
+## Tracks score with optional multiplier applied on add (not on set)
+## Other components write pending deltas to game blackboard, then emit trigger signal
 
 class_name ScoreCard extends CDCueCard
 
-# --- exports ---
+## --- exports ---
 
-# score at game start
+## score at game start
 @export var starting_score: int = 0
-# multiplier at game start
+## multiplier at game start
 @export var starting_multiplier: float = 1.0
 
 @export_group("Blackboard Keys")
-# key for pending score add delta (int, consumed on trigger)
+## key for pending score add delta (int, consumed on trigger)
 @export var pending_add_key: StringName = &"pending_score_add"
-# key for pending score set value (int, consumed on trigger)
+## key for pending score set value (int, consumed on trigger)
 @export var pending_set_key: StringName = &"pending_score_set"
-# key for publishing current score to game blackboard
+## key for publishing current score to game blackboard
 @export var score_key: StringName = &"current_score"
-# key for pending multiplier add delta (float, consumed on trigger)
+## key for pending multiplier add delta (float, consumed on trigger)
 @export var pending_mult_add_key: StringName = &"pending_mult_add"
-# key for pending multiplier set value (float, consumed on trigger)
+## key for pending multiplier set value (float, consumed on trigger)
 @export var pending_mult_set_key: StringName = &"pending_mult_set"
-# key for publishing current multiplier to game blackboard
+## key for publishing current multiplier to game blackboard
 @export var multiplier_key: StringName = &"current_multiplier"
 
-# game bus signals for score changes
+## game bus signals for score changes
 @export_group("Listen Signals")
 @export var on_add_score: Array[StringName] = [&"add_score"]
 @export var on_set_score: Array[StringName] = [&"set_score"]
-# game bus signals for multiplier changes (leave empty to disable)
+## game bus signals for multiplier changes (leave empty to disable)
 @export var on_add_multiplier: Array[StringName] = []
 @export var on_set_multiplier: Array[StringName] = []
 
-# game bus signals emitted when values change
+## game bus signals emitted when values change
 @export_group("Emit Signals")
 @export var on_score_changed: Array[StringName] = [&"score_changed"]
 @export var on_multiplier_changed: Array[StringName] = [&"multiplier_changed"]
 
-# --- state ---
+## --- state ---
 
-# current score value
+## current score value
 var current_score: int
-# current multiplier applied to add_score
+## current multiplier applied to add_score
 var current_multiplier: float = 1.0
 
-# --- lifecycle ---
+## --- lifecycle ---
 
-# initialize score, multiplier, and display
+## initialize score, multiplier, and display
 func _ready() -> void:
 	super._ready()
 	current_score = starting_score
@@ -55,7 +55,7 @@ func _ready() -> void:
 	_update_label(str(current_score))
 	call_deferred("_on_initialize")
 
-# connect all listen signals to the game bus
+## connect all listen signals to the game bus
 func _on_initialize() -> void:
 	_publish_tracked(score_key, current_score)
 	_publish_tracked(multiplier_key, current_multiplier)
@@ -69,9 +69,9 @@ func _on_initialize() -> void:
 	for sig in on_set_multiplier:
 		game.bus_connect(sig, _on_set_multiplier)
 
-# --- score handlers ---
+## --- score handlers ---
 
-# read pending add delta from blackboard, apply multiplier, publish new score
+## read pending add delta from blackboard, apply multiplier, publish new score
 func _on_add_score() -> void:
 	var delta: int = _consume_pending(pending_add_key, 0)
 	if delta == 0:
@@ -82,7 +82,7 @@ func _on_add_score() -> void:
 	for sig in on_score_changed:
 		game.bus_emit(sig)
 
-# read pending set value from blackboard, set directly (ignores multiplier)
+## read pending set value from blackboard, set directly (ignores multiplier)
 func _on_set_score() -> void:
 	var new_score: int = _consume_pending(pending_set_key, current_score)
 	current_score = new_score
@@ -91,9 +91,9 @@ func _on_set_score() -> void:
 	for sig in on_score_changed:
 		game.bus_emit(sig)
 
-# --- multiplier handlers ---
+## --- multiplier handlers ---
 
-# read pending multiplier add delta from blackboard
+## read pending multiplier add delta from blackboard
 func _on_add_multiplier() -> void:
 	var delta: float = _consume_pending(pending_mult_add_key, 0.0)
 	if delta == 0.0:
@@ -103,7 +103,7 @@ func _on_add_multiplier() -> void:
 	for sig in on_multiplier_changed:
 		game.bus_emit(sig)
 
-# read pending multiplier set value from blackboard
+## read pending multiplier set value from blackboard
 func _on_set_multiplier() -> void:
 	var new_mult: float = _consume_pending(pending_mult_set_key, current_multiplier)
 	current_multiplier = new_mult

@@ -1,51 +1,51 @@
-# DeathOnJoustArm
-# Instantly kills the collider based on a comparative property check
-# Bypasses health pipeline — directly emits request_deactivate on collider
+## DeathOnJoustArm
+## Instantly kills the collider based on a comparative property check
+## Bypasses health pipeline — directly emits request_deactivate on collider
 
 class_name DeathOnJoustArm extends CDEntityComponent
 
-# which property to compare between self and collider
+## which property to compare between self and collider
 @export var comparison_mode: CDEnums.EntityCompare = CDEnums.EntityCompare.VELOCITY
 
-# tolerance range for tie detection
+## tolerance range for tie detection
 @export var comparison_tolerance: float = 0.0
 
-# what to do on a tie (within tolerance)
+## what to do on a tie (within tolerance)
 @export var tiebreaker: CDEnums.EntityCompareTiebreaker = CDEnums.EntityCompareTiebreaker.DONT_FIRE
 
-# what to do when a comparison property is missing
+## what to do when a comparison property is missing
 @export var invalid_action: CDEnums.EntityCompareInvalidAction = CDEnums.EntityCompareInvalidAction.DONT_FIRE
 
-# property name for CUSTOM comparison mode
+## property name for CUSTOM comparison mode
 @export var custom_property_name: StringName = &""
 
-# if non-empty, only kill colliders in these groups
+## if non-empty, only kill colliders in these groups
 @export var target_groups: Array[StringName]
 
 @export_group("Listen Signals")
 @export var collision_signals: Array[StringName] = [&"collision"]
 
+## ready
 func _ready() -> void:
 	component_category = CDEnums.ComponentCategory.INTERACTION
 	super._ready()
 
-# connect collision signals
+## connect collision signals
 func _on_initialize() -> void:
 	for sig in collision_signals:
 		entity.connect(sig, _on_collision)
 
-# compare self vs collider and kill collider if self wins
+## compare self vs collider and kill collider if self wins
 func _on_collision(collider: CDEntity, _normal: Vector2) -> void:
 	if not is_instance_valid(collider):
 		return
 	if not _is_valid_target(collider):
 		return
 
-	# read the comparison values from both entities
 	var self_value: Variant = _read_compare_value(entity)
 	var collider_value: Variant = _read_compare_value(collider)
 
-	# handle missing properties
+	## handle missing properties
 	if self_value == null or collider_value == null:
 		if invalid_action == CDEnums.EntityCompareInvalidAction.FIRE:
 			collider.emit_signal("request_deactivate")
@@ -53,23 +53,22 @@ func _on_collision(collider: CDEntity, _normal: Vector2) -> void:
 
 	var diff := float(self_value) - float(collider_value)
 
-	# handle tie (within tolerance)
+	## handle tie (within tolerance)
 	if absf(diff) <= comparison_tolerance:
 		if tiebreaker == CDEnums.EntityCompareTiebreaker.FIRE:
 			collider.emit_signal("request_deactivate")
 		return
 
-	# self wins — kill collider
 	if _self_wins(diff):
 		collider.emit_signal("request_deactivate")
 
-# determine if self wins (Y_POSITION is inverted)
+## determine if self wins (Y_POSITION is inverted)
 func _self_wins(diff: float) -> bool:
 	if comparison_mode == CDEnums.EntityCompare.Y_POSITION:
 		return diff < 0.0
 	return diff > 0.0
 
-# read the comparison value from an entity based on mode
+## read the comparison value from an entity based on mode
 func _read_compare_value(ent: CDEntity) -> Variant:
 	match comparison_mode:
 		CDEnums.EntityCompare.VELOCITY:
@@ -80,7 +79,7 @@ func _read_compare_value(ent: CDEntity) -> Variant:
 			return _read_custom_property(ent)
 	return null
 
-# search entity and its children for the custom property
+## search entity and its children for the custom property
 func _read_custom_property(ent: CDEntity) -> Variant:
 	var val = ent.get(custom_property_name)
 	if val != null:
@@ -91,7 +90,7 @@ func _read_custom_property(ent: CDEntity) -> Variant:
 			return val
 	return null
 
-# return true if target_groups is empty or collider is in one of them
+## return true if target_groups is empty or collider is in one of them
 func _is_valid_target(collider: CDEntity) -> bool:
 	if target_groups.is_empty():
 		return true
@@ -100,7 +99,7 @@ func _is_valid_target(collider: CDEntity) -> bool:
 			return true
 	return false
 
-# disconnect all collision signals on deactivation
+## disconnect all collision signals on deactivation
 func _on_entity_deactivating() -> void:
 	super._on_entity_deactivating()
 	for sig in collision_signals:

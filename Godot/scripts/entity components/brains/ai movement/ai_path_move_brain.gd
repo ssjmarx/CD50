@@ -1,22 +1,22 @@
-# AIPathMoveBrain
-# Follows a pre-defined Curve2D resource, emitting positional targets as waypoints
-# Supports patrol modes: LOOP, RETRACE, and ONCE
+## AIPathMoveBrain
+## Follows a pre-defined Curve2D resource, emitting positional targets as waypoints
+## Supports patrol modes: LOOP, RETRACE, and ONCE
 
 class_name AIPathMoveBrain extends CDEntityComponent
 
-# the curve resource to follow
+## the curve resource to follow
 @export var path_curve: Curve2D
 
-# spacing between baked waypoints along the curve
+## spacing between baked waypoints along the curve
 @export var waypoint_spacing: float = 20.0
 
-# distance to consider a waypoint reached
+## distance to consider a waypoint reached
 @export var arrival_distance: float = 5.0
 
-# how to behave when the path ends
+## how to behave when the path ends
 @export var patrol_mode: CDEnums.PatrolMode = CDEnums.PatrolMode.LOOP
 
-# if false, offset waypoints by entity's spawn position
+## if false, offset waypoints by entity's spawn position
 @export var use_global_coords: bool = false
 
 @export_group("Blackboard Keys")
@@ -26,24 +26,25 @@ class_name AIPathMoveBrain extends CDEntityComponent
 @export_group("Emit Signals")
 @export var complete_signals: Array[StringName] = [&"patrol_complete"]
 
-# baked waypoint positions
+## baked waypoint positions
 var _waypoints: Array[Vector2] = []
 
-# current waypoint index
+## current waypoint index
 var _current_index: int = 0
 
-# traversal direction (+1 forward, -1 reverse for RETRACE)
+## traversal direction (+1 forward, -1 reverse for RETRACE)
 var _direction: int = 1
 
+## ready
 func _ready() -> void:
 	component_category = CDEnums.ComponentCategory.INTENT
 	super._ready()
 
-# bake waypoints from the curve
+## bake waypoints from the curve
 func _on_initialize() -> void:
 	_build_waypoints()
 
-# sample the curve at regular intervals to build waypoint array
+## sample the curve at regular intervals to build waypoint array
 func _build_waypoints() -> void:
 	if not path_curve or path_curve.point_count < 2:
 		return
@@ -52,13 +53,13 @@ func _build_waypoints() -> void:
 	var dist := 0.0
 	while dist <= total_length:
 		var pos := path_curve.sample_baked(dist)
-		# offset by spawn position unless using global coords
+		## offset by spawn position unless using global coords
 		if not use_global_coords:
 			pos += entity._spawn_position
 		_waypoints.append(pos)
 		dist += waypoint_spacing
 
-# emit move_to for the current waypoint, advance on arrival
+## emit move_to for the current waypoint, advance on arrival
 func _physics_process(_delta: float) -> void:
 	if _waypoints.is_empty():
 		return
@@ -69,11 +70,10 @@ func _physics_process(_delta: float) -> void:
 	entity.blackboard[move_key] = to_target.normalized()
 	entity.blackboard[distance_key] = to_target.length()
 	
-	# check if close enough to advance
 	if entity.global_position.distance_to(target) < arrival_distance:
 		_advance_waypoint()
 
-# move to next waypoint, handle end-of-path based on patrol_mode
+## move to next waypoint, handle end-of-path based on patrol_mode
 func _advance_waypoint() -> void:
 	if _direction > 0:
 		_current_index += 1
@@ -102,6 +102,7 @@ func _advance_waypoint() -> void:
 						entity.bus_emit(sig)
 					set_physics_process(false)
 
+## on entity deactivating
 func _on_entity_deactivating() -> void:
 	super._on_entity_deactivating()
 	_current_index = 0

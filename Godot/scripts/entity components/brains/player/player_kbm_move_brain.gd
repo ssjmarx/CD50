@@ -1,12 +1,12 @@
-# PlayerKBMMoveBrain
-# Unified keyboard + mouse movement brain for KBM control schemes
-# Uses input mode state machine: NONE → KEYBOARD (on key press) → NONE (on release) → MOUSE (on mouse move)
+## PlayerKBMMoveBrain
+## Unified keyboard + mouse movement brain for KBM control schemes
+## Uses input mode state machine: NONE → KEYBOARD (on key press) → NONE (on release) → MOUSE (on mouse move)
 
 class_name PlayerKBMMoveBrain extends CDEntityComponent
 
 @export var player_id: int = 1
 
-# mouse follow stops when cursor is closer than this
+## mouse follow stops when cursor is closer than this
 @export var dead_zone: float = 4.0
 
 @export_group("Blackboard Keys")
@@ -19,13 +19,16 @@ var _mode: _InputMode = _InputMode.NONE
 var _kb_direction: Vector2 = Vector2.ZERO
 var _last_mouse_pos: Vector2 = Vector2.INF
 
+## ready
 func _ready() -> void:
 	component_category = CDEnums.ComponentCategory.INTENT
 	super._ready()
 
+## on initialize
 func _on_initialize() -> void:
 	game.input_router.input_move.connect(_on_input_move)
 
+## on input move
 func _on_input_move(pid: int, direction: Vector2) -> void:
 	if pid != player_id:
 		return
@@ -33,6 +36,7 @@ func _on_input_move(pid: int, direction: Vector2) -> void:
 		_mode = _InputMode.KEYBOARD
 	_kb_direction = direction
 
+## physics process
 func _physics_process(_delta: float) -> void:
 	if Engine.is_editor_hint():
 		return
@@ -43,7 +47,6 @@ func _physics_process(_delta: float) -> void:
 				entity.blackboard[move_key] = _kb_direction
 				entity.blackboard[distance_key] = 0.0
 			else:
-				# keys released — stop and wait for mouse
 				entity.blackboard[move_key] = Vector2.ZERO
 				entity.blackboard[distance_key] = 0.0
 				_mode = _InputMode.NONE
@@ -69,6 +72,7 @@ func _physics_process(_delta: float) -> void:
 				entity.blackboard[move_key] = to_target.normalized()
 				entity.blackboard[distance_key] = distance
 
+## on entity deactivating
 func _on_entity_deactivating() -> void:
 	super._on_entity_deactivating()
 	_mode = _InputMode.NONE

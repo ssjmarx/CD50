@@ -1,6 +1,6 @@
-# AITractorBeamBrain
-# Interrupts a dive to perform a tractor beam capture attempt
-# Fires the tractor beam arm when entity reaches trigger_height during a qualifying dive
+## AITractorBeamBrain
+## Interrupts a dive to perform a tractor beam capture attempt
+## Fires the tractor beam arm when entity reaches trigger_height during a qualifying dive
 
 class_name AITractorBeamBrain extends CDEntityComponent
 
@@ -20,16 +20,19 @@ class_name AITractorBeamBrain extends CDEntityComponent
 
 var _is_capturing: bool = false
 
+## on initialize
 func _on_initialize() -> void:
 	for sig in arm_complete_signals:
 		entity.bus_connect(sig, _on_arm_complete)
 
+## physics process
 func _physics_process(_delta: float) -> void:
 	if _is_capturing or not _qualifies():
 		return
 	if entity.global_position.y >= trigger_height:
 		_begin_capture()
 
+## begin capture
 func _begin_capture() -> void:
 	_is_capturing = true
 	entity.request_velocity_set(Vector2.ZERO)
@@ -39,6 +42,7 @@ func _begin_capture() -> void:
 	for sig in arm_fire_signals:
 		entity.bus_emit(sig)
 
+## on arm complete
 func _on_arm_complete() -> void:
 	if not _is_capturing: return
 	_is_capturing = false
@@ -46,12 +50,14 @@ func _on_arm_complete() -> void:
 	for sig in capture_ended_signals:
 		game.bus_emit(sig)
 
+## on entity deactivating
 func _on_entity_deactivating() -> void:
 	super._on_entity_deactivating()
 	_is_capturing = false
 	for sig in arm_complete_signals:
 		entity.bus_disconnect(sig, _on_arm_complete)
 
+## qualifies
 func _qualifies() -> bool:
 	if qualifying_groups.is_empty():
 		return true

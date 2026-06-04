@@ -1,13 +1,13 @@
-# CDEnums
-# Shared enumerations for the entire V2 codebase
-# All component priorities, lifecycle states, and comparison types live here
+## CDEnums
+## Shared enumerations for the entire V2 codebase
+## All component priorities, lifecycle states, and comparison types live here
 
 class_name CDEnums
 
-# --- Component Processing Priority ---
+## --- Component Processing Priority ---
 
-# CDComponent2D and CDStageComponent2D priority categories
-# Controls the execution order of components each frame
+## CDComponent2D and CDStageComponent2D priority categories
+## Controls the execution order of components each frame
 enum ComponentCategory {
 	REGISTRATION,   # 5  — group cache flush
 	INPUT,          # 8  — input routing
@@ -23,33 +23,33 @@ enum ComponentCategory {
 	UPDATE,         # 90 — state mutation flush, component lifecycle
 }
 
-# convert a category enum to its numeric priority value
+## convert a category enum to its numeric priority value
 static func category_to_priority(category: ComponentCategory) -> int:
 	match category:
-		ComponentCategory.REGISTRATION: return 5	# not intended for component use
-		ComponentCategory.INPUT: 		return 8	# not intended for component use
+		ComponentCategory.REGISTRATION: return 5
+		ComponentCategory.INPUT: 		return 8
 		ComponentCategory.INTENT:       return 10
 		ComponentCategory.STEERING:     return 20
 		ComponentCategory.ENTITY:       return 30
-		ComponentCategory.COLLISION:	return 35	# not intended for component use
+		ComponentCategory.COLLISION:	return 35
 		ComponentCategory.INTERACTION:  return 40
 		ComponentCategory.STATE:        return 50
 		ComponentCategory.VISUAL:       return 60
 		ComponentCategory.AUDIO:        return 65
 		ComponentCategory.RULES:        return 70
-		ComponentCategory.UPDATE:		return 90	# not intended for component use
+		ComponentCategory.UPDATE:		return 90
 		_: return 95
 
-# --- Entity & Game Lifecycle ---
+## --- Entity & Game Lifecycle ---
 
-# CDEntity lifecycle states
+## CDEntity lifecycle states
 enum EntityState {
 	ACTIVE,
 	DEACTIVATING,
 	INACTIVE,
 }
 
-# CDGame state machine values
+## CDGame state machine values
 enum GameState {
 	ATTRACT,
 	PLAYING,
@@ -57,23 +57,23 @@ enum GameState {
 	GAME_OVER,
 }
 
-# game bus game_over argument
+## game bus game_over argument
 enum GameResult {
 	VICTORY,
 	DEFEAT,
 	DRAW,
 }
 
-# --- Physics & Collision ---
+## --- Physics & Collision ---
 
-# CDEntity physics processing type
+## CDEntity physics processing type
 enum CollisionResponse {
 	STOP,
 	BOUNCE,
 	SLIDE,
 }
 
-# screen edges for spawners
+## screen edges for spawners
 enum Edge {
 	TOP,
 	BOTTOM,
@@ -81,9 +81,9 @@ enum Edge {
 	RIGHT,
 }
 
-# --- Logic & Comparison ---
+## --- Logic & Comparison ---
 
-# comparison operators, used by GroupCountGoal, PointsGoal, others
+## comparison operators, used by GroupCountGoal, PointsGoal, others
 enum CountComparison {
 	LESS_THAN,
 	EQUAL_TO,
@@ -92,7 +92,7 @@ enum CountComparison {
 	GREATER_OR_EQUAL,
 }
 
-# CDInputRouter input action types
+## CDInputRouter input action types
 enum InputAction {
 	MOVE,
 	AIM,
@@ -100,35 +100,35 @@ enum InputAction {
 	ACTION_RELEASED,
 }
 
-# patterns for "patrol" AI brains
+## patterns for "patrol" AI brains
 enum PatrolMode {
 	LOOP,
 	RETRACE,
 	ONCE,
 }
 
-# comparison modes for entity comparisons (ie OnJoust arms)
+## comparison modes for entity comparisons (ie OnJoust arms)
 enum EntityCompare {
 	VELOCITY,
 	Y_POSITION,
 	CUSTOM, # define any attribute located on a component
 }
 
-# tiebreaker behavior for entity comparisons
+## tiebreaker behavior for entity comparisons
 enum EntityCompareTiebreaker {
 	DONT_FIRE,
 	FIRE,
 }
 
-# invalid comparison handling for entity comparisons
+## invalid comparison handling for entity comparisons
 enum EntityCompareInvalidAction {
 	DONT_FIRE,
 	FIRE,
 }
 
-# --- Audio / Sound ---
+## --- Audio / Sound ---
 
-# CDSoundDef wave shapes
+## CDSoundDef wave shapes
 enum WaveShape {
 	SINE,
 	SQUARE,
@@ -137,7 +137,7 @@ enum WaveShape {
 	NOISE,
 }
 
-# CDSoundDef frequency/amplitude effects
+## CDSoundDef frequency/amplitude effects
 enum Effect {
 	NONE,
 	WARBLE,
@@ -146,15 +146,15 @@ enum Effect {
 	DECAY,
 }
 
-# MIDI note numbers for sound generation
+## MIDI note numbers for sound generation
 enum Semitone {
-	# Octave 3 (48-59)
+	## Octave 3 (48-59)
 	C3 = 48, CS3 = 49, D3 = 50, DS3 = 51, E3 = 52,
 	F3 = 53, FS3 = 54, G3 = 55, GS3 = 56, A3 = 57, AS3 = 58, B3 = 59,
-	# Octave 4 (60-71)
+	## Octave 4 (60-71)
 	C4 = 60, CS4 = 61, D4 = 62, DS4 = 63, E4 = 64,
 	F4 = 65, FS4 = 66, G4 = 67, GS4 = 68, A4 = 69, AS4 = 70, B4 = 71,
-	# Octave 5 (72-83)
+	## Octave 5 (72-83)
 	C5 = 72, CS5 = 73, D5 = 74, DS5 = 75, E5 = 76,
 	F5 = 77, FS5 = 78, G5 = 79, GS5 = 80, A5 = 81, AS5 = 82, B5 = 83,
 }

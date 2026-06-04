@@ -1,11 +1,11 @@
-# SwoopDirector
-# Moves entities along a curve using virtual "ghost" target points for deterministic spacing
-# Emits swoop_complete on game bus when each entity finishes
+## SwoopDirector
+## Moves entities along a curve using virtual "ghost" target points for deterministic spacing
+## Emits swoop_complete on game bus when each entity finishes
 
 @tool
 class_name SwoopDirector extends CDGameComponent
 
-# --- exports ---
+## --- exports ---
 
 @export var swooping_groups: Array[StringName] = [&"swooping"]
 @export var require_all: bool = false
@@ -50,7 +50,7 @@ class_name SwoopDirector extends CDGameComponent
 		if is_node_ready():
 			queue_redraw()
 
-# --- state ---
+## --- state ---
 
 var _curve: Curve2D
 var _curve_length: float = 0.0
@@ -62,40 +62,48 @@ var _entry_delay_frames: int = 1
 var _frame_counter: int = 0
 var _release_countdown: int = 0
 
-# --- lifecycle ---
+## --- lifecycle ---
 
+## ready
 func _ready() -> void:
 	super._ready()
 	component_category = CDEnums.ComponentCategory.RULES
 
+## enter tree
 func _enter_tree() -> void:
 	_connect_curve()
 
+## exit tree
 func _exit_tree() -> void:
 	_disconnect_curve()
 
-# --- curve resource management ---
+## --- curve resource management ---
 
+## disconnect curve
 func _disconnect_curve() -> void:
 	if curve and curve.changed.is_connected(_request_redraw):
 		curve.changed.disconnect(_request_redraw)
 
+## connect curve
 func _connect_curve() -> void:
 	if curve and not curve.changed.is_connected(_request_redraw):
 		curve.changed.connect(_request_redraw)
 
+## request redraw
 func _request_redraw() -> void:
 	if is_inside_tree():
 		queue_redraw()
 
-# --- initialization ---
+## --- initialization ---
 
+## on initialize
 func _on_initialize() -> void:
 	for sig in trigger_signals:
 		game.bus_connect(sig, _on_trigger)
 
-# --- editor preview ---
+## --- editor preview ---
 
+## draw
 func _draw() -> void:
 	if not Engine.is_editor_hint() or not curve:
 		return
@@ -107,15 +115,15 @@ func _draw() -> void:
 	
 	draw_polyline(points, preview_color, preview_width, true)
 
-# --- swoop trigger ---
+## --- swoop trigger ---
 
-# gather swooping entities, generate curve, calculate frame constants, release first entity
+## gather swooping entities, generate curve, calculate frame constants, release first entity
 func _on_trigger() -> void:
 	var entities: Array[CDEntity] = _gather_entities()
 	if entities.is_empty():
 		return
 	
-	# generate the curve from director position to target
+	## generate the curve from director position to target
 	if curve:
 		_curve = curve.generate_curve(global_position, target)
 		_curve_length = _curve.get_baked_length()
@@ -126,14 +134,14 @@ func _on_trigger() -> void:
 	_pixels_per_frame = swoop_speed / fps
 	_entry_delay_frames = maxi(1, roundi(formation_offset * fps / swoop_speed))
 	
-	# clear all state
+	## clear all state
 	_slots.clear()
 	_ghost_offsets.clear()
 	_pending.clear()
 	_frame_counter = 0
 	_release_countdown = 0
 	
-	# filter to valid active entities
+	## filter to valid active entities
 	var valid: Array[CDEntity] = []
 	for entity in entities:
 		if is_instance_valid(entity) and entity.state == CDEnums.EntityState.ACTIVE:
@@ -148,7 +156,7 @@ func _on_trigger() -> void:
 	
 	set_physics_process(true)
 
-# release an entity onto the curve with ghost offset at 0
+## release an entity onto the curve with ghost offset at 0
 func _release_entity(entity: CDEntity) -> void:
 	_slots.append(entity)
 	_ghost_offsets[entity] = 0.0
@@ -158,8 +166,9 @@ func _release_entity(entity: CDEntity) -> void:
 		entity.blackboard[direction_key] = entity.global_position.direction_to(start_pos)
 		entity.blackboard[distance_key] = entity.global_position.distance_to(start_pos)
 
-# --- entity gathering ---
+## --- entity gathering ---
 
+## gather entities
 func _gather_entities() -> Array[CDEntity]:
 	var entities: Array[CDEntity] = []
 	
@@ -185,9 +194,9 @@ func _gather_entities() -> Array[CDEntity]:
 	
 	return entities
 
-# --- processing ---
+## --- processing ---
 
-# advance ghost offsets, release pending entities, write targets to entity blackboards
+## advance ghost offsets, release pending entities, write targets to entity blackboards
 func _physics_process(_delta: float) -> void:
 	if Engine.is_editor_hint():
 		return
@@ -226,7 +235,7 @@ func _physics_process(_delta: float) -> void:
 		entity.blackboard[direction_key] = entity.global_position.direction_to(ghost_pos)
 		entity.blackboard[distance_key] = entity.global_position.distance_to(ghost_pos)
 	
-	# clean up completed entities
+	## clean up completed entities
 	for entity in completed:
 		_slots.erase(entity)
 		_ghost_offsets.erase(entity)
@@ -238,8 +247,9 @@ func _physics_process(_delta: float) -> void:
 	if _slots.is_empty() and _pending.is_empty():
 		set_physics_process(false)
 
-# --- reset ---
+## --- reset ---
 
+## reset
 func reset() -> void:
 	if curve:
 		curve.reset()

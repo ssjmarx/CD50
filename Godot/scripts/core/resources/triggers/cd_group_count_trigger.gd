@@ -1,30 +1,29 @@
-# CDGroupCountTrigger
-# Evaluative trigger — compares group entity counts against a threshold
-# Supports multiple groups with require_all (AND) or any (OR) logic
-# Fires on rising edge only (false→true transition)
+## CDGroupCountTrigger
+## Evaluative trigger — compares group entity counts against a threshold
+## Supports multiple groups with require_all (AND) or any (OR) logic Fires on rising edge only (false→true transition)
 
 class_name CDGroupCountTrigger extends CDTrigger
 
-# groups to monitor via the group registry
+## groups to monitor via the group registry
 @export var group_names: Array[StringName] = []
 
-# comparison operator for count vs threshold
+## comparison operator for count vs threshold
 @export var comparison: CDEnums.CountComparison = CDEnums.CountComparison.LESS_OR_EQUAL
 
-# value to compare each group count against
+## value to compare each group count against
 @export var threshold: int = 0
 
-# true = ALL groups must satisfy the condition; false = ANY group satisfies
+## true = ALL groups must satisfy the condition; false = ANY group satisfies
 @export var require_all: bool = true
 
-# tracks previous condition state for edge detection
+## tracks previous condition state for edge detection
 var _was_met: bool = false
 
-# mark as evaluative so composite triggers handle it correctly
+## mark as evaluative so composite triggers handle it correctly
 func _init() -> void:
 	is_evaluative = true
 
-# fire on rising edge only (false→true), ignore sustained true
+## fire on rising edge only (false→true), ignore sustained true
 func evaluate(_delta: float) -> bool:
 	var currently_met = _check_condition()
 	if currently_met and not _was_met:
@@ -33,16 +32,16 @@ func evaluate(_delta: float) -> bool:
 	_was_met = currently_met
 	return false
 
-# return current condition state (used by composite triggers)
+## return current condition state (used by composite triggers)
 func is_condition_met() -> bool:
 	return _check_condition()
 
-# clear edge detection state
+## clear edge detection state
 func reset() -> void:
 	_was_met = false
 	super.reset()
 
-# check if groups satisfy the condition based on require_all mode
+## check if groups satisfy the condition based on require_all mode
 func _check_condition() -> bool:
 	if _game == null or group_names.is_empty():
 		return false
@@ -62,7 +61,7 @@ func _check_condition() -> bool:
 				return true
 		return false
 
-# compare a single count against threshold using the configured operator
+## compare a single count against threshold using the configured operator
 func _compare(count: int) -> bool:
 	match comparison:
 		CDEnums.CountComparison.LESS_THAN:
