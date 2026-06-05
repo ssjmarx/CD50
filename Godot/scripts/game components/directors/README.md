@@ -27,13 +27,16 @@ reset()               → clear all runtime state for game restart
 
 | API | Purpose |
 |-----|---------|
-| `game.bus_connect(sig, callable)` | Listen to game bus signals |
-| `game.bus_emit(sig, [args])` | Broadcast to game bus listeners |
+| `game.bus_connect(sig, callable)` | Listen to zero-arg game bus signals |
+| `game.bus_emit(sig)` | Broadcast zero-arg signal to game bus listeners |
+| `game.bus_emit_from(sig, entity)` | Broadcast + record emitter for `CDSelectSignalEmitter` |
+| `game.blackboard[key]` | Read/write game-level data |
 | `game.group_registry.get_group(name)` | Get all entities in a named group |
 | `entity.ensure_signal(name)` | Create signal on entity if missing |
-| `entity.emit_signal(name, args)` | Command entity via its own signal bus |
+| `entity.emit_signal(name)` | Command entity via its own signal bus (zero-arg) |
+| `entity.blackboard[key]` | Write per-entity data for components to read |
 | `entity.request_deactivate()` | Return entity to pool |
-| `game.update.queue_transition(...)` | Queue a group transition via CDUpdater |
+| `game.updater.queue_transition(...)` | Queue a group transition via CDUpdater |
 
 ---
 
@@ -68,11 +71,36 @@ Transitions entities between groups (treating group membership as state). Uses `
 
 | Feature | Details |
 |---------|---------|
-| **Transitions** | Array of `CDTransition` (from_group, to_group, trigger, selector, cooldown) |
-| **Per-frame guard** | Each entity can only transition once per frame |
+| **Transitions** | Array of `CDTransition` (from_group, to_group, trigger, selector, cooldown, exit/enter signals) |
+| **Per-frame guard** | `_transitioned_this_frame: Dictionary` — each entity can only transition once per frame |
 | **Signal triggers** | `CDSignalTrigger` queues pending entities for consumption |
 | **Evaluation triggers** | Other triggers are evaluated each frame against group members |
 | **CDUpdater queue** | All transitions deferred to avoid group mutation during iteration |
+| **Cooldowns** | Per-entity cooldown tracking prevents rapid re-transitions |
+| **Exit/enter signals** | Transition optionally emits signals on the entity when leaving/entering groups |
+
+#### StateDirector Flow
+
+```
+1. _on_initialize()
+   → Build lookup: transition.from_group → [transitions]
+   → Connect trigger signals (CDSignalTrigger) to game bus
+   → Store signal → transition mapping
+
+2. _physics_process()
+   → Clear _transitioned_this_frame
+   → For each transition:
+     a. Get candidates from from_group via group_registry
+     b. Filter by selector (if configured)
+     c. Check per-entity cooldown
+     d. Evaluate trigger condition
+     e. If all pass → queue transition via CDUpdater
+
+3. CDSignalTrigger path:
+   → Bus signal fires → _on_trigger_signal()
+   → Record emitting entity in _pending_signal_entities
+   → Next _physics_process checks _pending_signal_entities for matching transitions
+```
 
 ### SwarmShootingDirector — Coordinated Fire Control
 
@@ -88,13 +116,13 @@ Periodically selects entities from target groups and commands them to shoot. Thr
 
 ### SwoopDirector — Curve Path Mover
 
-Generates a `Curve2D` from a `CDCurve` resource and moves entities along it via checkpoints. Entities enter in staggered sequence (line formation) and emit `swoop_complete` when finished.
+Generates a `Curve2D` from a `CDCurve` resource and commands entities along it via checkpoints. Entities enter in staggered sequence (line formation) and emit `swoop_complete` when finished.
 
 | Feature | Details |
 |---------|---------|
 | **Curve** | `CDCurve` resource, generates `Curve2D` from origin to target |
 | **Checkpoints** | Evenly-spaced baked points along the curve |
 | **Line formation** | Staggered entry via `slot_spacing / entry_speed` delay per slot |
-| **Movement** | Emits `move_to` on entities at each checkpoint |
-| **Completion** | Emits `swoop_complete(entity)` on game bus when entity finishes |
+| **Movement** | Writes checkpoint position to entity blackboard, emits `begin_swoop` / checkpoint signals |
+| **Completion** | Emits `swoop_complete` on game bus when entity finishes |
 | **Editor preview** | `@tool` with `_draw()` showing the curve as a polyline |

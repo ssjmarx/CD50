@@ -1,7 +1,7 @@
 # Current Goal
 
-**Last Updated:** 2026-05-29  
-**Status:** Active — Bug Blaster 2 (Galaga) Capture Mechanics + Multi-Wave. Itch.io demo ready to ship.
+**Last Updated:** 2026-06-04  
+**Status:** Active — Bug Blaster 2 (Galaga) Capture Mechanics + Multi-Wave. Blackboard architecture live. Itch.io demo ready to ship.
 
 ---
 
@@ -24,8 +24,8 @@ The itch.io demo is **code-locked** (12 games, all componentized). We are now bu
 | 5 | 23 — V2 Spawners | CDStageTrapdoor, Point/Edge/GridTrapdoor, Spawn Arms, CDGridLayout, CDGridEquation, SafeZoneMark | ✅ Complete |
 | 6 | 24 — V2 Faces, Voices, Projections & Speakers | 7 Faces, 2 Voices, 3 Speakers, 2 Projectors, 5 Directors, Triggers, Selectors, Curves, Effects, Resources | ✅ Complete |
 | 7 | 25 — V2 Swarm Controllers + Galaga | All components already built in Plans 21–24; document rewritten as architectural reference | ✅ Complete |
-| 8 | 26 — Block Drop V2 | Full Block Drop remake proving Pseudogrid pattern | ? Next |
-| 9 | 27 — V2 Blackboard Architecture | Zero-arg signals + blackboard overhaul for both buses | 📋 Planned |
+| 8 | 26 — Block Drop V2 | Full Block Drop remake proving Pseudogrid pattern | ✅ Complete |
+| 9 | 27 — V2 Blackboard Architecture | Zero-arg signals + blackboard + bus_emit + signal emitter tracking | ✅ Complete (code), docs in progress |
 
 ### Immediate Next Step: Ship Itch.io Demo
 
@@ -46,9 +46,9 @@ Bug Blaster 2 is partially implemented with formation, swoop/dive, and shooting 
 
 All components already exist (AITractorBeamBrain, TractorBeamArm, PowerupWingmanArm, WaveCard, StageDirector). This is primarily scene assembly work.
 
-**156 V2 scripts written so far.** Full catalogue: `memory-bank/07 - Component Catalogue V2.md`
+**165 V2 scripts written so far.** Full catalogue: `memory-bank/07 - Component Catalogue V2.md`
 
-**After Galaga:** Plan 26 — Block Drop V2 (full Block Drop remake proving Pseudogrid pattern)
+**After Galaga:** Documentation sweep (USAGE.md blackboard section, planning/27 review), then next content game.
 
 ### Demo Status
 
@@ -149,6 +149,8 @@ The following plans have been **deleted** from the active pipeline:
 
 | Plan | Description | Completed |
 |------|-------------|-----------|
+| 27 | V2 Blackboard Architecture (4 new scripts — CDSequenceCurve, CDSelectSignalEmitter, CDSelectNearestNToGroup, PlayerKBMMoveBrain + bus_emit/blackboard/_signal_emitters pipeline) | 2026-06-04 |
+| 26 | Block Drop V2 (full Block Drop remake proving Pseudogrid pattern) | 2026-06-01 |
 | 25 | V2 Swarm Controllers + Galaga (0 new scripts — all components already built in Plans 21–24; document rewritten as architectural reference) | 2026-05-29 |
 | 24 | V2 Faces, Voices, Projections & Speakers (63 scripts — Faces, Voices, Speakers, Projectors, Directors, Curves, Triggers, Selectors, Effects, Resources) | 2026-05-29 |
 | 23 | V2 Spawners (4 Trapdoors, 3 Spawn Arms, 2 Marks, 4 Resources — 14 scripts) | 2026-05-27 |

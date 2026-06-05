@@ -35,33 +35,36 @@
 
 ### CDTimerTrigger — Interval Timer (Event)
 
-Fires on a configurable timer interval with optional random variance.
+Fires on a configurable timer interval with optional random variance and wave-based scaling.
 
 | Export | Type | Default | Purpose |
 |--------|------|---------|---------|
 | `interval` | `float` | 5.0 | Base time between fires (seconds) |
 | `random_variance` | `float` | 0.0 | ±random offset added to interval |
+| `wave_scaler` | `CDWaveScaler` | null | Optional resource that scales interval based on wave number |
 
 ### CDSignalTrigger — Game Bus Signal (Event)
 
-Fires when a named signal is received on the game bus. Captures entity arguments for use by transitions.
+Fires when one or more game bus signals are received. Supports multi-signal matching with configurable count and all/any logic.
 
 | Export | Type | Default | Purpose |
 |--------|------|---------|---------|
-| `signal_name` | `StringName` | &"" | Bus signal to listen for |
+| `signal_names` | `Array[StringName]` | [] | Bus signals to listen for |
+| `require_all` | `bool` | false | true = all listed signals must fire, false = any signal fires |
+| `require_count` | `int` | 1 | Minimum total signal fires before trigger activates |
 
-Extra methods:
-- `consume_pending()` — return captured entities and clear the list
+**Pattern:** CDSignalTrigger connects to game bus signals during `initialize()`. When any listed signal fires, it increments `_fire_count` and records which signals were received. When `require_count` and `require_all` conditions are met, `evaluate()` returns true once and resets.
 
 ### CDGroupCountTrigger — Group Population (Evaluative)
 
-Compares a group's entity count against a threshold. Fires on false→true edge (rising edge detection only).
+Compares one or more groups' entity counts against a threshold. Fires on false→true edge (rising edge detection only).
 
 | Export | Type | Default | Purpose |
 |--------|------|---------|---------|
-| `group_name` | `StringName` | &"" | Group to monitor |
+| `group_names` | `Array[StringName]` | [] | Groups to monitor |
 | `comparison` | `CountComparison` | LESS_OR_EQUAL | Comparison operator |
 | `threshold` | `int` | 0 | Value to compare against |
+| `require_all` | `bool` | true | true = all groups must meet threshold, false = any group meeting threshold fires |
 
 ### CDCompositeTrigger — AND/OR Combination
 
@@ -71,6 +74,3 @@ Combines multiple sub-triggers with AND (all must fire) or OR (any can fire) log
 |--------|------|---------|---------|
 | `triggers` | `Array[CDTrigger]` | [] | Sub-triggers to combine |
 | `require_all` | `bool` | true | true = AND, false = OR |
-
-Extra methods:
-- `consume_pending()` — collect pending entities from all signal sub-triggers

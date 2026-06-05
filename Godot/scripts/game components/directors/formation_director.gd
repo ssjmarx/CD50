@@ -1,6 +1,6 @@
 ## FormationDirector
-## Manages a grid of named slots for formation entities (Galaga-style)
-## Auto-assigns group members to slots, animates breathing Writes move_direction + move_distance to entity blackboard each frame
+## Manages multiple sub-formation grids (CDFormation) for tiered enemy placement
+## Auto-assigns group members to slots, animates breathing, writes move data to entity blackboards
 
 @tool
 class_name FormationDirector extends CDGameComponent
@@ -12,24 +12,24 @@ class_name FormationDirector extends CDGameComponent
 ## true = entity must be in ALL groups; false = entity must be in ANY group
 @export var require_all: bool = false
 
-## grid dimensions
-@export var columns: int = 10
-@export var rows: int = 5
+## sub-formation definitions — each has its own grid, group preference, and offset
+@export var formations: Array[CDFormation] = []:
+	set(v):
+		formations = v
+		if is_node_ready():
+			_init_all_slots()
+			queue_redraw()
 
-## size of each grid cell
-@export var cell_size: Vector2 = Vector2(16, 16)
-## spacing between cells (base spacing, scaled by breathing)
-@export var cell_spacing: Vector2 = Vector2(4, 4)
-
-## fill direction for slot assignment priority:
-@export var fill_direction: Vector2 = Vector2.ZERO
-
-## breathing animation: uniformly scales cell_spacing over time
+## continuous breathing animation (used when no marching orders are assigned)
 @export_group("Breathing")
 ## amplitude of spacing scale (0 = no breathing, 1.0 = spacing doubles at peak)
 @export var breathing_amplitude: float = 0.0
 ## duration in seconds for one full breathe-in/breathe-out cycle
 @export var breathing_duration: float = 4.0
+
+## ordered movement commands — step, breathe, pause
+@export_group("Marching")
+@export var marching_orders: Array[CDMarchingOrder] = []
 
 @export_group("Blackboard Keys")
 ## key for writing movement direction to entity blackboard (Vector2)
@@ -52,20 +52,28 @@ class_name FormationDirector extends CDGameComponent
 
 ## --- state ---
 
-## flat array of slot contents (null = empty, CDEntity = occupied)
-var _slots: Array = []
 ## current phase for breathing animation
 var _breathing_phase: float = 0.0
 ## entities assigned this frame (prevents stale cleanup from removing them)
 var _assigned_this_frame: Dictionary = {}
 
+## --- marching state ---
+
+## current marching order index (-1 = not marching)
+var _marching_index: int = -1
+## time elapsed on current marching order
+var _marching_timer: float = 0.0
+## accumulated offset from step orders
+var _marching_offset: Vector2 = Vector2.ZERO
+## override breathing scale from breathe orders (<= 0 = use continuous breathing)
+var _marching_breath_scale: float = -1.0
+
 ## --- lifecycle ---
 
-## initialize slots array
 func _ready() -> void:
 	component_category = CDEnums.ComponentCategory.RULES
 	super._ready()
-	_init_slots()
+	_init_all_slots()
 
 ## --- editor preview ---
 
@@ -77,123 +85,102 @@ func _process(delta: float) -> void:
 		_advance_breathing(delta)
 		queue_redraw()
 
-## draw a circle at each slot center
+## draw a circle at each slot center for each sub-formation
 func _draw() -> void:
 	if not Engine.is_editor_hint():
 		return
 	
-	for i in columns * rows:
-		var pos := _calculate_slot_position_local(i)
-		draw_circle(pos, preview_radius, preview_color)
+	var breathing_scale := _get_breathing_scale()
+	for formation in formations:
+		for i in formation.columns * formation.rows:
+			var pos := formation.get_slot_position_local(i, breathing_scale)
+			draw_circle(pos, preview_radius, preview_color)
 
 ## --- processing ---
 
-## advance breathing, clean stale slots, write move data to entity blackboards
+## advance marching orders, breathing, clean stale slots, write move data
 func _physics_process(delta: float) -> void:
 	if Engine.is_editor_hint():
 		return
 	
+	_advance_marching(delta)
 	_advance_breathing(delta)
-	
 	_auto_assign_slots()
-	
-	## clean stale slots (invalid or left groups)
-	for i in _slots.size():
-		var slot = _slots[i]
-		if slot == null:
-			continue
-		if not is_instance_valid(slot):
-			_slots[i] = null
-			continue
-		var slot_entity: CDEntity = slot
-		if _assigned_this_frame.has(slot_entity):
-			continue
-		if not _is_in_formation_groups(slot_entity):
-			_slots[i] = null
-	
-	## write move_direction + move_distance to entity blackboards
-	for i in _slots.size():
-		var slot = _slots[i]
-		if slot == null:
-			continue
-		if not is_instance_valid(slot):
-			_slots[i] = null
-			continue
-		var slot_entity: CDEntity = slot
-		if slot_entity.state != CDEnums.EntityState.ACTIVE:
-			continue
-		
-		var target := _calculate_slot_position(i)
-		var distance := slot_entity.global_position.distance_to(target)
-		
-		## write direction and distance for positional legs
-		if distance > 0.001:
-			slot_entity.blackboard[direction_key] = slot_entity.global_position.direction_to(target)
-			slot_entity.blackboard[distance_key] = distance
-		else:
-			slot_entity.blackboard[distance_key] = 0.0
-	
+	_clean_stale_slots()
+	_write_move_data()
 	_assigned_this_frame.clear()
 
 ## --- breathing ---
 
-## advance the breathing phase
 func _advance_breathing(delta: float) -> void:
 	if breathing_duration > 0.0:
 		_breathing_phase += delta / breathing_duration * TAU
 
-## get the current breathing scale factor (1.0 = minimum/configured, >1.0 = expanded)
 func _get_breathing_scale() -> float:
+	## marching breathe orders override continuous breathing
+	if _marching_breath_scale > 0.0:
+		return _marching_breath_scale
 	return 1.0 + abs(sin(_breathing_phase)) * breathing_amplitude
+
+## --- marching orders ---
+
+## start marching on initialize
+func _on_initialize() -> void:
+	if not marching_orders.is_empty():
+		_marching_index = 0
+		_marching_timer = 0.0
+
+## advance the current marching order and auto-cycle through the sequence
+func _advance_marching(delta: float) -> void:
+	if marching_orders.is_empty() or _marching_index < 0:
+		return
+	
+	var order: CDMarchingOrder = marching_orders[_marching_index]
+	var effective_duration := order.duration
+	if order.type == CDMarchingOrder.Type.STEP and order.speed_scaler:
+		effective_duration = order.speed_scaler.evaluate()
+	
+	_marching_timer += delta
+	
+	match order.type:
+		CDMarchingOrder.Type.STEP:
+			_marching_breath_scale = -1.0
+			## apply continuous offset during the step duration
+			if effective_duration > 0.0:
+				_marching_offset.x += order.distance * (delta / effective_duration)
+		
+		CDMarchingOrder.Type.BREATHE:
+			## compute breathing scale based on phase within the breathe order
+			var total_time := order.expand_time + order.hold_time + order.contract_time
+			if total_time > 0.0:
+				var t := _marching_timer / total_time
+				t = fmod(t, 1.0)
+				if t < order.expand_time / total_time:
+					_marching_breath_scale = 1.0 + order.amplitude * (t * total_time / order.expand_time)
+				elif t < (order.expand_time + order.hold_time) / total_time:
+					_marching_breath_scale = 1.0 + order.amplitude
+				else:
+					var contract_t := (t * total_time - order.expand_time - order.hold_time) / order.contract_time
+					_marching_breath_scale = 1.0 + order.amplitude * (1.0 - contract_t)
+		
+		CDMarchingOrder.Type.PAUSE:
+			_marching_breath_scale = -1.0
+	
+	## advance to next order when timer exceeds duration
+	if _marching_timer >= effective_duration:
+		_marching_timer = 0.0
+		_marching_index += 1
+		if _marching_index >= marching_orders.size():
+			_marching_index = 0  ## loop marching orders
 
 ## --- slot management ---
 
-## find the best empty slot based on fill_direction priority
-func _find_empty_slot() -> int:
-	var best_index := -1
-	var best_score := INF
-	
-	for i in _slots.size():
-		if _slots[i] != null:
-			continue
-		var pos := _calculate_slot_position_local(i)
-		var score: float
-		if fill_direction == Vector2.ZERO:
-			score = pos.length()
-		else:
-			score = -pos.dot(fill_direction)
-		if score < best_score:
-			best_score = score
-			best_index = i
-	
-	return best_index
+## initialize all sub-formation slot arrays
+func _init_all_slots() -> void:
+	for formation in formations:
+		formation.init_slots()
 
-## calculate world position for a slot index (grid + breathing scale)
-func _calculate_slot_position(slot_index: int) -> Vector2:
-	return global_position + _calculate_slot_position_local(slot_index)
-
-## calculate local position for a slot index (used by both runtime and editor preview)
-func _calculate_slot_position_local(slot_index: int) -> Vector2:
-	@warning_ignore("integer_division")
-	var col := slot_index % columns
-	@warning_ignore("integer_division")
-	var row := slot_index / columns
-	
-	var breathing_scale := _get_breathing_scale()
-	var scaled_spacing := cell_spacing * breathing_scale
-	
-	## grid layout with scaled spacing
-	var step_x := cell_size.x + scaled_spacing.x
-	var step_y := cell_size.y + scaled_spacing.y
-	var grid_width := columns * step_x - scaled_spacing.x
-	var grid_height := rows * step_y - scaled_spacing.y
-	
-	var x := col * step_x - grid_width * 0.5 + cell_size.x * 0.5
-	var y := row * step_y - grid_height * 0.5 + cell_size.y * 0.5
-	
-	return Vector2(x, y)
-
-## auto-detect untracked group members and assign them to empty slots
+## auto-detect untracked group members and assign them to preferred formation slots
 func _auto_assign_slots() -> void:
 	var entities := _gather_formation_entities()
 	for entity in entities:
@@ -201,16 +188,90 @@ func _auto_assign_slots() -> void:
 			continue
 		if entity.state != CDEnums.EntityState.ACTIVE:
 			continue
-		if entity in _slots:
+		if _is_entity_in_any_slot(entity):
 			continue
 		
-		var slot_index := _find_empty_slot()
-		if slot_index == -1:
-			push_warning("FormationDirector '%s': no empty slots for '%s'." % [name, entity.name])
+		# first try preferred group formations
+		var assigned := false
+		for formation in formations:
+			if formation.preferred_group != &"" and entity.is_in_group(formation.preferred_group):
+				var slot_index := formation.find_empty_slot()
+				if slot_index != -1:
+					formation.slots[slot_index] = entity
+					_assigned_this_frame[entity] = true
+					assigned = true
+					break
+		
+		if assigned:
 			continue
 		
-		_slots[slot_index] = entity
-		_assigned_this_frame[entity] = true
+		# fallback: any formation with empty slots (prefer formations without preferred_group)
+		for formation in formations:
+			if formation.preferred_group == &"":
+				var slot_index := formation.find_empty_slot()
+				if slot_index != -1:
+					formation.slots[slot_index] = entity
+					_assigned_this_frame[entity] = true
+					assigned = true
+					break
+		
+		if assigned:
+			continue
+		
+		# last resort: preferred group formations that are full but have empty slots from other groups
+		for formation in formations:
+			var slot_index := formation.find_empty_slot()
+			if slot_index != -1:
+				formation.slots[slot_index] = entity
+				_assigned_this_frame[entity] = true
+				break
+
+## remove invalid or out-of-group entities from all slots
+func _clean_stale_slots() -> void:
+	for formation in formations:
+		for i in formation.slots.size():
+			var slot = formation.slots[i]
+			if slot == null:
+				continue
+			if not is_instance_valid(slot):
+				formation.slots[i] = null
+				continue
+			var slot_entity: CDEntity = slot
+			if _assigned_this_frame.has(slot_entity):
+				continue
+			if not _is_in_formation_groups(slot_entity):
+				formation.slots[i] = null
+
+## write move_direction + move_distance to entity blackboards
+func _write_move_data() -> void:
+	var breathing_scale := _get_breathing_scale()
+	for formation in formations:
+		for i in formation.slots.size():
+			var slot = formation.slots[i]
+			if slot == null:
+				continue
+			if not is_instance_valid(slot):
+				formation.slots[i] = null
+				continue
+			var slot_entity: CDEntity = slot
+			if slot_entity.state != CDEnums.EntityState.ACTIVE:
+				continue
+			
+			var target := formation.get_slot_position(i, global_position + _marching_offset, breathing_scale)
+			var distance := slot_entity.global_position.distance_to(target)
+			
+			if distance > 0.001:
+				slot_entity.blackboard[direction_key] = slot_entity.global_position.direction_to(target)
+				slot_entity.blackboard[distance_key] = distance
+			else:
+				slot_entity.blackboard[distance_key] = 0.0
+
+## check if an entity is already tracked in any formation's slots
+func _is_entity_in_any_slot(entity: CDEntity) -> bool:
+	for formation in formations:
+		if entity in formation.slots:
+			return true
+	return false
 
 ## gather entities from all formation groups (deduplicated)
 func _gather_formation_entities() -> Array[CDEntity]:
@@ -243,13 +304,10 @@ func _is_in_formation_groups(entity: CDEntity) -> bool:
 
 ## clear all slots and animation state for game restart
 func reset() -> void:
-	_init_slots()
+	_init_all_slots()
 	_breathing_phase = 0.0
 	_assigned_this_frame.clear()
-
-## initialize the slot array with null entries
-func _init_slots() -> void:
-	_slots.clear()
-	_slots.resize(columns * rows)
-	for i in _slots.size():
-		_slots[i] = null
+	_marching_index = -1
+	_marching_timer = 0.0
+	_marching_offset = Vector2.ZERO
+	_marching_breath_scale = -1.0

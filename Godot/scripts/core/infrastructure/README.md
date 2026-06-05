@@ -58,6 +58,20 @@ entity.register_collision_handler([], _on_any_collision)  # catch-all
 
 Handlers are checked specific-first, then catch-all. Match is by collision layer bitmask resolved from group names.
 
+### Entity Blackboard
+
+Every CDEntity has a `blackboard: Dictionary` that components use for per-frame data sharing. Brains write intent, legs poll intent, arms write results — all through keyed dictionary access with sensible defaults.
+
+```gdscript
+# Brain writes intent every frame
+entity.blackboard[move_key] = direction
+
+# Leg reads with default (absent key = no input)
+var direction = entity.blackboard.get(move_key, Vector2.ZERO)
+```
+
+The blackboard is **not** cleared automatically — components overwrite keys each frame. Pool-returned entities should clear their blackboard in `_on_entity_deactivating()`.
+
 ### Entity Bus Signals
 
 CDEntity defines these signals at runtime via `add_user_signal`:
@@ -69,10 +83,19 @@ CDEntity defines these signals at runtime via `add_user_signal`:
 | `request_deactivate` | External request to kill this entity | (none) |
 | `entity_deactivating` | This entity is dying (pool return or free) | (none) |
 | `entity_activated` | This entity recycled from pool | (none) |
-| `moved` | Position changed this frame | `old_pos: Vector2, new_pos: Vector2` |
-| `rotated` | Rotation changed this frame | `old_rot: float, new_rot: float` |
 
 Components can also create custom signals via `entity.ensure_signal(name)`.
+
+### Two Communication Modes
+
+Entity components use one of two patterns to communicate:
+
+| Mode | Pattern | When to Use |
+|------|---------|-------------|
+| **Blackboard polling** | Writer sets `entity.blackboard[key]`, reader polls with `.get(key, default)` | Continuous per-frame data (movement, aiming, health) |
+| **Signal + blackboard** | Writer sets blackboard data, then emits zero-arg signal | Intermittent events (shoot, take_damage, collision response) |
+
+The signal+blackboard pattern lets the writer push data and notify the reader in one step, while keeping the signal contract simple (zero args). The reader checks the blackboard for event-specific data.
 
 ### Lifecycle
 
@@ -101,35 +124,61 @@ activate()            → mark ACTIVE, enable collisions, register groups
 Every game scene has exactly one CDGame at the root. It provides:
 
 1. **State machine** — ATTRACT → PLAYING → PAUSED → GAME_OVER
-2. **Game bus** — Dictionary-based signal router for game-level events
-3. **Required child refs** — `collision_buffer`, `group_registry`, `collision_matrix`, `input_router`, `updater`
+2. **Game bus** — Godot signal-based event router for game-level notifications (zero-arg signals)
+3. **Game blackboard** — `Dictionary` for game-level data sharing (scores, wave numbers, etc.)
+4. **Emitter tracking** — `_signal_emitters` registry for "who fired this signal" queries
+5. **Required child refs** — `collision_buffer`, `group_registry`, `collision_matrix`, `input_router`, `updater`
+
+### Game Blackboard
+
+The game blackboard (`game.blackboard: Dictionary`) stores game-level data that components need to share. Like the entity blackboard, it uses simple key-value access:
+
+```gdscript
+# Writer (e.g., arm writes score)
+game.blackboard[&"score_delta"] = points
+game.bus_emit(&"score_gained")
+
+# Reader (e.g., card reads delta)
+func _on_score_gained():
+    var delta = game.blackboard.get(&"score_delta", 0)
+    _update_label(str(current_score + delta))
+```
 
 ### Game Bus API
 
+The game bus uses Godot signals internally. All bus signals are **zero-argument** — event-specific data goes on the `game.blackboard` before emitting.
+
 ```gdscript
-# connect to a named event (no registration needed)
+# connect to a named event (auto-creates signal if needed)
 game.bus_connect(&"score_gained", _on_score)
 
-# emit an event (no-op if nobody is listening)
-game.bus_emit(&"score_gained", [10])
+# emit a zero-arg event (no-op if nobody is listening)
+game.bus_emit(&"score_gained")
+
+# emit with emitter tracking (for CDSelectSignalEmitter)
+game.bus_emit_from(&"score_gained", entity)
 
 # disconnect on cleanup
 game.bus_disconnect(&"score_gained", _on_score)
 ```
 
-The game bus is Dictionary-based — no Godot signals involved. Emitting with no listeners is a no-op. This makes it safe for components to emit events that may or may not be consumed.
+### Emitter Tracking
+
+`bus_emit_from(signal_name, emitter)` records which entity emitted a signal in `_signal_emitters[signal_name]`. This enables `CDSelectSignalEmitter` to filter candidates to only the entities that caused a signal. The registry is cleared every frame by `CDUpdater`.
 
 ### Game Bus Events (conventions)
 
-| Event | Emitted By | Consumed By | Payload |
-|-------|-----------|-------------|---------|
-| `"game_play"` | CDGame.start_game() | Stage components | (none) |
-| `"game_over"` | CDGame.end_game() | Stage components | `GameResult` |
-| `"game_state_changed"` | CDGame setter | UI components | `GameState` |
-| `"score_gained"` | ScoreOnCollisionArm | ScoreCard | `int` |
-| `"lives_changed"` | LivesCounterGoal | LivesCard | `int` |
-| `"wave_start"` | WaveDirector | Trapdoors | `int` (wave number) |
-| `"wave_cleared"` | GroupCountGoal | Directors | `int` |
+All events are zero-arg. Data is stored on `game.blackboard` before emitting.
+
+| Event | Emitted By | Consumed By | Blackboard Key |
+|-------|-----------|-------------|----------------|
+| `"game_play"` | CDGame.start_game() | Stage components | — |
+| `"game_over"` | CDGame.end_game() | Stage components | — |
+| `"game_state_changed"` | CDGame setter | UI components | — |
+| `"score_gained"` | ScoreOnCollisionArm | ScoreCard | `"score_delta"` |
+| `"lives_changed"` | LivesCounterGoal | LivesCard | `"lives_delta"` |
+| `"wave_start"` | WaveDirector | Trapdoors | — |
+| `"wave_cleared"` | GroupCountGoal | Directors | — |
 
 ### Must-Includes When Assembling Games
 
@@ -250,21 +299,27 @@ Set `player_count > 1` to enable prefixed input actions (`p1_move_left`, `p2_mov
 
 ---
 
-## CDUpdater — Deferred Group Transitions
+## CDUpdater — Deferred Group Transitions & Emitter Cleanup
 
 **Extends:** `Node`  
 **Priority:** UPDATE (runs after all gameplay components)
 
-Queues group transitions and executes them at end of frame, preventing mid-frame group inconsistencies.
+Performs two end-of-frame tasks:
+1. **Flushes queued group transitions** — preventing mid-frame group inconsistencies
+2. **Clears `_signal_emitters`** — resetting the per-frame emitter tracking registry
 
-### Pattern
+### Group Transition Pattern
 
 ```gdscript
 # in a Guts component:
-game.update.queue_transition(entity, &"alive", &"dying", &"exit_alive", &"enter_dying")
+game.updater.queue_transition(entity, &"alive", &"dying", &"exit_alive", &"enter_dying")
 ```
 
 This removes the entity from `"alive"`, adds to `"dying"`, emits both signals, and marks both groups dirty in the registry — all at the end of the frame.
+
+### Emitter Registry Clear
+
+After flushing transitions, CDUpdater calls `game._signal_emitters.clear()`. This ensures `CDSelectSignalEmitter` only sees emitters from the current frame, not accumulated stale data.
 
 ---
 

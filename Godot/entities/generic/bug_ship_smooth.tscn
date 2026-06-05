@@ -19,7 +19,6 @@ stop_distance = 4.0
 
 [node name="LinearFrictionLeg" parent="." index="2" instance=ExtResource("7_7l8gu")]
 max_friction = 3200.0
-max_speed = 400.0
 
 [node name="TargetRotationLeg" parent="." index="3" instance=ExtResource("4_upr7u")]
 rotation_speed = 0.0

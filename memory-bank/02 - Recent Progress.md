@@ -1,40 +1,59 @@
 # Recent Progress
 
-**Last Updated:** 2026-05-30
+**Last Updated:** 2026-06-04
 
 ---
 
-## Plan 27 — V2 Blackboard Architecture (DESIGN COMPLETE — 0 scripts, 1 planning doc)
+## Plan 27 — V2 Blackboard Architecture (CODE COMPLETE — 4 new scripts, docs in progress)
 
-Architectural overhaul of V2 signal communication. Discovered three pain points while assembling Bug Blaster 2 (Galaga): typed signal friction between interoperable components, bandage code (`_arg1 = null, _arg2 = null`) in multi-signal listeners, and the signal type contract being unenforced (all `add_user_signal()` calls already create zero-arg signals).
+Architectural overhaul of V2 signal communication. The blackboard + `bus_emit()` architecture is now live in code. All user-defined signals are zero-arg, CDEntity and CDGame have `blackboard` dictionaries, and a per-frame `_signal_emitters` tracking system enables signal-aware selectors.
 
-### Design Decisions
+### What Was Implemented
 
-| Decision | Rationale |
-|----------|-----------|
-| All user-defined signals become zero-arg | Eliminates typed signal friction, bandage args, and adapter components |
-| CDEntity + CDGame get `blackboard: Dictionary` | Simple transient state storage for continuous data flow |
-| Two communication modes: poll blackboard vs signal + blackboard | Continuous components (Brains, Legs, Faces) poll; intermittent components (Arms on collision, Guts on damage) use signals |
-| Both entity bus and game bus get parallel treatment | Game bus `bus_emit()` drops args parameter; game components read from `game.blackboard` |
-| Legs accumulator API unchanged | `request_velocity_set()`/`request_velocity_add()` stay — universal accumulator deferred to Phase 2 |
-| Hardcoded physics/lifecycle signals stay typed | `collision(CDEntity, Vector2)` and lifecycle signals don't cause interop pain |
-| MoveAdapterGuts eliminated | Brain writes `"target_position"`, Leg reads it directly |
-| KBMGuts eliminated | Both input Brains write to same `"move_intent"` key |
+| Feature | Implementation |
+|---------|---------------|
+| `entity.blackboard: Dictionary` | Transient state storage on every CDEntity |
+| `game.blackboard: Dictionary` | Transient state storage on CDGame |
+| `entity.bus_emit(signal_name)` | Zero-arg emission that auto-tracks emitter in `_signal_emitters` |
+| `game.bus_emit(signal_name)` | Zero-arg emission on game bus |
+| `game.bus_emit_from(signal_name, emitter)` | Tracks which entity emitted a signal this frame |
+| `game._signal_emitters: Dictionary` | Per-frame registry cleared by CDUpdater at Priority 90 |
+| `entity._signal_emitters: Dictionary` | Per-entity emitter registry for entity-bus signal tracking |
+| CDUpdater flush | Clears `_signal_emitters` after all transitions processed |
 
-### Key Naming Convention
+### New Scripts (4)
 
-- Intent keys: `"move_intent"`, `"aim_direction"`, `"target_position"`, `"rotation_intent"`
-- State keys: `"health"`, `"points"`, `"shield"`, `"resource"`
-- Event data keys: `"incoming_damage"`, `"action_name"`, `"pushback_force"`
-- Physics keys: `"position"`, `"rotation"`, `"velocity"` (written by CDEntity post-resolution)
+| Script | Class | Summary |
+|--------|-------|---------|
+| `cd_sequence_curve.gd` | `CDSequenceCurve extends CDCurve` | Chains multiple CDCurve resources into a single composite path |
+| `cd_select_signal_emitter.gd` | `CDSelectSignalEmitter extends CDSelector` | Filters candidates to only those who emitted a specific signal this frame |
+| `cd_select_nearest_n_to_group.gd` | `CDSelectNearestNToGroup extends CDSelector` | Selects N candidates nearest to closest entity in a target group |
+| `player_kbm_move_brain.gd` | `PlayerKBMMoveBrain extends CDEntityComponent` | Unified KB+Mouse move brain — merges keyboard "move" and mouse "move_to" into single intent |
+
+### Signal Emitter Pipeline (New)
+
+The `bus_emit_from()` → `_signal_emitters` → `CDSelectSignalEmitter` pipeline enables "who signaled this frame?" queries:
+1. Entity calls `bus_emit("swoop_complete")` or game calls `bus_emit_from("dive_complete", entity)`
+2. Emitter is recorded in `_signal_emitters[signal_name]` array
+3. CDSelectSignalEmitter cross-references candidates against the registry
+4. CDUpdater clears `_signal_emitters` at end of frame (Priority 90)
+
+### Remaining
+
+- Update USAGE.md with blackboard architecture docs
+- Update planning/27 to mark completed items
+- Migrate existing components from old `_arg1/_arg2` patterns to blackboard reads
 
 ### Files
 
 | File | Action |
 |------|--------|
-| `planning/27 - V2 Blackboard Architecture.md` | New — complete architecture spec with 7 rules, key conventions, category-by-category migration guide |
+| `planning/27 - V2 Blackboard Architecture.md` | Created — complete architecture spec |
+| `cd_entity.gd` | Modified — added `blackboard`, `bus_emit()`, `_signal_emitters` |
+| `cd_game.gd` | Modified — added `blackboard`, `bus_emit()`, `bus_emit_from()`, `_signal_emitters` |
+| `cd_updater.gd` | Modified — clears `_signal_emitters` each frame |
 
-### V2 Total Scripts Written: 156 (unchanged — design only)
+### V2 Total Scripts Written: 165
 
 ---
 
@@ -108,7 +127,7 @@ Converted all signal exports from single StringName to arrays:
 | `entities/nonplayer/bug_ship_swooping_nonplayer.tscn` | Updated — start_signals, stop_signals arrays |
 | `games/remakes/bug_blaster_2.tscn` | Updated — full Galaga assembly |
 
-### V2 Total Scripts Written: 156 (unchanged — scene-driven implementation)
+### V2 Total Scripts Written: 156 (scene-driven implementation, before Plan 27 scripts)
 
 ---
 

@@ -22,14 +22,20 @@ _on_xxx()        → arm-specific logic (damage, spawn, push, etc.)
 _on_entity_deactivating() → disconnect all listen signals
 ```
 
-### Signal Convention
+### Signal + Blackboard Convention
 
-Arms use **Listen Signals** and **Emit Signals** export groups:
+Arms use the **signal + blackboard** pattern for cross-entity and game-level communication:
 
-- **Listen Signals** — entity-level signals the arm subscribes to (collision, zero_health, shoot, etc.)
-- **Emit Signals** — signals the arm emits on other entities or the game bus
+1. **Write data** to the target's blackboard (entity or game)
+2. **Emit zero-arg signal** to notify listeners
 
-All signals are configurable via exports so arms work with any entity's signal set.
+Arms use configurable export groups for both sides:
+
+- **Listen Signals** — zero-arg entity signals the arm subscribes to (collision, zero_health, shoot, etc.)
+- **Emit Signals** — zero-arg signals the arm fires after writing blackboard data
+- **Emit Keys** — blackboard keys where the arm writes event data before signaling
+
+All signals and keys are configurable via exports so arms work with any entity's signal set.
 
 ### Group Filtering
 
@@ -60,11 +66,13 @@ Respond to `collision` signals. Each arm type targets a different recipient (sel
 
 ### Damage Arms
 
-| Arm | Target | Effect | Signal Emitted |
-|-----|--------|--------|----------------|
-| `DamageOnCrashArm` | Self | Flat damage to self | `take_damage` on self |
-| `DamageOnHitArm` | Collider | Flat damage to collider | `take_damage` on collider |
-| `DamageOnJoustArm` | Collider | Comparative property damage | `take_damage` on collider |
+Write `incoming_damage` + `damage_source` to target's blackboard, then emit configurable `damage_signals` (default `take_damage`).
+
+| Arm | Target | Effect |
+|-----|--------|--------|
+| `DamageOnCrashArm` | Self | Flat damage to self |
+| `DamageOnHitArm` | Collider | Flat damage to collider |
+| `DamageOnJoustArm` | Collider | Comparative property damage |
 
 **Joust comparison modes** (`CDEnums.EntityCompare`):
 - `VELOCITY` — damage scaled by velocity difference × `velocity_damage_scale`
@@ -91,11 +99,11 @@ Death arms bypass the health pipeline entirely — they directly emit `request_d
 
 ### Other Collision Arms
 
-| Arm | Effect | Details |
-|-----|--------|---------|
-| `PushbackArm` | Physical impulse to collider | Uses collision normal or direction vector; emits `external_impulse` |
-| `ScoreOnCollisionArm` | Score to game bus | Reads points from sibling `PointsGuts`; emits `score_gained` on game |
-| `StatusOnHitArm` | Status effect to collider | Sends `status_name` + `duration` via `apply_status` signal |
+| Arm | Effect | Blackboard Write + Signal |
+|-----|--------|--------------------------|
+| `PushbackArm` | Physical impulse to collider | Writes impulse vector to collider's `impulse_keys`, emits `impulse_signals` |
+| `ScoreOnCollisionArm` | Score to game bus | Reads `"points"` from entity blackboard; writes to `game.blackboard[scoring_keys]`, emits `score_signals` on game bus |
+| `StatusOnHitArm` | Status effect to collider | Writes `status_name` + `duration` to collider's `status_keys` + `duration_keys`, emits `status_signals` |
 
 ---
 
@@ -105,7 +113,7 @@ Respond to entity death signals (default: `zero_health`). Fire once when the ent
 
 | Arm | Effect | Details |
 |-----|--------|---------|
-| `ScoreOnDeathArm` | Score to game bus | Reads points from sibling `PointsGuts`; emits `score_gained` on game |
+| `ScoreOnDeathArm` | Score to game bus | Reads `"points"` from entity blackboard; writes to `game.blackboard`, emits `score_gained` on game bus |
 | `SpawnOnDeathArm` | Spawn entities at death position | Supports pool, spawn context, position/velocity inheritance |
 
 ---

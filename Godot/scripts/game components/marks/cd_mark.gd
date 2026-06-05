@@ -6,6 +6,8 @@ class_name CDMark extends Area2D
 
 ## --- exports ---
 
+## groups this mark belongs to (registered in Godot's group system)
+@export var groups: Array[StringName] = []
 ## radius for auto-created CircleShape2D
 @export var shape_size: float = 16.0
 ## group whitelist for body filtering (empty = allow all)
@@ -38,13 +40,16 @@ var _auto_shape: CollisionShape2D
 
 ## --- lifecycle ---
 
-## set up collision shape and connect Area2D signals
+## register groups, set up collision shape, connect Area2D signals
 func _ready() -> void:
+	for g in groups:
+		add_to_group(g)
 	_ensure_collision_shape()
 	body_entered.connect(_on_body_entered)
 	body_exited.connect(_on_body_exited)
 	if game and game.collision_matrix:
 		game.collision_matrix.configure(self)
+	call_deferred("_on_initialize")
 
 ## connect listen signals to game bus
 func _on_initialize() -> void:

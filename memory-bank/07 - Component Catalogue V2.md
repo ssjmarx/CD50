@@ -1,9 +1,9 @@
 # Component Catalogue V2
 
-**Last Updated:** 2026-05-29  
+**Last Updated:** 2026-06-04  
 **Architecture:** V2 Composable Architecture  
 **Canonical Reference:** `planning/V2 Rules.md`  
-**Total V2 Scripts:** 156
+**Total V2 Scripts:** 165
 
 ---
 
@@ -63,7 +63,7 @@ The V2 architecture replaces V1's `UniversalBody`/`UniversalComponent` system wi
 
 ---
 
-## Core — Resources: Behavior (4)
+## Core — Resources: Behavior (8)
 
 | Script | Class | Summary |
 |--------|-------|---------|
@@ -71,12 +71,16 @@ The V2 architecture replaces V1's `UniversalBody`/`UniversalComponent` system wi
 | `cd_shape.gd` | `CDShape extends Resource` | Defines a polygon shape from a set of 2D points |
 | `cd_transition.gd` | `CDTransition extends Resource` | Defines when and how entities move between groups |
 | `cd_wall_kick.gd` | `CDWallKick extends Resource` | Wall-kick offset table data for Tetris-style rotation |
+| `cd_scaler.gd` | `CDScaler extends Resource` | Abstract base for float value scaling with game lifecycle |
+| `cd_wave_scaler.gd` | `CDWaveScaler extends CDScaler` | Scales a value based on current wave number |
+| `cd_group_count_scaler.gd` | `CDGroupCountScaler extends CDScaler` | Scales a value based on group population (ratio or linear) |
+| `cd_sequence_step.gd` | `CDSequenceStep extends Resource` | Single step in a SignalSequenceDirector's timed signal sequence |
 
 ---
 
-## Core — Resources: Curves (12)
+## Core — Resources: Curves (13)
 
-Abstract base `CDCurve` plus 11 curve types for AI path generation.
+Abstract base `CDCurve` plus 12 curve types for AI path generation.
 
 | Script | Class | Summary |
 |--------|-------|---------|
@@ -92,20 +96,23 @@ Abstract base `CDCurve` plus 11 curve types for AI path generation.
 | `cd_square_wave_curve.gd` | `CDSquareWaveCurve extends CDCurve` | Square wave curve |
 | `cd_triangle_curve.gd` | `CDTriangleCurve extends CDCurve` | Triangle "curve" |
 | `cd_zigzag_curve.gd` | `CDZigzagCurve extends CDCurve` | Zigzag curve |
+| `cd_sequence_curve.gd` | `CDSequenceCurve extends CDCurve` | Chains multiple CDCurve resources into a single composite path |
 
 ---
 
-## Core — Resources: Selectors (5)
+## Core — Resources: Selectors (7)
 
-Abstract base `CDSelector` plus 4 selection strategies for transition targeting.
+Abstract base `CDSelector` plus 6 selection strategies for transition targeting.
 
 | Script | Class | Summary |
 |--------|-------|---------|
 | `cd_selector.gd` | `CDSelector extends Resource` | Abstract base class for transition entity selectors |
 | `cd_select_all.gd` | `CDSelectAll extends CDSelector` | Selects every candidate — no filtering |
 | `cd_select_n.gd` | `CDSelectN extends CDSelector` | Selects the first N candidates in iteration order |
-| `cd_select_nearest_n.gd` | `CDSelectNearestN extends CDSelector` | Selects N candidates nearest to closest entity in target group |
+| `cd_select_nearest_n.gd` | `CDSelectNearestN extends CDSelector` | Selects N candidates nearest to source position |
+| `cd_select_nearest_n_to_group.gd` | `CDSelectNearestNToGroup extends CDSelector` | Selects N candidates nearest to closest entity in a target group |
 | `cd_select_random_n.gd` | `CDSelectRandomN extends CDSelector` | Selects N random candidates, independently each evaluation |
+| `cd_select_signal_emitter.gd` | `CDSelectSignalEmitter extends CDSelector` | Filters candidates to only those who emitted a specific signal this frame |
 
 ---
 
@@ -134,6 +141,15 @@ Abstract base `CDTrigger` plus 4 trigger types for state machine transitions.
 
 ---
 
+## Core — Resources: Formation (2)
+
+| Script | Class | Summary |
+|--------|-------|---------|
+| `cd_formation.gd` | `CDFormation extends Resource` | Sub-formation grid with preferred group, offset, and slot management |
+| `cd_marching_order.gd` | `CDMarchingOrder extends Resource` | Formation movement command — step, breathe, or pause |
+
+---
+
 ## Core — Resources: Visuals (1)
 
 | Script | Class | Summary |
@@ -151,11 +167,11 @@ Abstract base `CDTrigger` plus 4 trigger types for state machine transitions.
 
 ---
 
-## Entity Components — Brains (16)
+## Entity Components — Brains (17)
 
 Pure intent generators (Priority 10). Never touch velocity, never move entities.
 
-### Player Brains (4)
+### Player Brains (5)
 
 | Script | Class | Summary |
 |--------|-------|---------|
@@ -163,6 +179,7 @@ Pure intent generators (Priority 10). Never touch velocity, never move entities.
 | `player_aim_brain.gd` | `PlayerAimBrain extends CDEntityComponent` | Routes aim input from CDInputRouter to entity bus |
 | `player_action_brain.gd` | `PlayerActionBrain extends CDEntityComponent` | Routes action button presses/releases from CDInputRouter to entity bus |
 | `player_move_to_brain.gd` | `PlayerMoveToBrain extends CDEntityComponent` | Emits "move_to" with mouse global position each physics frame |
+| `player_kbm_move_brain.gd` | `PlayerKBMMoveBrain extends CDEntityComponent` | Unified KB+Mouse move brain — merges keyboard "move" and mouse "move_to" into single intent |
 
 ### AI: Targeting Brains (4)
 
@@ -180,7 +197,7 @@ Pure intent generators (Priority 10). Never touch velocity, never move entities.
 | `ai_repeat_action_brain.gd` | `AIRepeatActionBrain extends CDEntityComponent` | Fires action signal repeatedly on a timer while active |
 | `ai_timed_step_brain.gd` | `AITimedStepBrain extends CDEntityComponent` | Emits directional signal at regular interval |
 
-### AI: Path & Patrol Brains (6)
+### AI: Path & Patrol Brains (5)
 
 | Script | Class | Summary |
 |--------|-------|---------|
@@ -188,7 +205,6 @@ Pure intent generators (Priority 10). Never touch velocity, never move entities.
 | `ai_random_sweep_brain.gd` | `AIRandomSweepBrain extends CDEntityComponent` | Generates multi-waypoint sweep path across play area |
 | `ai_idle_wander_brain.gd` | `AIIdleWanderBrain extends CDEntityComponent` | Picks random nearby points, meanders with idle pauses |
 | `ai_formation_brain.gd` | `AIFormationBrain extends CDEntityComponent` | Moves to offset from leader entity with target locking |
-| `ai_dive_bomb_brain.gd` | `AIDiveBombBrain extends CDEntityComponent` | Generates sine-wave dive path toward target |
 | `ai_swoop_brain.gd` | `AISwoopBrain extends CDEntityComponent` | Follows CDCurve path via checkpoints, triggered by entity bus signal |
 
 ### AI: Special Brains (1)
@@ -407,7 +423,7 @@ Stage-level display components (Priority 70). Extend CDCueCard (Control-based).
 
 ---
 
-## Game Components — Directors (6)
+## Game Components — Directors (7)
 
 Stage-level controllers that manage entity behavior at the game level.
 
@@ -419,6 +435,7 @@ Stage-level controllers that manage entity behavior at the game level.
 | `shooting_director.gd` | `ShootingDirector extends CDGameComponent` | Data-driven shooting: CDTrigger decides WHEN, CDSelector decides WHO |
 | `aiming_director.gd` | `AimingDirector extends CDGameComponent` | Per-entity nearest-target aiming across groups |
 | `swoop_director.gd` | `SwoopDirector extends CDGameComponent` | Generates curve from CDCurve resource, moves entities along it |
+| `signal_sequence_director.gd` | `SignalSequenceDirector extends CDGameComponent` | Data-driven signal macro — turns one trigger into a timed signal sequence |
 
 ---
 
@@ -491,12 +508,12 @@ Stage-level spawners. Subscribe to game bus signals, queue and stagger-spawn ent
 | Core Infrastructure | 10 |
 | Core Resources: Infrastructure | 3 |
 | Core Resources: Audio | 3 |
-| Core Resources: Behavior | 4 |
-| Core Resources: Curves | 12 |
-| Core Resources: Selectors | 5 |
+| Core Resources: Behavior | 8 |
+| Core Resources: Curves | 13 |
+| Core Resources: Selectors | 7 |
 | Core Resources: Spawners | 4 |
 | Core Resources: Triggers | 5 |
-| Core Resources: Visuals | 1 |
+| Core Resources: Formation | 2 |
 | Effects | 2 |
 | Brains | 17 |
 | Arms | 16 |
@@ -505,10 +522,10 @@ Stage-level spawners. Subscribe to game bus signals, queue and stagger-spawn ent
 | Faces | 7 |
 | Voices | 2 |
 | Cue Cards | 4 |
-| Directors | 6 |
+| Directors | 7 |
 | Goals | 2 |
 | Marks | 6 |
 | Projectors | 2 |
 | Speakers | 3 |
 | Trapdoors | 3 |
-| **Total V2 Scripts** | **156** |
+| **Total V2 Scripts** | **165** |

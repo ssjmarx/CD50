@@ -1,6 +1,6 @@
 # End State: CD50 — Arcade Cabinet
 
-**Last Updated:** 2026-05-20
+**Last Updated:** 2026-06-04
 
 ---
 
@@ -182,11 +182,13 @@ Polybius is the digital jailer. He judges, mocks, and demands more. When a new h
 - **Physics-based grid:** Block Drop uses no grid data structure — all detection via physics queries
 - **Component toggleability:** Features enabled/disabled by including/excluding component scenes
 
-**V2 (in progress, Plans 19–24 complete, Plan 25 in progress):**
-- **153 scripts** implemented across Plans 19–24 — Core Infrastructure, Object Pooling, Stage, Brains+Legs, Arms+Guts, Spawners, Faces/Voices/Projections/Speakers, Directors, Curves, Triggers, Selectors, Effects, Resources
-- **Hybrid bus:** Entity bus (native signals) + Game bus (Dictionary)
-- **Deterministic priority cascade:** Registry(5) → Brains(10) → Legs(20) → Entity(30) → Buffer(35) → Arms(40) → Guts(50) → Faces(60) → Stage(70)
-- **Remaining:** Plan 25 (Swarm Controllers + Galaga, in progress) and Plan 26 (Block Drop V2)
+**V2 (in progress, Plans 19–27 complete):**
+- **165 scripts** implemented across Plans 19–27 — Core Infrastructure, Object Pooling, Stage, Brains+Legs, Arms+Guts, Spawners, Faces/Voices/Projections/Speakers, Directors, Curves, Triggers, Selectors, Effects, Resources, Blackboard Architecture
+- **Hybrid bus:** Entity bus (native signals + `bus_emit()`) + Game bus (Dictionary + `bus_emit()` / `bus_emit_from()`)
+- **Blackboard architecture:** `entity.blackboard` and `game.blackboard` dictionaries for transient state; `_signal_emitters` per-frame tracking enables signal-aware selectors
+- **Deterministic priority cascade:** Registry(5) → Brains(10) → Legs(20) → Entity(30) → Buffer(35) → Arms(40) → Guts(50) → Faces(60) → Stage(70) → Update(90)
+- **Signal emitter pipeline:** `bus_emit()` auto-tracks emitters → `CDSelectSignalEmitter` cross-references → CDUpdater clears at end of frame
+- **Remaining:** Bug Blaster 2 capture mechanics + multi-wave, documentation sweep
 
 ---
 
@@ -198,8 +200,8 @@ Polybius is the digital jailer. He judges, mocks, and demands more. When a new h
 | Plan 16 Phase 1: 4 new games | May 14–18 | ✅ Complete |
 | Game roster finalized at 12 games | May 18 | ✅ Complete |
 | ~~5 modifiers + mini progression~~ | May 18–20 | ✅ Complete |
-| Polybius character | May 20–31 | 🔲 In progress |
-| Ship itch.io demo | May 31 | 🔲 Target |
+| Polybius character | May 20–31 | ✅ Complete |
+| Ship itch.io demo | June | 🔲 Ready to ship |
 | Vertical slice content (expand modifiers + more games) | June–July | Planned |
 | Steamworks integration (stats, leaderboards, achievements) | August 1–17 | Planned |
 | Next Fest registration + store page | August 18–31 | Planned |

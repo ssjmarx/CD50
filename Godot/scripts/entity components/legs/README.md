@@ -8,23 +8,36 @@ Legs are categorized along two axes:
 
 ---
 
-## Common Leg Pattern
+## Blackboard Polling Pattern
+
+Most legs read their input from the entity blackboard every frame using a configurable key with a sensible default:
+
+```gdscript
+@export var direction_key: StringName = &"move_intent"
+
+func _physics_process(_delta):
+    var direction: Vector2 = entity.blackboard.get(direction_key, Vector2.ZERO)
+    entity.request_velocity_set(direction.normalized() * speed)
+```
+
+No signal connection, no `_received_input` tracking, no handler, no cleanup. The default value handles the "no input" case automatically — `Vector2.ZERO` means no movement, `0.0` means no rotation.
+
+### Lifecycle
 
 ```
 _ready()                   → set component_category = STEERING
-_on_initialize()           → ensure signals, connect listeners
-_on_<signal>(args)         → store input state (direction, target, action flags)
-_physics_process(delta)    → apply velocity/rotation/position changes via entity API
-_on_entity_deactivating()  → disconnect signals, reset state
+_on_initialize()           → connect any signal listeners (only for signal-based legs)
+_physics_process(delta)    → poll blackboard keys, apply velocity/rotation via entity API
+_on_entity_deactivating()  → disconnect signals (if any), reset state
 ```
 
 ### Must-Includes When Creating Legs
 
 1. Extend `CDEntityComponent`
 2. Set `component_category = CDEnums.ComponentCategory.STEERING` in `_ready()`
-3. Use `@export_group("Listen Signals")` for input signal arrays
-4. Call `entity.ensure_signal()` before connecting in `_on_initialize()`
-5. Disconnect all connections with validity guards in `_on_entity_deactivating()`
+3. Use `@export_group("Blackboard Keys")` for configurable blackboard key names
+4. Read from `entity.blackboard.get(key, default)` — the default produces "do nothing" behavior
+5. Apply movement via the entity request API (never set `velocity` directly)
 6. Reset all runtime state in `_on_entity_deactivating()` (for object pool reuse)
 
 ### Entity Request API
@@ -47,23 +60,23 @@ _on_entity_deactivating()  → disconnect signals, reset state
 
 Set velocity/rotation directly from a direction vector. No momentum carries over between frames.
 
-| Leg | Sets | Listen Signal | Entity API |
-|-----|------|---------------|------------|
-| `DirectMovementLeg` | Velocity | `move` (Vector2) | `request_velocity_set()` |
-| `DirectRotationLeg` | Angular velocity | `move` (Vector2) + `action` (StringName) | `request_angular_set()` |
-| `GridMovementLeg` | Position (snapped) | `move` (Vector2) | `request_position_add()` |
-| `GridRotationLeg` | Rotation + wall kicks | `rotate` (float) | `request_rotation_add()` / `request_position_add()` |
+| Leg | Sets | Blackboard Key (default) | Entity API |
+|-----|------|--------------------------|------------|
+| `DirectMovementLeg` | Velocity | `direction_key` (`"move_intent"`) | `request_velocity_set()` |
+| `DirectRotationLeg` | Angular velocity | `direction_key` (`"move_intent"`) | `request_angular_set()` |
+| `GridMovementLeg` | Position (snapped) | `direction_key` (`"move_intent"`) | `request_position_add()` |
+| `GridRotationLeg` | Rotation + wall kicks | `rotation_key` (`"rotation_intent"`) | `request_rotation_add()` / `request_position_add()` |
 
-**Setter pattern:** If no input is received this frame, the leg zeros its output (velocity → ZERO, angular → 0.0). This gives responsive, snappy movement with no drift.
+**Setter pattern:** When the blackboard key is absent or `Vector2.ZERO`, the leg zeros its output (velocity → ZERO, angular → 0.0). This gives responsive, snappy movement with no drift.
 
 ### directional adders/ — Accumulated Direction (2 scripts)
 
 Add velocity each frame based on direction. Momentum builds up and persists.
 
-| Leg | Adds | Listen Signal | Entity API |
-|-----|------|---------------|------------|
-| `AccelerationMovementLeg` | Directional force | `move` (Vector2) | `request_velocity_add()` |
-| `EngineLeg` | Forward thrust | `action` (StringName) | `request_velocity_add()` |
+| Leg | Adds | Blackboard Key (default) | Entity API |
+|-----|------|--------------------------|------------|
+| `AccelerationMovementLeg` | Directional force | `direction_key` (`"move_intent"`) | `request_velocity_add()` |
+| `EngineLeg` | Forward thrust | Signal-based (`action` signals) | `request_velocity_add()` |
 
 **Adder pattern:** Pair with friction legs (`LinearFrictionLeg`, `StaticFrictionLeg`) to cap speed and provide deceleration. Without friction, entities accelerate forever.
 
@@ -71,10 +84,10 @@ Add velocity each frame based on direction. Momentum builds up and persists.
 
 Set velocity/rotation directly toward a world-space target position.
 
-| Leg | Sets | Listen Signal | Entity API |
-|-----|------|---------------|------------|
-| `DirectTargetLeg` | Velocity toward target | `move_to` (Vector2) | `request_velocity_set()` |
-| `TargetRotationLeg` | Rotation toward direction | `aim` (Vector2) | `request_rotation_set()` |
+| Leg | Sets | Blackboard Key (default) | Entity API |
+|-----|------|--------------------------|------------|
+| `DirectTargetLeg` | Velocity toward target | `target_key` (`"target_position"`) | `request_velocity_set()` |
+| `TargetRotationLeg` | Rotation toward direction | `aim_key` (`"aim_direction"`) | `request_rotation_set()` |
 
 **Positional setter pattern:** Both snap to the target within configurable thresholds (`arrival_distance`, instant-snap on overshoot). `TargetRotationLeg` supports instant snap (speed ≤ 0) or smooth rotation.
 
@@ -82,9 +95,9 @@ Set velocity/rotation directly toward a world-space target position.
 
 Add velocity each frame toward a target, with distance-based deceleration.
 
-| Leg | Adds | Listen Signal | Entity API |
-|-----|------|---------------|------------|
-| `AccelerationTargetLeg` | Force toward target | `move_to` (Vector2) | `request_velocity_add()` |
+| Leg | Adds | Blackboard Key (default) | Entity API |
+|-----|------|--------------------------|------------|
+| `AccelerationTargetLeg` | Force toward target | `target_key` (`"target_position"`) | `request_velocity_add()` |
 
 **Positional adder pattern:** Tapers acceleration within `slow_distance` and stops adding at `stop_distance`. Good for homing/pursuit behavior.
 

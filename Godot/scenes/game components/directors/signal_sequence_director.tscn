@@ -1,0 +1,7 @@
+[gd_scene load_steps=2 format=3 uid="uid://bx8k2m7n4pqr1"]
+
+[ext_resource type="Script" uid="uid://signal_seq_dir_001" path="res://scripts/game components/directors/signal_sequence_director.gd" id="1_signal"]
+
+[node name="SignalSequenceDirector" type="Node2D"]
+script = ExtResource("1_signal")
+component_category = 10

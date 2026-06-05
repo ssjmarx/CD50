@@ -1,6 +1,6 @@
 # CD50
 
-12 arcade games built from 153 reusable components. Zero game scripts.
+12 arcade games built from 165 reusable components. Zero game scripts.
 
 CD50 is a modular arcade game collection built in [Godot](https://godotengine.org) using a composable component architecture. Every game — from Pong to Tetris to a Galaga-asteroids mashup — is assembled by attaching generic components to generic entities in the editor. No game-specific code exists anywhere in the project.
 
@@ -33,15 +33,15 @@ This eliminates frame-ordering bugs. Every component knows exactly when it runs 
 
 | Category | Priority | Role | Count | Examples |
 |----------|----------|------|-------|---------|
-| **Brains** | 10 | Generate intent from input or AI | 16 | PlayerMoveBrain, AIChaseBrain, AIFormationBrain, AIDiveBombBrain |
+| **Brains** | 10 | Generate intent from input or AI | 17 | PlayerMoveBrain, AIChaseBrain, AIFormationBrain, AISwoopBrain |
 | **Legs** | 20 | Execute movement from intent signals | 15 | DirectMovementLeg, EngineLeg, GridMovementLeg, ScreenWrapLeg |
 | **Arms** | 40 | Affect other entities and game state | 16 | DamageOnHitArm, DeathOnCrashArm, GunArm, ScoreOnCollisionArm |
 | **Guts** | 50 | Track internal entity state | 19 | HealthpoolGuts, DeflectorBounceGuts, LockDetectorGuts, StunGuts |
 | **Faces** | 60 | Draw entity appearance | 7 | PolygonFace, VectorFace, SpriteFace, DeathEffectFace |
 | **Voices** | 65 | Entity-level audio | 2 | SoundVoice, ContinuousVoice |
-| **Stage** | 70 | Game-level logic, UI, spawning | 28 | ScoreCard, GroupCountGoal, GridTrapdoor, FormationDirector, MusicSpeaker |
+| **Stage** | 70 | Game-level logic, UI, spawning | 27 | ScoreCard, GroupCountGoal, GridTrapdoor, FormationDirector, MusicSpeaker |
 
-Plus 10 core infrastructure scripts (CDEntity, CDGame, CDCollisionBuffer, CDGroupRegistry, etc.) and 41 custom resources (curves, triggers, selectors, shapes, transitions, wall kicks, sound definitions).
+Plus 10 core infrastructure scripts (CDEntity, CDGame, CDCollisionBuffer, CDGroupRegistry, etc.) and 43 custom resources (curves, triggers, selectors, shapes, transitions, wall kicks, sound definitions).
 
 ---
 
@@ -98,9 +98,9 @@ Same base components. Different assembly. New game. This is how CD50 ships 12 ga
 
 Components communicate through two signal systems:
 
-**Entity Bus** — Native Godot signals on each CDEntity. High-frequency, typed. The hot path: Brains emit `"move"`, Legs consume it. Arms hear `"collision"`, deal damage to the collider's bus.
+**Entity Bus** — Native Godot signals on each CDEntity, now zero-arg via `bus_emit()`. High-frequency. The hot path: Brains emit `"move"`, Legs consume it. Arms hear `"collision"`, deal damage to the collider's bus. Continuous data flows through `entity.blackboard` (Dictionary).
 
-**Game Bus** — Dictionary-based on CDGame. Low-frequency, configurable names. For game-level events: `"score_gained"`, `"wave_cleared"`, `"lives_depleted"`. Zero registration boilerplate — emit with no listeners is a no-op.
+**Game Bus** — Dictionary-based on CDGame, also zero-arg via `bus_emit()` and `bus_emit_from()`. Low-frequency, configurable names. For game-level events: `"score_gained"`, `"wave_cleared"`, `"lives_depleted"`. Zero registration boilerplate — emit with no listeners is a no-op. `bus_emit_from()` tracks which entity signaled this frame, enabling signal-aware selectors like `CDSelectSignalEmitter`.
 
 This hybrid approach gives type safety where it matters (per-entity, per-frame) and flexibility where it doesn't (game-level events that vary per game).
 
@@ -113,7 +113,7 @@ Godot/
 ├── scripts/
 │   ├── core/                    — CDEntity, CDGame, base classes, infrastructure
 │   ├── entity components/
-│   │   ├── brains/              — 16 intent generators
+│   │   ├── brains/              — 17 intent generators
 │   │   ├── legs/                — 15 movement executors
 │   │   ├── arms/                — 16 world-interaction components
 │   │   ├── guts/                — 19 internal state trackers
@@ -121,7 +121,7 @@ Godot/
 │   │   └── voices/              — 2 entity audio components
 │   ├── game components/
 │   │   ├── cards/               — 4 UI display components
-│   │   ├── directors/           — 5 stage controllers
+│   │   ├── directors/           — 7 stage controllers
 │   │   ├── goals/               — 2 win/lose conditions
 │   │   ├── marks/               — 6 spatial triggers
 │   │   ├── projectors/          — 2 visual post-processing

@@ -3,15 +3,14 @@
 [ext_resource type="PackedScene" uid="uid://dc5v6bawoxi2c" path="res://entities/generic/bug_ship_smooth.tscn" id="1_18u38"]
 [ext_resource type="PackedScene" uid="uid://wghixqf83pas" path="res://scenes/entity components/brains/ai_swoop_brain.tscn" id="2_f0fqv"]
 [ext_resource type="PackedScene" uid="uid://by11ic4lo4df8" path="res://entities/nonplayer/onscreen_bullet_nonplayer.tscn" id="2_fkier"]
-[ext_resource type="Script" uid="uid://c5eo3m6tfj1b" path="res://scripts/core/resources/curves/cd_spiral_curve.gd" id="3_4lxl2"]
+[ext_resource type="Script" uid="uid://dpgs8b1skt7t2" path="res://scripts/core/resources/curves/cd_sine_curve.gd" id="4_fkier"]
 [ext_resource type="PackedScene" uid="uid://irkjutuwceju" path="res://scenes/entity components/guts/announcer_guts.tscn" id="4_mqv8h"]
 
-[sub_resource type="Resource" id="Resource_mqv8h"]
-script = ExtResource("3_4lxl2")
-max_radius = 100.0
-curve_seed = 2
-offset = Vector2(10, -25)
-metadata/_custom_type_script = "uid://c5eo3m6tfj1b"
+[sub_resource type="Resource" id="Resource_5neny"]
+script = ExtResource("4_fkier")
+amplitude = 100.0
+frequency = 2
+metadata/_custom_type_script = "uid://dpgs8b1skt7t2"
 
 [node name="BugShip" instance=ExtResource("1_18u38")]
 groups = Array[StringName]([&"bug_ships", &"ships", &"enemies"])
@@ -20,10 +19,11 @@ groups = Array[StringName]([&"bug_ships", &"ships", &"enemies"])
 bullet_scene = ExtResource("2_fkier")
 
 [node name="AISwoopBrain" parent="." index="10" instance=ExtResource("2_f0fqv")]
-curve = SubResource("Resource_mqv8h")
+curve = SubResource("Resource_5neny")
 target_distance = 450.0
 start_signals = Array[StringName]([&"begin_dive"])
 stop_signals = Array[StringName]([&"return_to_formation"])
+complete_signals = Array[StringName]([&"dive_complete"])
 
 [node name="AnnouncerGuts" parent="." index="11" instance=ExtResource("4_mqv8h")]
 listen_signals = Array[StringName]([&"swoop_complete"])
