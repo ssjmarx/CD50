@@ -73,11 +73,12 @@ func _ready() -> void:
 
 ## --- Game Bus API ---
 
-## bus connect
+## bus connect — idempotent: guards against double-connection
 func bus_connect(signal_name: StringName, callable: Callable) -> void:
 	if not has_signal(signal_name):
 		add_user_signal(signal_name)
-	connect(signal_name, callable)
+	if not is_connected(signal_name, callable):
+		connect(signal_name, callable)
 
 ## bus disconnect
 func bus_disconnect(signal_name: StringName, callable: Callable) -> void:

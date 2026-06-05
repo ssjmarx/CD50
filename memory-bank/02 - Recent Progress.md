@@ -4,6 +4,93 @@
 
 ---
 
+## Plan 28 — V2 CDStage + CDBody (COMPLETE — 5 new scripts, 2 modified)
+
+Sleep/wake container infrastructure + MANAGER category + data-driven stage/state/signal managers.
+
+### Session 2 — Managers Layer (3 new scripts, 1 new resource, 2 modified)
+
+Added MANAGER component category at priority 75 (between RULES 70 and UPDATE 90). Three new manager components + CDStageRule resource replace embedded control logic that was baked into CDStage.
+
+| Feature | Implementation |
+|---------|---------------|
+| `MANAGER` category (priority 75) | New `CDEnums.ComponentCategory.MANAGER` — runs after RULES, before UPDATE |
+| `CDStageRule extends Resource` | Trigger + sleep/wake stage names + game signals — replaces CDStage's `sleep_on`/`wake_on` |
+| `StageManager extends CDGameComponent` | Evaluates CDStageRule triggers, sleeps/wakes named CDStages via lookup map |
+| `StateManager extends CDGameComponent` | Renamed from StateDirector — same CDTransition logic, now at MANAGER priority |
+| `SignalManager extends CDGameComponent` | Renamed from SignalSequenceDirector — data-driven timed signal sequences at MANAGER priority |
+| CDStage simplified | Removed `sleep_on`/`wake_on` exports and signal handlers — StageManager handles this now |
+
+### New Scripts (3 + 1 resource)
+
+| Script | Class | Summary |
+|--------|-------|---------|
+| `cd_stage_rule.gd` | `CDStageRule extends Resource` | Trigger → sleep/wake stages + game signals |
+| `stage_manager.gd` | `StageManager extends CDGameComponent` | Evaluates CDStageRule triggers, sleeps/wakes named CDStages |
+| `state_manager.gd` | `StateManager extends CDGameComponent` | Group-as-state transitions via CDTransition resources (renamed from StateDirector) |
+| `signal_manager.gd` | `SignalManager extends CDGameComponent` | Timed signal macro sequences (renamed from SignalSequenceDirector) |
+
+### Modified Scripts (2)
+
+| Script | Changes |
+|--------|---------|
+| `cd_enums.gd` | Added `MANAGER` category at priority 75 |
+| `cd_stage.gd` | Removed `sleep_on`/`wake_on` exports and signal handlers |
+
+### Scenes (3 new)
+
+| File | Purpose |
+|------|---------|
+| `scenes/game components/managers/stage_manager.tscn` | StageManager scene instance |
+| `scenes/game components/managers/state_manager.tscn` | StateManager scene instance |
+| `scenes/game components/managers/signal_manager.tscn` | SignalManager scene instance |
+
+### BB2 Scene Updated
+
+Removed `wake_on` from Level1Stage in `bug_blaster_2.tscn`. Editor rewire needed: add StageManager node with CDStageRules to replicate old wake-on-signal behavior.
+
+### V2 Total Scripts Written: 170
+
+---
+
+### Session 1 — Sleep/Wake Containers (2 new scripts, 4 modified)
+
+Sleep/wake container infrastructure for grouping components. CDStage manages game-level components (directors, trapdoors, goals, cards). CDBody manages entity-level components (brains, legs, arms, guts, faces, voices).
+
+| Feature | Implementation |
+|---------|---------------|
+| `CDStage extends CDGameComponent` | Game-level container — collects child CDGameComponents, sleeps/wakes as a group |
+| `CDBody extends CDEntityComponent` | Entity-level container — collects child CDEntityComponents, sleeps/wakes as a group |
+| `_bus_connections` tracking | Both base classes now track bus connections via `self.bus_connect()`/`self.bus_disconnect()` |
+| `_on_sleep()`/`_on_wake()` virtuals | Both base classes get overridable sleep/wake hooks (default: toggle physics process) |
+| `CDEntity.set_subtree_collisions()` | Static helper to enable/disable collision shapes in direct children |
+| `CDUpdater` sleep/wake queues | `_pending_sleep`/`_pending_wake` arrays, sleep-before-wake flush ordering |
+
+### New Scripts (2)
+
+| Script | Class | Summary |
+|--------|-------|---------|
+| `cd_stage.gd` | `CDStage extends CDGameComponent` | Game-level sleep/wake container |
+| `cd_body.gd` | `CDBody extends CDEntityComponent` | Entity-level sleep/wake container |
+
+### Modified Scripts (4)
+
+| Script | Changes |
+|--------|---------|
+| `cd_entity_component.gd` | Added `_bus_connections` array, `bus_connect()`/`bus_disconnect()` wrappers, `_on_sleep()`/`_on_wake()` virtuals |
+| `cd_game_component.gd` | Same additions as above |
+| `cd_entity.gd` | Added `set_subtree_collisions()` static, refactored `activate()` + `_complete_deactivation()` to use it |
+| `cd_updater.gd` | Added `_pending_sleep`/`_pending_wake` queues, `queue_sleep()`/`queue_wake()` API, updated `_flush()` |
+
+### Scenes (2 new)
+
+| File | Purpose |
+|------|---------|
+| `scenes/core/infrastructure/cd_stage.tscn` | CDStage scene instance |
+| `scenes/core/infrastructure/cd_body.tscn` | CDBody scene instance |
+
+---
+
 ## Bug Blaster 2 — Session 2026-06-05: Starfield, Bug Fixes, CRT Diagnosis
 
 Three bugs diagnosed and fixed during continued BB2 development.

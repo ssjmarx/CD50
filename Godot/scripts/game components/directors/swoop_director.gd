@@ -99,7 +99,7 @@ func _request_redraw() -> void:
 ## on initialize
 func _on_initialize() -> void:
 	for sig in trigger_signals:
-		game.bus_connect(sig, _on_trigger)
+		bus_connect(sig, _on_trigger)
 
 ## --- editor preview ---
 

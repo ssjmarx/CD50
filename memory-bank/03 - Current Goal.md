@@ -26,7 +26,7 @@ The itch.io demo is **code-locked** (12 games, all componentized). We are now bu
 | 7 | 25 — V2 Swarm Controllers + Galaga | All components already built in Plans 21–24; document rewritten as architectural reference | ✅ Complete |
 | 8 | 26 — Block Drop V2 | Full Block Drop remake proving Pseudogrid pattern | ✅ Complete |
 | 9 | 27 — V2 Blackboard Architecture | Zero-arg signals + blackboard + bus_emit + signal emitter tracking | ✅ Complete |
-| 10 | 28 — V2 CDStage + CDBody | Architecture refactor — in chamber, not yet implemented | 🔲 In Chamber |
+| 10 | 28 — V2 CDStage + CDBody | MANAGER category + StageManager/StateManager/SignalManager + CDStageRule + CDStage simplified | ✅ Complete |
 
 ### Immediate Next Step: Ship Itch.io Demo
 
@@ -47,9 +47,9 @@ Bug Blaster 2 is partially implemented with formation, swoop/dive, and shooting 
 
 All components already exist (AITractorBeamBrain, TractorBeamArm, PowerupWingmanArm, WaveCard, StageDirector). This is primarily scene assembly work.
 
-**165 V2 scripts written so far.** Full catalogue: `memory-bank/07 - Component Catalogue V2.md`
+**170 V2 scripts written so far.** Full catalogue: `memory-bank/07 - Component Catalogue V2.md`
 
-**After Galaga:** Plan 28 (CDStage + CDBody architecture refactor), then next content game.
+**After Galaga:** Next content game (TBD).
 
 ### Demo Status
 
@@ -150,6 +150,7 @@ The following plans have been **deleted** from the active pipeline:
 
 | Plan | Description | Completed |
 |------|-------------|-----------|
+| 28 | V2 CDStage + CDBody Session 2 (MANAGER category, StageManager, StateManager, SignalManager, CDStageRule, CDStage simplified) | 2026-06-05 |
 | BB2 Session | ScrollingStarsEffect (1 script), SwoopDirector freed-instance fix, CRTProjector attract-mode darkness fix, CDEffect infinite lifetime | 2026-06-05 |
 | Doc Sweep #2 | Documentation sweep (ensure_signal removal, directory structure, validity guards) | 2026-06-04 |
 | 27 | V2 Blackboard Architecture (4 new scripts — CDSequenceCurve, CDSelectSignalEmitter, CDSelectNearestNToGroup, PlayerKBMMoveBrain + bus_emit/blackboard/_signal_emitters pipeline) | 2026-06-04 |

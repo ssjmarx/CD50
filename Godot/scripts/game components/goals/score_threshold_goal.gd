@@ -33,7 +33,7 @@ func _ready() -> void:
 ## connect score change signals to the game bus
 func _on_initialize() -> void:
 	for sig in on_score_changed:
-		game.bus_connect(sig, _on_score_updated)
+		bus_connect(sig, _on_score_updated)
 
 ## --- signal handlers ---
 

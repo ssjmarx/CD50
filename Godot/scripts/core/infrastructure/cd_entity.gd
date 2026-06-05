@@ -241,13 +241,7 @@ func deactivate() -> void:
 
 ## phase 2: deferred cleanup — runs at end of frame after all components finish
 func _complete_deactivation() -> void:
-	## disable collision shapes so dying entities stop blocking
-	for child in get_children():
-		if child is CollisionShape2D:
-			child.set_deferred("disabled", true)
-		elif child is CollisionPolygon2D:
-			child.set_deferred("disabled", true)
-
+	set_subtree_collisions(self, false)
 	emit_signal("entity_deactivating")
 
 	## remove from all groups and mark dirty for registry refresh
@@ -273,12 +267,7 @@ func activate() -> void:
 	
 	blackboard.clear()
 
-	## re-enable collision shapes
-	for child in get_children():
-		if child is CollisionShape2D:
-			child.set_deferred("disabled", false)
-		elif child is CollisionPolygon2D:
-			child.set_deferred("disabled", false)
+	set_subtree_collisions(self, true)
 
 	visible = true
 	set_physics_process(true)
@@ -320,11 +309,12 @@ func set_collision_rect(width: float, height: float) -> void:
 
 ## --- Universal Bus API ---
 
-## bus connect
+## bus connect — idempotent: guards against double-connection
 func bus_connect(signal_name: StringName, callable: Callable) -> void:
 	if not has_signal(signal_name):
 		add_user_signal(signal_name)
-	connect(signal_name, callable)
+	if not is_connected(signal_name, callable):
+		connect(signal_name, callable)
 
 ## bus disconnect
 func bus_disconnect(signal_name: StringName, callable: Callable) -> void:
@@ -339,6 +329,16 @@ func bus_emit(signal_name: StringName) -> void:
 		if not _signal_emitters.has(signal_name):
 			_signal_emitters[signal_name] = []
 		_signal_emitters[signal_name].append(self)
+
+## --- Collision Shape Helper ---
+
+## Enable or disable all collision shapes in a node's direct children
+static func set_subtree_collisions(node: Node, enabled: bool) -> void:
+	for child in node.get_children():
+		if child is CollisionShape2D:
+			child.set_deferred("disabled", not enabled)
+		elif child is CollisionPolygon2D:
+			child.set_deferred("disabled", not enabled)
 
 ## --- Utility ---
 

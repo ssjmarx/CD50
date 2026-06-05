@@ -1,4 +1,4 @@
-[gd_scene load_steps=82 format=3 uid="uid://c0q0c0v84x80"]
+[gd_scene load_steps=93 format=3 uid="uid://c0q0c0v84x80"]
 
 [ext_resource type="Script" uid="uid://dm0uehngpvbh7" path="res://scripts/core/infrastructure/cd_game.gd" id="1_62wb8"]
 [ext_resource type="PackedScene" uid="uid://cmbx6xnct372t" path="res://scenes/core/infrastructure/cd_collision_buffer.tscn" id="2_7y1r2"]
@@ -7,12 +7,17 @@
 [ext_resource type="PackedScene" uid="uid://25g1ygl8nuv6" path="res://scenes/core/infrastructure/cd_group_registry.tscn" id="5_qyrdw"]
 [ext_resource type="PackedScene" uid="uid://c6mp0pt27mfal" path="res://scenes/core/infrastructure/cd_input_router.tscn" id="6_2v676"]
 [ext_resource type="PackedScene" uid="uid://csgdjkq3gf26a" path="res://scenes/core/infrastructure/cd_updater.tscn" id="7_fjsfa"]
+[ext_resource type="PackedScene" path="res://scenes/core/infrastructure/cd_stage.tscn" id="8_4mgkk"]
 [ext_resource type="PackedScene" uid="uid://crm6k3o4f76ok" path="res://entities/player/triangle_ship_player.tscn" id="8_7y1r2"]
+[ext_resource type="PackedScene" path="res://scenes/game components/managers/stage_manager.tscn" id="8_kgu26"]
+[ext_resource type="Script" uid="uid://1ag25dxeklvd" path="res://scripts/core/resources/behavior/cd_stage_rule.gd" id="9_vaj0o"]
 [ext_resource type="PackedScene" uid="uid://33byjn5h6ujc" path="res://scenes/entity components/legs/direct_movement_leg.tscn" id="9_wnudv"]
 [ext_resource type="PackedScene" uid="uid://b1e365cvr1e8p" path="res://scenes/game components/trapdoors/point_trapdoor.tscn" id="10_xb0do"]
 [ext_resource type="PackedScene" uid="uid://dn4605ei3ylto" path="res://entities/nonplayer/bug_ship_swooping_nonplayer.tscn" id="11_2v676"]
-[ext_resource type="PackedScene" uid="uid://mxejpxipdbii" path="res://scenes/game components/cards/wave_card.tscn" id="11_qyrdw"]
+[ext_resource type="Script" uid="uid://dctlu6ei0yhha" path="res://scripts/core/resources/triggers/cd_composite_trigger.gd" id="11_5umtv"]
+[ext_resource type="Script" uid="uid://bdb8g4cd5tnki" path="res://scripts/core/resources/triggers/cd_trigger.gd" id="12_8nemr"]
 [ext_resource type="Script" uid="uid://dcu4ocnin0htu" path="res://scripts/core/resources/spawners/cd_spawn_context.gd" id="12_rgict"]
+[ext_resource type="Script" uid="uid://deqlfyqjebr6v" path="res://scripts/core/resources/triggers/cd_group_count_trigger.gd" id="13_sjgbx"]
 [ext_resource type="PackedScene" uid="uid://ca4qbo05yiya" path="res://scenes/game components/directors/swoop_director.tscn" id="14_bnks8"]
 [ext_resource type="Script" uid="uid://dlalvxnq5qb5x" path="res://scripts/core/resources/curves/cd_curve.gd" id="15_34iby"]
 [ext_resource type="Script" uid="uid://dpgs8b1skt7t2" path="res://scripts/core/resources/curves/cd_sine_curve.gd" id="16_4yrl4"]
@@ -33,9 +38,8 @@
 [ext_resource type="Script" uid="uid://bgl0fyqd8o0w5" path="res://scripts/core/resources/selectors/cd_select_random_n.gd" id="27_1nsuk"]
 [ext_resource type="PackedScene" path="res://scenes/game components/directors/aiming_director.tscn" id="27_hc4eh"]
 [ext_resource type="Script" uid="uid://c0vh1ticpmvx5" path="res://scripts/core/resources/selectors/cd_select_all.gd" id="29_4psr8"]
-[ext_resource type="PackedScene" uid="uid://b4uqwn5l54hms" path="res://scenes/game components/goals/group_count_goal.tscn" id="29_blp8l"]
+[ext_resource type="PackedScene" path="res://scenes/game components/managers/signal_manager.tscn" id="32_acn14"]
 [ext_resource type="Script" uid="uid://cyqs535s5vfg4" path="res://scripts/core/resources/behavior/cd_sequence_step.gd" id="34_1nsuk"]
-[ext_resource type="PackedScene" uid="uid://bx8k2m7n4pqr1" path="res://scenes/game components/directors/signal_sequence_director.tscn" id="34_qhmbs"]
 [ext_resource type="PackedScene" uid="uid://d4b42pvesykqo" path="res://scenes/game components/marks/cd_mark.tscn" id="37_acn14"]
 [ext_resource type="PackedScene" uid="uid://bcjodofg3v548" path="res://scenes/effects/scrolling_stars_effect.tscn" id="38_1tdfd"]
 [ext_resource type="PackedScene" uid="uid://c160d1kuwsrav" path="res://scenes/game components/projectors/crt_projector.tscn" id="39_4mgkk"]
@@ -68,6 +72,39 @@ script = ExtResource("4_xb0do")
 group_name = &"top_zone"
 collides_with = Array[StringName]([&"enemies"])
 metadata/_custom_type_script = "uid://b2ibop6r2cryj"
+
+[sub_resource type="Resource" id="Resource_osfbp"]
+script = ExtResource("21_g3xn7")
+signal_names = Array[StringName]([&"game_play"])
+metadata/_custom_type_script = "uid://ca0k2u53egerl"
+
+[sub_resource type="Resource" id="Resource_dsfuj"]
+script = ExtResource("9_vaj0o")
+trigger = SubResource("Resource_osfbp")
+wake_stages = Array[StringName]([&"Level1Stage"])
+metadata/_custom_type_script = "uid://1ag25dxeklvd"
+
+[sub_resource type="Resource" id="Resource_ssbpx"]
+script = ExtResource("21_g3xn7")
+signal_names = Array[StringName]([&"level_one_complete"])
+metadata/_custom_type_script = "uid://ca0k2u53egerl"
+
+[sub_resource type="Resource" id="Resource_73s3c"]
+script = ExtResource("13_sjgbx")
+group_names = Array[StringName]([&"enemies"])
+metadata/_custom_type_script = "uid://deqlfyqjebr6v"
+
+[sub_resource type="Resource" id="Resource_wibil"]
+script = ExtResource("11_5umtv")
+triggers = Array[ExtResource("12_8nemr")]([SubResource("Resource_ssbpx"), SubResource("Resource_73s3c")])
+metadata/_custom_type_script = "uid://dctlu6ei0yhha"
+
+[sub_resource type="Resource" id="Resource_1ivtp"]
+script = ExtResource("9_vaj0o")
+trigger = SubResource("Resource_wibil")
+sleep_stages = Array[StringName]([&"Level1Stage"])
+wake_stages = Array[StringName]([&"Level2Stage"])
+metadata/_custom_type_script = "uid://1ag25dxeklvd"
 
 [sub_resource type="Resource" id="Resource_la2sg"]
 script = ExtResource("12_rgict")
@@ -288,34 +325,39 @@ metadata/_custom_type_script = "uid://dm2djsydyr0u1"
 script = ExtResource("26_gc4j8")
 metadata/_custom_type_script = "uid://b3xaxo1yp2dn1"
 
-[sub_resource type="Resource" id="Resource_4psr8"]
+[sub_resource type="Resource" id="Resource_p87tt"]
 script = ExtResource("34_1nsuk")
 signals = Array[StringName]([&"spawn_top_left", &"spawn_top_right"])
 delay_after = 3.0
 metadata/_custom_type_script = "uid://cyqs535s5vfg4"
 
-[sub_resource type="Resource" id="Resource_acn14"]
+[sub_resource type="Resource" id="Resource_ifna5"]
 script = ExtResource("34_1nsuk")
 signals = Array[StringName]([&"spawn_bottom_left"])
 delay_after = 3.0
 metadata/_custom_type_script = "uid://cyqs535s5vfg4"
 
-[sub_resource type="Resource" id="Resource_p87tt"]
+[sub_resource type="Resource" id="Resource_j0bx8"]
 script = ExtResource("34_1nsuk")
 signals = Array[StringName]([&"spawn_bottom_right"])
 delay_after = 3.0
 metadata/_custom_type_script = "uid://cyqs535s5vfg4"
 
-[sub_resource type="Resource" id="Resource_ifna5"]
+[sub_resource type="Resource" id="Resource_52c78"]
 script = ExtResource("34_1nsuk")
 signals = Array[StringName]([&"spawn_top_left"])
 delay_after = 3.0
 metadata/_custom_type_script = "uid://cyqs535s5vfg4"
 
-[sub_resource type="Resource" id="Resource_j0bx8"]
+[sub_resource type="Resource" id="Resource_q4en4"]
 script = ExtResource("34_1nsuk")
 signals = Array[StringName]([&"spawn_top_right"])
 metadata/_custom_type_script = "uid://cyqs535s5vfg4"
+
+[sub_resource type="Resource" id="Resource_acn14"]
+script = ExtResource("21_g3xn7")
+signal_names = Array[StringName]([&"level_start"])
+metadata/_custom_type_script = "uid://ca0k2u53egerl"
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_1tdfd"]
 size = Vector2(640, 16)
@@ -336,6 +378,230 @@ tracked_actions = Array[StringName]([&"fire", &"thrust", &"thrust_end"])
 
 [node name="CDUpdater" parent="." instance=ExtResource("7_fjsfa")]
 
+[node name="StageManager" parent="." instance=ExtResource("8_kgu26")]
+rules = Array[ExtResource("9_vaj0o")]([SubResource("Resource_dsfuj"), SubResource("Resource_1ivtp")])
+
+[node name="Level1Stage" parent="." groups=["level_stages"] instance=ExtResource("8_4mgkk")]
+start_asleep = true
+on_wake_signal = &"level_start"
+
+[node name="PointTrapdoor" parent="Level1Stage" instance=ExtResource("10_xb0do")]
+position = Vector2(256, -16)
+spawn_scene = ExtResource("11_2v676")
+spawn_count_equation = "5"
+offset_range = Vector2(0, 0)
+stagger_delay = 0.0
+spawn_context = SubResource("Resource_la2sg")
+trigger_signals = Array[StringName]([&"spawn_top_left"])
+on_spawning_complete = Array[StringName]([&"spawning_complete_left"])
+
+[node name="PointTrapdoor2" parent="Level1Stage" instance=ExtResource("10_xb0do")]
+position = Vector2(384, -16)
+spawn_scene = ExtResource("11_2v676")
+spawn_count_equation = "5"
+offset_range = Vector2(0, 0)
+stagger_delay = 0.0
+spawn_context = SubResource("Resource_s3e4k")
+trigger_signals = Array[StringName]([&"spawn_top_right"])
+on_spawning_complete = Array[StringName]([&"spawning_complete_right"])
+
+[node name="PointTrapdoor3" parent="Level1Stage" instance=ExtResource("10_xb0do")]
+position = Vector2(-16, 340)
+spawn_scene = ExtResource("11_2v676")
+spawn_count_equation = "5"
+offset_range = Vector2(0, 0)
+stagger_delay = 0.0
+spawn_context = SubResource("Resource_owvki")
+trigger_signals = Array[StringName]([&"spawn_bottom_left"])
+on_spawning_complete = Array[StringName]([&"spawning_complete_bottom_left"])
+
+[node name="PointTrapdoor4" parent="Level1Stage" instance=ExtResource("10_xb0do")]
+position = Vector2(656, 340)
+spawn_scene = ExtResource("11_2v676")
+spawn_count_equation = "5"
+offset_range = Vector2(0, 0)
+stagger_delay = 0.0
+spawn_context = SubResource("Resource_ldmk8")
+trigger_signals = Array[StringName]([&"spawn_bottom_right"])
+on_spawning_complete = Array[StringName]([&"spawning_complete_bottom_right"])
+
+[node name="SwoopDirector" parent="Level1Stage" instance=ExtResource("14_bnks8")]
+position = Vector2(256, -16)
+swooping_groups = Array[StringName]([&"swooping", &"left"])
+require_all = true
+target = Vector2(256, 244)
+curve = SubResource("Resource_jix4n")
+swoop_speed = 400.0
+formation_offset = 32.0
+trigger_signals = Array[StringName]([&"spawning_complete_left"])
+
+[node name="SwoopDirector2" parent="Level1Stage" instance=ExtResource("14_bnks8")]
+position = Vector2(384, -16)
+swooping_groups = Array[StringName]([&"swooping", &"right"])
+require_all = true
+target = Vector2(384, 244)
+curve = SubResource("Resource_g3xn7")
+swoop_speed = 400.0
+formation_offset = 32.0
+trigger_signals = Array[StringName]([&"spawning_complete_right"])
+
+[node name="SwoopDirector3" parent="Level1Stage" instance=ExtResource("14_bnks8")]
+position = Vector2(-16, 340)
+swooping_groups = Array[StringName]([&"swooping", &"bottom_left"])
+require_all = true
+target = Vector2(320, 64)
+curve = SubResource("Resource_2bq8q")
+swoop_speed = 400.0
+formation_offset = 32.0
+trigger_signals = Array[StringName]([&"spawning_complete_bottom_left"])
+
+[node name="SwoopDirector4" parent="Level1Stage" instance=ExtResource("14_bnks8")]
+position = Vector2(656, 340)
+swooping_groups = Array[StringName]([&"swooping", &"bottom_right"])
+require_all = true
+target = Vector2(320, 64)
+curve = SubResource("Resource_rvvw1")
+swoop_speed = 400.0
+formation_offset = 32.0
+trigger_signals = Array[StringName]([&"spawning_complete_bottom_right"])
+
+[node name="FormationDirector" parent="Level1Stage" instance=ExtResource("18_156p0")]
+position = Vector2(320, 64)
+formations = Array[ExtResource("22_jix4n")]([SubResource("Resource_4mgkk"), SubResource("Resource_kgu26"), SubResource("Resource_vaj0o")])
+breathing_amplitude = 0.25
+breathing_duration = 10.0
+marching_orders = Array[ExtResource("23_1k33r")]([SubResource("Resource_asuvp"), SubResource("Resource_5umtv"), SubResource("Resource_8nemr"), SubResource("Resource_sjgbx")])
+preview_color = Color(1, 0.64705884, 0, 1)
+component_category = 10
+
+[node name="StateDirector" parent="Level1Stage" instance=ExtResource("19_g3xn7")]
+position = Vector2(320, -16)
+transitions = Array[ExtResource("20_k70bp")]([SubResource("Resource_5kasm"), SubResource("Resource_682rw"), SubResource("Resource_eb2hk")])
+
+[node name="ShootingDirector" parent="Level1Stage" instance=ExtResource("23_7jcia")]
+trigger = SubResource("Resource_blp8l")
+selector = SubResource("Resource_hc4eh")
+component_category = 10
+
+[node name="AimingDirector" parent="Level1Stage" instance=ExtResource("27_hc4eh")]
+targeting_noise = 4.0
+component_category = 10
+
+[node name="SignalManager" parent="Level1Stage" instance=ExtResource("32_acn14")]
+steps = Array[ExtResource("34_1nsuk")]([SubResource("Resource_p87tt"), SubResource("Resource_ifna5"), SubResource("Resource_j0bx8"), SubResource("Resource_52c78"), SubResource("Resource_q4en4")])
+trigger = SubResource("Resource_acn14")
+on_sequence_complete = Array[StringName]([&"level_one_complete"])
+
+[node name="Level2Stage" parent="." groups=["level_stages"] instance=ExtResource("8_4mgkk")]
+start_asleep = true
+on_wake_signal = &"level_start"
+
+[node name="PointTrapdoor" parent="Level2Stage" instance=ExtResource("10_xb0do")]
+position = Vector2(256, -16)
+spawn_scene = ExtResource("11_2v676")
+spawn_count_equation = "5"
+offset_range = Vector2(0, 0)
+stagger_delay = 0.0
+spawn_context = SubResource("Resource_la2sg")
+trigger_signals = Array[StringName]([&"spawn_top_left"])
+on_spawning_complete = Array[StringName]([&"spawning_complete_left"])
+
+[node name="PointTrapdoor2" parent="Level2Stage" instance=ExtResource("10_xb0do")]
+position = Vector2(384, -16)
+spawn_scene = ExtResource("11_2v676")
+spawn_count_equation = "5"
+offset_range = Vector2(0, 0)
+stagger_delay = 0.0
+spawn_context = SubResource("Resource_s3e4k")
+trigger_signals = Array[StringName]([&"spawn_top_right"])
+on_spawning_complete = Array[StringName]([&"spawning_complete_right"])
+
+[node name="PointTrapdoor3" parent="Level2Stage" instance=ExtResource("10_xb0do")]
+position = Vector2(-16, 340)
+spawn_scene = ExtResource("11_2v676")
+spawn_count_equation = "5"
+offset_range = Vector2(0, 0)
+stagger_delay = 0.0
+spawn_context = SubResource("Resource_owvki")
+trigger_signals = Array[StringName]([&"spawn_bottom_left"])
+on_spawning_complete = Array[StringName]([&"spawning_complete_bottom_left"])
+
+[node name="PointTrapdoor4" parent="Level2Stage" instance=ExtResource("10_xb0do")]
+position = Vector2(656, 340)
+spawn_scene = ExtResource("11_2v676")
+spawn_count_equation = "5"
+offset_range = Vector2(0, 0)
+stagger_delay = 0.0
+spawn_context = SubResource("Resource_ldmk8")
+trigger_signals = Array[StringName]([&"spawn_bottom_right"])
+on_spawning_complete = Array[StringName]([&"spawning_complete_bottom_right"])
+
+[node name="SwoopDirector" parent="Level2Stage" instance=ExtResource("14_bnks8")]
+position = Vector2(256, -16)
+swooping_groups = Array[StringName]([&"swooping", &"left"])
+require_all = true
+target = Vector2(256, 244)
+curve = SubResource("Resource_jix4n")
+swoop_speed = 400.0
+formation_offset = 32.0
+trigger_signals = Array[StringName]([&"spawning_complete_left"])
+
+[node name="SwoopDirector2" parent="Level2Stage" instance=ExtResource("14_bnks8")]
+position = Vector2(384, -16)
+swooping_groups = Array[StringName]([&"swooping", &"right"])
+require_all = true
+target = Vector2(384, 244)
+curve = SubResource("Resource_g3xn7")
+swoop_speed = 400.0
+formation_offset = 32.0
+trigger_signals = Array[StringName]([&"spawning_complete_right"])
+
+[node name="SwoopDirector3" parent="Level2Stage" instance=ExtResource("14_bnks8")]
+position = Vector2(-16, 340)
+swooping_groups = Array[StringName]([&"swooping", &"bottom_left"])
+require_all = true
+target = Vector2(320, 64)
+curve = SubResource("Resource_2bq8q")
+swoop_speed = 400.0
+formation_offset = 32.0
+trigger_signals = Array[StringName]([&"spawning_complete_bottom_left"])
+
+[node name="SwoopDirector4" parent="Level2Stage" instance=ExtResource("14_bnks8")]
+position = Vector2(656, 340)
+swooping_groups = Array[StringName]([&"swooping", &"bottom_right"])
+require_all = true
+target = Vector2(320, 64)
+curve = SubResource("Resource_rvvw1")
+swoop_speed = 400.0
+formation_offset = 32.0
+trigger_signals = Array[StringName]([&"spawning_complete_bottom_right"])
+
+[node name="FormationDirector" parent="Level2Stage" instance=ExtResource("18_156p0")]
+position = Vector2(320, 64)
+formations = Array[ExtResource("22_jix4n")]([SubResource("Resource_4mgkk"), SubResource("Resource_kgu26"), SubResource("Resource_vaj0o")])
+breathing_amplitude = 0.25
+breathing_duration = 10.0
+marching_orders = Array[ExtResource("23_1k33r")]([SubResource("Resource_asuvp"), SubResource("Resource_5umtv"), SubResource("Resource_8nemr"), SubResource("Resource_sjgbx")])
+preview_color = Color(1, 0.64705884, 0, 1)
+component_category = 10
+
+[node name="StateDirector" parent="Level2Stage" instance=ExtResource("19_g3xn7")]
+position = Vector2(320, -16)
+transitions = Array[ExtResource("20_k70bp")]([SubResource("Resource_5kasm"), SubResource("Resource_682rw"), SubResource("Resource_eb2hk")])
+
+[node name="ShootingDirector" parent="Level2Stage" instance=ExtResource("23_7jcia")]
+trigger = SubResource("Resource_blp8l")
+selector = SubResource("Resource_hc4eh")
+component_category = 10
+
+[node name="AimingDirector" parent="Level2Stage" instance=ExtResource("27_hc4eh")]
+targeting_noise = 4.0
+component_category = 10
+
+[node name="SignalManager" parent="Level2Stage" instance=ExtResource("32_acn14")]
+steps = Array[ExtResource("34_1nsuk")]([SubResource("Resource_p87tt"), SubResource("Resource_ifna5"), SubResource("Resource_j0bx8"), SubResource("Resource_52c78"), SubResource("Resource_q4en4")])
+trigger = SubResource("Resource_acn14")
+
 [node name="TriangleShip" parent="." instance=ExtResource("8_7y1r2")]
 position = Vector2(320, 340)
 rotation = -1.5707964
@@ -347,116 +613,6 @@ rotation_speed = 0.0
 
 [node name="DirectMovementLeg" parent="TriangleShip" instance=ExtResource("9_wnudv")]
 speed = 300.0
-
-[node name="PointTrapdoor" parent="." instance=ExtResource("10_xb0do")]
-position = Vector2(256, -16)
-spawn_scene = ExtResource("11_2v676")
-spawn_count_equation = "5"
-offset_range = Vector2(0, 0)
-stagger_delay = 0.0
-spawn_context = SubResource("Resource_la2sg")
-trigger_signals = Array[StringName]([&"spawn_top_left"])
-on_spawning_complete = Array[StringName]([&"spawning_complete_left"])
-
-[node name="PointTrapdoor2" parent="." instance=ExtResource("10_xb0do")]
-position = Vector2(384, -16)
-spawn_scene = ExtResource("11_2v676")
-spawn_count_equation = "5"
-offset_range = Vector2(0, 0)
-stagger_delay = 0.0
-spawn_context = SubResource("Resource_s3e4k")
-trigger_signals = Array[StringName]([&"spawn_top_right"])
-on_spawning_complete = Array[StringName]([&"spawning_complete_right"])
-
-[node name="PointTrapdoor3" parent="." instance=ExtResource("10_xb0do")]
-position = Vector2(-16, 340)
-spawn_scene = ExtResource("11_2v676")
-spawn_count_equation = "5"
-offset_range = Vector2(0, 0)
-stagger_delay = 0.0
-spawn_context = SubResource("Resource_owvki")
-trigger_signals = Array[StringName]([&"spawn_bottom_left"])
-on_spawning_complete = Array[StringName]([&"spawning_complete_bottom_left"])
-
-[node name="PointTrapdoor4" parent="." instance=ExtResource("10_xb0do")]
-position = Vector2(656, 340)
-spawn_scene = ExtResource("11_2v676")
-spawn_count_equation = "5"
-offset_range = Vector2(0, 0)
-stagger_delay = 0.0
-spawn_context = SubResource("Resource_ldmk8")
-trigger_signals = Array[StringName]([&"spawn_bottom_right"])
-on_spawning_complete = Array[StringName]([&"spawning_complete_bottom_right"])
-
-[node name="WaveCard" parent="." instance=ExtResource("11_qyrdw")]
-
-[node name="SwoopDirector" parent="." instance=ExtResource("14_bnks8")]
-position = Vector2(256, -16)
-swooping_groups = Array[StringName]([&"swooping", &"left"])
-require_all = true
-target = Vector2(256, 244)
-curve = SubResource("Resource_jix4n")
-swoop_speed = 400.0
-formation_offset = 32.0
-trigger_signals = Array[StringName]([&"spawning_complete_left"])
-
-[node name="SwoopDirector2" parent="." instance=ExtResource("14_bnks8")]
-position = Vector2(384, -16)
-swooping_groups = Array[StringName]([&"swooping", &"right"])
-require_all = true
-target = Vector2(384, 244)
-curve = SubResource("Resource_g3xn7")
-swoop_speed = 400.0
-formation_offset = 32.0
-trigger_signals = Array[StringName]([&"spawning_complete_right"])
-
-[node name="SwoopDirector3" parent="." instance=ExtResource("14_bnks8")]
-position = Vector2(-16, 340)
-swooping_groups = Array[StringName]([&"swooping", &"bottom_left"])
-require_all = true
-target = Vector2(320, 64)
-curve = SubResource("Resource_2bq8q")
-swoop_speed = 400.0
-formation_offset = 32.0
-trigger_signals = Array[StringName]([&"spawning_complete_bottom_left"])
-
-[node name="SwoopDirector4" parent="." instance=ExtResource("14_bnks8")]
-position = Vector2(656, 340)
-swooping_groups = Array[StringName]([&"swooping", &"bottom_right"])
-require_all = true
-target = Vector2(320, 64)
-curve = SubResource("Resource_rvvw1")
-swoop_speed = 400.0
-formation_offset = 32.0
-trigger_signals = Array[StringName]([&"spawning_complete_bottom_right"])
-
-[node name="FormationDirector" parent="." instance=ExtResource("18_156p0")]
-position = Vector2(320, 64)
-formations = Array[ExtResource("22_jix4n")]([SubResource("Resource_4mgkk"), SubResource("Resource_kgu26"), SubResource("Resource_vaj0o")])
-breathing_amplitude = 0.25
-breathing_duration = 10.0
-marching_orders = Array[ExtResource("23_1k33r")]([SubResource("Resource_asuvp"), SubResource("Resource_5umtv"), SubResource("Resource_8nemr"), SubResource("Resource_sjgbx")])
-preview_color = Color(1, 0.64705884, 0, 1)
-component_category = 10
-
-[node name="StateDirector" parent="." instance=ExtResource("19_g3xn7")]
-position = Vector2(320, -16)
-transitions = Array[ExtResource("20_k70bp")]([SubResource("Resource_5kasm"), SubResource("Resource_682rw"), SubResource("Resource_eb2hk")])
-
-[node name="ShootingDirector" parent="." instance=ExtResource("23_7jcia")]
-trigger = SubResource("Resource_blp8l")
-selector = SubResource("Resource_hc4eh")
-component_category = 10
-
-[node name="AimingDirector" parent="." instance=ExtResource("27_hc4eh")]
-targeting_noise = 4.0
-component_category = 10
-
-[node name="GroupCountGoal" parent="." instance=ExtResource("29_blp8l")]
-on_condition_met = Array[StringName]([&"wave_cleared"])
-
-[node name="SignalSequenceDirector" parent="." instance=ExtResource("34_qhmbs")]
-steps = Array[ExtResource("34_1nsuk")]([SubResource("Resource_4psr8"), SubResource("Resource_acn14"), SubResource("Resource_p87tt"), SubResource("Resource_ifna5"), SubResource("Resource_j0bx8")])
 
 [node name="CdMark" parent="." instance=ExtResource("37_acn14")]
 position = Vector2(320, -16)

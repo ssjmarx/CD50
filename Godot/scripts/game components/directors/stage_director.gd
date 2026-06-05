@@ -26,7 +26,7 @@ func _on_initialize() -> void:
 	_build_signal_map()
 	
 	for sig_name: StringName in _signal_to_rules:
-		game.bus_connect(sig_name, _on_trigger.bind(sig_name))
+		bus_connect(sig_name, _on_trigger.bind(sig_name))
 
 ## --- setup ---
 

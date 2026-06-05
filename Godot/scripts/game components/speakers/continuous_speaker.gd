@@ -54,9 +54,9 @@ func _on_initialize() -> void:
 	_signature = "%d_%d_%d" % [wave_shape, effect, note]
 	
 	if start_signal != &"":
-		game.bus_connect(start_signal, _on_start)
+		bus_connect(start_signal, _on_start)
 	if stop_signal != &"":
-		game.bus_connect(stop_signal, _on_stop)
+		bus_connect(stop_signal, _on_stop)
 
 ## deregister and disconnect on removal
 func _exit_tree() -> void:

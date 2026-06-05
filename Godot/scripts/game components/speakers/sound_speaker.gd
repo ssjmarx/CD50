@@ -41,7 +41,7 @@ func _on_initialize() -> void:
 	_bank = game.find_child("CDSoundBank") as CDSoundBank
 	
 	if trigger_signal != &"":
-		game.bus_connect(trigger_signal, _on_trigger)
+		bus_connect(trigger_signal, _on_trigger)
 
 ## disconnect trigger signal on removal
 func _exit_tree() -> void:

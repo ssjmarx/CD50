@@ -107,9 +107,9 @@ func _on_initialize() -> void:
 	
 	## connect visibility toggle signals
 	for sig in on_crt_on:
-		game.bus_connect(sig, _on_crt_on)
+		bus_connect(sig, _on_crt_on)
 	for sig in on_crt_off:
-		game.bus_connect(sig, _on_crt_off)
+		bus_connect(sig, _on_crt_off)
 		
 	if _params_dirty:
 		_push_params()

@@ -7,7 +7,6 @@ class_name CDEnums
 ## --- Component Processing Priority ---
 
 ## CDComponent2D and CDStageComponent2D priority categories
-## Controls the execution order of components each frame
 enum ComponentCategory {
 	REGISTRATION,   # 5  — group cache flush
 	INPUT,          # 8  — input routing
@@ -20,6 +19,7 @@ enum ComponentCategory {
 	VISUAL,         # 60 — faces/projectors
 	AUDIO,          # 65 — voices/speakers
 	RULES,          # 70 — directors, goals, cards, trapdoors
+	MANAGER,        # 75 — state, signal, and stage managers
 	UPDATE,         # 90 — state mutation flush, component lifecycle
 }
 
@@ -37,6 +37,7 @@ static func category_to_priority(category: ComponentCategory) -> int:
 		ComponentCategory.VISUAL:       return 60
 		ComponentCategory.AUDIO:        return 65
 		ComponentCategory.RULES:        return 70
+		ComponentCategory.MANAGER:      return 75
 		ComponentCategory.UPDATE:		return 90
 		_: return 95
 

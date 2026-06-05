@@ -1,9 +1,8 @@
-## SignalSequenceDirector
-## Data-driven signal macro — turns one trigger signal into a timed sequence of game bus signals
+## SignalManager
+## Data-driven signal macro — turns one trigger into a timed sequence of game bus signals
 ## Each step fires its signals, waits a delay, optionally waits for a sync signal, then advances
 
-@tool
-class_name SignalSequenceDirector extends CDGameComponent
+class_name SignalManager extends CDGameComponent
 
 ## --- exports ---
 
@@ -12,8 +11,8 @@ class_name SignalSequenceDirector extends CDGameComponent
 @export var steps: Array[CDSequenceStep] = []
 
 @export_group("Trigger")
-## game bus signals that start the sequence
-@export var trigger_signals: Array[StringName] = [&"game_play"]
+## what activates this sequence (signal, timer, etc.)
+@export var trigger: CDTrigger
 
 @export_group("Completion")
 ## game bus signals emitted when the entire sequence finishes
@@ -39,36 +38,25 @@ var _running: bool = false
 ## --- lifecycle ---
 
 func _ready() -> void:
-	component_category = CDEnums.ComponentCategory.RULES
+	component_category = CDEnums.ComponentCategory.MANAGER
 	super._ready()
 	set_physics_process(false)
 
 func _on_initialize() -> void:
-	for sig in trigger_signals:
-		if sig != &"":
-			bus_connect(sig, _on_trigger)
-
-## --- trigger ---
-
-## start the sequence
-func _on_trigger() -> void:
-	if _running:
-		return
-	if steps.is_empty():
-		return
-	_running = true
-	_current_step = 0
-	_execute_step()
+	if trigger:
+		trigger.initialize(game)
 
 ## --- processing ---
 
-## tick the delay/wait timer each frame
+## poll trigger each frame, tick the delay/wait timer when running
 func _physics_process(delta: float) -> void:
+	# poll trigger to start sequence
 	if not _running:
-		set_physics_process(false)
+		if trigger and trigger.evaluate(delta):
+			_start_sequence()
 		return
 
-	# if waiting for sync signal, only tick delay (if not already elapsed)
+	# if waiting for sync signal, don't tick delay
 	if _waiting_for_signal:
 		return
 
@@ -77,6 +65,16 @@ func _physics_process(delta: float) -> void:
 	if _delay_remaining <= 0.0:
 		_delay_remaining = 0.0
 		_advance()
+
+## --- sequence control ---
+
+## start the sequence
+func _start_sequence() -> void:
+	if steps.is_empty():
+		return
+	_running = true
+	_current_step = 0
+	_execute_step()
 
 ## --- step execution ---
 
@@ -155,3 +153,5 @@ func reset() -> void:
 	_waiting_for_signal = false
 	_signal_fire_count = 0
 	set_physics_process(false)
+	if trigger:
+		trigger.reset()

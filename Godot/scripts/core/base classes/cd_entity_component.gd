@@ -1,6 +1,6 @@
 ## CDEntityComponent
 ## Base class for all V2 entity-attached components
-## Provides two-phase lifecycle, cached entity/game refs, and pool hooks
+## Provides two-phase lifecycle, cached entity/game refs, pool hooks, and bus tracking
 
 class_name CDEntityComponent extends Node2D
 
@@ -9,6 +9,9 @@ class_name CDEntityComponent extends Node2D
 ## cached references — resolved in _ready, safe to use from _on_initialize onward
 var entity: CDEntity
 var game: CDGame
+
+## tracked bus connections for CDBody sleep/wake support
+var _bus_connections: Array[Dictionary] = []  # [{"signal_name": StringName, "callable": Callable}]
 
 ## --- Two-Phase Lifecycle ---
 
@@ -51,4 +54,32 @@ func _on_entity_deactivating() -> void:
 
 ## Override to re-enable processing when recycled from pool
 func _on_entity_activated() -> void:
+	set_physics_process(true)
+
+## --- Bus Connection Tracking (for CDBody sleep/wake) ---
+
+## Connect to entity bus and track the connection for CDBody sleep/wake
+func bus_connect(signal_name: StringName, callable: Callable) -> void:
+	if not entity.has_signal(signal_name):
+		entity.add_user_signal(signal_name)
+	if not entity.is_connected(signal_name, callable):
+		entity.connect(signal_name, callable)
+	_bus_connections.append({"signal_name": signal_name, "callable": callable})
+
+## Disconnect from entity bus and untrack the connection.
+func bus_disconnect(signal_name: StringName, callable: Callable) -> void:
+	if entity.has_signal(signal_name) and entity.is_connected(signal_name, callable):
+		entity.disconnect(signal_name, callable)
+	for i in range(_bus_connections.size() - 1, -1, -1):
+		if _bus_connections[i]["signal_name"] == signal_name and _bus_connections[i]["callable"] == callable:
+			_bus_connections.remove_at(i)
+
+## --- Sleep/Wake Virtual Methods (called by CDBody) ---
+
+## Override to customize sleep behavior (clear timers, reset state, etc.)
+func _on_sleep() -> void:
+	set_physics_process(false)
+
+## Override to customize wake behavior (restart timers, re-query state, etc.)
+func _on_wake() -> void:
 	set_physics_process(true)

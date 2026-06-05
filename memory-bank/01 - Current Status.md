@@ -5,7 +5,7 @@
 **Architecture:** V2 Composable Architecture (active development) — V1 archived to `Godot/v1/`  
 **Playable Games:** Paddle Ball, Brick Breaker, Space Rocks, Meteor Rally, Dogfight, Bug Blaster, Block Drop (Modern), Rock Breaker, Bug Drop, Space Bugs, Planetary Attack!, Space Rocks Inverted — ALL componentized, zero game scripts
 **In Progress:** Bug Blaster 2 (Galaga) — partially implemented. Formation, swoop/dive, shooting, StateDirector dive cycle all functional. Remaining: capture ships, capture mechanics, multiple waves.
-**Recent Completed:** Plans 19–25 + 27 complete. Blackboard + bus_emit architecture live (entity/game blackboard dictionaries, `bus_emit()` / `bus_emit_from()`, per-frame `_signal_emitters` tracking). BB2 first playable. 165 V2 scripts written.
+**Recent Completed:** Plans 19–28 complete. Plan 28 adds MANAGER category (priority 75), StageManager/StateManager/SignalManager components, CDStageRule resource. CDStage simplified (sleep_on/wake_on removed → StageManager handles stage control). 170 V2 scripts written.
 **Demo Status:** Code-locked at 12 games. Polybius character complete (7 scripts, 5 voice lines, full AO intro/outro integration). Only shipping tasks remain (flip itch to public, add Steam wishlist link). Itch.io demo stays on V1 architecture.
 
 **Key Documentation:**
@@ -39,7 +39,9 @@ All V2 core scripts live in `Godot/scripts/core/`. Full details in `USAGE.md`.
 | `cd_collision_matrix.gd` | `CDCollisionMatrix` | Auto-configures physics layers from CDCollisionGroup resources |
 | `cd_input_router.gd` | `CDInputRouter` | Pure signal emitter autoload for player input |
 | `cd_object_pool.gd` | `CDObjectPool` | Per-type entity pool with acquire/return lifecycle |
-| `cd_updater.gd` | `CDUpdater` | Defers state mutations to Priority 90 |
+| `cd_updater.gd` | `CDUpdater` | Defers state mutations + sleep/wake queues to Priority 90 |
+| `cd_stage.gd` | `CDStage` | Game-level container — sleeps/wakes child CDGameComponents as a group (control via StageManager) |
+| `cd_body.gd` | `CDBody` | Entity-level container — sleeps/wakes child CDEntityComponents as a group |
 | `cd_effect.gd` | `CDEffect` | Lightweight visual effect base — plays once and auto-frees |
 | `cd_sound_bank.gd` | `CDSoundBank` | Centralized audio engine for V2 |
 | `cd_enums.gd` | `CDEnums` | Shared enumerations — ComponentCategory, EntityState, GameState, etc. |
@@ -58,8 +60,9 @@ All V2 core scripts live in `Godot/scripts/core/`. Full details in `USAGE.md`.
 | Faces (VISUAL) | 60 | 7 | VectorFace, PolygonFace, SpriteFace, VectorEngineFace, VectorThrusterFace, DeathEffectFace, MenacingVectorFace |
 | Voices (AUDIO) | 65 | 2 | SoundVoice, ContinuousVoice |
 | Stage (RULES) | 70 | 27 | ScoreCard, LivesCard, TimerCard, WaveCard, Goals, Directors, Marks, Speakers, Projectors, Trapdoors |
+| Managers | 75 | 3 | StageManager, StateManager, SignalManager |
 
-**Total: 165 V2 scripts + 46 custom resources**
+**Total: 170 V2 scripts + 47 custom resources**
 
 Full catalogue: `memory-bank/07 - Component Catalogue V2.md`
 
@@ -77,7 +80,7 @@ The V2 Composable Architecture is a full refactor of the ECS for the desktop/Ste
 | Game base | `UniversalGameScript` | `CDGame` — game bus (Dictionary), state machine, no game logic |
 | Component base | `UniversalComponent` / `UniversalComponent2D` | `CDComponent2D` — two-phase lifecycle, category priority |
 | Signal system | Body routes input→output | Hybrid bus: both native signals + blackboard. Dynamic signals are zero-arg, data via `entity.blackboard` / `game.blackboard` |
-| Processing | No fixed ordering | Deterministic priority cascade (5→10→20→30→35→40→50→60→65→70→90) |
+| Processing | No fixed ordering | Deterministic priority cascade (5→10→20→30→35→40→50→60→65→70→75→90) |
 | Collision | Direct in physics process | `CDCollisionBuffer` flushes at Priority 35 |
 | Groups | `group_cache.gd` (lazy dirty flag) | `CDGroupRegistry` — single source of truth, emits `group_count_changed` |
 | Spawning | `WaveSpawner` inline | `CDStageSpawner` + `CDObjectPool` — separate acquire/activate |
@@ -130,7 +133,8 @@ Godot/scripts/
 │   └── voices/                  — 2 audio components
 ├── game components/
 │   ├── cards/                   — 4 UI display components
-│   ├── directors/               — 7 stage controllers
+│   ├── directors/               — 7 stage controllers (legacy, superseded by managers/)
+│   ├── managers/                — 3 stage managers (StageManager, StateManager, SignalManager)
 │   ├── goals/                   — 2 win/lose conditions
 │   ├── marks/                   — 6 spatial triggers
 │   ├── projectors/              — 2 visual post-processing
@@ -153,7 +157,7 @@ Godot/scripts/
 | 25 | Swarm Controllers + Galaga | ✅ Complete | `planning/25 - V2 Swarm Controllers + Galaga.md` |
 | 26 | Block Drop V2 | ✅ Complete | `planning/26 - Block Drop V2.md` |
 | 27 | Blackboard Architecture | ✅ Complete | `planning/27 - V2 Blackboard Architecture.md` |
-| 28 | CDStage + CDBody | 🔲 In Chamber | `planning/28 - V2 CDStage + CDBody.md` |
+| 28 | CDStage + CDBody | ✅ Complete | `planning/28 - V2 CDStage + CDBody.md` |
 
 **Full V2 component catalogue:** `memory-bank/07 - Component Catalogue V2.md` (165 scripts written)
 

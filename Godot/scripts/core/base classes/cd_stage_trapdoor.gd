@@ -57,13 +57,13 @@ func _ready() -> void:
 func _on_initialize() -> void:
 	for sig in trigger_signals:
 		if trigger_delay > 0.0:
-			game.bus_connect(sig, _on_delayed_trigger)
+			bus_connect(sig, _on_delayed_trigger)
 		else:
-			game.bus_connect(sig, _on_trigger)
+			bus_connect(sig, _on_trigger)
 	for sig in safe_signals:
-		game.bus_connect(sig, _on_zone_safe)
+		bus_connect(sig, _on_zone_safe)
 	for sig in unsafe_signals:
-		game.bus_connect(sig, _on_zone_unsafe)
+		bus_connect(sig, _on_zone_unsafe)
 
 ## --- Delay Gate ---
 

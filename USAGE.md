@@ -46,15 +46,16 @@ Every frame, components execute in a deterministic priority cascade. Lower prior
 | 60 | VISUAL | Face | Visual updates (vector drawing, sprite swaps, effects) | Visuals reflect final state |
 | 65 | AUDIO | Voice | Sound components (entity-level and scene-level) | Audio reflects final state — after visuals |
 | 70 | RULES | Stage | Game-level logic (Goals, CueCards, Directors, Spawners) | Score tracking, win/lose conditions, spawning |
-| 90 | UPDATE | Updater | CDUpdater flushes deferred group transitions and component lifecycle mutations | All rule evaluation complete before any state mutations are applied |
+| 75 | MANAGER | Manager | Data-driven stage orchestration (StageManager, StateManager, SignalManager) | Coordinate stage-level control flows after rule evaluation |
+| 90 | UPDATE | Updater | CDUpdater flushes deferred group transitions and component lifecycle mutations | All rule + manager evaluation complete before any state mutations are applied |
 
 **After all priority processing:** Entity cleanup runs via `call_deferred()` — returning entities to pools and removing them from groups. This deferred cleanup happens after every priority slot has finished.
 
 **Mental model:**
 
 ```
-REGISTRATION → INPUT → INTENT → STEERING → PHYSICS → COLLISION → INTERACTION → STATE → VISUAL → AUDIO → RULES → UPDATE → [deferred cleanup]
- sync groups   read     "go!"    calc       moves     "you hit    damage       health   draw it   play it   score it   flush   return to pool
+REGISTRATION → INPUT → INTENT → STEERING → PHYSICS → COLLISION → INTERACTION → STATE → VISUAL → AUDIO → RULES → MANAGER → UPDATE → [deferred cleanup]
+ sync groups   read     "go!"    calc       moves     "you hit    damage       health   draw it   play it   score it   orchestrate  flush   return to pool
                 input             speed +    the       something"  to target    drops    on screen out loud  check win  mutations  remove dead
                                    direction  thing
 ```
@@ -765,6 +766,8 @@ Observe and command groups of entities through the game bus and group registry. 
 
 **Directors:** FormationDirector, StageDirector, StateDirector, ShootingDirector, AimingDirector, SwoopDirector, SignalSequenceDirector.
 
+**Managers:** StageManager, StateManager, SignalManager.
+
 #### Marks — Spatial Detection Zones
 
 **Base class:** `CDMark extends Area2D`
@@ -861,6 +864,10 @@ Entity group membership IS entity state. An invader in group `"formation"` is in
 - No separate state variable needed
 - Goals watch groups directly (GroupCountGoal)
 - StateDirector manages transitions via `CDTransition` resources
+- **Managers** (priority 75) are data-driven controllers that coordinate stage-level orchestration:
+  - StageManager evaluates `CDStageRule` triggers to sleep/wake named CDStages
+  - StateManager runs group-as-state transitions (renamed from StateDirector, now at MANAGER priority)
+  - SignalManager plays timed signal macro sequences (renamed from SignalSequenceDirector)
 
 ### The Pseudogrid Pattern
 
@@ -1260,6 +1267,9 @@ Does it play entity-level audio?
 
 Does it manage game-level logic (score, lives, waves, goals, spawning)?
   → STAGE (Priority 70)
+
+Does it coordinate stage-level orchestration (sleep/wake stages, signal macros, group-as-state transitions)?
+  → MANAGER (Priority 75)
 ```
 
 ### Step-by-Step: Creating a New Component
@@ -1303,6 +1313,7 @@ The architecture uses custom resources extensively for data-driven configuration
 | Director Rules | Define entity swap rules | `CDDirectorRule` (trigger, target group, swap scene, selector) |
 | Scalers | Define numeric scaling behavior | `CDScaler` (base), `CDGroupCountScaler`, `CDWaveScaler` |
 | Sequence Steps | Define director sequence actions | `CDSequenceStep` (signal, delay, trigger) |
+| Stage Rules | Define stage control flows | `CDStageRule` (trigger, sleep/wake stages, game signals) |
 | Formation | Define entity formation layout | `CDFormation` (grid arrangement), `CDMarchingOrder` (spawn sequence) |
 | Sound Definitions | Define synthesized audio | `CDSoundDef` (wave, effect, notes, volume), `CDNote` (semitone, duration), `CDMusicTrack` |
 | Spawn Context | Define spawn configuration | `CDSpawnContext` (velocity, rotation, flips), `CDGridLayout`, `CDGridRow`, `CDGridEquation` |
@@ -1342,6 +1353,7 @@ No game script needed. Every game is a scene tree assembly:
 | Guts | 50 | 19 | Healthpool/Shieldpool/ResourcepoolGuts, DieAtZeroHealth/Offscreen/OnTimer/OutOfBoundsGuts, DeflectorBounce/ImpulseReceiver/ShapeColliderGuts, LockDetector/VisionConeGuts, KBM/MoveAdapterGuts, Announcer/Points/Stun/TSpinDetector/TimerGuts |
 | Faces | 60 | 7 | VectorFace, PolygonFace, SpriteFace, VectorEngineFace, VectorThrusterFace, DeathEffectFace, MenacingVectorFace |
 | Voices | 65 | 2 | SoundVoice, ContinuousVoice |
-| Stage | 70 | 27 | ScoreCard, LivesCard, TimerCard, WaveCard, GroupCountGoal, ScoreThresholdGoal, CDMark, CountMark, MobileMark, OccupancyMark, SafeZoneMark, TimedMark, FormationDirector, StageDirector, StateDirector, ShootingDirector, AimingDirector, SwoopDirector, SignalSequenceDirector, SoundSpeaker, ContinuousSpeaker, MusicSpeaker, CRTProjector, CreditProjection, PointTrapdoor, EdgeTrapdoor, GridTrapdoor |
+| Stage (RULES) | 70 | 27 | ScoreCard, LivesCard, TimerCard, WaveCard, GroupCountGoal, ScoreThresholdGoal, CDMark, CountMark, MobileMark, OccupancyMark, SafeZoneMark, TimedMark, FormationDirector, StageDirector, StateDirector, ShootingDirector, AimingDirector, SwoopDirector, SignalSequenceDirector, SoundSpeaker, ContinuousSpeaker, MusicSpeaker, CRTProjector, CreditProjection, PointTrapdoor, EdgeTrapdoor, GridTrapdoor |
+| Manager | 75 | 3 | StageManager, StateManager, SignalManager |
 
-**Total: 165 V2 scripts + 46 custom resources**
+**Total: 170 V2 scripts + 47 custom resources**

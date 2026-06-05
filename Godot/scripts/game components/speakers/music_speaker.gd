@@ -68,8 +68,8 @@ func _on_initialize() -> void:
 	
 	_active_player = _player_a
 	
-	game.bus_connect("game_play", _on_game_play)
-	game.bus_connect("game_over", _on_game_over)
+	bus_connect("game_play", _on_game_play)
+	bus_connect("game_over", _on_game_over)
 
 ## --- signal handlers ---
 

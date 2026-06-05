@@ -1,11 +1,15 @@
 ## CDUpdater
-## Defers group transitions to end of frame via priority queue
+## Defers group transitions and sleep/wake operations to end of frame
 ## Prevents mid-frame group inconsistencies when entities change state
 
 class_name CDUpdater extends Node
 
-## queued transition operations
+## queued group transition operations
 var _pending: Array[Dictionary] = []
+
+## queued sleep/wake operations (CDStage or CDBody instances)
+var _pending_sleep: Array = []
+var _pending_wake: Array = []
 
 @onready var game = CDGame.find_ancestor(self)
 
@@ -29,6 +33,16 @@ func queue_transition(entity: CDEntity, remove_groups: Array[StringName], add_gr
 		"entity_signals": entity_signals,
 		"game_signals": game_signals,
 	})
+
+## queue a CDStage or CDBody to sleep at end of frame (processed before wake)
+func queue_sleep(container) -> void:
+	if container not in _pending_sleep:
+		_pending_sleep.append(container)
+
+## queue a CDStage or CDBody to wake at end of frame (processed after sleep)
+func queue_wake(container) -> void:
+	if container not in _pending_wake:
+		_pending_wake.append(container)
 
 ## --- Internal ---
 
@@ -70,3 +84,14 @@ func _flush() -> void:
 				game.bus_emit(sig)
 
 	_pending.clear()
+
+	## process sleep queue before wake (so same-frame sleep→wake resolves to wake)
+	for container in _pending_sleep:
+		if is_instance_valid(container):
+			container._flush_sleep()
+	_pending_sleep.clear()
+
+	for container in _pending_wake:
+		if is_instance_valid(container):
+			container._flush_wake()
+	_pending_wake.clear()
