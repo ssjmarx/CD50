@@ -97,6 +97,7 @@ var _params_dirty: bool = true
 
 ## build node hierarchy, cache materials, connect bus signals
 func _on_initialize() -> void:
+	process_mode = Node.PROCESS_MODE_ALWAYS
 	z_index = OVERLAY_Z
 	z_as_relative = false
 	
@@ -109,6 +110,10 @@ func _on_initialize() -> void:
 		game.bus_connect(sig, _on_crt_on)
 	for sig in on_crt_off:
 		game.bus_connect(sig, _on_crt_off)
+		
+	if _params_dirty:
+		_push_params()
+		_params_dirty = false
 
 ## disconnect bus signals on removal
 func _exit_tree() -> void:

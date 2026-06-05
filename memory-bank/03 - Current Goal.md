@@ -150,6 +150,7 @@ The following plans have been **deleted** from the active pipeline:
 
 | Plan | Description | Completed |
 |------|-------------|-----------|
+| BB2 Session | ScrollingStarsEffect (1 script), SwoopDirector freed-instance fix, CRTProjector attract-mode darkness fix, CDEffect infinite lifetime | 2026-06-05 |
 | Doc Sweep #2 | Documentation sweep (ensure_signal removal, directory structure, validity guards) | 2026-06-04 |
 | 27 | V2 Blackboard Architecture (4 new scripts — CDSequenceCurve, CDSelectSignalEmitter, CDSelectNearestNToGroup, PlayerKBMMoveBrain + bus_emit/blackboard/_signal_emitters pipeline) | 2026-06-04 |
 | 26 | Block Drop V2 (full Block Drop remake proving Pseudogrid pattern) | 2026-06-01 |

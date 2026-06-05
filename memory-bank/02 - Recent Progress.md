@@ -1,6 +1,53 @@
 # Recent Progress
 
-**Last Updated:** 2026-06-04
+**Last Updated:** 2026-06-05
+
+---
+
+## Bug Blaster 2 — Session 2026-06-05: Starfield, Bug Fixes, CRT Diagnosis
+
+Three bugs diagnosed and fixed during continued BB2 development.
+
+### ScrollingStarsEffect — New Effect (1 new script)
+
+Galaga-style scrolling star background for Bug Blaster 2.
+
+| File | Action |
+|------|--------|
+| `scripts/effects/scrolling_stars_effect.gd` | New — `CDScrollingStarsEffect extends CDEffect` |
+| `scenes/effects/scrolling_stars_effect.tscn` | New — scene instance |
+| `games/bug_blaster_2.tscn` | Updated — added ScrollingStarsEffect (25 stars) |
+
+**Exports:** `star_count`, `min_speed`, `max_speed`, `min_size`, `max_size`, `star_colors`, `effect_width`, `effect_height`
+**Algorithm:** Random positions/speeds/colors, scrolls downward with wrap-around, renders via `_draw()` + `queue_redraw()`
+
+### CDEffect — Infinite Lifetime Support
+
+Modified `CDEffect` base class to support persistent (non-auto-freeing) effects:
+- `lifetime = 0.0` now means "infinite" — no auto-free timer starts
+- Enables scrolling backgrounds and other always-on visual effects
+
+### SwoopDirector — Freed Instance Bug (Diagnosed)
+
+**Bug:** `Trying to assign invalid previously freed instance` on line 211 (`var next: CDEntity = _pending.pop_front()`)
+
+**Root cause:** Typed variable assignment of a freed instance crashes before `is_instance_valid()` can run. Entity killed by collision between frames, deferred `_complete_deactivation()` + `queue_free()` completes between frame N and frame N+1.
+
+**Fix:** Remove `: CDEntity` type hint on `pop_front()` result, add `_pending` scrub to filter dead entities each frame.
+
+### CRTProjector — Attract Mode Darkness Bug (Diagnosed + Fixed)
+
+**Bug:** Screen appears darker during attract mode ("PRESS ENTER TO START") than during gameplay.
+
+**Root cause:** `CDGame._ready()` sets all children to `PROCESS_MODE_PAUSABLE` and pauses the tree. CRTProjector never gets `_process()` called, so:
+1. Shader params never pushed (CRT shader runs with GLSL defaults, no brightness/gamma/bloom)
+2. Persistence buffer stays empty/black (CLEAR_MODE_NEVER but no frames rendered)
+
+**Fix:** CRTProjector sets `process_mode = PROCESS_MODE_ALWAYS` in `_on_initialize()`, and pushes shader params immediately during initialization (not waiting for first `_process()`).
+
+**V1 comparison:** V1 CRT controller is a child of ArcadeOrchestrator (PROCESS_MODE_ALWAYS), never affected by game pause. V2 parity restored.
+
+### V2 Total Scripts Written: 166
 
 ---
 

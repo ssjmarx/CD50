@@ -1,4 +1,4 @@
-[gd_scene load_steps=80 format=3 uid="uid://c0q0c0v84x80"]
+[gd_scene load_steps=82 format=3 uid="uid://c0q0c0v84x80"]
 
 [ext_resource type="Script" uid="uid://dm0uehngpvbh7" path="res://scripts/core/infrastructure/cd_game.gd" id="1_62wb8"]
 [ext_resource type="PackedScene" uid="uid://cmbx6xnct372t" path="res://scenes/core/infrastructure/cd_collision_buffer.tscn" id="2_7y1r2"]
@@ -37,6 +37,8 @@
 [ext_resource type="Script" uid="uid://cyqs535s5vfg4" path="res://scripts/core/resources/behavior/cd_sequence_step.gd" id="34_1nsuk"]
 [ext_resource type="PackedScene" uid="uid://bx8k2m7n4pqr1" path="res://scenes/game components/directors/signal_sequence_director.tscn" id="34_qhmbs"]
 [ext_resource type="PackedScene" uid="uid://d4b42pvesykqo" path="res://scenes/game components/marks/cd_mark.tscn" id="37_acn14"]
+[ext_resource type="PackedScene" uid="uid://bcjodofg3v548" path="res://scenes/effects/scrolling_stars_effect.tscn" id="38_1tdfd"]
+[ext_resource type="PackedScene" uid="uid://c160d1kuwsrav" path="res://scenes/game components/projectors/crt_projector.tscn" id="39_4mgkk"]
 
 [sub_resource type="Resource" id="Resource_q4h5u"]
 script = ExtResource("4_xb0do")
@@ -464,6 +466,11 @@ on_entered = Array[StringName]([&"dive_complete"])
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="CdMark"]
 shape = SubResource("RectangleShape2D_1tdfd")
+
+[node name="ScrollingStarsEffect" parent="." instance=ExtResource("38_1tdfd")]
+star_count = 25
+
+[node name="CRTProjector" parent="." instance=ExtResource("39_4mgkk")]
 
 [editable path="TriangleShip"]
 [editable path="TriangleShip/GunArm"]

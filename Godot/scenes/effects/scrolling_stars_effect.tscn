@@ -1,0 +1,11 @@
+[gd_scene load_steps=2 format=3 uid="uid://bcjodofg3v548"]
+
+[ext_resource type="Script" uid="uid://brl7qtnuwp0dc" path="res://scripts/effects/scrolling_stars_effect.gd" id="1_oy84s"]
+
+[node name="ScrollingStarsEffect" type="Node2D"]
+script = ExtResource("1_oy84s")
+min_speed = Vector2(0, 50)
+max_speed = Vector2(0, 300)
+min_size = 0.5
+max_size = 2.0
+lifetime = 0.0

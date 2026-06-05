@@ -206,9 +206,10 @@ func _physics_process(_delta: float) -> void:
 		return
 	
 	if not _pending.is_empty():
+		_pending = _pending.filter(func(e): return is_instance_valid(e))
 		_release_countdown -= 1
 		if _release_countdown <= 0:
-			var next: CDEntity = _pending.pop_front()
+			var next = _pending.pop_front()
 			if is_instance_valid(next) and next.state == CDEnums.EntityState.ACTIVE:
 				_release_entity(next)
 			else:

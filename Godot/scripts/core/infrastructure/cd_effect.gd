@@ -9,5 +9,6 @@ class_name CDEffect extends Node2D
 
 ## create a one-shot timer that frees this node when it expires
 func _ready() -> void:
-	var timer := get_tree().create_timer(lifetime)
-	timer.timeout.connect(queue_free)
+	if lifetime > 0.0:
+		var timer := get_tree().create_timer(lifetime)
+		timer.timeout.connect(queue_free)
