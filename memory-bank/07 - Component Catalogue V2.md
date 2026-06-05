@@ -9,9 +9,9 @@
 
 ## Overview
 
-The V2 architecture replaces V1's `UniversalBody`/`UniversalComponent` system with `CDEntity`/`CDEntityComponent`/`CDGameComponent`. Components communicate via entity bus (native signals) and game bus (Dictionary). Processing order is deterministic via priority categories.
+The V2 architecture replaces V1's `UniversalBody`/`UniversalComponent` system with `CDEntity`/`CDEntityComponent`/`CDGameComponent`. Components communicate via entity bus and game bus (both native Godot signals + blackboard). All dynamic signals are zero-arg; data flows through `entity.blackboard` and `game.blackboard`. Processing order is deterministic via priority categories.
 
-**Priority Cascade:** Registry(5) → Brains(10) → Legs(20) → Entity(30) → Buffer(35) → Arms(40) → Guts(50) → Faces(60) → Stage(70)
+**Priority Cascade:** Registry(5) → Input(8) → Brains(10) → Legs(20) → Entity(30) → Buffer(35) → Arms(40) → Guts(50) → Faces(60) → Voices(65) → Stage(70) → Update(90)
 
 ---
 
@@ -514,6 +514,7 @@ Stage-level spawners. Subscribe to game bus signals, queue and stagger-spawn ent
 | Core Resources: Spawners | 4 |
 | Core Resources: Triggers | 5 |
 | Core Resources: Formation | 2 |
+| Core Resources: Visuals | 1 |
 | Effects | 2 |
 | Brains | 17 |
 | Arms | 16 |

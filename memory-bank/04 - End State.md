@@ -184,11 +184,11 @@ Polybius is the digital jailer. He judges, mocks, and demands more. When a new h
 
 **V2 (in progress, Plans 19–27 complete):**
 - **165 scripts** implemented across Plans 19–27 — Core Infrastructure, Object Pooling, Stage, Brains+Legs, Arms+Guts, Spawners, Faces/Voices/Projections/Speakers, Directors, Curves, Triggers, Selectors, Effects, Resources, Blackboard Architecture
-- **Hybrid bus:** Entity bus (native signals + `bus_emit()`) + Game bus (Dictionary + `bus_emit()` / `bus_emit_from()`)
-- **Blackboard architecture:** `entity.blackboard` and `game.blackboard` dictionaries for transient state; `_signal_emitters` per-frame tracking enables signal-aware selectors
-- **Deterministic priority cascade:** Registry(5) → Brains(10) → Legs(20) → Entity(30) → Buffer(35) → Arms(40) → Guts(50) → Faces(60) → Stage(70) → Update(90)
-- **Signal emitter pipeline:** `bus_emit()` auto-tracks emitters → `CDSelectSignalEmitter` cross-references → CDUpdater clears at end of frame
-- **Remaining:** Bug Blaster 2 capture mechanics + multi-wave, documentation sweep
+- **Hybrid bus:** Entity bus + Game bus both use native Godot signals with `bus_connect()` / `bus_emit()`. All dynamic signals are zero-arg; data flows through `entity.blackboard` and `game.blackboard` dictionaries
+- **Blackboard architecture:** `entity.blackboard` and `game.blackboard` for transient state; auto-populated keys (`position`, `rotation`, `velocity`); `_signal_emitters` per-frame tracking enables signal-aware selectors
+- **Deterministic priority cascade:** Registry(5) → Input(8) → Brains(10) → Legs(20) → Entity(30) → Buffer(35) → Arms(40) → Guts(50) → Faces(60) → Voices(65) → Stage(70) → Update(90)
+- **Signal emitter pipeline:** `bus_emit()` / `bus_emit_from()` auto-tracks emitters → `CDSelectSignalEmitter` cross-references → CDUpdater clears at end of frame
+- **Remaining:** Bug Blaster 2 capture mechanics + multi-wave
 
 ---
 

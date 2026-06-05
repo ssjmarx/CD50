@@ -1,6 +1,6 @@
 # Patterns & Anti-Patterns
 
-**Last Updated:** 2026-05-29
+**Last Updated:** 2026-06-04
 **Full reference:** `USAGE.md` — the canonical, in-depth guide to all patterns, anti-patterns, and code quality guidelines.
 
 This file is a quick-reference index for AI agents working on the CD50 codebase. For detailed explanations, examples, and the complete priority pipeline, see `USAGE.md`.
@@ -80,15 +80,25 @@ Component categories: INTENT=Brains, STEERING=Legs, INTERACTION=Arms, STATE=Guts
 
 ## Signal Buses
 
-### Entity Bus (native Godot signals)
+### Entity Bus (native Godot signals, zero-arg + blackboard)
 
-**Hardcoded on CDEntity:** `collision`, `collided_by`, `moved`, `rotated`, `request_deactivate`, `entity_deactivating`, `entity_activated`
+**Hardcoded on CDEntity (typed):** `collision(CDEntity, Vector2)`, `collided_by(CDEntity, Vector2)`, `request_deactivate()`, `entity_deactivating()`, `entity_activated()`
 
-**Common dynamic signals (via `ensure_signal()`):** `move`, `move_to`, `aim`, `action`, `action_end`, `shoot`, `take_damage`, `heal`, `zero_health`, `health_changed`, `shape_changed`, `apply_status`, `status_began`, `status_ended`, `external_impulse`, `start_shooting`, `stop_shooting`, `piece_locked`, `timer_expired`, `timer_tick`, `grid_drop`, `rotate`, `step_blocked`, `rotation_blocked`, `spend_resource`, `resource_depleted`, `shield_hit`, `shield_broken`, `receive_powerup`, `path_finished`, `patrol_complete`, `sweep_complete`
+**All dynamic signals are zero-arg** via `bus_connect()` / `bus_emit()`. Data flows through `entity.blackboard`:
+- Emitter: `entity.blackboard["key"] = value` → `entity.bus_emit("signal_name")`
+- Listener: reads `entity.blackboard["key"]` in callback
+- Auto-populated keys each frame: `"position"`, `"rotation"`, `"velocity"`
+- `bus_emit()` auto-tracks `self` in `entity._signal_emitters[signal_name]` for the current frame
 
-### Game Bus (Dictionary on CDGame)
+**Common dynamic signals:** `move`, `move_to`, `aim`, `action`, `action_end`, `shoot`, `take_damage`, `heal`, `zero_health`, `health_changed`, `shape_changed`, `apply_status`, `status_began`, `status_ended`, `external_impulse`, `start_shooting`, `stop_shooting`, `piece_locked`, `timer_expired`, `timer_tick`, `grid_drop`, `rotate`, `step_blocked`, `rotation_blocked`, `spend_resource`, `resource_depleted`, `shield_hit`, `shield_broken`, `receive_powerup`, `path_finished`, `patrol_complete`, `sweep_complete`
 
-**Hardcoded by CDGame:** `game_state_changed`, `game_play`, `game_over`
+### Game Bus (native Godot signals, zero-arg + blackboard)
+
+**Hardcoded by CDGame:** `game_state_changed`, `game_play`, `game_over` (result in `game.blackboard["game_result"]`)
+
+**All dynamic signals are zero-arg** via `bus_connect()` / `bus_emit()` / `bus_emit_from()`. Data flows through `game.blackboard`:
+- `bus_emit_from()` tracks the emitting entity in `game._signal_emitters[signal_name]` for the current frame
+- Enables `CDSelectSignalEmitter` to route responses to the signaling entity
 
 **Common from stage components:** `score_gained`, `score_changed`, `multiplier_changed`, `lives_changed`, `lives_depleted`, `wave_start`, `wave_changed`, `track_changed`, `swoop_complete`, `t_spin_detected`, plus mark entry/exit signals
 

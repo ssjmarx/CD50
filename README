@@ -19,10 +19,10 @@ CD50 is a modular arcade game collection built in [Godot](https://godotengine.or
 Every frame, components execute in a deterministic priority cascade:
 
 ```
-REGISTRATION → INTENT → STEERING → PHYSICS → COLLISION → INTERACTION → STATE → VISUAL → AUDIO → RULES
- sync groups    "go!"    calc       moves     "you hit    damage      health   draw it   play it   score it
-                          speed +    the       something"  to target    drops    on screen out loud  check win
-                          direction  thing
+REGISTRATION → INTENT → STEERING → PHYSICS → COLLISION → INTERACTION → STATE → VISUAL → AUDIO → RULES → UPDATE
+ sync groups    "go!"    calc       moves     "you hit    damage       health   draw it   play it   score it   flush
+                           speed +    the       something"  to target    drops    on screen out loud  check win  mutations
+                           direction  thing
 ```
 
 Lower priority = runs earlier. Brains decide before Legs move. Legs move before Arms react to collisions. Guts track damage after Arms deal it. Faces draw the final state. Stage components update scores and check win conditions last.
@@ -41,7 +41,7 @@ This eliminates frame-ordering bugs. Every component knows exactly when it runs 
 | **Voices** | 65 | Entity-level audio | 2 | SoundVoice, ContinuousVoice |
 | **Stage** | 70 | Game-level logic, UI, spawning | 27 | ScoreCard, GroupCountGoal, GridTrapdoor, FormationDirector, MusicSpeaker |
 
-Plus 10 core infrastructure scripts (CDEntity, CDGame, CDCollisionBuffer, CDGroupRegistry, etc.) and 43 custom resources (curves, triggers, selectors, shapes, transitions, wall kicks, sound definitions).
+Plus 10 core infrastructure scripts (CDEntity, CDGame, CDCollisionBuffer, CDGroupRegistry, etc.) and 46 custom resources (curves, triggers, selectors, shapes, transitions, scalers, formations, wall kicks, sound definitions).
 
 ---
 
@@ -100,7 +100,7 @@ Components communicate through two signal systems:
 
 **Entity Bus** — Native Godot signals on each CDEntity, now zero-arg via `bus_emit()`. High-frequency. The hot path: Brains emit `"move"`, Legs consume it. Arms hear `"collision"`, deal damage to the collider's bus. Continuous data flows through `entity.blackboard` (Dictionary).
 
-**Game Bus** — Dictionary-based on CDGame, also zero-arg via `bus_emit()` and `bus_emit_from()`. Low-frequency, configurable names. For game-level events: `"score_gained"`, `"wave_cleared"`, `"lives_depleted"`. Zero registration boilerplate — emit with no listeners is a no-op. `bus_emit_from()` tracks which entity signaled this frame, enabling signal-aware selectors like `CDSelectSignalEmitter`.
+**Game Bus** — Native Godot signals on CDGame, also zero-arg via `bus_emit()` and `bus_emit_from()`. Data flows through `game.blackboard` (Dictionary). Low-frequency, configurable names. For game-level events: `"score_gained"`, `"wave_cleared"`, `"lives_depleted"`. Zero registration boilerplate — `bus_connect()` auto-creates signals, emit with no listeners is a no-op. `bus_emit_from()` tracks which entity signaled this frame, enabling signal-aware selectors like `CDSelectSignalEmitter`.
 
 This hybrid approach gives type safety where it matters (per-entity, per-frame) and flexibility where it doesn't (game-level events that vary per game).
 

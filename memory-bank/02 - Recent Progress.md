@@ -4,7 +4,50 @@
 
 ---
 
-## Plan 27 — V2 Blackboard Architecture (CODE COMPLETE — 4 new scripts, docs in progress)
+## Documentation Sweep #2 — `ensure_signal` Removal + Directory Structure (COMPLETE)
+
+Targeted audit fixing three systemic issues found in USAGE.md:
+
+1. **`ensure_signal()` removed from all docs** — This function never existed in V2. `bus_connect()` auto-creates signals via `add_user_signal()`. All template code, step-by-step guides, and "Must-Includes" updated to remove the registration step. The 12-step component checklist became 11 steps.
+2. **Validity guard examples updated** — Old pattern (`collider.emit_signal("take_damage", amount)`) replaced with blackboard pattern (`collider.blackboard["damage"] = amount; collider.bus_emit("take_damage")`) across §4 templates, §7 validity guards, and §6 anti-pattern examples.
+3. **Directory structure updated** — memory-bank/01 now shows the actual nested subcategories (brains/player, brains/ai action, legs/directional setters, arms/collision reactions, etc.) instead of flat listings. Plan 28 added as "In Chamber".
+
+### Files Updated
+
+| File | Changes |
+|------|---------|
+| `USAGE.md` | Removed all `ensure_signal()` references. Updated all template code to blackboard pattern. Fixed validity guard examples. |
+| `memory-bank/01` | Directory structure expanded to show nested subcategories. Plan 28 added. |
+
+---
+
+## Documentation Sweep #1 — All Docs Updated to Reflect V2 Architecture (COMPLETE)
+
+Full documentation audit comparing all docs against actual codebase. Every file updated to reflect the current state of the V2 architecture, especially the blackboard signal system.
+
+### What Changed
+
+| File | Key Updates |
+|------|------------|
+| `USAGE.md` | §2 Signal Bus rewritten: game bus now correctly documented as native signals (not Dictionary). Added `bus_emit_from()`, `bus_connect()`, `bus_disconnect()` API tables. Blackboard data flow examples. Added auto-populated blackboard keys. Updated game bus signal table to show blackboard keys instead of typed args. §4 Brains: added PlayerMoveToBrain, PlayerKBMMoveBrain, AISwoopBrain; fixed AIAimBrain name. §4 Directors: replaced SwarmShootingDirector with ShootingDirector, AimingDirector, SignalSequenceDirector. §8 Resources: added Scalers (3), SequenceSteps, Formation (2), Visuals, CDGridRow. Appendix: updated all counts to 165 scripts + 46 resources. Fixed Brain template code to use `bus_connect`/`bus_emit` instead of `ensure_signal`/`connect`. Fixed Leg template code similarly. Fixed game bus example to show blackboard pattern. |
+| `README` | Pipeline updated to include UPDATE(90). Signal Bus section rewritten: game bus now documented as native signals. Resource count updated 43→46. Component counts updated. Directors updated. |
+| `memory-bank/01` | CDGame description updated. Signal system updated. Priority cascade fixed (added INPUT, AUDIO, UPDATE). V2 Architecture header changed from "In Progress" to "Complete". Directory structure updated to V2 layout with accurate counts. |
+| `memory-bank/03` | Plan 27 status fixed from "docs in progress" to "Complete". Removed "documentation sweep" from post-Galaga tasks (done now). |
+| `memory-bank/04` | V2 architecture section updated: both buses now documented as native signals + blackboard. Priority cascade fixed to include INPUT, AUDIO, UPDATE. Removed "documentation sweep" from remaining items. |
+| `memory-bank/05` | Signal bus sections rewritten: entity bus now shows typed hardcoded signals + zero-arg dynamic signals with blackboard. Game bus now shows native signals (not Dictionary). |
+| `memory-bank/07` | Overview updated to reflect native signals + blackboard for both buses. Priority cascade fixed. Visuals resource row added to count summary. |
+
+### Key Corrections
+
+1. **Game Bus was documented as "Dictionary-based"** — actual code uses `add_user_signal()` native Godot signals, same mechanism as entity bus
+2. **Both buses use the same pattern:** native signals + blackboard Dictionary for data flow
+3. **Old API references removed:** `bus_emit("signal", [args])` replaced with `bus_emit("signal")` + `blackboard["key"]`
+4. **Template code updated:** `entity.ensure_signal()` + `entity.connect()` replaced with `entity.bus_connect()` pattern
+5. **Stale component names fixed:** SwarmShootingDirector → ShootingDirector + AimingDirector, AIDiveBombBrain → AISwoopBrain, AIAimAtNearestBrain → AIAimBrain
+
+---
+
+## Plan 27 — V2 Blackboard Architecture (COMPLETE — 4 new scripts)
 
 Architectural overhaul of V2 signal communication. The blackboard + `bus_emit()` architecture is now live in code. All user-defined signals are zero-arg, CDEntity and CDGame have `blackboard` dictionaries, and a per-frame `_signal_emitters` tracking system enables signal-aware selectors.
 
@@ -40,9 +83,7 @@ The `bus_emit_from()` → `_signal_emitters` → `CDSelectSignalEmitter` pipelin
 
 ### Remaining
 
-- Update USAGE.md with blackboard architecture docs
-- Update planning/27 to mark completed items
-- Migrate existing components from old `_arg1/_arg2` patterns to blackboard reads
+- Migrate existing components from old `_arg1/_arg2` patterns to blackboard reads (ongoing, per-component)
 
 ### Files
 
