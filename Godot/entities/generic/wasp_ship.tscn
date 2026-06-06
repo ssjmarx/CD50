@@ -1,0 +1,44 @@
+[gd_scene load_steps=13 format=3 uid="uid://b53tr0lys6rfc"]
+
+[ext_resource type="Script" uid="uid://dfbv2tw3cl4pe" path="res://scripts/core/infrastructure/cd_entity.gd" id="1_u2iwu"]
+[ext_resource type="PackedScene" uid="uid://dlgrii32eggbo" path="res://scenes/entity components/faces/sprite_face.tscn" id="2_w6l0f"]
+[ext_resource type="Texture2D" uid="uid://vphhi48y10tu" path="res://assets/seafood/nautilus_1.png" id="3_imijo"]
+[ext_resource type="Texture2D" uid="uid://bhfgytwlnflqg" path="res://assets/seafood/nautilus_2.png" id="4_u15cn"]
+[ext_resource type="PackedScene" uid="uid://1vgoj6bqs80e" path="res://scenes/entity components/arms/gun_arm.tscn" id="6_4d6mp"]
+[ext_resource type="Script" uid="uid://dcu4ocnin0htu" path="res://scripts/core/resources/spawners/cd_spawn_context.gd" id="8_bm3eg"]
+[ext_resource type="PackedScene" uid="uid://btr1f3svl7y3m" path="res://scenes/entity components/guts/healthpool_guts.tscn" id="9_rdxva"]
+[ext_resource type="PackedScene" uid="uid://bisjhhp8r5a4p" path="res://scenes/entity components/faces/death_effect_face.tscn" id="10_ceqff"]
+[ext_resource type="PackedScene" uid="uid://bfxtjii32duju" path="res://scenes/entity components/guts/die_at_zero_health_guts.tscn" id="10_gh8fs"]
+[ext_resource type="PackedScene" uid="uid://dnt5g5mntk0nk" path="res://scenes/effects/death_particle_effect.tscn" id="11_tosi5"]
+
+[sub_resource type="AnimatedTexture" id="AnimatedTexture_wasp"]
+frames = 2
+frame_0/texture = ExtResource("3_imijo")
+frame_1/texture = ExtResource("4_u15cn")
+frame_1/duration = 1.0
+
+[sub_resource type="Resource" id="Resource_wasp"]
+script = ExtResource("8_bm3eg")
+velocity = Vector2(0, 600)
+metadata/_custom_type_script = "uid://dcu4ocnin0htu"
+
+[node name="WaspShip" type="CharacterBody2D"]
+script = ExtResource("1_u2iwu")
+groups = Array[StringName]([&"wasp_ships", &"ships"])
+
+[node name="SpriteFace" parent="." instance=ExtResource("2_w6l0f")]
+frames = Array[Texture2D]([SubResource("AnimatedTexture_wasp")])
+
+[node name="GunArm" parent="." instance=ExtResource("6_4d6mp")]
+position = Vector2(0, 6)
+cooldown = 0.0
+spawn_context = SubResource("Resource_wasp")
+max_bullets = 1
+
+[node name="HealthpoolGuts" parent="." instance=ExtResource("9_rdxva")]
+max_health = 1
+
+[node name="DieAtZeroHealthGuts" parent="." instance=ExtResource("10_gh8fs")]
+
+[node name="DeathEffectFace" parent="." instance=ExtResource("10_ceqff")]
+effect_scenes = Array[PackedScene]([ExtResource("11_tosi5")])

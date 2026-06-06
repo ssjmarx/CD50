@@ -13,6 +13,9 @@ class_name CDStageTrapdoor extends CDGameComponent
 ## optional resource for velocity/rotation applied before entity enters tree
 @export var spawn_context: CDSpawnContext = null
 
+## array of scenes to cycle through. If empty, falls back to _get_spawn_scene().
+@export var spawn_scenes: Array[PackedScene] = []
+
 ## seconds to wait before starting the spawn after trigger signal fires
 @export var trigger_delay: float = 0.0
 
@@ -144,7 +147,11 @@ func _on_trigger() -> void:
 ## acquire or instantiate a single entity, apply context, and activate
 func _spawn_one(index: int) -> void:
 	var total := _spawn_queue.size() + 1
-	var scene: PackedScene = _get_spawn_scene(index, total)
+	var scene: PackedScene
+	if spawn_scenes.size() > 0:
+		scene = spawn_scenes[index % spawn_scenes.size()]
+	else:
+		scene = _get_spawn_scene(index, total)
 
 	if scene == null:
 		return

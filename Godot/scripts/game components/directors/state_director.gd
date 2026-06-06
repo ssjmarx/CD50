@@ -84,6 +84,10 @@ func _process_trigger(t: CDTransition) -> void:
 		_transitioned[entity] = true
 		_update.queue_transition(entity, t.remove_groups, t.add_groups, t.entity_signals, t.game_signals)
 		t.start_cooldown()
+	
+	# ## DEBUG: print transition with timestamp
+	# if not selected.is_empty():
+	# 	print("[TRANSITION] %.2fs | %d entities: %s → %s" % [Time.get_ticks_msec() / 1000.0, selected.size(), t.remove_groups, t.add_groups])
 
 ## gather candidates from all target groups (deduplicated)
 func _gather_from_groups(t: CDTransition) -> Array[CDEntity]:

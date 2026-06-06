@@ -1,4 +1,4 @@
-[gd_scene load_steps=145 format=3 uid="uid://c0q0c0v84x80"]
+[gd_scene load_steps=143 format=3 uid="uid://c0q0c0v84x80"]
 
 [ext_resource type="Script" uid="uid://dm0uehngpvbh7" path="res://scripts/core/infrastructure/cd_game.gd" id="1_62wb8"]
 [ext_resource type="PackedScene" uid="uid://cmbx6xnct372t" path="res://scenes/core/infrastructure/cd_collision_buffer.tscn" id="2_7y1r2"]
@@ -24,7 +24,9 @@
 [ext_resource type="Script" uid="uid://dakcd8kk2xm44" path="res://scripts/core/resources/curves/cd_sequence_curve.gd" id="17_hm20g"]
 [ext_resource type="Script" uid="uid://b7yxnmuk1vkya" path="res://scripts/core/resources/curves/cd_parabola_curve.gd" id="17_la2sg"]
 [ext_resource type="PackedScene" uid="uid://b7uyqydnog2th" path="res://scenes/game components/directors/formation_director.tscn" id="18_156p0"]
+[ext_resource type="PackedScene" uid="uid://b0n0yuhdj7x5x" path="res://entities/nonplayer/wasp_ship_swooping_nonplayer.tscn" id="18_sjgbx"]
 [ext_resource type="PackedScene" uid="uid://bf43dpgnegd46" path="res://scenes/game components/directors/state_director.tscn" id="19_g3xn7"]
+[ext_resource type="PackedScene" path="res://entities/nonplayer/spider_ship_swooping_nonplayer.tscn" id="19_ldmk8"]
 [ext_resource type="Script" uid="uid://2krdfmhel0jp" path="res://scripts/core/resources/behavior/cd_transition.gd" id="20_k70bp"]
 [ext_resource type="Script" uid="uid://7j04axulu7rq" path="res://scripts/core/resources/curves/cd_circle_curve.gd" id="21_1nsuk"]
 [ext_resource type="Script" uid="uid://ca0k2u53egerl" path="res://scripts/core/resources/triggers/cd_signal_trigger.gd" id="21_g3xn7"]
@@ -37,14 +39,13 @@
 [ext_resource type="Script" uid="uid://b3xaxo1yp2dn1" path="res://scripts/core/resources/selectors/cd_select_nearest_n_to_group.gd" id="26_gc4j8"]
 [ext_resource type="Script" uid="uid://bgl0fyqd8o0w5" path="res://scripts/core/resources/selectors/cd_select_random_n.gd" id="27_1nsuk"]
 [ext_resource type="PackedScene" path="res://scenes/game components/directors/aiming_director.tscn" id="27_hc4eh"]
-[ext_resource type="Script" uid="uid://c0vh1ticpmvx5" path="res://scripts/core/resources/selectors/cd_select_all.gd" id="29_4psr8"]
 [ext_resource type="PackedScene" path="res://scenes/game components/managers/signal_manager.tscn" id="32_acn14"]
 [ext_resource type="Script" uid="uid://cyqs535s5vfg4" path="res://scripts/core/resources/behavior/cd_sequence_step.gd" id="34_1nsuk"]
-[ext_resource type="PackedScene" uid="uid://d4b42pvesykqo" path="res://scenes/game components/marks/cd_mark.tscn" id="37_acn14"]
 [ext_resource type="PackedScene" uid="uid://bcjodofg3v548" path="res://scenes/effects/scrolling_stars_effect.tscn" id="38_1tdfd"]
 [ext_resource type="PackedScene" uid="uid://c160d1kuwsrav" path="res://scenes/game components/projectors/crt_projector.tscn" id="39_4mgkk"]
 [ext_resource type="Script" uid="uid://c0l1od3pky1y1" path="res://scripts/core/resources/curves/cd_helix_curve.gd" id="40_helix"]
 [ext_resource type="Script" uid="uid://c5eo3m6tfj1b" path="res://scripts/core/resources/curves/cd_spiral_curve.gd" id="41_spiral"]
+[ext_resource type="PackedScene" uid="uid://mxejpxipdbii" path="res://scenes/game components/cards/wave_card.tscn" id="99_wave"]
 
 [sub_resource type="Resource" id="Resource_q4h5u"]
 script = ExtResource("4_xb0do")
@@ -54,7 +55,6 @@ metadata/_custom_type_script = "uid://b2ibop6r2cryj"
 [sub_resource type="Resource" id="Resource_qh32t"]
 script = ExtResource("4_xb0do")
 group_name = &"enemies"
-collides_with = Array[StringName]([&"top_zone"])
 metadata/_custom_type_script = "uid://b2ibop6r2cryj"
 
 [sub_resource type="Resource" id="Resource_dg5ky"]
@@ -65,12 +65,6 @@ metadata/_custom_type_script = "uid://b2ibop6r2cryj"
 [sub_resource type="Resource" id="Resource_7ar12"]
 script = ExtResource("4_xb0do")
 group_name = &"player_bullets"
-collides_with = Array[StringName]([&"enemies"])
-metadata/_custom_type_script = "uid://b2ibop6r2cryj"
-
-[sub_resource type="Resource" id="Resource_v3fjy"]
-script = ExtResource("4_xb0do")
-group_name = &"top_zone"
 collides_with = Array[StringName]([&"enemies"])
 metadata/_custom_type_script = "uid://b2ibop6r2cryj"
 
@@ -187,12 +181,12 @@ metadata/_custom_type_script = "uid://dcu4ocnin0htu"
 
 [sub_resource type="Resource" id="Resource_owvki"]
 script = ExtResource("12_rgict")
-additional_groups = Array[StringName]([&"swooping", &"bottom_left", &"bosses"])
+additional_groups = Array[StringName]([&"swooping", &"bottom_left"])
 metadata/_custom_type_script = "uid://dcu4ocnin0htu"
 
 [sub_resource type="Resource" id="Resource_ldmk8"]
 script = ExtResource("12_rgict")
-additional_groups = Array[StringName]([&"swooping", &"bottom_right", &"lieutenants"])
+additional_groups = Array[StringName]([&"swooping", &"bottom_right"])
 metadata/_custom_type_script = "uid://dcu4ocnin0htu"
 
 [sub_resource type="Resource" id="Resource_qhmbs"]
@@ -320,6 +314,13 @@ hold_time = 0.0
 contract_time = 2.0
 metadata/_custom_type_script = "uid://cr36gmk66snrc"
 
+[sub_resource type="Resource" id="Resource_speed_scaler"]
+script = ExtResource("25_hc4eh")
+per_wave = 1.0
+minimum = 1.0
+maximum = 5.0
+metadata/_custom_type_script = "uid://bd5apwoshu3n6"
+
 [sub_resource type="Resource" id="Resource_r24yj"]
 script = ExtResource("21_k70bp")
 signal_name = &"swoop_complete"
@@ -342,9 +343,17 @@ metadata/_custom_type_script = "uid://2krdfmhel0jp"
 script = ExtResource("27_1nsuk")
 metadata/_custom_type_script = "uid://bgl0fyqd8o0w5"
 
+[sub_resource type="Resource" id="Resource_dive_scaler"]
+script = ExtResource("25_hc4eh")
+per_wave = -2.25
+base = 10.0
+minimum = 1.0
+metadata/_custom_type_script = "uid://bd5apwoshu3n6"
+
 [sub_resource type="Resource" id="Resource_xatni"]
 script = ExtResource("24_gc4j8")
 interval = 10.0
+wave_scaler = SubResource("Resource_dive_scaler")
 random_variance = 1.0
 metadata/_custom_type_script = "uid://dm2djsydyr0u1"
 
@@ -358,29 +367,11 @@ selector = SubResource("Resource_sdj2a")
 entity_signals = Array[StringName]([&"begin_dive"])
 metadata/_custom_type_script = "uid://2krdfmhel0jp"
 
-[sub_resource type="Resource" id="Resource_0na4m"]
-script = ExtResource("29_4psr8")
-metadata/_custom_type_script = "uid://c0vh1ticpmvx5"
-
-[sub_resource type="Resource" id="Resource_82ubq"]
-script = ExtResource("21_g3xn7")
-signal_names = Array[StringName]([&"dive_complete"])
-metadata/_custom_type_script = "uid://ca0k2u53egerl"
-
-[sub_resource type="Resource" id="Resource_eb2hk"]
-script = ExtResource("20_k70bp")
-remove_groups = Array[StringName]([&"diving"])
-add_groups = Array[StringName]([&"formation"])
-target_groups = Array[StringName]([&"diving"])
-trigger = SubResource("Resource_82ubq")
-selector = SubResource("Resource_0na4m")
-entity_signals = Array[StringName]([&"return_to_formation"])
-metadata/_custom_type_script = "uid://2krdfmhel0jp"
-
 [sub_resource type="Resource" id="Resource_20wdp"]
 script = ExtResource("25_hc4eh")
-per_wave = -1.0
-base = 6.0
+per_wave = -1.1875
+base = 5.0
+minimum = 0.25
 metadata/_custom_type_script = "uid://bd5apwoshu3n6"
 
 [sub_resource type="Resource" id="Resource_blp8l"]
@@ -688,9 +679,6 @@ script = ExtResource("34_1nsuk")
 signals = Array[StringName]([&"spawn_bottom_left", &"spawn_bottom_right"])
 metadata/_custom_type_script = "uid://cyqs535s5vfg4"
 
-[sub_resource type="RectangleShape2D" id="RectangleShape2D_1tdfd"]
-size = Vector2(640, 16)
-
 [node name="BugBlaster2" type="Node2D"]
 script = ExtResource("1_62wb8")
 game_bounds = Rect2(0, 0, 640, 360)
@@ -698,7 +686,7 @@ game_bounds = Rect2(0, 0, 640, 360)
 [node name="CDCollisionBuffer" parent="." instance=ExtResource("2_7y1r2")]
 
 [node name="CDCollisionMatrix" parent="." instance=ExtResource("3_wnudv")]
-collision_groups = Array[ExtResource("4_xb0do")]([SubResource("Resource_q4h5u"), SubResource("Resource_qh32t"), SubResource("Resource_dg5ky"), SubResource("Resource_7ar12"), SubResource("Resource_v3fjy")])
+collision_groups = Array[ExtResource("4_xb0do")]([SubResource("Resource_q4h5u"), SubResource("Resource_qh32t"), SubResource("Resource_dg5ky"), SubResource("Resource_7ar12")])
 
 [node name="CDGroupRegistry" parent="." instance=ExtResource("5_qyrdw")]
 
@@ -717,7 +705,7 @@ on_wake_signal = &"level_start"
 [node name="PointTrapdoor" parent="Level1Stage" instance=ExtResource("10_xb0do")]
 position = Vector2(256, -16)
 spawn_scene = ExtResource("11_2v676")
-spawn_count_equation = "10"
+spawn_count_equation = "8"
 offset_range = Vector2(0, 0)
 stagger_delay = 0.0
 spawn_context = SubResource("Resource_la2sg")
@@ -727,7 +715,7 @@ on_spawning_complete = Array[StringName]([&"spawning_complete_left"])
 [node name="PointTrapdoor2" parent="Level1Stage" instance=ExtResource("10_xb0do")]
 position = Vector2(384, -16)
 spawn_scene = ExtResource("11_2v676")
-spawn_count_equation = "10"
+spawn_count_equation = "8"
 offset_range = Vector2(0, 0)
 stagger_delay = 0.0
 spawn_context = SubResource("Resource_s3e4k")
@@ -736,8 +724,9 @@ on_spawning_complete = Array[StringName]([&"spawning_complete_right"])
 
 [node name="PointTrapdoor3" parent="Level1Stage" instance=ExtResource("10_xb0do")]
 position = Vector2(-16, 340)
-spawn_scene = ExtResource("11_2v676")
-spawn_count_equation = "8"
+spawn_scene = ExtResource("18_sjgbx")
+spawn_count_equation = "12"
+spawn_scenes = Array[PackedScene]([ExtResource("19_ldmk8"), ExtResource("18_sjgbx"), ExtResource("18_sjgbx")])
 offset_range = Vector2(0, 0)
 stagger_delay = 0.0
 spawn_context = SubResource("Resource_owvki")
@@ -746,8 +735,9 @@ on_spawning_complete = Array[StringName]([&"spawning_complete_bottom_left"])
 
 [node name="PointTrapdoor4" parent="Level1Stage" instance=ExtResource("10_xb0do")]
 position = Vector2(656, 340)
-spawn_scene = ExtResource("11_2v676")
-spawn_count_equation = "8"
+spawn_scene = ExtResource("19_ldmk8")
+spawn_count_equation = "12"
+spawn_scenes = Array[PackedScene]([ExtResource("19_ldmk8"), ExtResource("18_sjgbx"), ExtResource("18_sjgbx")])
 offset_range = Vector2(0, 0)
 stagger_delay = 0.0
 spawn_context = SubResource("Resource_ldmk8")
@@ -808,12 +798,13 @@ formations = Array[ExtResource("22_jix4n")]([SubResource("Resource_4mgkk"), SubR
 breathing_amplitude = 0.25
 breathing_duration = 10.0
 marching_orders = Array[ExtResource("23_1k33r")]([SubResource("Resource_asuvp"), SubResource("Resource_5umtv"), SubResource("Resource_8nemr"), SubResource("Resource_sjgbx")])
+speed_scaler = SubResource("Resource_speed_scaler")
 preview_color = Color(1, 0.64705884, 0, 1)
 component_category = 10
 
 [node name="StateDirector" parent="Level1Stage" instance=ExtResource("19_g3xn7")]
 position = Vector2(320, -16)
-transitions = Array[ExtResource("20_k70bp")]([SubResource("Resource_5kasm"), SubResource("Resource_682rw"), SubResource("Resource_eb2hk")])
+transitions = Array[ExtResource("20_k70bp")]([SubResource("Resource_5kasm"), SubResource("Resource_682rw")])
 
 [node name="ShootingDirector" parent="Level1Stage" instance=ExtResource("23_7jcia")]
 trigger = SubResource("Resource_blp8l")
@@ -836,7 +827,8 @@ on_wake_signal = &"level_start"
 [node name="PointTrapdoor" parent="Level2Stage" instance=ExtResource("10_xb0do")]
 position = Vector2(128, -16)
 spawn_scene = ExtResource("11_2v676")
-spawn_count_equation = "8"
+spawn_count_equation = "10"
+spawn_scenes = Array[PackedScene]([ExtResource("11_2v676"), ExtResource("11_2v676"), ExtResource("11_2v676"), ExtResource("18_sjgbx"), ExtResource("18_sjgbx")])
 offset_range = Vector2(0, 0)
 stagger_delay = 0.0
 spawn_context = SubResource("Resource_la2sg")
@@ -846,7 +838,8 @@ on_spawning_complete = Array[StringName]([&"spawning_complete_left"])
 [node name="PointTrapdoor2" parent="Level2Stage" instance=ExtResource("10_xb0do")]
 position = Vector2(512, -16)
 spawn_scene = ExtResource("11_2v676")
-spawn_count_equation = "8"
+spawn_count_equation = "10"
+spawn_scenes = Array[PackedScene]([ExtResource("11_2v676"), ExtResource("11_2v676"), ExtResource("11_2v676"), ExtResource("18_sjgbx"), ExtResource("18_sjgbx")])
 offset_range = Vector2(0, 0)
 stagger_delay = 0.0
 spawn_context = SubResource("Resource_s3e4k")
@@ -855,8 +848,9 @@ on_spawning_complete = Array[StringName]([&"spawning_complete_right"])
 
 [node name="PointTrapdoor3" parent="Level2Stage" instance=ExtResource("10_xb0do")]
 position = Vector2(-16, 160)
-spawn_scene = ExtResource("11_2v676")
-spawn_count_equation = "12"
+spawn_scene = ExtResource("18_sjgbx")
+spawn_count_equation = "8"
+spawn_scenes = Array[PackedScene]([ExtResource("11_2v676"), ExtResource("19_ldmk8")])
 offset_range = Vector2(0, 0)
 stagger_delay = 0.0
 spawn_context = SubResource("Resource_owvki")
@@ -865,8 +859,9 @@ on_spawning_complete = Array[StringName]([&"spawning_complete_bottom_left"])
 
 [node name="PointTrapdoor4" parent="Level2Stage" instance=ExtResource("10_xb0do")]
 position = Vector2(656, 200)
-spawn_scene = ExtResource("11_2v676")
-spawn_count_equation = "12"
+spawn_scene = ExtResource("19_ldmk8")
+spawn_count_equation = "8"
+spawn_scenes = Array[PackedScene]([ExtResource("11_2v676"), ExtResource("19_ldmk8")])
 offset_range = Vector2(0, 0)
 stagger_delay = 0.0
 spawn_context = SubResource("Resource_ldmk8")
@@ -927,12 +922,13 @@ formations = Array[ExtResource("22_jix4n")]([SubResource("Resource_4mgkk"), SubR
 breathing_amplitude = 0.25
 breathing_duration = 10.0
 marching_orders = Array[ExtResource("23_1k33r")]([SubResource("Resource_asuvp"), SubResource("Resource_5umtv"), SubResource("Resource_8nemr"), SubResource("Resource_sjgbx")])
+speed_scaler = SubResource("Resource_speed_scaler")
 preview_color = Color(0, 0.8, 1, 1)
 component_category = 10
 
 [node name="StateDirector" parent="Level2Stage" instance=ExtResource("19_g3xn7")]
 position = Vector2(320, -16)
-transitions = Array[ExtResource("20_k70bp")]([SubResource("Resource_5kasm"), SubResource("Resource_682rw"), SubResource("Resource_eb2hk")])
+transitions = Array[ExtResource("20_k70bp")]([SubResource("Resource_5kasm"), SubResource("Resource_682rw")])
 
 [node name="ShootingDirector" parent="Level2Stage" instance=ExtResource("23_7jcia")]
 trigger = SubResource("Resource_blp8l")
@@ -974,8 +970,9 @@ on_spawning_complete = Array[StringName]([&"spawning_complete_right"])
 
 [node name="PointTrapdoor3" parent="Level3Stage" instance=ExtResource("10_xb0do")]
 position = Vector2(-16, 320)
-spawn_scene = ExtResource("11_2v676")
+spawn_scene = ExtResource("18_sjgbx")
 spawn_count_equation = "12"
+spawn_scenes = Array[PackedScene]([ExtResource("19_ldmk8"), ExtResource("18_sjgbx"), ExtResource("18_sjgbx")])
 offset_range = Vector2(0, 0)
 stagger_delay = 0.0
 spawn_context = SubResource("Resource_owvki")
@@ -984,8 +981,9 @@ on_spawning_complete = Array[StringName]([&"spawning_complete_bottom_left"])
 
 [node name="PointTrapdoor4" parent="Level3Stage" instance=ExtResource("10_xb0do")]
 position = Vector2(656, 40)
-spawn_scene = ExtResource("11_2v676")
+spawn_scene = ExtResource("19_ldmk8")
 spawn_count_equation = "12"
+spawn_scenes = Array[PackedScene]([ExtResource("19_ldmk8"), ExtResource("18_sjgbx"), ExtResource("18_sjgbx")])
 offset_range = Vector2(0, 0)
 stagger_delay = 0.0
 spawn_context = SubResource("Resource_ldmk8")
@@ -1046,12 +1044,13 @@ formations = Array[ExtResource("22_jix4n")]([SubResource("Resource_4mgkk"), SubR
 breathing_amplitude = 0.25
 breathing_duration = 10.0
 marching_orders = Array[ExtResource("23_1k33r")]([SubResource("Resource_asuvp"), SubResource("Resource_5umtv"), SubResource("Resource_8nemr"), SubResource("Resource_sjgbx")])
+speed_scaler = SubResource("Resource_speed_scaler")
 preview_color = Color(1, 0, 0.8, 1)
 component_category = 10
 
 [node name="StateDirector" parent="Level3Stage" instance=ExtResource("19_g3xn7")]
 position = Vector2(320, -16)
-transitions = Array[ExtResource("20_k70bp")]([SubResource("Resource_5kasm"), SubResource("Resource_682rw"), SubResource("Resource_eb2hk")])
+transitions = Array[ExtResource("20_k70bp")]([SubResource("Resource_5kasm"), SubResource("Resource_682rw")])
 
 [node name="ShootingDirector" parent="Level3Stage" instance=ExtResource("23_7jcia")]
 trigger = SubResource("Resource_blp8l")
@@ -1075,6 +1074,7 @@ on_wake_signal = &"level_start"
 position = Vector2(192, -16)
 spawn_scene = ExtResource("11_2v676")
 spawn_count_equation = "10"
+spawn_scenes = Array[PackedScene]([ExtResource("11_2v676"), ExtResource("11_2v676"), ExtResource("11_2v676"), ExtResource("18_sjgbx"), ExtResource("18_sjgbx")])
 offset_range = Vector2(0, 0)
 stagger_delay = 0.0
 spawn_context = SubResource("Resource_la2sg")
@@ -1083,8 +1083,9 @@ on_spawning_complete = Array[StringName]([&"spawning_complete_left"])
 
 [node name="PointTrapdoor2" parent="Level4Stage" instance=ExtResource("10_xb0do")]
 position = Vector2(448, -16)
-spawn_scene = ExtResource("11_2v676")
+spawn_scene = ExtResource("18_sjgbx")
 spawn_count_equation = "8"
+spawn_scenes = Array[PackedScene]([ExtResource("11_2v676"), ExtResource("19_ldmk8")])
 offset_range = Vector2(0, 0)
 stagger_delay = 0.0
 spawn_context = SubResource("Resource_s3e4k")
@@ -1093,8 +1094,9 @@ on_spawning_complete = Array[StringName]([&"spawning_complete_right"])
 
 [node name="PointTrapdoor3" parent="Level4Stage" instance=ExtResource("10_xb0do")]
 position = Vector2(-16, 256)
-spawn_scene = ExtResource("11_2v676")
+spawn_scene = ExtResource("19_ldmk8")
 spawn_count_equation = "8"
+spawn_scenes = Array[PackedScene]([ExtResource("11_2v676"), ExtResource("19_ldmk8")])
 offset_range = Vector2(0, 0)
 stagger_delay = 0.0
 spawn_context = SubResource("Resource_owvki")
@@ -1105,6 +1107,7 @@ on_spawning_complete = Array[StringName]([&"spawning_complete_bottom_left"])
 position = Vector2(656, 104)
 spawn_scene = ExtResource("11_2v676")
 spawn_count_equation = "10"
+spawn_scenes = Array[PackedScene]([ExtResource("11_2v676"), ExtResource("11_2v676"), ExtResource("11_2v676"), ExtResource("18_sjgbx"), ExtResource("18_sjgbx")])
 offset_range = Vector2(0, 0)
 stagger_delay = 0.0
 spawn_context = SubResource("Resource_ldmk8")
@@ -1165,12 +1168,13 @@ formations = Array[ExtResource("22_jix4n")]([SubResource("Resource_4mgkk"), SubR
 breathing_amplitude = 0.25
 breathing_duration = 10.0
 marching_orders = Array[ExtResource("23_1k33r")]([SubResource("Resource_asuvp"), SubResource("Resource_5umtv"), SubResource("Resource_8nemr"), SubResource("Resource_sjgbx")])
+speed_scaler = SubResource("Resource_speed_scaler")
 preview_color = Color(0.5, 1, 0, 1)
 component_category = 10
 
 [node name="StateDirector" parent="Level4Stage" instance=ExtResource("19_g3xn7")]
 position = Vector2(320, -16)
-transitions = Array[ExtResource("20_k70bp")]([SubResource("Resource_5kasm"), SubResource("Resource_682rw"), SubResource("Resource_eb2hk")])
+transitions = Array[ExtResource("20_k70bp")]([SubResource("Resource_5kasm"), SubResource("Resource_682rw")])
 
 [node name="ShootingDirector" parent="Level4Stage" instance=ExtResource("23_7jcia")]
 trigger = SubResource("Resource_blp8l")
@@ -1192,8 +1196,9 @@ on_wake_signal = &"level_start"
 
 [node name="PointTrapdoor" parent="Level5Stage" instance=ExtResource("10_xb0do")]
 position = Vector2(160, -16)
-spawn_scene = ExtResource("11_2v676")
-spawn_count_equation = "8"
+spawn_scene = ExtResource("18_sjgbx")
+spawn_count_equation = "12"
+spawn_scenes = Array[PackedScene]([ExtResource("19_ldmk8"), ExtResource("18_sjgbx"), ExtResource("18_sjgbx")])
 offset_range = Vector2(0, 0)
 stagger_delay = 0.0
 spawn_context = SubResource("Resource_la2sg")
@@ -1202,8 +1207,9 @@ on_spawning_complete = Array[StringName]([&"spawning_complete_left"])
 
 [node name="PointTrapdoor2" parent="Level5Stage" instance=ExtResource("10_xb0do")]
 position = Vector2(480, -16)
-spawn_scene = ExtResource("11_2v676")
-spawn_count_equation = "8"
+spawn_scene = ExtResource("19_ldmk8")
+spawn_count_equation = "12"
+spawn_scenes = Array[PackedScene]([ExtResource("19_ldmk8"), ExtResource("18_sjgbx"), ExtResource("18_sjgbx")])
 offset_range = Vector2(0, 0)
 stagger_delay = 0.0
 spawn_context = SubResource("Resource_s3e4k")
@@ -1213,7 +1219,7 @@ on_spawning_complete = Array[StringName]([&"spawning_complete_right"])
 [node name="PointTrapdoor3" parent="Level5Stage" instance=ExtResource("10_xb0do")]
 position = Vector2(-16, 180)
 spawn_scene = ExtResource("11_2v676")
-spawn_count_equation = "10"
+spawn_count_equation = "8"
 offset_range = Vector2(0, 0)
 stagger_delay = 0.0
 spawn_context = SubResource("Resource_owvki")
@@ -1223,7 +1229,7 @@ on_spawning_complete = Array[StringName]([&"spawning_complete_bottom_left"])
 [node name="PointTrapdoor4" parent="Level5Stage" instance=ExtResource("10_xb0do")]
 position = Vector2(656, 180)
 spawn_scene = ExtResource("11_2v676")
-spawn_count_equation = "10"
+spawn_count_equation = "8"
 offset_range = Vector2(0, 0)
 stagger_delay = 0.0
 spawn_context = SubResource("Resource_ldmk8")
@@ -1280,12 +1286,13 @@ formations = Array[ExtResource("22_jix4n")]([SubResource("Resource_4mgkk"), SubR
 breathing_amplitude = 0.25
 breathing_duration = 10.0
 marching_orders = Array[ExtResource("23_1k33r")]([SubResource("Resource_asuvp"), SubResource("Resource_5umtv"), SubResource("Resource_8nemr"), SubResource("Resource_sjgbx")])
+speed_scaler = SubResource("Resource_speed_scaler")
 preview_color = Color(1, 0.84, 0, 1)
 component_category = 10
 
 [node name="StateDirector" parent="Level5Stage" instance=ExtResource("19_g3xn7")]
 position = Vector2(320, -16)
-transitions = Array[ExtResource("20_k70bp")]([SubResource("Resource_5kasm"), SubResource("Resource_682rw"), SubResource("Resource_eb2hk")])
+transitions = Array[ExtResource("20_k70bp")]([SubResource("Resource_5kasm"), SubResource("Resource_682rw")])
 
 [node name="ShootingDirector" parent="Level5Stage" instance=ExtResource("23_7jcia")]
 trigger = SubResource("Resource_blp8l")
@@ -1301,6 +1308,9 @@ steps = Array[ExtResource("34_1nsuk")]([SubResource("Resource_l5_s1"), SubResour
 trigger = SubResource("Resource_acn14")
 on_sequence_complete = Array[StringName]([&"level_five_complete"])
 
+[node name="WaveCard" parent="." instance=ExtResource("99_wave")]
+on_advance_wave = Array[StringName]([&"level_one_complete", &"level_two_complete", &"level_three_complete", &"level_four_complete", &"level_five_complete"])
+
 [node name="TriangleShip" parent="." instance=ExtResource("8_7y1r2")]
 position = Vector2(320, 340)
 rotation = -1.5707964
@@ -1312,15 +1322,6 @@ rotation_speed = 0.0
 
 [node name="DirectMovementLeg" parent="TriangleShip" instance=ExtResource("9_wnudv")]
 speed = 300.0
-
-[node name="CdMark" parent="." instance=ExtResource("37_acn14")]
-position = Vector2(320, -16)
-groups = Array[StringName]([&"top_zone"])
-filter_groups = Array[StringName]([&"enemies"])
-on_entered = Array[StringName]([&"dive_complete"])
-
-[node name="CollisionShape2D" type="CollisionShape2D" parent="CdMark"]
-shape = SubResource("RectangleShape2D_1tdfd")
 
 [node name="ScrollingStarsEffect" parent="." instance=ExtResource("38_1tdfd")]
 star_count = 25

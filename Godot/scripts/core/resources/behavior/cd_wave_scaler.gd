@@ -1,6 +1,6 @@
 ## CDWaveScaler
 ## Converts wave number into a scaled float value via linear interpolation with clamping
-## Listens to game bus signals for wave number updates
+## Reads wave number from game blackboard (set by WaveCard)
 
 class_name CDWaveScaler extends CDScaler
 
@@ -9,35 +9,28 @@ class_name CDWaveScaler extends CDScaler
 ## amount added per wave after wave 1 (negative = decreases over time)
 @export var per_wave: float = -0.3
 
-## game bus signals that carry wave number as first int argument
-@export var listen_signals: Array[StringName] = [&"wave_changed"]
+## blackboard key to read the current wave number from
+@export var wave_key: StringName = &"wave_number"
 
-## --- state ---
-
-## current wave number (starts at 1)
-var _wave_number: int = 1
-
-## --- lifecycle ---
-
-## connect to game bus signals for wave updates
-func initialize(game: CDGame) -> void:
-	super.initialize(game)
-	for sig in listen_signals:
-		if sig != &"":
-			_game.bus_connect(sig, _on_wave_signal)
-
-## receive wave number from game bus signal
-func _on_wave_signal(wave: int = 0) -> void:
-	_wave_number = wave
+### timer for debug prints
+#var _previous_wave: int = 0
 
 ## --- evaluation ---
 
-## return the scaled value for the current wave
+## return the scaled value for the current wave (read from blackboard)
 func evaluate() -> float:
-	return clampf(base + per_wave * (_wave_number - 1), minimum, maximum)
+	var wave_number: int = 1
+	if _game and _game.blackboard.has(wave_key):
+		wave_number = _game.blackboard[wave_key]
+		#if _previous_wave != wave_number:
+			#_previous_wave = wave_number
+			#print("new wave number: ", wave_number)
+	var result := clampf(base + per_wave * (wave_number - 1), minimum, maximum)
+	
+	return result
 
 ## --- reset ---
 
-## reset to initial wave for game restart
+## no internal state to reset — blackboard is the source of truth
 func reset() -> void:
-	_wave_number = 1
+	pass

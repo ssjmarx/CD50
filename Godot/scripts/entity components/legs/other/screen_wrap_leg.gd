@@ -9,6 +9,10 @@ class_name ScreenWrapLeg extends CDEntityComponent
 @export var wrap_margin: float = 20.0
 @export var check_interval: float = 0.1
 
+@export_group("Emit Signals")
+## entity bus signals emitted when the entity wraps around the screen
+@export var wrap_signals: Array[StringName] = []
+
 ## --- state ---
 
 var _check_timer: float = 0.0
@@ -52,6 +56,8 @@ func _physics_process(delta: float) -> void:
 	
 	if wrapped:
 		entity.request_position_set(pos)
+		for sig in wrap_signals:
+			entity.bus_emit(sig)
 
 ## --- cleanup ---
 

@@ -62,6 +62,9 @@ func _fire() -> void:
 	else:
 		selected = candidates
 	
+	# ## DEBUG: print fire order with timestamp
+	# print("[SHOOT] %.2fs | %d candidates, %d selected" % [Time.get_ticks_msec() / 1000.0, candidates.size(), selected.size()])
+	
 	## command selected entities to shoot
 	for entity in selected:
 		if is_instance_valid(entity) and entity.state == CDEnums.EntityState.ACTIVE:

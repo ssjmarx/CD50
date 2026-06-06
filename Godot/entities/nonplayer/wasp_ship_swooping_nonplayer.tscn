@@ -1,6 +1,6 @@
-[gd_scene load_steps=11 format=3 uid="uid://dn4605ei3ylto"]
+[gd_scene load_steps=11 format=3 uid="uid://b0n0yuhdj7x5x"]
 
-[ext_resource type="PackedScene" uid="uid://dc5v6bawoxi2c" path="res://entities/generic/bug_ship_smooth.tscn" id="1_18u38"]
+[ext_resource type="PackedScene" path="res://entities/generic/wasp_ship_smooth.tscn" id="1_18u38"]
 [ext_resource type="PackedScene" uid="uid://wghixqf83pas" path="res://scenes/entity components/brains/ai_swoop_brain.tscn" id="2_f0fqv"]
 [ext_resource type="PackedScene" uid="uid://by11ic4lo4df8" path="res://entities/nonplayer/onscreen_bullet_nonplayer.tscn" id="2_fkier"]
 [ext_resource type="Script" uid="uid://dlalvxnq5qb5x" path="res://scripts/core/resources/curves/cd_curve.gd" id="4_5neny"]
@@ -9,28 +9,31 @@
 
 [sub_resource type="Resource" id="Resource_s7cy4"]
 script = ExtResource("4_fkier")
-frequency = 3
+amplitude = 100.0
+frequency = 2
 metadata/_custom_type_script = "uid://dpgs8b1skt7t2"
 
 [sub_resource type="Resource" id="Resource_5neny"]
 script = ExtResource("4_fkier")
-frequency = 3
+amplitude = 100.0
+frequency = 2
 curve_seed = 1
 metadata/_custom_type_script = "uid://dpgs8b1skt7t2"
 
 [sub_resource type="Resource" id="Resource_pptwy"]
 script = ExtResource("4_fkier")
-frequency = 3
+amplitude = 100.0
+frequency = 2
 curve_seed = -1
 metadata/_custom_type_script = "uid://dpgs8b1skt7t2"
 
-[sub_resource type="Resource" id="Resource_rgbre"]
+[sub_resource type="Resource" id="Resource_ysyd6"]
 script = ExtResource("6_pptwy")
 curves = Array[ExtResource("4_5neny")]([SubResource("Resource_s7cy4"), SubResource("Resource_5neny"), SubResource("Resource_pptwy")])
 metadata/_custom_type_script = "uid://dakcd8kk2xm44"
 
-[node name="BugShip" instance=ExtResource("1_18u38")]
-groups = Array[StringName]([&"bug_ships", &"ships", &"enemies"])
+[node name="WaspShip" instance=ExtResource("1_18u38")]
+groups = Array[StringName]([&"wasp_ships", &"ships", &"lieutenants", &"enemies"])
 
 [node name="ScreenWrapLeg" parent="." index="0"]
 wrap_signals = Array[StringName]([&"screen_wrapped"])
@@ -39,7 +42,7 @@ wrap_signals = Array[StringName]([&"screen_wrapped"])
 bullet_scene = ExtResource("2_fkier")
 
 [node name="AISwoopBrain" parent="." index="10" instance=ExtResource("2_f0fqv")]
-curve = SubResource("Resource_rgbre")
+curve = SubResource("Resource_ysyd6")
 target_distance = 500.0
 loop = true
 restart_signals = Array[StringName]([&"screen_wrapped"])

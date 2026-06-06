@@ -30,6 +30,8 @@ class_name FormationDirector extends CDGameComponent
 ## ordered movement commands — step, breathe, pause
 @export_group("Marching")
 @export var marching_orders: Array[CDMarchingOrder] = []
+## optional scaler that multiplies marching speed (higher = faster, divides effective duration)
+@export var speed_scaler: CDScaler
 
 @export_group("Blackboard Keys")
 ## key for writing movement direction to entity blackboard (Vector2)
@@ -126,6 +128,8 @@ func _get_breathing_scale() -> float:
 
 ## start marching on initialize
 func _on_initialize() -> void:
+	if speed_scaler:
+		speed_scaler.initialize(game)
 	if not marching_orders.is_empty():
 		_marching_index = 0
 		_marching_timer = 0.0
@@ -140,6 +144,12 @@ func _advance_marching(delta: float) -> void:
 	if order.type == CDMarchingOrder.Type.STEP and order.speed_scaler:
 		effective_duration = order.speed_scaler.evaluate()
 	
+	## apply global speed multiplier (divides duration → faster marching)
+	if speed_scaler:
+		var multiplier := speed_scaler.evaluate()
+		if multiplier > 0.0:
+			effective_duration /= multiplier
+	
 	_marching_timer += delta
 	
 	match order.type:
@@ -153,7 +163,7 @@ func _advance_marching(delta: float) -> void:
 			## compute breathing scale based on phase within the breathe order
 			var total_time := order.expand_time + order.hold_time + order.contract_time
 			if total_time > 0.0:
-				var t := _marching_timer / total_time
+				var t := _marching_timer / effective_duration
 				t = fmod(t, 1.0)
 				if t < order.expand_time / total_time:
 					_marching_breath_scale = 1.0 + order.amplitude * (t * total_time / order.expand_time)
@@ -304,6 +314,8 @@ func _is_in_formation_groups(entity: CDEntity) -> bool:
 
 ## clear all slots and animation state for game restart
 func reset() -> void:
+	if speed_scaler:
+		speed_scaler.reset()
 	_init_all_slots()
 	_breathing_phase = 0.0
 	_assigned_this_frame.clear()

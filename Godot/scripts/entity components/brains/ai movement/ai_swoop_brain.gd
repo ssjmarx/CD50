@@ -32,6 +32,12 @@ class_name AISwoopBrain extends CDEntityComponent
 ## distance to consider a checkpoint reached
 @export var arrival_threshold: float = 8.0
 
+@export_group("Loop Mode")
+## when true, regenerate curve from current position instead of ending
+@export var loop: bool = false
+## entity bus signals that trigger a curve restart (e.g. screen wrap)
+@export var restart_signals: Array[StringName] = []
+
 @export_group("Listen Signals")
 ## entity bus signals that start the swoop
 @export var start_signals: Array[StringName] = [&"begin_swoop"]
@@ -68,6 +74,8 @@ var _checkpoints: PackedVector2Array = []
 var _current_index: int = 0
 ## whether currently executing a swoop
 var _is_swooping: bool = false
+## deferred restart flag — waits for next physics frame so position is correct after wrap
+var _pending_restart: bool = false
 
 ## --- lifecycle ---
 
@@ -123,13 +131,16 @@ func _process(_delta: float) -> void:
 	if not Engine.is_editor_hint():
 		return
 
-## connect start/stop triggers (complete signals auto-created by bus_emit)
+## connect start/stop/restart triggers
 func _on_initialize() -> void:
 	for sig in start_signals:
 		entity.bus_connect(sig, _on_start_swoop)
 
 	for sig in stop_signals:
 		entity.bus_connect(sig, _on_stop_swoop)
+
+	for sig in restart_signals:
+		entity.bus_connect(sig, _on_restart_swoop)
 
 ## --- swoop triggers ---
 
@@ -161,6 +172,15 @@ func _on_stop_swoop() -> void:
 		return
 	_end_swoop()
 
+## restart the swoop from current position (e.g. screen wrap signal)
+## deferred to next physics frame so entity position is correct after screen wrap
+func _on_restart_swoop() -> void:
+	if not _is_swooping:
+		return
+	if not curve:
+		return
+	_pending_restart = true
+
 ## --- checkpoint generation ---
 
 ## generate evenly-spaced checkpoints along the baked curve
@@ -181,6 +201,12 @@ func _generate_checkpoints() -> PackedVector2Array:
 
 ## advance along checkpoint path each frame
 func _physics_process(_delta: float) -> void:
+	## handle deferred restart — position is now correct after wrap
+	if _pending_restart:
+		_pending_restart = false
+		_regenerate_curve()
+		return
+
 	if not _is_swooping or _checkpoints.is_empty():
 		return
 
@@ -196,8 +222,23 @@ func _physics_process(_delta: float) -> void:
 		if _current_index >= _checkpoints.size():
 			_end_swoop()
 
-## end the swoop and emit completion signals
+## regenerate the curve from the entity's current position
+func _regenerate_curve() -> void:
+	if not curve:
+		return
+	var start := entity.global_position
+	var target := start + target_direction.normalized() * target_distance
+	_curve2d = curve.generate_curve(start, target)
+	_curve_length = _curve2d.get_baked_length()
+	_checkpoints = _generate_checkpoints()
+	_current_index = 0
+
+## end the swoop — in loop mode, restart instead of completing
 func _end_swoop() -> void:
+	if loop and is_instance_valid(entity) and entity.state == CDEnums.EntityState.ACTIVE:
+		_regenerate_curve()
+		return
+
 	_is_swooping = false
 	_checkpoints.clear()
 	_current_index = 0
@@ -213,6 +254,7 @@ func _end_swoop() -> void:
 func _on_entity_deactivating() -> void:
 	super._on_entity_deactivating()
 	_is_swooping = false
+	_pending_restart = false
 	_checkpoints.clear()
 	_current_index = 0
 	_curve2d = null
@@ -221,6 +263,8 @@ func _on_entity_deactivating() -> void:
 		entity.bus_disconnect(sig, _on_start_swoop)
 	for sig in stop_signals:
 		entity.bus_disconnect(sig, _on_stop_swoop)
+	for sig in restart_signals:
+		entity.bus_disconnect(sig, _on_restart_swoop)
 
 ## disable physics processing on activation (waits for start signal)
 func _on_entity_activated() -> void:
