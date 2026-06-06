@@ -36,13 +36,13 @@ The itch.io demo is feature-complete. All 12 games, Polybius character, 5 modifi
 2. Add "Wishlist on Steam" button on the itch page
 3. Add teaser line with Steam link
 
-### After Shipping: Bug Blaster 2 (Galaga) — Capture Mechanics + Multi-Wave
+### After Shipping: Bug Blaster 2 (Galaga) — Capture Mechanics
 
-Bug Blaster 2 is partially implemented with formation, swoop/dive, and shooting all functional. Remaining features:
+Bug Blaster 2 has 5-level progression with 3 enemy types (bug/wasp/spider), mixed spawn patterns, unique swoop curves per level, formation, swoop/dive, shooting, and StateDirector dive cycle all functional. Remaining features:
 
 1. **Capture ships** — Bug ship variant with AITractorBeamBrain that attempts to capture the player
 2. **Capture mechanics** — Player gets captured by tractor beam, becomes prisoner; rescue the prisoner to get a dual fighter
-3. **Multiple waves** — Wave progression with escalating formation sizes, dive patterns, and enemy types
+3. ~~**Multiple waves** — Wave progression with escalating formation sizes, dive patterns, and enemy types~~ ✅ Done (5 levels, 32/16/8 bug/wasp/spider per level)
 4. **Bonus stages** — Optional bonus waves for extra points
 
 All components already exist (AITractorBeamBrain, TractorBeamArm, PowerupWingmanArm, WaveCard, StageDirector). This is primarily scene assembly work.
@@ -150,6 +150,7 @@ The following plans have been **deleted** from the active pipeline:
 
 | Plan | Description | Completed |
 |------|-------------|-----------|
+| BB2 Session 2 | Wasp/Spider entities (6 scenes), spawn_scenes array, 5-level mixed spawn patterns | 2026-06-05 |
 | 28 | V2 CDStage + CDBody Session 2 (MANAGER category, StageManager, StateManager, SignalManager, CDStageRule, CDStage simplified) | 2026-06-05 |
 | BB2 Session | ScrollingStarsEffect (1 script), SwoopDirector freed-instance fix, CRTProjector attract-mode darkness fix, CDEffect infinite lifetime | 2026-06-05 |
 | Doc Sweep #2 | Documentation sweep (ensure_signal removal, directory structure, validity guards) | 2026-06-04 |

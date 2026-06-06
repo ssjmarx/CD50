@@ -4,14 +4,14 @@
 **Engine:** Godot 4.5 (GDScript)  
 **Architecture:** V2 Composable Architecture (active development) — V1 archived to `Godot/v1/`  
 **Playable Games:** Paddle Ball, Brick Breaker, Space Rocks, Meteor Rally, Dogfight, Bug Blaster, Block Drop (Modern), Rock Breaker, Bug Drop, Space Bugs, Planetary Attack!, Space Rocks Inverted — ALL componentized, zero game scripts
-**In Progress:** Bug Blaster 2 (Galaga) — partially implemented. Formation, swoop/dive, shooting, StateDirector dive cycle all functional. Remaining: capture ships, capture mechanics, multiple waves.
-**Recent Completed:** Plans 19–28 complete. Plan 28 adds MANAGER category (priority 75), StageManager/StateManager/SignalManager components, CDStageRule resource. CDStage simplified (sleep_on/wake_on removed → StageManager handles stage control). 170 V2 scripts written.
+**In Progress:** Bug Blaster 2 (Galaga) — 5-level progression with 3 enemy types (bug/wasp/spider), mixed spawn patterns, unique swoop curves per level. Formation, swoop/dive, shooting, StateDirector dive cycle all functional. Remaining: capture ships, capture mechanics, bonus stages.
+**Recent Completed:** Plans 19–28 complete. Plan 28 adds MANAGER category (priority 75), StageManager/StateManager/SignalManager components, CDStageRule resource. CDStage simplified (sleep_on/wake_on removed → StageManager handles stage control). 172 V2 scripts written.
 **Demo Status:** Code-locked at 12 games. Polybius character complete (7 scripts, 5 voice lines, full AO intro/outro integration). Only shipping tasks remain (flip itch to public, add Steam wishlist link). Itch.io demo stays on V1 architecture.
 
 **Key Documentation:**
 - `USAGE.md` — Complete patterns, anti-patterns, and code quality guide for the V2 architecture
 - `memory-bank/05 - Patterns & Anti-Patterns.md` — Quick-reference index for AI agents
-- `memory-bank/07 - Component Catalogue V2.md` — Full V2 component inventory (165 scripts)
+- `memory-bank/07 - Component Catalogue V2.md` — Full V2 component inventory (172 scripts)
 - `planning/V2 Rules.md` — Canonical V2 design reference
 
 ---
@@ -62,7 +62,7 @@ All V2 core scripts live in `Godot/scripts/core/`. Full details in `USAGE.md`.
 | Stage (RULES) | 70 | 27 | ScoreCard, LivesCard, TimerCard, WaveCard, Goals, Directors, Marks, Speakers, Projectors, Trapdoors |
 | Managers | 75 | 3 | StageManager, StateManager, SignalManager |
 
-**Total: 170 V2 scripts + 47 custom resources**
+**Total: 172 V2 scripts + 47 custom resources**
 
 Full catalogue: `memory-bank/07 - Component Catalogue V2.md`
 
@@ -97,7 +97,7 @@ Godot/scripts/
 │   ├── infrastructure/          — CDEntity, CDGame, CDCollisionBuffer, CDGroupRegistry, etc. (10)
 │   └── resources/
 │       ├── audio/               — CDNote, CDSoundDef, CDMusicTrack (3)
-│       ├── behavior/            — CDTransition, CDShape, CDScaler, CDSequenceStep, etc. (8)
+│       ├── behavior/            — CDTransition, CDShape, CDScaler, CDSequenceStep, CDStageRule, etc. (9)
 │       ├── curves/              — CDCurve base + 12 curve types (13)
 │       ├── formation/           — CDFormation, CDMarchingOrder (2)
 │       ├── infrastructure/      — CDCollisionGroup, CDEnums, CDUtilities (3)
@@ -140,7 +140,7 @@ Godot/scripts/
 │   ├── projectors/              — 2 visual post-processing
 │   ├── speakers/                — 3 audio components
 │   └── trapdoors/               — 3 spawners
-└── effects/                     — 2 self-destructing visual effects
+└── effects/                     — 3 visual effects (2 self-destructing, 1 persistent star field)
 ```
 
 ### V2 Implementation Plans
@@ -159,14 +159,14 @@ Godot/scripts/
 | 27 | Blackboard Architecture | ✅ Complete | `planning/27 - V2 Blackboard Architecture.md` |
 | 28 | CDStage + CDBody | ✅ Complete | `planning/28 - V2 CDStage + CDBody.md` |
 
-**Full V2 component catalogue:** `memory-bank/07 - Component Catalogue V2.md` (165 scripts written)
+**Full V2 component catalogue:** `memory-bank/07 - Component Catalogue V2.md` (172 scripts written)
 
 ---
 
 ## Assets
 
 - **Audio:** Procedural synthesis via SoundSynth component (all game audio generated at runtime) + pre-recorded OGG music tracks via MusicPlayer component with floating credit overlays
-- **Music:** 4 licensed OGG tracks — 2 public domain (`el_manisero.ogg`, `son_de_la_loma.ogg`) rendered with 8-bit NES soundfont + 2 by Karl Casey / White Bat Audio (`Hunted by Machines.ogg`, `The Devil's Eyes.ogg`) licensed CC-BY 4.0. All with `MusicTrack` attribution resources. MusicPlayer shuffles playlist, fades in/out, shows credits, supports speed ramping.
+- **Music:** 3 licensed OGG tracks — 2 public domain (`el_manisero.ogg`, `son_de_la_loma.ogg`) rendered with 8-bit NES soundfont + 1 by Karl Casey / White Bat Audio (`Hunted by Machines.ogg`) licensed CC-BY 4.0. All with `MusicTrack` attribution resources. MusicPlayer shuffles playlist, fades in/out, shows credits, supports speed ramping.
 - **Fonts:** Kenney retro fonts (Pixel, High, Mini, Rocket, Future, Blocks, Square — regular and narrow variants)
 - **CRT System:** Custom lightweight CRT shader (`Shaders/crt_light.gdshader`) + persistence shader (`Shaders/persistence.gdshader`) + `crt_controller.gd` (self-building Node2D with SubViewport frame accumulation) + PNG overlays (scanlines, phosphor grid, noise). Vector monitor mode uses SubViewport persistence with exponential decay for phosphor trails. Per-game display mode switching via `vector_monitor` export on UGS.
 - **Effects:** Self-destructing effect scenes (death_particles, death_broken_triangle_ship) + infinite ScrollingStarsEffect (Galaga-style scrolling star background, configurable density/speed/colors/size)

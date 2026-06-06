@@ -1,7 +1,7 @@
 # USAGE — CD50 Composable Architecture
 
 **Complete guide to patterns, anti-patterns, and code quality guidelines for the CD50 component system.**  
-**Architecture version:** V2 (Plans 19–27)  
+**Architecture version:** V2 (Plans 19–28)  
 **Canonical reference:** `planning/V2 Rules.md`
 
 ---
@@ -327,7 +327,7 @@ Entity components use a two-phase init to solve the "other components don't exis
 
 **⚠️ Current limitation:** Entity initialization currently depends on CDGame infrastructure (group registry, collision buffer, input router, object pool). This means entities cannot run standalone outside a CDGame scene tree. An entity instantiated without a CDGame ancestor will fail to initialize properly. This coupling is a known constraint that may be relaxed in future iterations.
 
-Stage components (CDStageComponent2D, CDCueCard) often don't need `_on_initialize()` — they connect to the game bus (Dictionary-based, no ordering issues) directly in `_ready()` or via `call_deferred("_on_initialize")`.
+Stage components (CDStageComponent2D, CDCueCard) often don't need `_on_initialize()` — they connect to the game bus (native signals, no ordering issues) directly in `_ready()` or via `call_deferred("_on_initialize")`.
 
 ### Two-Phase Deactivation
 
@@ -780,7 +780,7 @@ Event-driven spatial triggers. Auto-creates collision shapes, filters by groups,
 
 **Base class:** `CDStageTrapdoor` (non-virtual base, override virtual methods)
 
-Trigger → Queue → Stagger → Spawn lifecycle with telefrag and safe zone support. Override `_get_spawn_count()`, `_get_spawn_position()`, `_get_spawn_scene()`.
+Trigger → Queue → Stagger → Spawn lifecycle with telefrag and safe zone support. Supports mixed-type spawning via `spawn_scenes: Array[PackedScene]` (cycles through array, falls back to `spawn_scene`). Override `_get_spawn_count()`, `_get_spawn_position()`, `_get_spawn_scene()`.
 
 **Trapdoors:** PointTrapdoor, EdgeTrapdoor, GridTrapdoor.
 
@@ -1356,4 +1356,4 @@ No game script needed. Every game is a scene tree assembly:
 | Stage (RULES) | 70 | 27 | ScoreCard, LivesCard, TimerCard, WaveCard, GroupCountGoal, ScoreThresholdGoal, CDMark, CountMark, MobileMark, OccupancyMark, SafeZoneMark, TimedMark, FormationDirector, StageDirector, StateDirector, ShootingDirector, AimingDirector, SwoopDirector, SignalSequenceDirector, SoundSpeaker, ContinuousSpeaker, MusicSpeaker, CRTProjector, CreditProjection, PointTrapdoor, EdgeTrapdoor, GridTrapdoor |
 | Manager | 75 | 3 | StageManager, StateManager, SignalManager |
 
-**Total: 170 V2 scripts + 47 custom resources**
+**Total: 172 V2 scripts + 47 custom resources**

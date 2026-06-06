@@ -51,7 +51,21 @@ _physics_process(delta)
 | **Spawn context** | Optional `CDSpawnContext` for initial velocity/rotation |
 | **Telefrag** | `telefrag` kills overlapping entities at spawn point via physics query |
 | **Safe zone** | Pauses spawning while `zone_unsafe` signal is active |
+| **Mixed spawning** | `spawn_scenes: Array[PackedScene]` cycles through scene types per slot |
 | **Completion** | Emits `spawning_complete` with wave number when queue drains |
+
+### Mixed Spawning (`spawn_scenes`)
+
+The base class supports two spawn modes:
+
+| Export | Behavior |
+|--------|----------|
+| `spawn_scene: PackedScene` | All entities are the same type (original behavior) |
+| `spawn_scenes: Array[PackedScene]` | Each slot cycles through the array (modulo length) |
+
+When `spawn_scenes` is populated, `_get_spawn_scene(index, total)` returns `spawn_scenes[index % spawn_scenes.size()]`. Any remaining slots fall back to `spawn_scene`. This enables mixed-type spawning (e.g., bug/wasp/spider patterns) from a single trapdoor without subclassing.
+
+**Example:** `spawn_scenes = [bug, wasp, wasp]` with count 12 produces: bug, wasp, wasp, bug, wasp, wasp, bug, wasp, wasp, bug, wasp, wasp (4 bug + 8 wasp).
 
 ---
 

@@ -1,9 +1,9 @@
 # Component Catalogue V2
 
-**Last Updated:** 2026-06-04  
+**Last Updated:** 2026-06-05  
 **Architecture:** V2 Composable Architecture  
 **Canonical Reference:** `planning/V2 Rules.md`  
-**Total V2 Scripts:** 165
+**Total V2 Scripts:** 170
 
 ---
 
@@ -11,7 +11,7 @@
 
 The V2 architecture replaces V1's `UniversalBody`/`UniversalComponent` system with `CDEntity`/`CDEntityComponent`/`CDGameComponent`. Components communicate via entity bus and game bus (both native Godot signals + blackboard). All dynamic signals are zero-arg; data flows through `entity.blackboard` and `game.blackboard`. Processing order is deterministic via priority categories.
 
-**Priority Cascade:** Registry(5) → Input(8) → Brains(10) → Legs(20) → Entity(30) → Buffer(35) → Arms(40) → Guts(50) → Faces(60) → Voices(65) → Stage(70) → Update(90)
+**Priority Cascade:** Registry(5) → Input(8) → Brains(10) → Legs(20) → Entity(30) → Buffer(35) → Arms(40) → Guts(50) → Faces(60) → Voices(65) → Stage(70) → Manager(75) → Update(90)
 
 ---
 
@@ -26,7 +26,7 @@ The V2 architecture replaces V1's `UniversalBody`/`UniversalComponent` system wi
 
 ---
 
-## Core — Infrastructure (10)
+## Core — Infrastructure (12)
 
 | Script | Class | Summary |
 |--------|-------|---------|
@@ -40,6 +40,8 @@ The V2 architecture replaces V1's `UniversalBody`/`UniversalComponent` system wi
 | `cd_object_pool.gd` | `CDObjectPool extends Node` | Per-type entity pool |
 | `cd_sound_bank.gd` | `CDSoundBank extends CDGameComponent` | Centralized audio engine for V2 |
 | `cd_updater.gd` | `CDUpdater extends Node` | Defers state updates (component and group changes) to end of frame |
+| `cd_stage.gd` | `CDStage extends CDGameComponent` | Game-level container — sleeps/wakes child CDGameComponents as a group |
+| `cd_body.gd` | `CDBody extends CDEntityComponent` | Entity-level container — sleeps/wakes child CDEntityComponents as a group |
 
 ---
 
@@ -63,7 +65,7 @@ The V2 architecture replaces V1's `UniversalBody`/`UniversalComponent` system wi
 
 ---
 
-## Core — Resources: Behavior (8)
+## Core — Resources: Behavior (9)
 
 | Script | Class | Summary |
 |--------|-------|---------|
@@ -75,6 +77,7 @@ The V2 architecture replaces V1's `UniversalBody`/`UniversalComponent` system wi
 | `cd_wave_scaler.gd` | `CDWaveScaler extends CDScaler` | Scales a value based on current wave number |
 | `cd_group_count_scaler.gd` | `CDGroupCountScaler extends CDScaler` | Scales a value based on group population (ratio or linear) |
 | `cd_sequence_step.gd` | `CDSequenceStep extends Resource` | Single step in a SignalSequenceDirector's timed signal sequence |
+| `cd_stage_rule.gd` | `CDStageRule extends Resource` | Trigger + sleep/wake stage names for StageManager |
 
 ---
 
@@ -158,12 +161,13 @@ Abstract base `CDTrigger` plus 4 trigger types for state machine transitions.
 
 ---
 
-## Effects (2)
+## Effects (3)
 
 | Script | Class | Summary |
 |--------|-------|---------|
 | `broken_ship_effect.gd` | `BrokenTriangleEffect extends CDEffect` | Spinning line fragments that drift outward and fade |
 | `death_particle_effect.gd` | `DeathParticleEffect extends CDEffect` | Burst of single-pixel particles that fly outward |
+| `scrolling_stars_effect.gd` | `CDScrollingStarsEffect extends CDEffect` | Galaga-style scrolling star background (configurable density/speed/colors) |
 
 ---
 
@@ -500,22 +504,34 @@ Stage-level spawners. Subscribe to game bus signals, queue and stagger-spawn ent
 
 ---
 
+## Game Components — Managers (3)
+
+Stage-level managers (Priority 75). Run after RULES, before UPDATE. Control stage lifecycle, state transitions, and timed signal sequences.
+
+| Script | Class | Summary |
+|--------|-------|---------|
+| `stage_manager.gd` | `StageManager extends CDGameComponent` | Evaluates CDStageRule triggers, sleeps/wakes named CDStages |
+| `state_manager.gd` | `StateManager extends CDGameComponent` | Group-as-state transitions via CDTransition resources |
+| `signal_manager.gd` | `SignalManager extends CDGameComponent` | Timed signal macro sequences via CDSequenceStep resources |
+
+---
+
 ## Component Count Summary
 
 | Category | Count |
 |----------|-------|
 | Core Base Classes | 4 |
-| Core Infrastructure | 10 |
+| Core Infrastructure | 12 |
 | Core Resources: Infrastructure | 3 |
 | Core Resources: Audio | 3 |
-| Core Resources: Behavior | 8 |
+| Core Resources: Behavior | 9 |
 | Core Resources: Curves | 13 |
 | Core Resources: Selectors | 7 |
 | Core Resources: Spawners | 4 |
 | Core Resources: Triggers | 5 |
 | Core Resources: Formation | 2 |
 | Core Resources: Visuals | 1 |
-| Effects | 2 |
+| Effects | 3 |
 | Brains | 17 |
 | Arms | 16 |
 | Guts | 19 |
@@ -524,9 +540,10 @@ Stage-level spawners. Subscribe to game bus signals, queue and stagger-spawn ent
 | Voices | 2 |
 | Cue Cards | 4 |
 | Directors | 7 |
+| Managers | 3 |
 | Goals | 2 |
 | Marks | 6 |
 | Projectors | 2 |
 | Speakers | 3 |
 | Trapdoors | 3 |
-| **Total V2 Scripts** | **165** |
+| **Total V2 Scripts** | **170** |

@@ -4,6 +4,59 @@
 
 ---
 
+## BB2 Session 2026-06-05b — Wasp & Spider Entities, Mixed Spawn Patterns, 5-Level Progression (0 new scripts, 6 new scenes, scene-driven)
+
+Expanded Bug Blaster 2 from single-enemy-type to a 3-type ecosystem (bug/wasp/spider) with per-level mixed spawn ratios. All done through scene assembly — no new scripts required.
+
+### New Entity Scenes (6)
+
+| File | Purpose |
+|------|---------|
+| `entities/generic/wasp_ship.tscn` | Wasp generic entity (squid sprites) |
+| `entities/generic/wasp_ship_smooth.tscn` | Wasp smooth variant |
+| `entities/generic/spider_ship.tscn` | Spider generic entity (crab sprites) |
+| `entities/generic/spider_ship_smooth.tscn` | Spider smooth variant |
+| `entities/nonplayer/wasp_ship_swooping_nonplayer.tscn` | Wasp swooping nonplayer (AISwoopBrain + AnnouncerGuts) |
+| `entities/nonplayer/spider_ship_swooping_nonplayer.tscn` | Spider swooping nonplayer (AISwoopBrain + AnnouncerGuts) |
+
+### CDStageTrapdoor — `spawn_scenes` Array (modified)
+
+Added `spawn_scenes: Array[PackedScene]` to the base class. When populated, `_get_spawn_scene()` cycles through the array by index (modulo length), falling back to `spawn_scene` for any remaining slots. This enables mixed-type spawning from a single trapdoor without subclassing.
+
+**Before:** Single `spawn_scene` — all entities identical.
+**After:** `spawn_scenes` array — each slot in the spawn queue can produce a different entity type.
+
+### bug_blaster_2.tscn — 5-Level Mixed Spawn Progression
+
+All 5 levels now produce exactly **32 bug + 16 wasp + 8 spider = 56 total** per level, using varied patterns:
+
+| Level | TD1 (top_left, ×2 fires) | TD2 (top_right, ×2 fires) | TD3 (bottom_left, ×1) | TD4 (bottom_right, ×1) |
+|-------|---------------------------|---------------------------|------------------------|-------------------------|
+| 1 | 8 bug | 8 bug | 12 [S,W,W] | 12 [S,W,W] |
+| 2 | 10 [B,B,B,W,W] | 10 [B,B,B,W,W] | 8 [B,S] | 8 [B,S] |
+| 3 | 8 bug | 8 bug | 12 [S,W,W] | 12 [S,W,W] |
+| 4 | 10 [B,B,B,W,W] | 8 [B,S] | 8 [B,S] | 10 [B,B,B,W,W] |
+| 5 | 12 [S,W,W] | 12 [S,W,W] | 8 bug | 8 bug |
+
+Each level also has unique swoop curves (helix, spiral, parabola, sine, circle, sequence), speeds (300–500), and SignalManager step sequences.
+
+### Files
+
+| File | Action |
+|------|--------|
+| `entities/generic/wasp_ship.tscn` | New |
+| `entities/generic/wasp_ship_smooth.tscn` | New |
+| `entities/generic/spider_ship.tscn` | New |
+| `entities/generic/spider_ship_smooth.tscn` | New |
+| `entities/nonplayer/wasp_ship_swooping_nonplayer.tscn` | New |
+| `entities/nonplayer/spider_ship_swooping_nonplayer.tscn` | New |
+| `games/bug_blaster_2.tscn` | Updated — 5 levels with mixed spawn patterns |
+| `cd_stage_trapdoor.gd` | Modified — added `spawn_scenes` array |
+
+### V2 Total Scripts Written: 170 (scene-driven, no new scripts)
+
+---
+
 ## Plan 28 — V2 CDStage + CDBody (COMPLETE — 5 new scripts, 2 modified)
 
 Sleep/wake container infrastructure + MANAGER category + data-driven stage/state/signal managers.

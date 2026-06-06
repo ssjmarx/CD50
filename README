@@ -1,6 +1,6 @@
 # CD50
 
-12 arcade games built from 165 reusable components. Zero game scripts.
+12 arcade games built from 172 reusable components. Zero game scripts.
 
 CD50 is a modular arcade game collection built in [Godot](https://godotengine.org) using a composable component architecture. Every game — from Pong to Tetris to a Galaga-asteroids mashup — is assembled by attaching generic components to generic entities in the editor. No game-specific code exists anywhere in the project.
 
@@ -19,10 +19,10 @@ CD50 is a modular arcade game collection built in [Godot](https://godotengine.or
 Every frame, components execute in a deterministic priority cascade:
 
 ```
-REGISTRATION → INTENT → STEERING → PHYSICS → COLLISION → INTERACTION → STATE → VISUAL → AUDIO → RULES → UPDATE
- sync groups    "go!"    calc       moves     "you hit    damage       health   draw it   play it   score it   flush
-                           speed +    the       something"  to target    drops    on screen out loud  check win  mutations
-                           direction  thing
+REGISTRATION → INPUT → INTENT → STEERING → PHYSICS → COLLISION → INTERACTION → STATE → VISUAL → AUDIO → RULES → MANAGER → UPDATE
+ sync groups   read    "go!"    calc       moves     "you hit    damage       health   draw it   play it   score it   orchestrate  flush
+                input            speed +    the       something"  to target    drops    on screen out loud  check win  mutations
+                                 direction  thing
 ```
 
 Lower priority = runs earlier. Brains decide before Legs move. Legs move before Arms react to collisions. Guts track damage after Arms deal it. Faces draw the final state. Stage components update scores and check win conditions last.
@@ -40,8 +40,9 @@ This eliminates frame-ordering bugs. Every component knows exactly when it runs 
 | **Faces** | 60 | Draw entity appearance | 7 | PolygonFace, VectorFace, SpriteFace, DeathEffectFace |
 | **Voices** | 65 | Entity-level audio | 2 | SoundVoice, ContinuousVoice |
 | **Stage** | 70 | Game-level logic, UI, spawning | 27 | ScoreCard, GroupCountGoal, GridTrapdoor, FormationDirector, MusicSpeaker |
+| **Manager** | 75 | Data-driven stage orchestration | 3 | StageManager, StateManager, SignalManager |
 
-Plus 10 core infrastructure scripts (CDEntity, CDGame, CDCollisionBuffer, CDGroupRegistry, etc.) and 46 custom resources (curves, triggers, selectors, shapes, transitions, scalers, formations, wall kicks, sound definitions).
+Plus 16 core infrastructure scripts (CDEntity, CDGame, CDComponent2D, CDStageComponent2D, CDCollisionBuffer, CDGroupRegistry, etc.) and 47 custom resources (curves, triggers, selectors, shapes, transitions, scalers, formations, wall kicks, sound definitions).
 
 ---
 
@@ -127,7 +128,7 @@ Godot/
 │   │   ├── projectors/          — 2 visual post-processing
 │   │   ├── speakers/            — 3 audio components
 │   │   └── trapdoors/           — 3 spawners
-│   └── effects/                 — 2 self-destructing visual effects
+│   └── effects/                 — 3 visual effects (2 self-destructing, 1 persistent)
 ├── scenes/                      — Scene assemblies (entity + game component instances)
 ├── entities/                    — Entity prefabs (generic, player, nonplayer)
 ├── games/                       — Game scene roots
