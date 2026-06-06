@@ -39,6 +39,11 @@ class_name SwoopDirector extends CDGameComponent
 @export var on_swoop_complete: Array[StringName] = [&"swoop_complete"]
 
 @export_group("Preview")
+@export var show_preview: bool = true:
+	set(v):
+		show_preview = v
+		if is_node_ready():
+			queue_redraw()
 @export var preview_color: Color = Color.CYAN:
 	set(v):
 		preview_color = v
@@ -105,7 +110,7 @@ func _on_initialize() -> void:
 
 ## draw
 func _draw() -> void:
-	if not Engine.is_editor_hint() or not curve:
+	if not show_preview or not Engine.is_editor_hint() or not curve:
 		return
 	
 	var preview: Curve2D = curve.generate_curve(Vector2.ZERO, target - global_position)
