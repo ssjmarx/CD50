@@ -1,15 +1,18 @@
-[gd_scene load_steps=13 format=3 uid="uid://cg7pe2i8eem54"]
+[gd_scene load_steps=22 format=3 uid="uid://cg7pe2i8eem54"]
 
 [ext_resource type="Script" uid="uid://dfbv2tw3cl4pe" path="res://scripts/core/infrastructure/cd_entity.gd" id="1_u2iwu"]
 [ext_resource type="PackedScene" uid="uid://dlgrii32eggbo" path="res://scenes/entity components/faces/sprite_face.tscn" id="2_w6l0f"]
-[ext_resource type="Texture2D" uid="uid://b5agok580qi1u" path="res://assets/seafood/squid_1.png" id="3_imijo"]
-[ext_resource type="Texture2D" uid="uid://ddgw6fthco84h" path="res://assets/seafood/squid_2.png" id="4_u15cn"]
+[ext_resource type="Texture2D" uid="uid://b5agok580qi1u" path="res://v1/Assets/invaders/squid_1.png" id="3_imijo"]
+[ext_resource type="Texture2D" uid="uid://ddgw6fthco84h" path="res://v1/Assets/invaders/squid_2.png" id="4_u15cn"]
 [ext_resource type="PackedScene" uid="uid://1vgoj6bqs80e" path="res://scenes/entity components/arms/gun_arm.tscn" id="6_4d6mp"]
 [ext_resource type="Script" uid="uid://dcu4ocnin0htu" path="res://scripts/core/resources/spawners/cd_spawn_context.gd" id="8_bm3eg"]
 [ext_resource type="PackedScene" uid="uid://btr1f3svl7y3m" path="res://scenes/entity components/guts/healthpool_guts.tscn" id="9_rdxva"]
 [ext_resource type="PackedScene" uid="uid://bisjhhp8r5a4p" path="res://scenes/entity components/faces/death_effect_face.tscn" id="10_ceqff"]
 [ext_resource type="PackedScene" uid="uid://bfxtjii32duju" path="res://scenes/entity components/guts/die_at_zero_health_guts.tscn" id="10_gh8fs"]
+[ext_resource type="PackedScene" uid="uid://c4jinp88xtitl" path="res://scenes/entity components/voices/sound_voice.tscn" id="11_b6g14"]
 [ext_resource type="PackedScene" uid="uid://dnt5g5mntk0nk" path="res://scenes/effects/death_particle_effect.tscn" id="11_tosi5"]
+[ext_resource type="Script" uid="uid://ci2yaa2b1swsj" path="res://scripts/core/resources/audio/cd_note.gd" id="12_jkd33"]
+[ext_resource type="Script" uid="uid://d3l2c838cqwsm" path="res://scripts/core/resources/audio/cd_sound_def.gd" id="13_vdwk6"]
 
 [sub_resource type="AnimatedTexture" id="AnimatedTexture_spider"]
 frames = 2
@@ -19,8 +22,43 @@ frame_1/duration = 1.0
 
 [sub_resource type="Resource" id="Resource_spider"]
 script = ExtResource("8_bm3eg")
-velocity = Vector2(0, 600)
+velocity = Vector2(0, 400)
 metadata/_custom_type_script = "uid://dcu4ocnin0htu"
+
+[sub_resource type="Resource" id="Resource_bqm55"]
+script = ExtResource("12_jkd33")
+metadata/_custom_type_script = "uid://ci2yaa2b1swsj"
+
+[sub_resource type="Resource" id="Resource_er7ws"]
+script = ExtResource("12_jkd33")
+metadata/_custom_type_script = "uid://ci2yaa2b1swsj"
+
+[sub_resource type="Resource" id="Resource_f2yxo"]
+script = ExtResource("13_vdwk6")
+wave_shape = 2
+effect = 1
+notes = Array[ExtResource("12_jkd33")]([SubResource("Resource_bqm55"), SubResource("Resource_er7ws")])
+metadata/_custom_type_script = "uid://d3l2c838cqwsm"
+
+[sub_resource type="Resource" id="Resource_vdwk6"]
+script = ExtResource("12_jkd33")
+note = 93
+duration = 0.0
+glide = true
+metadata/_custom_type_script = "uid://ci2yaa2b1swsj"
+
+[sub_resource type="Resource" id="Resource_43xsa"]
+script = ExtResource("12_jkd33")
+note = 57
+duration = 1.5
+glide = true
+metadata/_custom_type_script = "uid://ci2yaa2b1swsj"
+
+[sub_resource type="Resource" id="Resource_33tna"]
+script = ExtResource("13_vdwk6")
+wave_shape = 3
+notes = Array[ExtResource("12_jkd33")]([SubResource("Resource_vdwk6"), SubResource("Resource_43xsa")])
+metadata/_custom_type_script = "uid://d3l2c838cqwsm"
 
 [node name="SpiderShip" type="CharacterBody2D"]
 script = ExtResource("1_u2iwu")
@@ -42,3 +80,11 @@ max_health = 1
 
 [node name="DeathEffectFace" parent="." instance=ExtResource("10_ceqff")]
 effect_scenes = Array[PackedScene]([ExtResource("11_tosi5")])
+
+[node name="SoundVoice" parent="." instance=ExtResource("11_b6g14")]
+sound = SubResource("Resource_f2yxo")
+trigger_signal = &"take_damage"
+
+[node name="SoundVoice2" parent="." instance=ExtResource("11_b6g14")]
+sound = SubResource("Resource_33tna")
+trigger_signal = &"request_deactivate"

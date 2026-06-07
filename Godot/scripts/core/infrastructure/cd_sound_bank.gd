@@ -7,12 +7,16 @@ class_name CDSoundBank extends CDGameComponent
 ## --- Constants ---
 
 const MIX_RATE: int = 11025
-const MAX_VOICES: int = 8
 const MAX_CONTINUOUS: int = 4
 const MAX_FILL_PER_FRAME: int = 256
 const MAX_INITIAL_FILL: int = 128
 const POSITIONAL_DISTANCE: float = 2000.0
 const GLOBAL_DISTANCE: float = 2000000.0
+
+## --- Exports ---
+
+## max simultaneous one-shot voices (set lower for arcade authenticity, e.g. 3 for Galaga)
+@export var max_channels: int = 8
 
 ## --- Voice Pools ---
 
@@ -20,6 +24,8 @@ const GLOBAL_DISTANCE: float = 2000000.0
 var _voices: Array = []
 ## continuous voice pool (engine hum, alarm)
 var _continuous_pool: Array = []
+## active one-shot voices keyed by CDSoundDef instance id (sound dedup)
+var _sound_registry: Dictionary = {}  # sound_def_id : Voice
 ## active continuous voices keyed by signature string
 var _continuous_registry: Dictionary = {}  # signature : Voice
 ## tracks whether any voice is active (controls process flag)
@@ -32,7 +38,7 @@ func _on_initialize() -> void:
 	set_process(false)
 
 	## create one-shot voice pool
-	for i in MAX_VOICES:
+	for i in max_channels:
 		var voice := Voice.new()
 		var gen := AudioStreamGenerator.new()
 		gen.mix_rate = MIX_RATE
@@ -90,7 +96,7 @@ func _process(_delta: float) -> void:
 		var remaining: int = voice.shot_end - voice.frame_pos
 		var to_push: int = mini(to_fill, remaining)
 		for i in to_push:
-			var t: float = float(voice.frame_pos) / MIX_RATE
+			var t: float = float(voice.frame_pos - voice.note_frame_start) / MIX_RATE
 			var sample: float = _get_sample(voice, t)
 			voice.playback.push_frame(Vector2(sample, sample))
 			voice.frame_pos += 1
@@ -98,12 +104,14 @@ func _process(_delta: float) -> void:
 		if voice.frame_pos >= voice.shot_end:
 			if _advance_jingle(voice):
 				continue
-
-		voice.player.stop()
-		voice.active = false
-		voice.source_id = 0
-		voice.notes.clear()
-		voice.note_index = 0
+				
+			_sound_registry.erase(voice.sound_id)
+			voice.player.stop()
+			voice.active = false
+			voice.sound_id = 0
+			voice.source_id = 0
+			voice.notes = []
+			voice.note_index = 0
 
 	if not any_active:
 		_has_active = false
@@ -124,27 +132,33 @@ func play_one_shot(def: CDSoundDef, sound_position: Vector2, positional: bool,
 	if def.notes.is_empty():
 		return false
 
-	## skip if this caller already has an active voice and exclusive is set
-	if exclusive:
-		for v in _voices:
-			if v.active and v.source_id == caller_id:
-				return false
+	var sound_id: int = def.get_instance_id()
 
-	## find existing voice for this caller (reuse to cut off previous sound)
-	var voice: Voice = null
-	for v in _voices:
-		if v.active and v.source_id == caller_id:
-			voice = v
-			break
-
-	## no active voice for this caller — find an idle one
-	if voice == null:
-		voice = _find_idle_voice()
-		if voice == null:
+	## --- Sound-level dedup ---
+	## if this exact CDSoundDef is already playing, apply arcade-authentic behavior
+	if _sound_registry.has(sound_id):
+		if exclusive:
+			## exclusive: skip — only one channel per sound type
 			return false
+		else:
+			## non-exclusive: restart the sound from the beginning
+			## (arcade hardware would overlap; we restart which creates
+			## the same stuttering buzz effect for rapid fire)
+			var existing: Voice = _sound_registry[sound_id]
+			_restart_voice(existing, def, sound_position, positional)
+			return true
+
+	## --- Allocate a new voice ---
+	var voice: Voice = _find_idle_voice()
+	if voice == null:
+		return false
+
+	## register in sound registry before configuring
+	_sound_registry[sound_id] = voice
 
 	## configure voice state from sound definition
 	voice.active = true
+	voice.sound_id = sound_id
 	voice.source_id = caller_id
 	voice.wave_shape = def.wave_shape
 	voice.effect = def.effect
@@ -173,16 +187,47 @@ func play_one_shot(def: CDSoundDef, sound_position: Vector2, positional: bool,
 	voice.playback = voice.player.get_stream_playback()
 
 	## initial fill to prevent audio gaps
-	var available: int = voice.playback.get_frames_available()
-	var to_push: int = mini(mini(available, voice.shot_end), MAX_INITIAL_FILL)
-	for i in to_push:
-		var t: float = float(voice.frame_pos) / MIX_RATE
-		var sample: float = _get_sample(voice, t)
-		voice.playback.push_frame(Vector2(sample, sample))
-		voice.frame_pos += 1
+	_fill_voice_initial(voice)
 
 	_ensure_process()
 	return true
+
+## restart a voice from the beginning (arcade-authentic overlap for non-exclusive sounds)
+func _restart_voice(voice: Voice, def: CDSoundDef, sound_position: Vector2,
+		positional: bool) -> void:
+	## reset playback state to beginning of jingle
+	voice.frame_pos = 0
+	voice.phase = 0.0
+	voice.note_index = 0
+	voice.note_frame_start = 0
+	voice.notes = def.notes
+	voice.wave_shape = def.wave_shape
+	voice.effect = def.effect
+	voice.volume = def.volume
+	var first_note: CDNote = def.notes[0]
+	voice.shot_end = maxi(1, int(first_note.duration * MIX_RATE))
+	voice.cached_freq = CDUtilities.freq_from_note(first_note.note)
+
+	## update position
+	voice.player.global_position = sound_position
+	if positional:
+		voice.player.max_distance = POSITIONAL_DISTANCE
+	else:
+		voice.player.max_distance = GLOBAL_DISTANCE
+
+	## fill from restart point
+	_fill_voice_initial(voice)
+
+## push initial audio frames to prevent gaps on new/restarted voices
+func _fill_voice_initial(voice: Voice) -> void:
+	var available: int = voice.playback.get_frames_available()
+	var remaining: int = voice.shot_end - voice.frame_pos
+	var to_push: int = mini(mini(available, remaining), MAX_INITIAL_FILL)
+	for i in to_push:
+		var t: float = float(voice.frame_pos - voice.note_frame_start) / MIX_RATE
+		var sample: float = _get_sample(voice, t)
+		voice.playback.push_frame(Vector2(sample, sample))
+		voice.frame_pos += 1
 
 ## advance to next note in a jingle sequence
 func _advance_jingle(voice: Voice) -> bool:
@@ -193,9 +238,24 @@ func _advance_jingle(voice: Voice) -> bool:
 	## configure next note timing and frequency
 	var next_note: CDNote = voice.notes[voice.note_index]
 	voice.note_frame_start = voice.frame_pos
-	voice.shot_end = voice.frame_pos + maxi(1, int(next_note.duration * MIX_RATE))
+	var note_frames: int = maxi(1, int(next_note.duration * MIX_RATE))
+	voice.shot_end = voice.frame_pos + note_frames
+
+	## save previous frequency before updating
+	var prev_freq: float = voice.cached_freq
 	voice.cached_freq = CDUtilities.freq_from_note(next_note.note)
-	voice.phase = 0.0
+
+	## glide: smoothly transition from previous frequency
+	if next_note.glide:
+		voice.is_gliding = true
+		voice.glide_start_freq = prev_freq
+		voice.glide_target_freq = voice.cached_freq
+		voice.glide_frames = note_frames
+		## DON'T reset phase — continuous accumulation for smooth glide
+	else:
+		voice.is_gliding = false
+		voice.phase = 0.0
+
 	voice.player.volume_db = linear_to_db(voice.volume)
 	return true
 
@@ -307,7 +367,14 @@ func _find_idle_continuous_voice() -> Voice:
 
 ## generate a single audio sample for a voice at time t
 func _get_sample(voice: Voice, t: float) -> float:
-	var freq: float = CDUtilities.apply_freq_effect(voice.cached_freq, t, voice.effect)
+	## glide: interpolate frequency from start to target over note duration
+	var base_freq: float = voice.cached_freq
+	if voice.is_gliding and voice.glide_frames > 0:
+		var elapsed: int = voice.frame_pos - voice.note_frame_start
+		var progress: float = clampf(float(elapsed) / float(voice.glide_frames), 0.0, 1.0)
+		base_freq = lerpf(voice.glide_start_freq, voice.glide_target_freq, progress)
+
+	var freq: float = CDUtilities.apply_freq_effect(base_freq, t, voice.effect)
 	voice.phase += freq / MIX_RATE
 	var sample: float = CDUtilities.wave_sample(voice.phase, voice.wave_shape)
 
@@ -335,12 +402,19 @@ class Voice:
 	var wave_shape: int = 0
 	var effect: int = 0
 	var volume: float = 0.2
+	var sound_id: int = 0
 	var source_id: int = 0
 
 	## jingle sequencing state
 	var note_index: int = 0
 	var notes: Array = []
 	var note_frame_start: int = 0
+
+	## glide/portamento state
+	var is_gliding: bool = false
+	var glide_start_freq: float = 0.0
+	var glide_target_freq: float = 0.0
+	var glide_frames: int = 0
 
 	## continuous voice state
 	var continuous: bool = false

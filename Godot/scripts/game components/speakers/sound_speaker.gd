@@ -80,22 +80,35 @@ func _preview_fill() -> void:
 		return
 	
 	var phase: float = 0.0
+	var prev_freq: float = 0.0
 	
-	for cd_note: CDNote in sound.notes:
-		var freq: float = CDUtilities.freq_from_note(cd_note.note)
+	for note_idx: int in range(sound.notes.size()):
+		var cd_note: CDNote = sound.notes[note_idx]
+		var target_freq: float = CDUtilities.freq_from_note(cd_note.note)
 		var total_frames: int = maxi(1, int(cd_note.duration * CDUtilities.MIX_RATE))
+		var is_gliding: bool = cd_note.glide and note_idx > 0
+		
+		## reset phase only on hard (non-glide) note boundaries
+		if not is_gliding:
+			phase = 0.0
 		
 		## generate samples for this note
 		for i in total_frames:
 			var t: float = float(i) / CDUtilities.MIX_RATE
-			var mod_freq: float = CDUtilities.apply_freq_effect(freq, t, sound.effect)
+			var progress: float = float(i) / float(total_frames)
+			
+			## glide: interpolate frequency from previous note
+			var base_freq: float = target_freq
+			if is_gliding:
+				base_freq = lerpf(prev_freq, target_freq, progress)
+			
+			var mod_freq: float = CDUtilities.apply_freq_effect(base_freq, t, sound.effect)
 			phase += mod_freq / CDUtilities.MIX_RATE
 			var sample: float = CDUtilities.wave_sample(phase, sound.wave_shape)
-			var note_progress: float = float(i) / float(total_frames)
-			sample = CDUtilities.apply_amp_effect(sample, t, note_progress, sound.effect)
+			sample = CDUtilities.apply_amp_effect(sample, t, progress, sound.effect)
 			pb.push_frame(Vector2(sample * sound.volume, sample * sound.volume))
 		
-		phase = 0.0
+		prev_freq = target_freq
 
 ## stop the editor preview
 func _preview_stop() -> void:

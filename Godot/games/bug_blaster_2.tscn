@@ -1,7 +1,8 @@
-[gd_scene load_steps=143 format=3 uid="uid://c0q0c0v84x80"]
+[gd_scene load_steps=144 format=3 uid="uid://c0q0c0v84x80"]
 
 [ext_resource type="Script" uid="uid://dm0uehngpvbh7" path="res://scripts/core/infrastructure/cd_game.gd" id="1_62wb8"]
 [ext_resource type="PackedScene" uid="uid://cmbx6xnct372t" path="res://scenes/core/infrastructure/cd_collision_buffer.tscn" id="2_7y1r2"]
+[ext_resource type="PackedScene" uid="uid://dp5wrnwomehwo" path="res://scenes/core/infrastructure/cd_sound_bank.tscn" id="3_2bq8q"]
 [ext_resource type="PackedScene" uid="uid://bcwv07gabsxif" path="res://scenes/core/infrastructure/cd_collision_matrix.tscn" id="3_wnudv"]
 [ext_resource type="Script" uid="uid://b2ibop6r2cryj" path="res://scripts/core/resources/infrastructure/cd_collision_group.gd" id="4_xb0do"]
 [ext_resource type="PackedScene" uid="uid://25g1ygl8nuv6" path="res://scenes/core/infrastructure/cd_group_registry.tscn" id="5_qyrdw"]
@@ -26,7 +27,7 @@
 [ext_resource type="PackedScene" uid="uid://b7uyqydnog2th" path="res://scenes/game components/directors/formation_director.tscn" id="18_156p0"]
 [ext_resource type="PackedScene" uid="uid://b0n0yuhdj7x5x" path="res://entities/nonplayer/wasp_ship_swooping_nonplayer.tscn" id="18_sjgbx"]
 [ext_resource type="PackedScene" uid="uid://bf43dpgnegd46" path="res://scenes/game components/directors/state_director.tscn" id="19_g3xn7"]
-[ext_resource type="PackedScene" path="res://entities/nonplayer/spider_ship_swooping_nonplayer.tscn" id="19_ldmk8"]
+[ext_resource type="PackedScene" uid="uid://bmypbxacxkn6p" path="res://entities/nonplayer/spider_ship_swooping_nonplayer.tscn" id="19_ldmk8"]
 [ext_resource type="Script" uid="uid://2krdfmhel0jp" path="res://scripts/core/resources/behavior/cd_transition.gd" id="20_k70bp"]
 [ext_resource type="Script" uid="uid://7j04axulu7rq" path="res://scripts/core/resources/curves/cd_circle_curve.gd" id="21_1nsuk"]
 [ext_resource type="Script" uid="uid://ca0k2u53egerl" path="res://scripts/core/resources/triggers/cd_signal_trigger.gd" id="21_g3xn7"]
@@ -683,6 +684,11 @@ metadata/_custom_type_script = "uid://cyqs535s5vfg4"
 script = ExtResource("1_62wb8")
 game_bounds = Rect2(0, 0, 640, 360)
 
+[node name="CRTProjector" parent="." instance=ExtResource("39_4mgkk")]
+
+[node name="CDSoundBank" parent="." instance=ExtResource("3_2bq8q")]
+max_channels = 4
+
 [node name="CDCollisionBuffer" parent="." instance=ExtResource("2_7y1r2")]
 
 [node name="CDCollisionMatrix" parent="." instance=ExtResource("3_wnudv")]
@@ -726,10 +732,10 @@ on_spawning_complete = Array[StringName]([&"spawning_complete_right"])
 position = Vector2(-16, 340)
 spawn_scene = ExtResource("18_sjgbx")
 spawn_count_equation = "12"
-spawn_scenes = Array[PackedScene]([ExtResource("19_ldmk8"), ExtResource("18_sjgbx"), ExtResource("18_sjgbx")])
 offset_range = Vector2(0, 0)
 stagger_delay = 0.0
 spawn_context = SubResource("Resource_owvki")
+spawn_scenes = Array[PackedScene]([ExtResource("19_ldmk8"), ExtResource("18_sjgbx"), ExtResource("18_sjgbx")])
 trigger_signals = Array[StringName]([&"spawn_bottom_left"])
 on_spawning_complete = Array[StringName]([&"spawning_complete_bottom_left"])
 
@@ -737,10 +743,10 @@ on_spawning_complete = Array[StringName]([&"spawning_complete_bottom_left"])
 position = Vector2(656, 340)
 spawn_scene = ExtResource("19_ldmk8")
 spawn_count_equation = "12"
-spawn_scenes = Array[PackedScene]([ExtResource("19_ldmk8"), ExtResource("18_sjgbx"), ExtResource("18_sjgbx")])
 offset_range = Vector2(0, 0)
 stagger_delay = 0.0
 spawn_context = SubResource("Resource_ldmk8")
+spawn_scenes = Array[PackedScene]([ExtResource("19_ldmk8"), ExtResource("18_sjgbx"), ExtResource("18_sjgbx")])
 trigger_signals = Array[StringName]([&"spawn_bottom_right"])
 on_spawning_complete = Array[StringName]([&"spawning_complete_bottom_right"])
 
@@ -753,7 +759,6 @@ curve = SubResource("Resource_jix4n")
 swoop_speed = 400.0
 formation_offset = 32.0
 trigger_signals = Array[StringName]([&"spawning_complete_left"])
-show_preview = false
 preview_color = Color(0, 0.8, 1, 1)
 
 [node name="SwoopDirector2" parent="Level1Stage" instance=ExtResource("14_bnks8")]
@@ -765,7 +770,6 @@ curve = SubResource("Resource_g3xn7")
 swoop_speed = 400.0
 formation_offset = 32.0
 trigger_signals = Array[StringName]([&"spawning_complete_right"])
-show_preview = false
 preview_color = Color(0, 0.8, 1, 1)
 
 [node name="SwoopDirector3" parent="Level1Stage" instance=ExtResource("14_bnks8")]
@@ -777,7 +781,6 @@ curve = SubResource("Resource_2bq8q")
 swoop_speed = 400.0
 formation_offset = 32.0
 trigger_signals = Array[StringName]([&"spawning_complete_bottom_left"])
-show_preview = false
 preview_color = Color(0.75, 0.75, 0.75, 1)
 
 [node name="SwoopDirector4" parent="Level1Stage" instance=ExtResource("14_bnks8")]
@@ -789,7 +792,6 @@ curve = SubResource("Resource_rvvw1")
 swoop_speed = 400.0
 formation_offset = 32.0
 trigger_signals = Array[StringName]([&"spawning_complete_bottom_right"])
-show_preview = false
 preview_color = Color(0.75, 0.75, 0.75, 1)
 
 [node name="FormationDirector" parent="Level1Stage" instance=ExtResource("18_156p0")]
@@ -821,6 +823,7 @@ trigger = SubResource("Resource_acn14")
 on_sequence_complete = Array[StringName]([&"level_one_complete"])
 
 [node name="Level2Stage" parent="." groups=["level_stages"] instance=ExtResource("8_4mgkk")]
+visible = false
 start_asleep = true
 on_wake_signal = &"level_start"
 
@@ -828,10 +831,10 @@ on_wake_signal = &"level_start"
 position = Vector2(128, -16)
 spawn_scene = ExtResource("11_2v676")
 spawn_count_equation = "10"
-spawn_scenes = Array[PackedScene]([ExtResource("11_2v676"), ExtResource("11_2v676"), ExtResource("11_2v676"), ExtResource("18_sjgbx"), ExtResource("18_sjgbx")])
 offset_range = Vector2(0, 0)
 stagger_delay = 0.0
 spawn_context = SubResource("Resource_la2sg")
+spawn_scenes = Array[PackedScene]([ExtResource("11_2v676"), ExtResource("11_2v676"), ExtResource("11_2v676"), ExtResource("18_sjgbx"), ExtResource("18_sjgbx")])
 trigger_signals = Array[StringName]([&"spawn_top_left"])
 on_spawning_complete = Array[StringName]([&"spawning_complete_left"])
 
@@ -839,10 +842,10 @@ on_spawning_complete = Array[StringName]([&"spawning_complete_left"])
 position = Vector2(512, -16)
 spawn_scene = ExtResource("11_2v676")
 spawn_count_equation = "10"
-spawn_scenes = Array[PackedScene]([ExtResource("11_2v676"), ExtResource("11_2v676"), ExtResource("11_2v676"), ExtResource("18_sjgbx"), ExtResource("18_sjgbx")])
 offset_range = Vector2(0, 0)
 stagger_delay = 0.0
 spawn_context = SubResource("Resource_s3e4k")
+spawn_scenes = Array[PackedScene]([ExtResource("11_2v676"), ExtResource("11_2v676"), ExtResource("11_2v676"), ExtResource("18_sjgbx"), ExtResource("18_sjgbx")])
 trigger_signals = Array[StringName]([&"spawn_top_right"])
 on_spawning_complete = Array[StringName]([&"spawning_complete_right"])
 
@@ -850,10 +853,10 @@ on_spawning_complete = Array[StringName]([&"spawning_complete_right"])
 position = Vector2(-16, 160)
 spawn_scene = ExtResource("18_sjgbx")
 spawn_count_equation = "8"
-spawn_scenes = Array[PackedScene]([ExtResource("11_2v676"), ExtResource("19_ldmk8")])
 offset_range = Vector2(0, 0)
 stagger_delay = 0.0
 spawn_context = SubResource("Resource_owvki")
+spawn_scenes = Array[PackedScene]([ExtResource("11_2v676"), ExtResource("19_ldmk8")])
 trigger_signals = Array[StringName]([&"spawn_bottom_left"])
 on_spawning_complete = Array[StringName]([&"spawning_complete_bottom_left"])
 
@@ -861,10 +864,10 @@ on_spawning_complete = Array[StringName]([&"spawning_complete_bottom_left"])
 position = Vector2(656, 200)
 spawn_scene = ExtResource("19_ldmk8")
 spawn_count_equation = "8"
-spawn_scenes = Array[PackedScene]([ExtResource("11_2v676"), ExtResource("19_ldmk8")])
 offset_range = Vector2(0, 0)
 stagger_delay = 0.0
 spawn_context = SubResource("Resource_ldmk8")
+spawn_scenes = Array[PackedScene]([ExtResource("11_2v676"), ExtResource("19_ldmk8")])
 trigger_signals = Array[StringName]([&"spawn_bottom_right"])
 on_spawning_complete = Array[StringName]([&"spawning_complete_bottom_right"])
 
@@ -877,7 +880,6 @@ curve = SubResource("Resource_l2_helix_l")
 swoop_speed = 350.0
 formation_offset = 32.0
 trigger_signals = Array[StringName]([&"spawning_complete_left"])
-show_preview = false
 preview_color = Color(1, 0.65, 0, 1)
 
 [node name="SwoopDirector2" parent="Level2Stage" instance=ExtResource("14_bnks8")]
@@ -889,7 +891,6 @@ curve = SubResource("Resource_l2_helix_r")
 swoop_speed = 350.0
 formation_offset = 32.0
 trigger_signals = Array[StringName]([&"spawning_complete_right"])
-show_preview = false
 preview_color = Color(1, 0.65, 0, 1)
 
 [node name="SwoopDirector3" parent="Level2Stage" instance=ExtResource("14_bnks8")]
@@ -901,7 +902,6 @@ curve = SubResource("Resource_l2_spir_bl")
 swoop_speed = 350.0
 formation_offset = 32.0
 trigger_signals = Array[StringName]([&"spawning_complete_bottom_left"])
-show_preview = false
 preview_color = Color(1, 0.5, 0.5, 1)
 
 [node name="SwoopDirector4" parent="Level2Stage" instance=ExtResource("14_bnks8")]
@@ -913,7 +913,6 @@ curve = SubResource("Resource_l2_spir_br")
 swoop_speed = 350.0
 formation_offset = 32.0
 trigger_signals = Array[StringName]([&"spawning_complete_bottom_right"])
-show_preview = false
 preview_color = Color(1, 0.5, 0.5, 1)
 
 [node name="FormationDirector" parent="Level2Stage" instance=ExtResource("18_156p0")]
@@ -945,6 +944,7 @@ trigger = SubResource("Resource_acn14")
 on_sequence_complete = Array[StringName]([&"level_two_complete"])
 
 [node name="Level3Stage" parent="." groups=["level_stages"] instance=ExtResource("8_4mgkk")]
+visible = false
 start_asleep = true
 on_wake_signal = &"level_start"
 
@@ -972,10 +972,10 @@ on_spawning_complete = Array[StringName]([&"spawning_complete_right"])
 position = Vector2(-16, 320)
 spawn_scene = ExtResource("18_sjgbx")
 spawn_count_equation = "12"
-spawn_scenes = Array[PackedScene]([ExtResource("19_ldmk8"), ExtResource("18_sjgbx"), ExtResource("18_sjgbx")])
 offset_range = Vector2(0, 0)
 stagger_delay = 0.0
 spawn_context = SubResource("Resource_owvki")
+spawn_scenes = Array[PackedScene]([ExtResource("19_ldmk8"), ExtResource("18_sjgbx"), ExtResource("18_sjgbx")])
 trigger_signals = Array[StringName]([&"spawn_bottom_left"])
 on_spawning_complete = Array[StringName]([&"spawning_complete_bottom_left"])
 
@@ -983,10 +983,10 @@ on_spawning_complete = Array[StringName]([&"spawning_complete_bottom_left"])
 position = Vector2(656, 40)
 spawn_scene = ExtResource("19_ldmk8")
 spawn_count_equation = "12"
-spawn_scenes = Array[PackedScene]([ExtResource("19_ldmk8"), ExtResource("18_sjgbx"), ExtResource("18_sjgbx")])
 offset_range = Vector2(0, 0)
 stagger_delay = 0.0
 spawn_context = SubResource("Resource_ldmk8")
+spawn_scenes = Array[PackedScene]([ExtResource("19_ldmk8"), ExtResource("18_sjgbx"), ExtResource("18_sjgbx")])
 trigger_signals = Array[StringName]([&"spawn_bottom_right"])
 on_spawning_complete = Array[StringName]([&"spawning_complete_bottom_right"])
 
@@ -999,7 +999,6 @@ curve = SubResource("Resource_l3_helix_l")
 swoop_speed = 500.0
 formation_offset = 32.0
 trigger_signals = Array[StringName]([&"spawning_complete_left"])
-show_preview = false
 preview_color = Color(1, 0, 0.8, 1)
 
 [node name="SwoopDirector2" parent="Level3Stage" instance=ExtResource("14_bnks8")]
@@ -1011,7 +1010,6 @@ curve = SubResource("Resource_l3_helix_r")
 swoop_speed = 500.0
 formation_offset = 32.0
 trigger_signals = Array[StringName]([&"spawning_complete_right"])
-show_preview = false
 preview_color = Color(1, 0, 0.8, 1)
 
 [node name="SwoopDirector3" parent="Level3Stage" instance=ExtResource("14_bnks8")]
@@ -1023,7 +1021,6 @@ curve = SubResource("Resource_l3_para_bl")
 swoop_speed = 500.0
 formation_offset = 32.0
 trigger_signals = Array[StringName]([&"spawning_complete_bottom_left"])
-show_preview = false
 preview_color = Color(0.6, 0, 1, 1)
 
 [node name="SwoopDirector4" parent="Level3Stage" instance=ExtResource("14_bnks8")]
@@ -1035,7 +1032,6 @@ curve = SubResource("Resource_l3_para_br")
 swoop_speed = 500.0
 formation_offset = 32.0
 trigger_signals = Array[StringName]([&"spawning_complete_bottom_right"])
-show_preview = false
 preview_color = Color(0.6, 0, 1, 1)
 
 [node name="FormationDirector" parent="Level3Stage" instance=ExtResource("18_156p0")]
@@ -1067,6 +1063,7 @@ trigger = SubResource("Resource_acn14")
 on_sequence_complete = Array[StringName]([&"level_three_complete"])
 
 [node name="Level4Stage" parent="." groups=["level_stages"] instance=ExtResource("8_4mgkk")]
+visible = false
 start_asleep = true
 on_wake_signal = &"level_start"
 
@@ -1074,10 +1071,10 @@ on_wake_signal = &"level_start"
 position = Vector2(192, -16)
 spawn_scene = ExtResource("11_2v676")
 spawn_count_equation = "10"
-spawn_scenes = Array[PackedScene]([ExtResource("11_2v676"), ExtResource("11_2v676"), ExtResource("11_2v676"), ExtResource("18_sjgbx"), ExtResource("18_sjgbx")])
 offset_range = Vector2(0, 0)
 stagger_delay = 0.0
 spawn_context = SubResource("Resource_la2sg")
+spawn_scenes = Array[PackedScene]([ExtResource("11_2v676"), ExtResource("11_2v676"), ExtResource("11_2v676"), ExtResource("18_sjgbx"), ExtResource("18_sjgbx")])
 trigger_signals = Array[StringName]([&"spawn_top_left"])
 on_spawning_complete = Array[StringName]([&"spawning_complete_left"])
 
@@ -1085,10 +1082,10 @@ on_spawning_complete = Array[StringName]([&"spawning_complete_left"])
 position = Vector2(448, -16)
 spawn_scene = ExtResource("18_sjgbx")
 spawn_count_equation = "8"
-spawn_scenes = Array[PackedScene]([ExtResource("11_2v676"), ExtResource("19_ldmk8")])
 offset_range = Vector2(0, 0)
 stagger_delay = 0.0
 spawn_context = SubResource("Resource_s3e4k")
+spawn_scenes = Array[PackedScene]([ExtResource("11_2v676"), ExtResource("19_ldmk8")])
 trigger_signals = Array[StringName]([&"spawn_top_right"])
 on_spawning_complete = Array[StringName]([&"spawning_complete_right"])
 
@@ -1096,10 +1093,10 @@ on_spawning_complete = Array[StringName]([&"spawning_complete_right"])
 position = Vector2(-16, 256)
 spawn_scene = ExtResource("19_ldmk8")
 spawn_count_equation = "8"
-spawn_scenes = Array[PackedScene]([ExtResource("11_2v676"), ExtResource("19_ldmk8")])
 offset_range = Vector2(0, 0)
 stagger_delay = 0.0
 spawn_context = SubResource("Resource_owvki")
+spawn_scenes = Array[PackedScene]([ExtResource("11_2v676"), ExtResource("19_ldmk8")])
 trigger_signals = Array[StringName]([&"spawn_bottom_left"])
 on_spawning_complete = Array[StringName]([&"spawning_complete_bottom_left"])
 
@@ -1107,10 +1104,10 @@ on_spawning_complete = Array[StringName]([&"spawning_complete_bottom_left"])
 position = Vector2(656, 104)
 spawn_scene = ExtResource("11_2v676")
 spawn_count_equation = "10"
-spawn_scenes = Array[PackedScene]([ExtResource("11_2v676"), ExtResource("11_2v676"), ExtResource("11_2v676"), ExtResource("18_sjgbx"), ExtResource("18_sjgbx")])
 offset_range = Vector2(0, 0)
 stagger_delay = 0.0
 spawn_context = SubResource("Resource_ldmk8")
+spawn_scenes = Array[PackedScene]([ExtResource("11_2v676"), ExtResource("11_2v676"), ExtResource("11_2v676"), ExtResource("18_sjgbx"), ExtResource("18_sjgbx")])
 trigger_signals = Array[StringName]([&"spawn_bottom_right"])
 on_spawning_complete = Array[StringName]([&"spawning_complete_bottom_right"])
 
@@ -1123,7 +1120,6 @@ curve = SubResource("Resource_l4_seql")
 swoop_speed = 400.0
 formation_offset = 32.0
 trigger_signals = Array[StringName]([&"spawning_complete_left"])
-show_preview = false
 preview_color = Color(0.5, 1, 0, 1)
 
 [node name="SwoopDirector2" parent="Level4Stage" instance=ExtResource("14_bnks8")]
@@ -1135,7 +1131,6 @@ curve = SubResource("Resource_l4_seqr")
 swoop_speed = 400.0
 formation_offset = 32.0
 trigger_signals = Array[StringName]([&"spawning_complete_right"])
-show_preview = false
 preview_color = Color(0.5, 1, 0, 1)
 
 [node name="SwoopDirector3" parent="Level4Stage" instance=ExtResource("14_bnks8")]
@@ -1147,7 +1142,6 @@ curve = SubResource("Resource_l4_spir_bl")
 swoop_speed = 400.0
 formation_offset = 32.0
 trigger_signals = Array[StringName]([&"spawning_complete_bottom_left"])
-show_preview = false
 preview_color = Color(0, 1, 0.5, 1)
 
 [node name="SwoopDirector4" parent="Level4Stage" instance=ExtResource("14_bnks8")]
@@ -1159,7 +1153,6 @@ curve = SubResource("Resource_l4_spir_br")
 swoop_speed = 400.0
 formation_offset = 32.0
 trigger_signals = Array[StringName]([&"spawning_complete_bottom_right"])
-show_preview = false
 preview_color = Color(0, 1, 0.5, 1)
 
 [node name="FormationDirector" parent="Level4Stage" instance=ExtResource("18_156p0")]
@@ -1191,6 +1184,7 @@ trigger = SubResource("Resource_acn14")
 on_sequence_complete = Array[StringName]([&"level_four_complete"])
 
 [node name="Level5Stage" parent="." groups=["level_stages"] instance=ExtResource("8_4mgkk")]
+visible = false
 start_asleep = true
 on_wake_signal = &"level_start"
 
@@ -1198,10 +1192,10 @@ on_wake_signal = &"level_start"
 position = Vector2(160, -16)
 spawn_scene = ExtResource("18_sjgbx")
 spawn_count_equation = "12"
-spawn_scenes = Array[PackedScene]([ExtResource("19_ldmk8"), ExtResource("18_sjgbx"), ExtResource("18_sjgbx")])
 offset_range = Vector2(0, 0)
 stagger_delay = 0.0
 spawn_context = SubResource("Resource_la2sg")
+spawn_scenes = Array[PackedScene]([ExtResource("19_ldmk8"), ExtResource("18_sjgbx"), ExtResource("18_sjgbx")])
 trigger_signals = Array[StringName]([&"spawn_top_left"])
 on_spawning_complete = Array[StringName]([&"spawning_complete_left"])
 
@@ -1209,10 +1203,10 @@ on_spawning_complete = Array[StringName]([&"spawning_complete_left"])
 position = Vector2(480, -16)
 spawn_scene = ExtResource("19_ldmk8")
 spawn_count_equation = "12"
-spawn_scenes = Array[PackedScene]([ExtResource("19_ldmk8"), ExtResource("18_sjgbx"), ExtResource("18_sjgbx")])
 offset_range = Vector2(0, 0)
 stagger_delay = 0.0
 spawn_context = SubResource("Resource_s3e4k")
+spawn_scenes = Array[PackedScene]([ExtResource("19_ldmk8"), ExtResource("18_sjgbx"), ExtResource("18_sjgbx")])
 trigger_signals = Array[StringName]([&"spawn_top_right"])
 on_spawning_complete = Array[StringName]([&"spawning_complete_right"])
 
@@ -1309,13 +1303,19 @@ trigger = SubResource("Resource_acn14")
 on_sequence_complete = Array[StringName]([&"level_five_complete"])
 
 [node name="WaveCard" parent="." instance=ExtResource("99_wave")]
+offset_left = 16.0
+offset_top = 16.0
+offset_right = 16.0
+offset_bottom = 16.0
 on_advance_wave = Array[StringName]([&"level_one_complete", &"level_two_complete", &"level_three_complete", &"level_four_complete", &"level_five_complete"])
+is_interface = true
 
 [node name="TriangleShip" parent="." instance=ExtResource("8_7y1r2")]
 position = Vector2(320, 340)
 rotation = -1.5707964
 lock_y = true
 clamp_to_bounds = true
+bounds_margin = 8.0
 
 [node name="DirectRotationLeg" parent="TriangleShip" index="7"]
 rotation_speed = 0.0
@@ -1325,8 +1325,6 @@ speed = 300.0
 
 [node name="ScrollingStarsEffect" parent="." instance=ExtResource("38_1tdfd")]
 star_count = 25
-
-[node name="CRTProjector" parent="." instance=ExtResource("39_4mgkk")]
 
 [editable path="TriangleShip"]
 [editable path="TriangleShip/GunArm"]

@@ -1,9 +1,24 @@
-[gd_scene load_steps=2 format=3 uid="uid://by11ic4lo4df8"]
+[gd_scene load_steps=7 format=3 uid="uid://by11ic4lo4df8"]
 
 [ext_resource type="PackedScene" uid="uid://r8hsi8qongqs" path="res://entities/generic/onscreen_bullet.tscn" id="1_clnf3"]
+[ext_resource type="PackedScene" uid="uid://c4jinp88xtitl" path="res://scenes/entity components/voices/sound_voice.tscn" id="2_80dla"]
+[ext_resource type="Script" uid="uid://ci2yaa2b1swsj" path="res://scripts/core/resources/audio/cd_note.gd" id="3_i0kxk"]
+[ext_resource type="Script" uid="uid://d3l2c838cqwsm" path="res://scripts/core/resources/audio/cd_sound_def.gd" id="4_5i3r8"]
+
+[sub_resource type="Resource" id="Resource_1upm7"]
+script = ExtResource("3_i0kxk")
+duration = 0.2
+metadata/_custom_type_script = "uid://ci2yaa2b1swsj"
+
+[sub_resource type="Resource" id="Resource_kkewx"]
+script = ExtResource("4_5i3r8")
+effect = 3
+notes = Array[ExtResource("3_i0kxk")]([SubResource("Resource_1upm7")])
+metadata/_custom_type_script = "uid://d3l2c838cqwsm"
 
 [node name="OnscreenBullet" instance=ExtResource("1_clnf3")]
 groups = Array[StringName]([&"bullets", &"enemy_bullets"])
 
-[node name="PolygonFace" parent="." index="2"]
-shape_key = &"shape_points"
+[node name="SoundVoice" parent="." index="4" instance=ExtResource("2_80dla")]
+sound = SubResource("Resource_kkewx")
+play_on_spawn = true

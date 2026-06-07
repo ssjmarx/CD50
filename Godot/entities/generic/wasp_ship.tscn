@@ -1,15 +1,18 @@
-[gd_scene load_steps=13 format=3 uid="uid://b53tr0lys6rfc"]
+[gd_scene load_steps=19 format=3 uid="uid://b53tr0lys6rfc"]
 
 [ext_resource type="Script" uid="uid://dfbv2tw3cl4pe" path="res://scripts/core/infrastructure/cd_entity.gd" id="1_u2iwu"]
 [ext_resource type="PackedScene" uid="uid://dlgrii32eggbo" path="res://scenes/entity components/faces/sprite_face.tscn" id="2_w6l0f"]
-[ext_resource type="Texture2D" uid="uid://vphhi48y10tu" path="res://assets/seafood/nautilus_1.png" id="3_imijo"]
-[ext_resource type="Texture2D" uid="uid://bhfgytwlnflqg" path="res://assets/seafood/nautilus_2.png" id="4_u15cn"]
+[ext_resource type="Texture2D" uid="uid://vphhi48y10tu" path="res://v1/Assets/invaders/nautilus_1.png" id="3_imijo"]
+[ext_resource type="Texture2D" uid="uid://bhfgytwlnflqg" path="res://v1/Assets/invaders/nautilus_2.png" id="4_u15cn"]
 [ext_resource type="PackedScene" uid="uid://1vgoj6bqs80e" path="res://scenes/entity components/arms/gun_arm.tscn" id="6_4d6mp"]
 [ext_resource type="Script" uid="uid://dcu4ocnin0htu" path="res://scripts/core/resources/spawners/cd_spawn_context.gd" id="8_bm3eg"]
 [ext_resource type="PackedScene" uid="uid://btr1f3svl7y3m" path="res://scenes/entity components/guts/healthpool_guts.tscn" id="9_rdxva"]
 [ext_resource type="PackedScene" uid="uid://bisjhhp8r5a4p" path="res://scenes/entity components/faces/death_effect_face.tscn" id="10_ceqff"]
 [ext_resource type="PackedScene" uid="uid://bfxtjii32duju" path="res://scenes/entity components/guts/die_at_zero_health_guts.tscn" id="10_gh8fs"]
+[ext_resource type="PackedScene" uid="uid://c4jinp88xtitl" path="res://scenes/entity components/voices/sound_voice.tscn" id="11_6t6jd"]
 [ext_resource type="PackedScene" uid="uid://dnt5g5mntk0nk" path="res://scenes/effects/death_particle_effect.tscn" id="11_tosi5"]
+[ext_resource type="Script" uid="uid://ci2yaa2b1swsj" path="res://scripts/core/resources/audio/cd_note.gd" id="12_xjni8"]
+[ext_resource type="Script" uid="uid://d3l2c838cqwsm" path="res://scripts/core/resources/audio/cd_sound_def.gd" id="13_a30jh"]
 
 [sub_resource type="AnimatedTexture" id="AnimatedTexture_wasp"]
 frames = 2
@@ -21,6 +24,23 @@ frame_1/duration = 1.0
 script = ExtResource("8_bm3eg")
 velocity = Vector2(0, 600)
 metadata/_custom_type_script = "uid://dcu4ocnin0htu"
+
+[sub_resource type="Resource" id="Resource_6t6jd"]
+script = ExtResource("12_xjni8")
+note = 64
+metadata/_custom_type_script = "uid://ci2yaa2b1swsj"
+
+[sub_resource type="Resource" id="Resource_xjni8"]
+script = ExtResource("12_xjni8")
+note = 69
+metadata/_custom_type_script = "uid://ci2yaa2b1swsj"
+
+[sub_resource type="Resource" id="Resource_a30jh"]
+script = ExtResource("13_a30jh")
+wave_shape = 2
+effect = 5
+notes = Array[ExtResource("12_xjni8")]([SubResource("Resource_6t6jd"), SubResource("Resource_xjni8")])
+metadata/_custom_type_script = "uid://d3l2c838cqwsm"
 
 [node name="WaspShip" type="CharacterBody2D"]
 script = ExtResource("1_u2iwu")
@@ -42,3 +62,7 @@ max_health = 1
 
 [node name="DeathEffectFace" parent="." instance=ExtResource("10_ceqff")]
 effect_scenes = Array[PackedScene]([ExtResource("11_tosi5")])
+
+[node name="SoundVoice" parent="." instance=ExtResource("11_6t6jd")]
+sound = SubResource("Resource_a30jh")
+trigger_signal = &"request_deactivate"

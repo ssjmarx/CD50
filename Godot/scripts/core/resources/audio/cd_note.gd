@@ -9,3 +9,6 @@ class_name CDNote extends Resource
 
 ## how long this note lasts in seconds
 @export var duration: float = 0.15
+
+## smoothly glide from previous note's frequency to this note's frequency
+@export var glide: bool = false

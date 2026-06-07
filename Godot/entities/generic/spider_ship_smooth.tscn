@@ -1,11 +1,17 @@
-[gd_scene load_steps=7 format=3 uid="uid://vu1t14u6qvjf"]
+[gd_scene load_steps=9 format=3 uid="uid://vu1t14u6qvjf"]
 
-[ext_resource type="PackedScene" uid="uid://bspi02ship0002" path="res://entities/generic/spider_ship.tscn" id="1_frmmk"]
+[ext_resource type="PackedScene" uid="uid://cg7pe2i8eem54" path="res://entities/generic/spider_ship.tscn" id="1_frmmk"]
 [ext_resource type="PackedScene" uid="uid://bet7mpf2gu8yp" path="res://scenes/entity components/legs/screen_wrap_leg.tscn" id="2_x51hn"]
 [ext_resource type="PackedScene" uid="uid://dnupvpm1xtec8" path="res://scenes/entity components/legs/acceleration_target_leg.tscn" id="3_upr7u"]
 [ext_resource type="PackedScene" uid="uid://bruvhn6v5bghr" path="res://scenes/entity components/legs/target_rotation_leg.tscn" id="4_upr7u"]
 [ext_resource type="PackedScene" uid="uid://cchd668j4pmmp" path="res://scenes/entity components/guts/MoveAdapterGuts.tscn" id="5_upr7u"]
 [ext_resource type="PackedScene" uid="uid://ci3gja75p0qed" path="res://scenes/entity components/legs/linear_friction_leg.tscn" id="7_7l8gu"]
+[ext_resource type="Script" uid="uid://dcu4ocnin0htu" path="res://scripts/core/resources/spawners/cd_spawn_context.gd" id="7_vywf4"]
+
+[sub_resource type="Resource" id="Resource_8nobs"]
+script = ExtResource("7_vywf4")
+velocity = Vector2(400, 0)
+metadata/_custom_type_script = "uid://dcu4ocnin0htu"
 
 [node name="SpiderShip" instance=ExtResource("1_frmmk")]
 
@@ -32,4 +38,4 @@ rotation = -1.5707964
 
 [node name="GunArm" parent="." index="6"]
 position = Vector2(6, 0)
-rotation = -1.5707964
+spawn_context = SubResource("Resource_8nobs")

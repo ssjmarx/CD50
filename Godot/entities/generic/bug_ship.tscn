@@ -1,4 +1,4 @@
-[gd_scene load_steps=13 format=3 uid="uid://crldddsx3c7ck"]
+[gd_scene load_steps=19 format=3 uid="uid://crldddsx3c7ck"]
 
 [ext_resource type="Script" uid="uid://dfbv2tw3cl4pe" path="res://scripts/core/infrastructure/cd_entity.gd" id="1_u2iwu"]
 [ext_resource type="PackedScene" uid="uid://dlgrii32eggbo" path="res://scenes/entity components/faces/sprite_face.tscn" id="2_w6l0f"]
@@ -9,7 +9,10 @@
 [ext_resource type="PackedScene" uid="uid://btr1f3svl7y3m" path="res://scenes/entity components/guts/healthpool_guts.tscn" id="9_rdxva"]
 [ext_resource type="PackedScene" uid="uid://bisjhhp8r5a4p" path="res://scenes/entity components/faces/death_effect_face.tscn" id="10_ceqff"]
 [ext_resource type="PackedScene" uid="uid://bfxtjii32duju" path="res://scenes/entity components/guts/die_at_zero_health_guts.tscn" id="10_gh8fs"]
+[ext_resource type="PackedScene" uid="uid://c4jinp88xtitl" path="res://scenes/entity components/voices/sound_voice.tscn" id="11_a44bm"]
 [ext_resource type="PackedScene" uid="uid://dnt5g5mntk0nk" path="res://scenes/effects/death_particle_effect.tscn" id="11_tosi5"]
+[ext_resource type="Script" uid="uid://ci2yaa2b1swsj" path="res://scripts/core/resources/audio/cd_note.gd" id="12_kmp1y"]
+[ext_resource type="Script" uid="uid://d3l2c838cqwsm" path="res://scripts/core/resources/audio/cd_sound_def.gd" id="13_r2bbi"]
 
 [sub_resource type="AnimatedTexture" id="AnimatedTexture_5lf82"]
 frames = 2
@@ -19,8 +22,24 @@ frame_1/duration = 1.0
 
 [sub_resource type="Resource" id="Resource_xrbuo"]
 script = ExtResource("8_bm3eg")
-velocity = Vector2(0, 600)
+velocity = Vector2(0, 400)
 metadata/_custom_type_script = "uid://dcu4ocnin0htu"
+
+[sub_resource type="Resource" id="Resource_l5rrj"]
+script = ExtResource("12_kmp1y")
+note = 57
+metadata/_custom_type_script = "uid://ci2yaa2b1swsj"
+
+[sub_resource type="Resource" id="Resource_upt83"]
+script = ExtResource("12_kmp1y")
+metadata/_custom_type_script = "uid://ci2yaa2b1swsj"
+
+[sub_resource type="Resource" id="Resource_5bvmf"]
+script = ExtResource("13_r2bbi")
+wave_shape = 2
+effect = 5
+notes = Array[ExtResource("12_kmp1y")]([SubResource("Resource_l5rrj"), SubResource("Resource_upt83")])
+metadata/_custom_type_script = "uid://d3l2c838cqwsm"
 
 [node name="BugShip" type="CharacterBody2D"]
 script = ExtResource("1_u2iwu")
@@ -42,3 +61,7 @@ max_health = 1
 
 [node name="DeathEffectFace" parent="." instance=ExtResource("10_ceqff")]
 effect_scenes = Array[PackedScene]([ExtResource("11_tosi5")])
+
+[node name="SoundVoice" parent="." instance=ExtResource("11_a44bm")]
+sound = SubResource("Resource_5bvmf")
+trigger_signal = &"request_deactivate"

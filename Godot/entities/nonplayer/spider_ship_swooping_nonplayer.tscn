@@ -1,11 +1,14 @@
-[gd_scene load_steps=11 format=3 uid="uid://bmypbxacxkn6p"]
+[gd_scene load_steps=17 format=3 uid="uid://bmypbxacxkn6p"]
 
-[ext_resource type="PackedScene" path="res://entities/generic/spider_ship_smooth.tscn" id="1_18u38"]
+[ext_resource type="PackedScene" uid="uid://vu1t14u6qvjf" path="res://entities/generic/spider_ship_smooth.tscn" id="1_18u38"]
 [ext_resource type="PackedScene" uid="uid://wghixqf83pas" path="res://scenes/entity components/brains/ai_swoop_brain.tscn" id="2_f0fqv"]
 [ext_resource type="PackedScene" uid="uid://by11ic4lo4df8" path="res://entities/nonplayer/onscreen_bullet_nonplayer.tscn" id="2_fkier"]
 [ext_resource type="Script" uid="uid://dlalvxnq5qb5x" path="res://scripts/core/resources/curves/cd_curve.gd" id="4_5neny"]
 [ext_resource type="Script" uid="uid://dpgs8b1skt7t2" path="res://scripts/core/resources/curves/cd_sine_curve.gd" id="4_fkier"]
 [ext_resource type="Script" uid="uid://dakcd8kk2xm44" path="res://scripts/core/resources/curves/cd_sequence_curve.gd" id="6_pptwy"]
+[ext_resource type="PackedScene" uid="uid://c4jinp88xtitl" path="res://scenes/entity components/voices/sound_voice.tscn" id="7_g0k2m"]
+[ext_resource type="Script" uid="uid://ci2yaa2b1swsj" path="res://scripts/core/resources/audio/cd_note.gd" id="8_aafss"]
+[ext_resource type="Script" uid="uid://d3l2c838cqwsm" path="res://scripts/core/resources/audio/cd_sound_def.gd" id="9_otbcv"]
 
 [sub_resource type="Resource" id="Resource_s7cy4"]
 script = ExtResource("4_fkier")
@@ -32,6 +35,26 @@ script = ExtResource("6_pptwy")
 curves = Array[ExtResource("4_5neny")]([SubResource("Resource_s7cy4"), SubResource("Resource_5neny"), SubResource("Resource_pptwy")])
 metadata/_custom_type_script = "uid://dakcd8kk2xm44"
 
+[sub_resource type="Resource" id="Resource_vdwk6"]
+script = ExtResource("8_aafss")
+note = 93
+duration = 0.0
+glide = true
+metadata/_custom_type_script = "uid://ci2yaa2b1swsj"
+
+[sub_resource type="Resource" id="Resource_43xsa"]
+script = ExtResource("8_aafss")
+note = 57
+duration = 3.0
+glide = true
+metadata/_custom_type_script = "uid://ci2yaa2b1swsj"
+
+[sub_resource type="Resource" id="Resource_l5wtd"]
+script = ExtResource("9_otbcv")
+wave_shape = 3
+notes = Array[ExtResource("8_aafss")]([SubResource("Resource_vdwk6"), SubResource("Resource_43xsa")])
+metadata/_custom_type_script = "uid://d3l2c838cqwsm"
+
 [node name="BugShip" instance=ExtResource("1_18u38")]
 groups = Array[StringName]([&"spider_ships", &"ships", &"enemies", &"bosses"])
 
@@ -51,3 +74,8 @@ loop = true
 restart_signals = Array[StringName]([&"screen_wrapped"])
 start_signals = Array[StringName]([&"begin_dive"])
 complete_signals = Array[StringName]([&"dive_complete"])
+
+[node name="SoundVoice3" parent="." index="13" instance=ExtResource("7_g0k2m")]
+sound = SubResource("Resource_l5wtd")
+trigger_signal = &"begin_dive"
+exclusive = true

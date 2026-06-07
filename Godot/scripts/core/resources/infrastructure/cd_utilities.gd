@@ -65,6 +65,10 @@ static func apply_freq_effect(freq: float, t: float, effect: int) -> float:
 			return freq + sin(TAU * 5.0 * t) * 30.0
 		CDEnums.Effect.SWEEP_DOWN:
 			return freq * maxf(0.1, 1.0 - t * 2.0)
+		CDEnums.Effect.SWEEP_UP:
+			return freq * (1.0 + t * 4.0)
+		CDEnums.Effect.WARBLE_WIDE:
+			return freq + sin(TAU * 8.0 * t) * freq * 0.06
 	return freq
 
 ## return raw waveform sample from phase position for a given wave shape
@@ -82,6 +86,12 @@ static func wave_sample(phase: float, wave_shape: int) -> float:
 			var noise: float = randf() * 2.0 - 1.0
 			var tone: float = sin(TAU * phase)
 			return lerp(tone, noise, 0.5)
+		CDEnums.WaveShape.PULSE_25:
+			return sign(sin(TAU * phase) - 0.5)
+		CDEnums.WaveShape.PULSE_12:
+			return sign(sin(TAU * phase) - 0.75)
+		CDEnums.WaveShape.PURE_NOISE:
+			return randf() * 2.0 - 1.0
 	return 0.0
 
 ## return modified sample after applying an amplitude effect
@@ -91,4 +101,8 @@ static func apply_amp_effect(sample: float, t: float, note_progress: float, effe
 			return sample * (0.5 + 0.5 * sin(TAU * 4.0 * t))
 		CDEnums.Effect.DECAY:
 			return sample * maxf(0.0, 1.0 - note_progress)
+		CDEnums.Effect.FAST_DECAY:
+			return sample * pow(maxf(0.0, 1.0 - note_progress), 3.0)
+		CDEnums.Effect.RIPPLE:
+			return sample * (1.0 if sin(TAU * 16.0 * t) > 0.0 else 0.2)
 	return sample
