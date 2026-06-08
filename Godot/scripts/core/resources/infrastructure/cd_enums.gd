@@ -152,6 +152,7 @@ enum Effect {
 	FAST_DECAY,
 	WARBLE_WIDE,
 	RIPPLE,
+	REVERB,
 }
 
 ## MIDI note numbers for sound generation

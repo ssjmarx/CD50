@@ -1,14 +1,6 @@
 # Centralized audio pool for one-shot and continuous synthesized sounds.
 # Pre-warms fixed pools of audio player + generator pairs to eliminate
 # per-entity node creation/destruction overhead.
-#
-# SoundSynth routes ALL playback through this autoload:
-# - ON_SIGNAL mode: one-shot sounds via play()
-# - CONTINUOUS mode: persistent sounds via start_continuous()/stop_continuous()
-#
-# The centralized _process loop fills ALL active voices in one pass.
-# Players live in the root scene tree, ensuring sounds are audible
-# inside SubViewports (arcade mode).
 
 extends Node
 

@@ -91,6 +91,13 @@ func _process(_delta: float) -> void:
 			continue
 		any_active = true
 
+		## drain: let the buffer finish playing after generation completes
+		if voice.draining:
+			voice.drain_remaining -= _delta
+			if voice.drain_remaining <= 0.0:
+				_release_voice(voice)
+			continue
+
 		## push frames up to end of current note
 		var to_fill: int = mini(voice.playback.get_frames_available(), MAX_FILL_PER_FRAME)
 		var remaining: int = voice.shot_end - voice.frame_pos
@@ -104,10 +111,11 @@ func _process(_delta: float) -> void:
 		if voice.frame_pos >= voice.shot_end:
 			if _advance_jingle(voice):
 				continue
-				
+
+			## generation complete — enter drain mode to let buffer finish playing
 			_sound_registry.erase(voice.sound_id)
-			voice.player.stop()
-			voice.active = false
+			voice.draining = true
+			voice.drain_remaining = voice.gen.buffer_length
 			voice.sound_id = 0
 			voice.source_id = 0
 			voice.notes = []
@@ -166,6 +174,13 @@ func play_one_shot(def: CDSoundDef, sound_position: Vector2, positional: bool,
 	voice.phase = 0.0
 	voice.volume = def.volume
 
+	## initialize reverb buffer if needed
+	if def.effect == CDEnums.Effect.REVERB:
+		_init_reverb_buf(voice)
+	else:
+		voice.reverb_buf.clear()
+		voice.reverb_size = 0
+
 	## jingle sequencing: start at first note
 	voice.note_index = 0
 	voice.notes = def.notes
@@ -207,6 +222,10 @@ func _restart_voice(voice: Voice, def: CDSoundDef, sound_position: Vector2,
 	var first_note: CDNote = def.notes[0]
 	voice.shot_end = maxi(1, int(first_note.duration * MIX_RATE))
 	voice.cached_freq = CDUtilities.freq_from_note(first_note.note)
+
+	## re-initialize reverb buffer if needed
+	if def.effect == CDEnums.Effect.REVERB:
+		_init_reverb_buf(voice)
 
 	## update position
 	voice.player.global_position = sound_position
@@ -351,10 +370,26 @@ func update_continuous_position(signature: String, source_id: int, sound_positio
 
 ## --- Helpers ---
 
-## find an idle one-shot voice
+## release a voice — stop playback and clear all state
+func _release_voice(voice: Voice) -> void:
+	voice.player.stop()
+	voice.active = false
+	voice.draining = false
+	voice.drain_remaining = 0.0
+	voice.sound_id = 0
+	voice.source_id = 0
+	voice.notes = []
+	voice.note_index = 0
+
+## find an idle one-shot voice (will reclaim a draining voice if all are busy)
 func _find_idle_voice() -> Voice:
 	for voice in _voices:
 		if not voice.active:
+			return voice
+	## all voices busy — reclaim a draining voice rather than drop the sound
+	for voice in _voices:
+		if voice.draining:
+			_release_voice(voice)
 			return voice
 	return null
 
@@ -364,6 +399,26 @@ func _find_idle_continuous_voice() -> Voice:
 		if not voice.active:
 			return voice
 	return null
+
+## initialize the per-voice reverb delay buffer
+func _init_reverb_buf(voice: Voice) -> void:
+	var size: int = REVERB_DELAY_3 + 1
+	if voice.reverb_size != size:
+		voice.reverb_buf = PackedFloat32Array()
+		voice.reverb_buf.resize(size)
+		voice.reverb_buf.fill(0.0)
+		voice.reverb_size = size
+		voice.reverb_pos = 0
+	else:
+		voice.reverb_buf.fill(0.0)
+		voice.reverb_pos = 0
+
+## reverb delay lines in frames (at 11025 Hz mix rate)
+const REVERB_DELAY_1: int = 1102    ## 100ms
+const REVERB_DELAY_2: int = 1654    ## 150ms
+const REVERB_DELAY_3: int = 2205    ## 200ms
+const REVERB_FEEDBACK: float = 0.3
+const REVERB_MIX: float = 0.4
 
 ## generate a single audio sample for a voice at time t
 func _get_sample(voice: Voice, t: float) -> float:
@@ -385,7 +440,25 @@ func _get_sample(voice: Voice, t: float) -> float:
 		if note_duration > 0:
 			note_progress = float(voice.frame_pos - voice.note_frame_start) / float(note_duration)
 
-	return CDUtilities.apply_amp_effect(sample, t, note_progress, voice.effect)
+	sample = CDUtilities.apply_amp_effect(sample, t, note_progress, voice.effect)
+
+	## apply reverb effect via delay buffer
+	if voice.effect == CDEnums.Effect.REVERB and voice.reverb_buf.size() > 0:
+		var buf: PackedFloat32Array = voice.reverb_buf
+		var pos: int = voice.reverb_pos
+		## sum output from three delay taps
+		var wet: float = 0.0
+		var d1: int = (pos - REVERB_DELAY_1 + voice.reverb_size) % voice.reverb_size
+		var d2: int = (pos - REVERB_DELAY_2 + voice.reverb_size) % voice.reverb_size
+		var d3: int = (pos - REVERB_DELAY_3 + voice.reverb_size) % voice.reverb_size
+		wet = buf[d1] * 0.5 + buf[d2] * 0.3 + buf[d3] * 0.2
+		## write input + feedback into buffer
+		buf[pos] = sample + wet * REVERB_FEEDBACK
+		voice.reverb_pos = (pos + 1) % voice.reverb_size
+		## mix dry + wet
+		sample = sample * (1.0 - REVERB_MIX) + wet * REVERB_MIX
+
+	return sample
 
 ## --- Voice Inner Class ---
 
@@ -415,6 +488,15 @@ class Voice:
 	var glide_start_freq: float = 0.0
 	var glide_target_freq: float = 0.0
 	var glide_frames: int = 0
+
+	## drain state (let buffer finish playing after generation completes)
+	var draining: bool = false
+	var drain_remaining: float = 0.0
+
+	## reverb effect state (per-voice delay buffer)
+	var reverb_buf: PackedFloat32Array = []
+	var reverb_pos: int = 0
+	var reverb_size: int = 0
 
 	## continuous voice state
 	var continuous: bool = false

@@ -1,4 +1,4 @@
-[gd_scene load_steps=144 format=3 uid="uid://c0q0c0v84x80"]
+[gd_scene load_steps=157 format=3 uid="uid://c0q0c0v84x80"]
 
 [ext_resource type="Script" uid="uid://dm0uehngpvbh7" path="res://scripts/core/infrastructure/cd_game.gd" id="1_62wb8"]
 [ext_resource type="PackedScene" uid="uid://cmbx6xnct372t" path="res://scenes/core/infrastructure/cd_collision_buffer.tscn" id="2_7y1r2"]
@@ -46,6 +46,9 @@
 [ext_resource type="PackedScene" uid="uid://c160d1kuwsrav" path="res://scenes/game components/projectors/crt_projector.tscn" id="39_4mgkk"]
 [ext_resource type="Script" uid="uid://c0l1od3pky1y1" path="res://scripts/core/resources/curves/cd_helix_curve.gd" id="40_helix"]
 [ext_resource type="Script" uid="uid://c5eo3m6tfj1b" path="res://scripts/core/resources/curves/cd_spiral_curve.gd" id="41_spiral"]
+[ext_resource type="PackedScene" uid="uid://5mmhkhj5u3tg" path="res://scenes/game components/speakers/sound_speaker.tscn" id="48_p87tt"]
+[ext_resource type="Script" uid="uid://ci2yaa2b1swsj" path="res://scripts/core/resources/audio/cd_note.gd" id="49_ifna5"]
+[ext_resource type="Script" uid="uid://d3l2c838cqwsm" path="res://scripts/core/resources/audio/cd_sound_def.gd" id="50_j0bx8"]
 [ext_resource type="PackedScene" uid="uid://mxejpxipdbii" path="res://scenes/game components/cards/wave_card.tscn" id="99_wave"]
 
 [sub_resource type="Resource" id="Resource_q4h5u"]
@@ -61,6 +64,7 @@ metadata/_custom_type_script = "uid://b2ibop6r2cryj"
 [sub_resource type="Resource" id="Resource_dg5ky"]
 script = ExtResource("4_xb0do")
 group_name = &"enemy_bullets"
+collides_with = Array[StringName]([&"players"])
 metadata/_custom_type_script = "uid://b2ibop6r2cryj"
 
 [sub_resource type="Resource" id="Resource_7ar12"]
@@ -386,6 +390,12 @@ metadata/_custom_type_script = "uid://dm2djsydyr0u1"
 script = ExtResource("26_gc4j8")
 metadata/_custom_type_script = "uid://b3xaxo1yp2dn1"
 
+[sub_resource type="Resource" id="Resource_x8buj"]
+script = ExtResource("34_1nsuk")
+signals = Array[StringName]([&"ambience"])
+delay_after = 2.0
+metadata/_custom_type_script = "uid://cyqs535s5vfg4"
+
 [sub_resource type="Resource" id="Resource_p87tt"]
 script = ExtResource("34_1nsuk")
 signals = Array[StringName]([&"spawn_top_left", &"spawn_top_right"])
@@ -451,6 +461,12 @@ curve_seed = 5
 offset = Vector2(32, 0)
 metadata/_custom_type_script = "uid://c5eo3m6tfj1b"
 
+[sub_resource type="Resource" id="Resource_4ia1r"]
+script = ExtResource("34_1nsuk")
+signals = Array[StringName]([&"ambience"])
+delay_after = 2.0
+metadata/_custom_type_script = "uid://cyqs535s5vfg4"
+
 [sub_resource type="Resource" id="Resource_l2_s1"]
 script = ExtResource("34_1nsuk")
 signals = Array[StringName]([&"spawn_bottom_left"])
@@ -510,6 +526,12 @@ curve_seed = 4
 offset = Vector2(-48, 96)
 reverse = true
 metadata/_custom_type_script = "uid://b7yxnmuk1vkya"
+
+[sub_resource type="Resource" id="Resource_umh4f"]
+script = ExtResource("34_1nsuk")
+signals = Array[StringName]([&"ambience"])
+delay_after = 2.0
+metadata/_custom_type_script = "uid://cyqs535s5vfg4"
 
 [sub_resource type="Resource" id="Resource_l3_s1"]
 script = ExtResource("34_1nsuk")
@@ -598,6 +620,12 @@ curve_seed = 3
 offset = Vector2(0, 32)
 metadata/_custom_type_script = "uid://c5eo3m6tfj1b"
 
+[sub_resource type="Resource" id="Resource_drhtc"]
+script = ExtResource("34_1nsuk")
+signals = Array[StringName]([&"ambience"])
+delay_after = 2.0
+metadata/_custom_type_script = "uid://cyqs535s5vfg4"
+
 [sub_resource type="Resource" id="Resource_l4_s1"]
 script = ExtResource("34_1nsuk")
 signals = Array[StringName]([&"spawn_top_left", &"spawn_top_right", &"spawn_bottom_left", &"spawn_bottom_right"])
@@ -651,6 +679,12 @@ curve_seed = 7
 offset = Vector2(-64, 0)
 metadata/_custom_type_script = "uid://b7yxnmuk1vkya"
 
+[sub_resource type="Resource" id="Resource_dq8qt"]
+script = ExtResource("34_1nsuk")
+signals = Array[StringName]([&"ambience"])
+delay_after = 2.0
+metadata/_custom_type_script = "uid://cyqs535s5vfg4"
+
 [sub_resource type="Resource" id="Resource_l5_s1"]
 script = ExtResource("34_1nsuk")
 signals = Array[StringName]([&"spawn_bottom_left"])
@@ -679,6 +713,42 @@ metadata/_custom_type_script = "uid://cyqs535s5vfg4"
 script = ExtResource("34_1nsuk")
 signals = Array[StringName]([&"spawn_bottom_left", &"spawn_bottom_right"])
 metadata/_custom_type_script = "uid://cyqs535s5vfg4"
+
+[sub_resource type="Resource" id="Resource_skele"]
+script = ExtResource("49_ifna5")
+note = 45
+duration = 0.3
+glide = true
+metadata/_custom_type_script = "uid://ci2yaa2b1swsj"
+
+[sub_resource type="Resource" id="Resource_8l2ml"]
+script = ExtResource("49_ifna5")
+note = 45
+duration = 0.3
+glide = true
+metadata/_custom_type_script = "uid://ci2yaa2b1swsj"
+
+[sub_resource type="Resource" id="Resource_8shry"]
+script = ExtResource("49_ifna5")
+note = 45
+duration = 0.6
+glide = true
+metadata/_custom_type_script = "uid://ci2yaa2b1swsj"
+
+[sub_resource type="Resource" id="Resource_kedvo"]
+script = ExtResource("49_ifna5")
+note = 45
+duration = 0.9
+glide = true
+metadata/_custom_type_script = "uid://ci2yaa2b1swsj"
+
+[sub_resource type="Resource" id="Resource_fky46"]
+script = ExtResource("50_j0bx8")
+wave_shape = 3
+effect = 5
+volume = 0.4
+notes = Array[ExtResource("49_ifna5")]([SubResource("Resource_skele"), SubResource("Resource_8l2ml"), SubResource("Resource_8shry"), SubResource("Resource_kedvo")])
+metadata/_custom_type_script = "uid://d3l2c838cqwsm"
 
 [node name="BugBlaster2" type="Node2D"]
 script = ExtResource("1_62wb8")
@@ -818,7 +888,7 @@ targeting_noise = 4.0
 component_category = 10
 
 [node name="SignalManager" parent="Level1Stage" instance=ExtResource("32_acn14")]
-steps = Array[ExtResource("34_1nsuk")]([SubResource("Resource_p87tt"), SubResource("Resource_ifna5"), SubResource("Resource_j0bx8"), SubResource("Resource_52c78"), SubResource("Resource_q4en4")])
+steps = Array[ExtResource("34_1nsuk")]([SubResource("Resource_x8buj"), SubResource("Resource_p87tt"), SubResource("Resource_ifna5"), SubResource("Resource_j0bx8"), SubResource("Resource_52c78"), SubResource("Resource_q4en4")])
 trigger = SubResource("Resource_acn14")
 on_sequence_complete = Array[StringName]([&"level_one_complete"])
 
@@ -939,7 +1009,7 @@ targeting_noise = 4.0
 component_category = 10
 
 [node name="SignalManager" parent="Level2Stage" instance=ExtResource("32_acn14")]
-steps = Array[ExtResource("34_1nsuk")]([SubResource("Resource_l2_s1"), SubResource("Resource_l2_s2"), SubResource("Resource_l2_s3"), SubResource("Resource_l2_s4"), SubResource("Resource_l2_s5")])
+steps = Array[ExtResource("34_1nsuk")]([SubResource("Resource_4ia1r"), SubResource("Resource_l2_s1"), SubResource("Resource_l2_s2"), SubResource("Resource_l2_s3"), SubResource("Resource_l2_s4"), SubResource("Resource_l2_s5")])
 trigger = SubResource("Resource_acn14")
 on_sequence_complete = Array[StringName]([&"level_two_complete"])
 
@@ -1058,7 +1128,7 @@ targeting_noise = 4.0
 component_category = 10
 
 [node name="SignalManager" parent="Level3Stage" instance=ExtResource("32_acn14")]
-steps = Array[ExtResource("34_1nsuk")]([SubResource("Resource_l3_s1"), SubResource("Resource_l3_s2"), SubResource("Resource_l3_s3"), SubResource("Resource_l3_s4"), SubResource("Resource_l3_s5")])
+steps = Array[ExtResource("34_1nsuk")]([SubResource("Resource_umh4f"), SubResource("Resource_l3_s1"), SubResource("Resource_l3_s2"), SubResource("Resource_l3_s3"), SubResource("Resource_l3_s4"), SubResource("Resource_l3_s5")])
 trigger = SubResource("Resource_acn14")
 on_sequence_complete = Array[StringName]([&"level_three_complete"])
 
@@ -1179,7 +1249,7 @@ targeting_noise = 4.0
 component_category = 10
 
 [node name="SignalManager" parent="Level4Stage" instance=ExtResource("32_acn14")]
-steps = Array[ExtResource("34_1nsuk")]([SubResource("Resource_l4_s1"), SubResource("Resource_l4_s2"), SubResource("Resource_l4_s3")])
+steps = Array[ExtResource("34_1nsuk")]([SubResource("Resource_drhtc"), SubResource("Resource_l4_s1"), SubResource("Resource_l4_s2"), SubResource("Resource_l4_s3")])
 trigger = SubResource("Resource_acn14")
 on_sequence_complete = Array[StringName]([&"level_four_complete"])
 
@@ -1298,7 +1368,7 @@ targeting_noise = 4.0
 component_category = 10
 
 [node name="SignalManager" parent="Level5Stage" instance=ExtResource("32_acn14")]
-steps = Array[ExtResource("34_1nsuk")]([SubResource("Resource_l5_s1"), SubResource("Resource_l5_s2"), SubResource("Resource_l5_s3"), SubResource("Resource_l5_s4"), SubResource("Resource_l5_s5")])
+steps = Array[ExtResource("34_1nsuk")]([SubResource("Resource_dq8qt"), SubResource("Resource_l5_s1"), SubResource("Resource_l5_s2"), SubResource("Resource_l5_s3"), SubResource("Resource_l5_s4"), SubResource("Resource_l5_s5")])
 trigger = SubResource("Resource_acn14")
 on_sequence_complete = Array[StringName]([&"level_five_complete"])
 
@@ -1308,7 +1378,6 @@ offset_top = 16.0
 offset_right = 16.0
 offset_bottom = 16.0
 on_advance_wave = Array[StringName]([&"level_one_complete", &"level_two_complete", &"level_three_complete", &"level_four_complete", &"level_five_complete"])
-is_interface = true
 
 [node name="TriangleShip" parent="." instance=ExtResource("8_7y1r2")]
 position = Vector2(320, 340)
@@ -1325,6 +1394,11 @@ speed = 300.0
 
 [node name="ScrollingStarsEffect" parent="." instance=ExtResource("38_1tdfd")]
 star_count = 25
+
+[node name="SoundSpeaker" parent="." instance=ExtResource("48_p87tt")]
+sound = SubResource("Resource_fky46")
+trigger_signal = &"ambience"
+gameplay_only = true
 
 [editable path="TriangleShip"]
 [editable path="TriangleShip/GunArm"]
