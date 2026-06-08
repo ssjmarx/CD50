@@ -20,7 +20,7 @@ wrap_margin = 32.0
 
 [node name="AccelerationTargetLeg" parent="." index="1" instance=ExtResource("3_upr7u")]
 acceleration = 3200.0
-slow_distance = 16.0
+slow_distance = 8.0
 stop_distance = 4.0
 
 [node name="LinearFrictionLeg" parent="." index="2" instance=ExtResource("7_7l8gu")]

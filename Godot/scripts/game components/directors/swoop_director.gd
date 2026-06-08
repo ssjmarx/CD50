@@ -27,6 +27,14 @@ class_name SwoopDirector extends CDGameComponent
 @export var swoop_speed: float = 200.0
 @export var formation_offset: float = 16.0
 
+@export_group("Lanes")
+## number of side-by-side lanes (1 = single file, 2 = pairs, 3 = triples)
+@export var lane_count: int = 1:
+	set(v):
+		lane_count = maxi(1, v)
+## pixel spacing between lanes
+@export var lane_spacing: float = 16.0
+
 @export_group("Blackboard Keys")
 @export var direction_key: StringName = &"move_direction"
 @export var distance_key: StringName = &"move_distance"
@@ -60,6 +68,8 @@ class_name SwoopDirector extends CDGameComponent
 var _curve: Curve2D
 var _curve_length: float = 0.0
 var _ghost_offsets: Dictionary = {} # {CDEntity: float} — offset along curve in pixels
+var _entity_lanes: Dictionary = {}  # {CDEntity: float} — lane index (-0.5, +0.5, etc.)
+var _lane_axis: Vector2 = Vector2.RIGHT # fixed perpendicular axis for lane offsets
 var _slots: Array[CDEntity] = []
 var _pending: Array[CDEntity] = []
 var _pixels_per_frame: float = 0.0
@@ -129,11 +139,17 @@ func _on_trigger() -> void:
 		return
 	
 	## generate the curve from director position to target
-	if curve:
-		_curve = curve.generate_curve(global_position, target)
-		_curve_length = _curve.get_baked_length()
-	else:
+	if not curve:
 		return
+	_curve = curve.generate_curve(global_position, target)
+	_curve_length = _curve.get_baked_length()
+	## compute fixed lane axis from initial tangent direction
+	if _curve_length > 0.0:
+		var sample_dist := minf(10.0, _curve_length)
+		var start_tangent := (_curve.sample_baked(sample_dist) - _curve.sample_baked(0.0)).normalized()
+		_lane_axis = Vector2(-start_tangent.y, start_tangent.x)
+	else:
+		_lane_axis = Vector2.RIGHT
 	
 	var fps: float = ProjectSettings.get_setting("physics/common/physics_ticks_per_second")
 	_pixels_per_frame = swoop_speed / fps
@@ -142,6 +158,7 @@ func _on_trigger() -> void:
 	## clear all state
 	_slots.clear()
 	_ghost_offsets.clear()
+	_entity_lanes.clear()
 	_pending.clear()
 	_frame_counter = 0
 	_release_countdown = 0
@@ -155,11 +172,28 @@ func _on_trigger() -> void:
 	if valid.is_empty():
 		return
 	
-	_release_entity(valid[0])
-	for i in range(1, valid.size()):
-		_pending.append(valid[i])
+	## release entities in lane groups (lane_count at a time, then delay)
+	_release_lane_group(valid)
 	
 	set_physics_process(true)
+
+## release a group of lane_count entities simultaneously, assigning each to a lane
+func _release_lane_group(valid: Array[CDEntity]) -> void:
+	var count := mini(lane_count, valid.size())
+	for i in count:
+		var entity := valid[i]
+		var lane_value: float = _get_lane_value(i, lane_count)
+		_entity_lanes[entity] = lane_value
+		_release_entity(entity)
+	## remaining entities go to pending — they'll be released in lane groups too
+	for i in range(count, valid.size()):
+		_pending.append(valid[i])
+
+## compute perpendicular lane value for lane index within a group
+func _get_lane_value(index: int, count: int) -> float:
+	if count <= 1:
+		return 0.0
+	return (float(index) - (float(count) - 1.0) / 2.0)
 
 ## release an entity onto the curve with ghost offset at 0
 func _release_entity(entity: CDEntity) -> void:
@@ -167,9 +201,14 @@ func _release_entity(entity: CDEntity) -> void:
 	_ghost_offsets[entity] = 0.0
 	_release_countdown = _entry_delay_frames
 	if _curve_length > 0.0:
-		var start_pos: Vector2 = _curve.sample_baked(0.0)
-		entity.blackboard[direction_key] = entity.global_position.direction_to(start_pos)
-		entity.blackboard[distance_key] = entity.global_position.distance_to(start_pos)
+		var lane: float = _entity_lanes.get(entity, 0.0)
+		var offset_pos := _apply_lane_offset(0.0, lane)
+		entity.blackboard[direction_key] = entity.global_position.direction_to(offset_pos)
+		entity.blackboard[distance_key] = entity.global_position.distance_to(offset_pos)
+
+## compute ghost position with fixed-axis lane offset
+func _apply_lane_offset(offset: float, lane: float) -> Vector2:
+	return _curve.sample_baked(offset) + _lane_axis * lane * lane_spacing
 
 ## --- entity gathering ---
 
@@ -214,11 +253,15 @@ func _physics_process(_delta: float) -> void:
 		_pending = _pending.filter(func(e): return is_instance_valid(e))
 		_release_countdown -= 1
 		if _release_countdown <= 0:
-			var next = _pending.pop_front()
-			if is_instance_valid(next) and next.state == CDEnums.EntityState.ACTIVE:
-				_release_entity(next)
-			else:
-				_release_countdown = 0
+			## release a lane group from pending
+			var count := mini(lane_count, _pending.size())
+			for i in count:
+				var next = _pending.pop_front()
+				if is_instance_valid(next) and next.state == CDEnums.EntityState.ACTIVE:
+					var lane_value: float = _get_lane_value(i, lane_count)
+					_entity_lanes[next] = lane_value
+					_release_entity(next)
+			_release_countdown = _entry_delay_frames
 	
 	_frame_counter += 1
 	
@@ -237,7 +280,8 @@ func _physics_process(_delta: float) -> void:
 			continue
 		
 		_ghost_offsets[entity] = offset
-		var ghost_pos: Vector2 = _curve.sample_baked(offset)
+		var lane: float = _entity_lanes.get(entity, 0.0)
+		var ghost_pos: Vector2 = _apply_lane_offset(offset, lane)
 		entity.blackboard[direction_key] = entity.global_position.direction_to(ghost_pos)
 		entity.blackboard[distance_key] = entity.global_position.distance_to(ghost_pos)
 	
@@ -245,6 +289,7 @@ func _physics_process(_delta: float) -> void:
 	for entity in completed:
 		_slots.erase(entity)
 		_ghost_offsets.erase(entity)
+		_entity_lanes.erase(entity)
 		if is_instance_valid(entity) and entity.state == CDEnums.EntityState.ACTIVE:
 			game.blackboard[completed_entity_key] = entity
 			for sig in on_swoop_complete:
@@ -262,6 +307,8 @@ func reset() -> void:
 	_curve = null
 	_curve_length = 0.0
 	_ghost_offsets.clear()
+	_lane_axis = Vector2.RIGHT
+	_entity_lanes.clear()
 	_slots.clear()
 	_pending.clear()
 	_pixels_per_frame = 0.0

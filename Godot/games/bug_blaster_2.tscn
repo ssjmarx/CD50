@@ -850,6 +850,7 @@ target = Vector2(320, 64)
 curve = SubResource("Resource_2bq8q")
 swoop_speed = 400.0
 formation_offset = 32.0
+lane_count = 2
 trigger_signals = Array[StringName]([&"spawning_complete_bottom_left"])
 preview_color = Color(0.75, 0.75, 0.75, 1)
 
@@ -861,6 +862,7 @@ target = Vector2(320, 64)
 curve = SubResource("Resource_rvvw1")
 swoop_speed = 400.0
 formation_offset = 32.0
+lane_count = 2
 trigger_signals = Array[StringName]([&"spawning_complete_bottom_right"])
 preview_color = Color(0.75, 0.75, 0.75, 1)
 
@@ -971,6 +973,7 @@ target = Vector2(320, 64)
 curve = SubResource("Resource_l2_spir_bl")
 swoop_speed = 350.0
 formation_offset = 32.0
+lane_count = 2
 trigger_signals = Array[StringName]([&"spawning_complete_bottom_left"])
 preview_color = Color(1, 0.5, 0.5, 1)
 
@@ -982,6 +985,7 @@ target = Vector2(320, 256)
 curve = SubResource("Resource_l2_spir_br")
 swoop_speed = 350.0
 formation_offset = 32.0
+lane_count = 2
 trigger_signals = Array[StringName]([&"spawning_complete_bottom_right"])
 preview_color = Color(1, 0.5, 0.5, 1)
 
@@ -1090,6 +1094,7 @@ target = Vector2(320, 64)
 curve = SubResource("Resource_l3_para_bl")
 swoop_speed = 500.0
 formation_offset = 32.0
+lane_count = 2
 trigger_signals = Array[StringName]([&"spawning_complete_bottom_left"])
 preview_color = Color(0.6, 0, 1, 1)
 
@@ -1101,6 +1106,7 @@ target = Vector2(320, 256)
 curve = SubResource("Resource_l3_para_br")
 swoop_speed = 500.0
 formation_offset = 32.0
+lane_count = 2
 trigger_signals = Array[StringName]([&"spawning_complete_bottom_right"])
 preview_color = Color(0.6, 0, 1, 1)
 
@@ -1211,6 +1217,7 @@ target = Vector2(320, 64)
 curve = SubResource("Resource_l4_spir_bl")
 swoop_speed = 400.0
 formation_offset = 32.0
+lane_count = 2
 trigger_signals = Array[StringName]([&"spawning_complete_bottom_left"])
 preview_color = Color(0, 1, 0.5, 1)
 
@@ -1222,6 +1229,7 @@ target = Vector2(320, 256)
 curve = SubResource("Resource_l4_spir_br")
 swoop_speed = 400.0
 formation_offset = 32.0
+lane_count = 2
 trigger_signals = Array[StringName]([&"spawning_complete_bottom_right"])
 preview_color = Color(0, 1, 0.5, 1)
 
@@ -1308,6 +1316,7 @@ target = Vector2(256, 244)
 curve = SubResource("Resource_l5_helix_l")
 swoop_speed = 300.0
 formation_offset = 32.0
+lane_count = 2
 trigger_signals = Array[StringName]([&"spawning_complete_left"])
 preview_color = Color(1, 0.84, 0, 1)
 
@@ -1319,6 +1328,7 @@ target = Vector2(384, 244)
 curve = SubResource("Resource_l5_circ_r")
 swoop_speed = 300.0
 formation_offset = 32.0
+lane_count = 2
 trigger_signals = Array[StringName]([&"spawning_complete_right"])
 preview_color = Color(1, 0.84, 0, 1)
 
