@@ -1,4 +1,4 @@
-[gd_scene load_steps=157 format=3 uid="uid://c0q0c0v84x80"]
+[gd_scene load_steps=156 format=3 uid="uid://c0q0c0v84x80"]
 
 [ext_resource type="Script" uid="uid://dm0uehngpvbh7" path="res://scripts/core/infrastructure/cd_game.gd" id="1_62wb8"]
 [ext_resource type="PackedScene" uid="uid://cmbx6xnct372t" path="res://scenes/core/infrastructure/cd_collision_buffer.tscn" id="2_7y1r2"]
@@ -9,10 +9,8 @@
 [ext_resource type="PackedScene" uid="uid://c6mp0pt27mfal" path="res://scenes/core/infrastructure/cd_input_router.tscn" id="6_2v676"]
 [ext_resource type="PackedScene" uid="uid://csgdjkq3gf26a" path="res://scenes/core/infrastructure/cd_updater.tscn" id="7_fjsfa"]
 [ext_resource type="PackedScene" path="res://scenes/core/infrastructure/cd_stage.tscn" id="8_4mgkk"]
-[ext_resource type="PackedScene" uid="uid://crm6k3o4f76ok" path="res://entities/player/triangle_ship_player.tscn" id="8_7y1r2"]
 [ext_resource type="PackedScene" path="res://scenes/game components/managers/stage_manager.tscn" id="8_kgu26"]
 [ext_resource type="Script" uid="uid://1ag25dxeklvd" path="res://scripts/core/resources/behavior/cd_stage_rule.gd" id="9_vaj0o"]
-[ext_resource type="PackedScene" uid="uid://33byjn5h6ujc" path="res://scenes/entity components/legs/direct_movement_leg.tscn" id="9_wnudv"]
 [ext_resource type="PackedScene" uid="uid://b1e365cvr1e8p" path="res://scenes/game components/trapdoors/point_trapdoor.tscn" id="10_xb0do"]
 [ext_resource type="PackedScene" uid="uid://dn4605ei3ylto" path="res://entities/nonplayer/bug_ship_swooping_nonplayer.tscn" id="11_2v676"]
 [ext_resource type="Script" uid="uid://dctlu6ei0yhha" path="res://scripts/core/resources/triggers/cd_composite_trigger.gd" id="11_5umtv"]
@@ -48,6 +46,7 @@
 [ext_resource type="Script" uid="uid://c5eo3m6tfj1b" path="res://scripts/core/resources/curves/cd_spiral_curve.gd" id="41_spiral"]
 [ext_resource type="PackedScene" uid="uid://5mmhkhj5u3tg" path="res://scenes/game components/speakers/sound_speaker.tscn" id="48_p87tt"]
 [ext_resource type="Script" uid="uid://ci2yaa2b1swsj" path="res://scripts/core/resources/audio/cd_note.gd" id="49_ifna5"]
+[ext_resource type="PackedScene" uid="uid://c5m6p46qsg1gv" path="res://entities/player/sprite_ship_player.tscn" id="49_s3e4k"]
 [ext_resource type="Script" uid="uid://d3l2c838cqwsm" path="res://scripts/core/resources/audio/cd_sound_def.gd" id="50_j0bx8"]
 [ext_resource type="PackedScene" uid="uid://mxejpxipdbii" path="res://scenes/game components/cards/wave_card.tscn" id="99_wave"]
 
@@ -1389,19 +1388,6 @@ offset_right = 16.0
 offset_bottom = 16.0
 on_advance_wave = Array[StringName]([&"level_one_complete", &"level_two_complete", &"level_three_complete", &"level_four_complete", &"level_five_complete"])
 
-[node name="TriangleShip" parent="." instance=ExtResource("8_7y1r2")]
-position = Vector2(320, 340)
-rotation = -1.5707964
-lock_y = true
-clamp_to_bounds = true
-bounds_margin = 8.0
-
-[node name="DirectRotationLeg" parent="TriangleShip" index="7"]
-rotation_speed = 0.0
-
-[node name="DirectMovementLeg" parent="TriangleShip" instance=ExtResource("9_wnudv")]
-speed = 300.0
-
 [node name="ScrollingStarsEffect" parent="." instance=ExtResource("38_1tdfd")]
 star_count = 25
 
@@ -1410,5 +1396,12 @@ sound = SubResource("Resource_fky46")
 trigger_signal = &"ambience"
 gameplay_only = true
 
-[editable path="TriangleShip"]
-[editable path="TriangleShip/GunArm"]
+[node name="SpriteShip" parent="." instance=ExtResource("49_s3e4k")]
+position = Vector2(320, 340)
+rotation = -1.5707964
+lock_y = true
+
+[node name="TargetRotationLeg" parent="SpriteShip" index="7"]
+direction_key = &"aim_direction"
+
+[editable path="SpriteShip"]

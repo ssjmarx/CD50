@@ -1,0 +1,20 @@
+[gd_scene load_steps=5 format=3 uid="uid://c5m6p46qsg1gv"]
+
+[ext_resource type="PackedScene" uid="uid://btfoj4emj6uld" path="res://entities/generic/sprite_ship.tscn" id="1_lwm8o"]
+[ext_resource type="PackedScene" uid="uid://rboxkmqfnro8" path="res://entities/player/onscreen_bullet_player.tscn" id="2_lihx0"]
+[ext_resource type="PackedScene" uid="uid://br86r51jieatg" path="res://scenes/entity components/brains/player_action_brain.tscn" id="2_t37r7"]
+[ext_resource type="PackedScene" uid="uid://ctkdlo8fjay4c" path="res://scenes/entity components/brains/player_move_brain.tscn" id="3_lihx0"]
+
+[node name="SpriteShip" instance=ExtResource("1_lwm8o")]
+groups = Array[StringName]([&"sprite_ships", &"ships", &"players"])
+
+[node name="GunArm" parent="." index="1"]
+bullet_scene = ExtResource("2_lihx0")
+
+[node name="TargetRotationLeg" parent="." index="7"]
+rotation_speed = 0.0
+
+[node name="PlayeActionBrain" parent="." index="10" instance=ExtResource("2_t37r7")]
+action_mappings = Array[StringName]([&"fire", &"thrust"])
+
+[node name="PlayerMoveBrain" parent="." index="11" instance=ExtResource("3_lihx0")]

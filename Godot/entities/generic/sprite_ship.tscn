@@ -1,0 +1,94 @@
+[gd_scene load_steps=22 format=3 uid="uid://btfoj4emj6uld"]
+
+[ext_resource type="Script" uid="uid://dfbv2tw3cl4pe" path="res://scripts/core/infrastructure/cd_entity.gd" id="1_f1c70"]
+[ext_resource type="PackedScene" uid="uid://dlgrii32eggbo" path="res://scenes/entity components/faces/sprite_face.tscn" id="2_f1c70"]
+[ext_resource type="Texture2D" uid="uid://bp2srcp67r01j" path="res://assets/kenney_simple-space/PNG/Default/ship_L.png" id="3_25jdx"]
+[ext_resource type="PackedScene" uid="uid://1vgoj6bqs80e" path="res://scenes/entity components/arms/gun_arm.tscn" id="4_bi54g"]
+[ext_resource type="Script" uid="uid://dcu4ocnin0htu" path="res://scripts/core/resources/spawners/cd_spawn_context.gd" id="5_0gwfy"]
+[ext_resource type="PackedScene" uid="uid://btr1f3svl7y3m" path="res://scenes/entity components/guts/healthpool_guts.tscn" id="6_vyx83"]
+[ext_resource type="PackedScene" uid="uid://bfxtjii32duju" path="res://scenes/entity components/guts/die_at_zero_health_guts.tscn" id="7_nnbsb"]
+[ext_resource type="PackedScene" uid="uid://bisjhhp8r5a4p" path="res://scenes/entity components/faces/death_effect_face.tscn" id="8_w1bkq"]
+[ext_resource type="PackedScene" uid="uid://dnt5g5mntk0nk" path="res://scenes/effects/death_particle_effect.tscn" id="9_c7x56"]
+[ext_resource type="PackedScene" uid="uid://dtobcb3r7eydx" path="res://scenes/effects/broken_ship_effect.tscn" id="10_t2reb"]
+[ext_resource type="PackedScene" uid="uid://33byjn5h6ujc" path="res://scenes/entity components/legs/direct_movement_leg.tscn" id="12_f1c70"]
+[ext_resource type="PackedScene" uid="uid://cw4irq1blk1ug" path="res://scenes/entity components/faces/vector_engine_face.tscn" id="12_gh0pd"]
+[ext_resource type="PackedScene" uid="uid://bruvhn6v5bghr" path="res://scenes/entity components/legs/target_rotation_leg.tscn" id="13_f1c70"]
+[ext_resource type="PackedScene" uid="uid://c4jinp88xtitl" path="res://scenes/entity components/voices/sound_voice.tscn" id="14_yodqm"]
+[ext_resource type="Script" uid="uid://ci2yaa2b1swsj" path="res://scripts/core/resources/audio/cd_note.gd" id="15_qmoov"]
+[ext_resource type="Script" uid="uid://d3l2c838cqwsm" path="res://scripts/core/resources/audio/cd_sound_def.gd" id="16_fr7il"]
+
+[sub_resource type="Resource" id="Resource_rjpix"]
+script = ExtResource("5_0gwfy")
+velocity = Vector2(1000, 0)
+metadata/_custom_type_script = "uid://dcu4ocnin0htu"
+
+[sub_resource type="Resource" id="Resource_5o52p"]
+script = ExtResource("15_qmoov")
+duration = 1.0
+metadata/_custom_type_script = "uid://ci2yaa2b1swsj"
+
+[sub_resource type="Resource" id="Resource_llwmp"]
+script = ExtResource("16_fr7il")
+wave_shape = 2
+effect = 3
+notes = Array[ExtResource("15_qmoov")]([SubResource("Resource_5o52p")])
+metadata/_custom_type_script = "uid://d3l2c838cqwsm"
+
+[sub_resource type="Resource" id="Resource_pn0om"]
+script = ExtResource("15_qmoov")
+note = 52
+duration = 0.4
+metadata/_custom_type_script = "uid://ci2yaa2b1swsj"
+
+[sub_resource type="Resource" id="Resource_8rq18"]
+script = ExtResource("16_fr7il")
+wave_shape = 4
+effect = 4
+notes = Array[ExtResource("15_qmoov")]([SubResource("Resource_pn0om")])
+metadata/_custom_type_script = "uid://d3l2c838cqwsm"
+
+[node name="SpriteShip" type="CharacterBody2D" groups=["ships"]]
+script = ExtResource("1_f1c70")
+groups = Array[StringName]([&"sprite_ships", &"ships"])
+collision_radius = 1.0
+
+[node name="SpriteFace" parent="." instance=ExtResource("2_f1c70")]
+position = Vector2(4, 0)
+rotation = 1.5707964
+scale = Vector2(0.5, 0.5)
+frames = Array[Texture2D]([ExtResource("3_25jdx")])
+
+[node name="GunArm" parent="." instance=ExtResource("4_bi54g")]
+position = Vector2(16, 0)
+cooldown = 0.1
+spawn_context = SubResource("Resource_rjpix")
+max_bullets = 2
+fire_signals = Array[StringName]([&"fire"])
+
+[node name="HealthpoolGuts" parent="." instance=ExtResource("6_vyx83")]
+max_health = 1
+
+[node name="DieAtZeroHealthGuts" parent="." instance=ExtResource("7_nnbsb")]
+
+[node name="DeathEffectFace" parent="." instance=ExtResource("8_w1bkq")]
+effect_scenes = Array[PackedScene]([ExtResource("9_c7x56"), ExtResource("10_t2reb")])
+
+[node name="VectorEngineFace" parent="." instance=ExtResource("12_gh0pd")]
+rotation = 1.5707964
+flame_size = 4.0
+flame_width = 4.0
+flicker_speed = 0.4
+line_width = 1.0
+
+[node name="DirectMovementLeg" parent="." instance=ExtResource("12_f1c70")]
+speed = 400.0
+
+[node name="TargetRotationLeg" parent="." instance=ExtResource("13_f1c70")]
+
+[node name="SoundVoice" parent="." instance=ExtResource("14_yodqm")]
+sound = SubResource("Resource_llwmp")
+trigger_signal = &"request_deactivate"
+
+[node name="SoundVoice2" parent="." instance=ExtResource("14_yodqm")]
+sound = SubResource("Resource_8rq18")
+trigger_signal = &"request_deactivate"
