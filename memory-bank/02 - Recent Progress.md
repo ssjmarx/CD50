@@ -1,6 +1,33 @@
 # Recent Progress
 
-**Last Updated:** 2026-06-05
+**Last Updated:** 2026-06-16
+
+---
+
+## Tooling Migration — Cline → Aider (2026-06-16)
+
+Migrated the AI coding assistant workflow from Cline (VS Code extension) to Aider (terminal CLI). No game code or scenes were modified — this was tooling and configuration only.
+
+### What Was Done
+
+| Item | Details |
+|------|---------|
+| Aider installed | `uv tool install --python 3.12 aider-chat` (v0.86.2). Used `uv` because Python 3.13 can't build `numpy==1.24.3`. Binary at `~/.local/bin/aider`. |
+| Global config | `~/.aider.conf.yml` — default model `openai/glm-5.2`, Z.ai coding-plan endpoint, repo map 2048 tokens, git settings. |
+| Project config | `.aider.conf.yml` — project override to `openai/glm-4.7`, subtree-only, `.env` loading. |
+| `.aiderignore` | Excludes Godot cache (`.godot/`, `*.import`), binary assets (PNG/OGG/TTF/etc.), v1 legacy code, Aider artifacts. |
+| `.env.example` | Template for Z.ai API key — user copies to `.env` and fills in key. |
+| `CONVENTIONS.md` | Aider rules file (equivalent of `.clinerules`). Enforces "no code writing" rule, `/ask` default mode, model usage strategy. |
+| `.gitignore` | Updated — added `.env` and Aider artifact exclusions to prevent accidental key commits. |
+| Migration doc | `planning/Migration - Cline to Aider.md` — full reference with corrections, validation checklist, rollback notes. |
+
+### Pending (User Action)
+
+1. `cp .env.example .env` and paste Z.ai API key.
+2. Run `aider` in repo to validate startup and repo map.
+3. Optionally disable Cline extension in VS Code.
+
+### V2 Total Scripts Written: 170 (no code changes — tooling only)
 
 ---
 
