@@ -65,50 +65,137 @@ Because Aider's default mode edits files, you must observe these guardrails:
 ## 📋 MANDATORY CONTEXT CHECK
 
 Before answering substantive questions, verify:
-1. `memory-bank/01 - Current Status.md` — component catalogue (source of truth).
-2. `memory-bank/03 - Current Goal.md` — active task.
-3. If the memory-bank appears outdated or inaccurate, **flag this to the user first** before proceeding.
+1. `memory-bank/PROJECT_STATUS.md` — codebase truth: architecture, component catalogue, patterns.
+2. `memory-bank/CURRENT_TASK.md` — active work: what we're building now + roadmap.
+3. If either file appears outdated or inaccurate, **flag this to the user first** before proceeding.
+
+For deep architectural reference: `USAGE.md` and `planning/V2 Rules.md`.
 
 ---
 
-## 🏗️ PROJECT CONTEXT
+## 📝 MEMORY BANK MAINTENANCE
 
-### Architecture: Entity-Component Pattern
-- Composition over inheritance.
-- `UniversalBody` (extends `CharacterBody2D`) = base for physical entities.
-- `UniversalGameScript` (extends `Node2D`) = base for game controllers.
-- Signal-driven communication: Bodies route input signals from Brains → Legs/Arms.
+The memory bank is **two files only**. Both are auto-loaded by Aider (see `.aider.conf.yml`). Keep them lean and accurate.
+
+### `memory-bank/PROJECT_STATUS.md` — "What exists"
+This is the **factual codebase reference**. Update it when the codebase changes.
+
+**Update when:**
+- A script is **added, removed, or renamed** → update the component catalogue + count summary.
+- A new **pattern or anti-pattern** emerges → add to the reference tables.
+- The **architecture** changes (new base class, priority shift, signal system change) → update the overview.
+
+**Do NOT update for:**
+- Work-in-progress that isn't committed yet.
+- Opinion or discussion — this file is facts only.
+
+### `memory-bank/CURRENT_TASK.md` — "What we're doing"
+This is the **active work pointer**. Update it frequently as focus shifts.
+
+**Update when:**
+- The **active task** changes (e.g., finishing capture mechanics, moving to multi-wave).
+- A **milestone completes** (check the roadmap, mark it ✅).
+- The **ship status** changes (demo shipped, new blocker found, etc.).
+- The **roadmap** is revised (dates move, phases reorder).
+
+**Do NOT update for:**
+- Every minor sub-task — keep it at the milestone level.
+- Completed work that belongs in `PROJECT_STATUS.md` instead (e.g., "we added a new component" updates the catalogue, not the task).
+
+### Rule of thumb
+If it's about **what the code IS** → `PROJECT_STATUS.md`.
+If it's about **what we're DOING** → `CURRENT_TASK.md`.
+If unsure, ask the user which file to update.
+
+---
+
+## 🏗️ PROJECT CONTEXT — V2 COMPOSABLE ARCHITECTURE
+
+> **Active architecture:** V2. The V1 codebase is archived under `Godot/v1/` and is **not** under active development. All new work targets V2.
+
+### Core Principles
+1. **Composition over inheritance** — `CDEntity` is a blank physics shell. All behavior comes from components.
+2. **Signals, not calls** — Components never call methods on other components. They emit signals.
+3. **Single-purpose components** — Each component does one thing. Split if it does two.
+4. **Zero game-specific scripts** — Every game is assembled from reusable components in `.tscn` scenes.
+
+### Base Classes
+| Class | Extends | Role |
+|:---|:---|:---|
+| `CDEntity` | `CharacterBody2D` | Blank physics shell — velocity accumulator, entity bus, blackboard, pool-aware lifecycle |
+| `CDGame` | `Node2D` | Game root — game bus + blackboard, state machine, no game logic |
+| `CDEntityComponent` | `Node2D` | Entity component base — two-phase lifecycle, category priority |
+| `CDGameComponent` | `Node2D` | Stage component base — same lifecycle, no entity ref |
+
+### Signal System — Hybrid Bus (native signals + blackboard)
+Both entity and game buses use **native Godot signals** (via `add_user_signal()` / `bus_connect()`). All dynamic signals are **zero-arg**; data flows through `entity.blackboard` and `game.blackboard` dictionaries.
+
+- **Emitter:** `entity.blackboard["key"] = value` → `entity.bus_emit("signal_name")`
+- **Listener:** reads `entity.blackboard["key"]` in callback
+- **Auto-populated keys each frame:** `"position"`, `"rotation"`, `"velocity"`
+- `bus_emit()` auto-tracks the emitter in `_signal_emitters` for the current frame (enables signal-aware selectors)
+
+### Deterministic Priority Cascade
+```
+REGISTRY(5) → INPUT(8) → BRAINS(10) → LEGS(20) → ENTITY(30) → COLLISION(35) → ARMS(40) → GUTS(50) → FACES(60) → VOICES(65) → STAGE(70) → MANAGER(75) → UPDATE(90)
+```
+Reserved for infrastructure (never set by components): REGISTRATION, INPUT, ENTITY, COLLISION, UPDATE.
 
 ### Component Categories
-| Category | Purpose |
-|:---|:---|
-| **Brains** | Input / AI |
-| **Legs** | Movement |
-| **Arms** | Weapons |
-| **Components** | Gameplay modifiers |
-| **Rules** | Game logic |
-| **Flow** | Waves / spawning |
+| Category | Priority | Purpose |
+|:---|:---|:---|
+| **Brains** (INTENT) | 10 | Input / AI — pure intent generators, never touch velocity |
+| **Legs** (STEERING) | 20 | Movement executors — consume intent, submit velocity requests |
+| **Arms** (INTERACTION) | 40 | World-affecting — collision response, scoring, spawning |
+| **Guts** (STATE) | 50 | Internal state trackers — health, timers, resources, detection |
+| **Faces** (VISUAL) | 60 | Visual representation — drawing code only |
+| **Voices** (AUDIO) | 65 | Entity-level audio |
+| **Stage** (RULES) | 70 | Game-level components — cards, goals, marks, directors, trapdoors, speakers, projectors |
+| **Managers** | 75 | Stage lifecycle — StageManager, StateManager, SignalManager |
 
-### Directory Structure
+### Directory Structure (V2 — actual)
 ```
-Godot/Scripts/
-├── Arms/        — Weapon scripts
-├── Bodies/      — Entity scripts
-├── Brains/      — Input/AI scripts
-├── Components/  — Gameplay modifier scripts
-├── Core/        — Base classes & infrastructure
-├── Flow/        — Wave management scripts
-├── Games/       — Game-level controller scripts
-├── Legs/        — Movement scripts
-└── Rules/       — Game logic scripts
+Godot/scripts/
+├── core/
+│   ├── base classes/        — CDCueCard, CDEntityComponent, CDGameComponent, CDStageTrapdoor
+│   ├── infrastructure/      — CDEntity, CDGame, CDCollisionBuffer, CDGroupRegistry, CDObjectPool, CDUpdater, CDStage, CDBody, etc.
+│   └── resources/
+│       ├── audio/           — CDNote, CDSoundDef, CDMusicTrack
+│       ├── behavior/        — CDTransition, CDShape, CDScaler, CDSequenceStep, CDStageRule, etc.
+│       ├── curves/          — CDCurve base + 12 curve types (AI path generation)
+│       ├── formation/       — CDFormation, CDMarchingOrder
+│       ├── infrastructure/  — CDCollisionGroup, CDEnums, CDUtilities
+│       ├── selectors/       — CDSelector base + 6 selection strategies
+│       ├── spawners/        — CDSpawnContext, CDGridLayout, CDGridRow, CDGridEquation
+│       ├── triggers/        — CDTrigger base + 4 trigger types
+│       └── visuals/         — CDFaceBinding
+├── entity components/
+│   ├── brains/              — player/ + ai action/ + ai movement/
+│   ├── legs/                — directional setters/adders, positional setters/adders, other/
+│   ├── arms/                — collision reactions/, death reactions/, triggered/, powerup/, other/
+│   ├── guts/                — pools/, death/, physics/, detection/, input/, game logic/
+│   ├── faces/               — 7 visual components
+│   └── voices/              — 2 audio components
+├── game components/
+│   ├── cards/               — 4 cue cards (score, lives, timer, wave)
+│   ├── directors/           — 7 stage controllers
+│   ├── managers/            — 3 stage managers (StageManager, StateManager, SignalManager)
+│   ├── goals/               — 2 win/lose conditions
+│   ├── marks/               — 6 spatial triggers
+│   ├── projectors/          — 2 visual post-processing
+│   ├── speakers/            — 3 audio components
+│   └── trapdoors/           — 3 spawners
+└── effects/                 — 3 visual effects
 ```
+
+**Full component catalogue (172 scripts):** `memory-bank/PROJECT_STATUS.md`
 
 ---
 
 ## 💡 WHEN DISCUSSING CODE
 
 - Reference actual file paths and line numbers when possible.
-- Use the component catalogue in `01 - Current Status.md` as ground truth.
+- Use `memory-bank/PROJECT_STATUS.md` as ground truth for what exists.
 - When unsure how something works, say "I don't know" — don't hallucinate implementation details.
 - If the user asks "should I do X?", explain the trade-offs and let them decide.
 
@@ -118,10 +205,10 @@ Godot/Scripts/
 
 | Model | Quota | When to use |
 |:---|:---|:---|
-| `openai/glm-4.7` | 1× | Default — general questions, explanations, pattern suggestions, documentation |
-| `openai/glm-5.2` | 1× peak / 2× off-peak after Sept | Escalation — complex architecture, stuck on bugs, deep reasoning across systems |
+| `zai/glm-4.7` | 1× | Default — general questions, explanations, pattern suggestions, documentation |
+| `zai/glm-5.2` | 1× peak / 2× off-peak after Sept | Escalation — complex architecture, stuck on bugs, deep reasoning across systems |
 
-Switch per-session with: `aider --model openai/glm-5.2`
+Switch per-session with: `aider --model zai/glm-5.2`
 
 ---
 
