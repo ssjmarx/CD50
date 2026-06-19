@@ -4,11 +4,14 @@
 
 class_name ScoreOnDeathArm extends CDEntityComponent
 
+@export_group("Blackboard Keys")
+@export var pending_score_key: StringName = &"pending_score_add"
+
 @export_group("Listen Signals")
 @export var death_signals: Array[StringName] = [&"zero_health"]
 
 @export_group("Emit Signals")
-@export var score_signals: Array[StringName] = [&"score_gained"]
+@export var score_signals: Array[StringName] = [&"add_score"]
 
 ## cached reference to sibling PointsGuts
 var _points_guts: PointsGuts
@@ -21,10 +24,7 @@ func _ready() -> void:
 ## connect death signals, ensure game bus signals, find PointsGuts sibling
 func _on_initialize() -> void:
 	for sig in death_signals:
-		entity.connect(sig, _on_death)
-	for sig in score_signals:
-		if game:
-			game.ensure_signal(sig)
+		self.bus_connect(sig, _on_death)
 
 	## search for PointsGuts sibling
 	_points_guts = null
@@ -41,9 +41,11 @@ func _on_death() -> void:
 	if _points_guts:
 		points = _points_guts.points
 
+	game.blackboard[pending_score_key] = points
+
 	if game:
 		for sig in score_signals:
-			game.emit_signal(sig, points)
+			game.bus_emit(sig)
 
 ## disconnect all death signals on deactivation
 func _on_entity_deactivating() -> void:

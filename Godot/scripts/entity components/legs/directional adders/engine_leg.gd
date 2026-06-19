@@ -26,8 +26,8 @@ func _ready() -> void:
 
 ## on initialize
 func _on_initialize() -> void:
-	entity.bus_connect(thrust_signal, _on_thrust)
-	entity.bus_connect(end_thrust_signal, _on_end_thrust)
+	self.bus_connect(thrust_signal, _on_thrust)
+	self.bus_connect(end_thrust_signal, _on_end_thrust)
 	set_physics_process(false)
 
 ## --- signal handlers ---
@@ -54,7 +54,7 @@ func _physics_process(delta: float) -> void:
 ## on entity deactivating
 func _on_entity_deactivating() -> void:
 	super._on_entity_deactivating()
-	entity.bus_disconnect(thrust_signal, _on_thrust)
-	entity.bus_disconnect(end_thrust_signal, _on_end_thrust)
+	self.bus_disconnect(thrust_signal, _on_thrust)
+	self.bus_disconnect(end_thrust_signal, _on_end_thrust)
 	_is_thrusting = false
 	set_physics_process(false)

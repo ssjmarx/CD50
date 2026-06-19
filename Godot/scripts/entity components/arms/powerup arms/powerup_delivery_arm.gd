@@ -10,6 +10,10 @@ class_name PowerUpDeliveryArm extends CDEntityComponent
 ## if non-empty, only deliver to colliders in these groups
 @export var target_groups: Array[StringName]
 
+@export_group("Blackboard Keys")
+@export var powerup_id_key: StringName = &"powerup_id"
+@export var source_entity_key: StringName = &"source_entity"
+
 @export_group("Listen Signals")
 @export var collision_signals: Array[StringName] = [&"collision"]
 
@@ -33,9 +37,13 @@ func _on_collision(collider: CDEntity, _normal: Vector2) -> void:
 	if not _is_valid_target(collider):
 		return
 
+	## write data to blackboard, then emit zero-arg signal
+	collider.blackboard[powerup_id_key] = powerup_id
+	collider.blackboard[source_entity_key] = entity
+
 	for sig in deliver_signals:
 		if collider.has_signal(sig):
-			collider.emit_signal(sig, powerup_id, entity)
+			collider.bus_emit(sig)
 
 ## return true if target_groups is empty or collider is in one of them
 func _is_valid_target(collider: CDEntity) -> bool:

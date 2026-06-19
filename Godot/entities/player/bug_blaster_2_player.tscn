@@ -1,0 +1,51 @@
+[gd_scene load_steps=8 format=3 uid="uid://cytjg8wb58tpp"]
+
+[ext_resource type="PackedScene" uid="uid://btfoj4emj6uld" path="res://entities/generic/sprite_ship.tscn" id="1_b0gck"]
+[ext_resource type="PackedScene" path="res://scenes/core/infrastructure/cd_body.tscn" id="2_gyn25"]
+[ext_resource type="PackedScene" uid="uid://rboxkmqfnro8" path="res://entities/player/onscreen_bullet_player.tscn" id="2_vf8ie"]
+[ext_resource type="PackedScene" uid="uid://ctkdlo8fjay4c" path="res://scenes/entity components/brains/player_move_brain.tscn" id="3_uf4lp"]
+[ext_resource type="PackedScene" uid="uid://c1qciuyo0tvhf" path="res://scenes/entity components/guts/leader_tracker_guts.tscn" id="5_uf4lp"]
+[ext_resource type="PackedScene" uid="uid://br86r51jieatg" path="res://scenes/entity components/brains/player_action_brain.tscn" id="5_vf8ie"]
+[ext_resource type="PackedScene" uid="uid://ci8074saofo8y" path="res://scenes/entity components/brains/ai_escort_brain.tscn" id="6_oqelq"]
+
+[node name="SpriteShip" instance=ExtResource("1_b0gck")]
+groups = Array[StringName]([&"sprite_ships", &"ships", &"players"])
+lock_y = true
+clamp_to_bounds = true
+
+[node name="GunArm" parent="." index="1"]
+bullet_scene = ExtResource("2_vf8ie")
+
+[node name="TargetRotationLeg" parent="." index="7"]
+rotation_speed = 0.0
+direction_key = &""
+
+[node name="ActiveBody" parent="." index="10" instance=ExtResource("2_gyn25")]
+sleep_on = Array[StringName]([&"player_captured"])
+wake_on = Array[StringName]([&"escort_achieved"])
+
+[node name="PlayerMoveBrain" parent="ActiveBody" index="0" instance=ExtResource("3_uf4lp")]
+
+[node name="PlayeActionBrain" parent="ActiveBody" index="1" instance=ExtResource("5_vf8ie")]
+action_mappings = Array[StringName]([&"fire", &"thrust"])
+
+[node name="CapturedBody" parent="." index="11" instance=ExtResource("2_gyn25")]
+start_asleep = true
+sleep_on = Array[StringName]([&"leader_destroyed"])
+wake_on = Array[StringName]([&"player_captured"])
+
+[node name="LeaderTrackerGuts" parent="CapturedBody" index="0" instance=ExtResource("5_uf4lp")]
+
+[node name="AIEscortBrain" parent="CapturedBody" index="1" instance=ExtResource("6_oqelq")]
+offset = Vector2(0, -8)
+
+[node name="RescuedBody" parent="." index="12" instance=ExtResource("2_gyn25")]
+start_asleep = true
+sleep_on = Array[StringName]([&"escort_achieved"])
+wake_on = Array[StringName]([&"leader_destroyed"])
+
+[node name="AIEscortBrain" parent="RescuedBody" index="0" instance=ExtResource("6_oqelq")]
+blackboard_source = 1
+target_entity_key = &"active_player"
+offset = Vector2(16, 0)
+close_distance = 0.01

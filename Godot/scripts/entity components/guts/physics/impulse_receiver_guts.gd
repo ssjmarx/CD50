@@ -24,7 +24,7 @@ func _ready() -> void:
 ## on initialize
 func _on_initialize() -> void:
 	for sig in impulse_signals:
-		entity.bus_connect(sig, _on_impulse)
+		self.bus_connect(sig, _on_impulse)
 
 ## --- signal handlers ---
 
@@ -40,4 +40,4 @@ func _on_impulse() -> void:
 func _on_entity_deactivating() -> void:
 	super._on_entity_deactivating()
 	for sig in impulse_signals:
-		entity.bus_disconnect(sig, _on_impulse)
+		self.bus_disconnect(sig, _on_impulse)

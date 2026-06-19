@@ -44,7 +44,7 @@ var _restore_timer: SceneTreeTimer
 ## connect bindings and set default frame
 func _on_initialize() -> void:
 	for binding in bindings:
-		entity.bus_connect(binding.signal_name, _on_binding_signal.bind(binding))
+		self.bus_connect(binding.signal_name, _on_binding_signal.bind(binding))
 	
 	_update_frame()
 	queue_redraw()
@@ -96,7 +96,7 @@ func _draw() -> void:
 func _on_entity_deactivating() -> void:
 	super._on_entity_deactivating()
 	for binding in bindings:
-		entity.bus_disconnect(binding.signal_name, _on_binding_signal.bind(binding))
+		self.bus_disconnect(binding.signal_name, _on_binding_signal.bind(binding))
 
 ## set _current_points from the default frame's shape
 func _update_frame() -> void:

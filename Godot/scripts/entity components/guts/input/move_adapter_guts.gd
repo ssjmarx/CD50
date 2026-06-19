@@ -14,6 +14,9 @@ class_name MoveAdapterGuts extends CDEntityComponent
 @export_group("Emit Signals")
 @export var direction_signals: Array[StringName] = [&"move"]
 
+@export_group("Blackboard Keys")
+@export var move_direction_key: StringName = &"move_direction"
+
 ## --- lifecycle ---
 
 ## set component category
@@ -24,15 +27,17 @@ func _ready() -> void:
 ## connect target listener and ensure direction signal exists
 func _on_initialize() -> void:
 	for sig in target_signals:
-		entity.bus_connect(sig, _on_target)
+		self.bus_connect(sig, _on_target)
 
 ## --- signal handlers ---
 
 ## calculate direction from entity position to target and emit as move
 func _on_target(target: Vector2) -> void:
 	var direction := entity.global_position.direction_to(target)
+	
+	entity.blackboard[move_direction_key] = direction
 	for sig in direction_signals:
-		entity.emit_signal(sig, direction)
+		entity.bus_emit(sig)
 
 ## --- cleanup ---
 

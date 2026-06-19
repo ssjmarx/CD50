@@ -27,7 +27,7 @@ func _ready() -> void:
 ## on initialize
 func _on_initialize() -> void:
 	for sig in shape_signals:
-		entity.bus_connect(sig, _on_shape_changed)
+		self.bus_connect(sig, _on_shape_changed)
 	
 	if static_points.size() > 0:
 		entity.set_collision_polygon(static_points)
@@ -46,4 +46,4 @@ func _on_shape_changed() -> void:
 func _on_entity_deactivating() -> void:
 	super._on_entity_deactivating()
 	for sig in shape_signals:
-		entity.bus_disconnect(sig, _on_shape_changed)
+		self.bus_disconnect(sig, _on_shape_changed)

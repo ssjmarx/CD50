@@ -1,13 +1,13 @@
 ## AITractorBeamBrain
 ## Interrupts a dive to perform a tractor beam capture attempt
-## Fires the tractor beam arm when entity reaches trigger_height during a qualifying dive
+## Listens for a signal from a CDMark to trigger the arm, rather than checking Y-level
 
 class_name AITractorBeamBrain extends CDEntityComponent
 
 @export var qualifying_groups: Array[StringName] = [&"diving"]
-@export var trigger_height: float = 200.0
 
 @export_group("Listen Signals")
+@export var trigger_signals: Array[StringName] = [&"fire_tractor_beam"]
 @export var arm_complete_signals: Array[StringName] = [&"tractor_beam_complete"]
 
 @export_group("Emit Signals")
@@ -20,17 +20,23 @@ class_name AITractorBeamBrain extends CDEntityComponent
 
 var _is_capturing: bool = false
 
+## ready
+func _ready() -> void:
+	component_category = CDEnums.ComponentCategory.INTENT
+	super._ready()
+
 ## on initialize
 func _on_initialize() -> void:
+	for sig in trigger_signals:
+		self.bus_connect(sig, _on_trigger)
 	for sig in arm_complete_signals:
-		entity.bus_connect(sig, _on_arm_complete)
+		self.bus_connect(sig, _on_arm_complete)
 
-## physics process
-func _physics_process(_delta: float) -> void:
+## triggered by CDMark entity bus signal
+func _on_trigger() -> void:
 	if _is_capturing or not _qualifies():
 		return
-	if entity.global_position.y >= trigger_height:
-		_begin_capture()
+	_begin_capture()
 
 ## begin capture
 func _begin_capture() -> void:
@@ -44,9 +50,9 @@ func _begin_capture() -> void:
 
 ## on arm complete
 func _on_arm_complete() -> void:
-	if not _is_capturing: return
+	if not _is_capturing:
+		return
 	_is_capturing = false
-	game.blackboard[capturing_entity_key] = entity
 	for sig in capture_ended_signals:
 		game.bus_emit(sig)
 
@@ -54,8 +60,10 @@ func _on_arm_complete() -> void:
 func _on_entity_deactivating() -> void:
 	super._on_entity_deactivating()
 	_is_capturing = false
+	for sig in trigger_signals:
+		self.bus_disconnect(sig, _on_trigger)
 	for sig in arm_complete_signals:
-		entity.bus_disconnect(sig, _on_arm_complete)
+		self.bus_disconnect(sig, _on_arm_complete)
 
 ## qualifies
 func _qualifies() -> bool:

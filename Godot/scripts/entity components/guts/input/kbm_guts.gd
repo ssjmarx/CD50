@@ -16,6 +16,9 @@ class_name KBMGuts extends CDEntityComponent
 @export_group("Emit Signals")
 @export var steer_signals: Array[StringName] = [&"steer"]
 
+@export_group("Blackboard Keys")
+@export var steer_direction_key: StringName = &"steer_direction"
+
 ## --- state ---
 
 ## last keyboard direction received
@@ -57,8 +60,9 @@ func _on_move_to(target: Vector2) -> void:
 func _physics_process(_delta: float) -> void:
 	## keyboard takes priority
 	if _kb_direction != Vector2.ZERO:
+		entity.blackboard[steer_direction_key] = _kb_direction
 		for sig in steer_signals:
-			entity.emit_signal(sig, _kb_direction)
+			entity.bus_emit(sig)
 		return
 	
 	## only aim if mouse is within the viewport
@@ -68,8 +72,9 @@ func _physics_process(_delta: float) -> void:
 		return
 	
 	var direction := entity.global_position.direction_to(_mouse_target)
+	entity.blackboard[steer_direction_key] = direction
 	for sig in steer_signals:
-		entity.emit_signal(sig, direction)
+		entity.bus_emit(sig)
 
 ## --- cleanup ---
 

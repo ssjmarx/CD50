@@ -43,6 +43,10 @@ class_name AISwoopBrain extends CDEntityComponent
 @export var start_signals: Array[StringName] = [&"begin_swoop"]
 ## entity bus signals that abort the swoop early
 @export var stop_signals: Array[StringName] = []
+## entity bus signals that temporarily pause the swoop (hold position)
+@export var pause_signals: Array[StringName] = []
+## entity bus signals that abort the swoop entirely and return to complete state
+@export var abort_signals: Array[StringName] = []
 
 @export_group("Emit Signals")
 ## entity bus signals emitted when swoop path completes or is aborted
@@ -74,6 +78,8 @@ var _checkpoints: PackedVector2Array = []
 var _current_index: int = 0
 ## whether currently executing a swoop
 var _is_swooping: bool = false
+## whether the swoop is currently paused (holding position)
+var _is_paused: bool = false
 ## deferred restart flag — waits for next physics frame so position is correct after wrap
 var _pending_restart: bool = false
 
@@ -131,16 +137,22 @@ func _process(_delta: float) -> void:
 	if not Engine.is_editor_hint():
 		return
 
-## connect start/stop/restart triggers
+## connect start/stop/restart/pause/abort triggers
 func _on_initialize() -> void:
 	for sig in start_signals:
-		entity.bus_connect(sig, _on_start_swoop)
+		self.bus_connect(sig, _on_start_swoop)
 
 	for sig in stop_signals:
-		entity.bus_connect(sig, _on_stop_swoop)
+		self.bus_connect(sig, _on_stop_swoop)
 
 	for sig in restart_signals:
-		entity.bus_connect(sig, _on_restart_swoop)
+		self.bus_connect(sig, _on_restart_swoop)
+		
+	for sig in pause_signals:
+		self.bus_connect(sig, _on_pause_swoop)
+
+	for sig in abort_signals:
+		self.bus_connect(sig, _on_abort_swoop)
 
 ## --- swoop triggers ---
 
@@ -164,6 +176,7 @@ func _on_start_swoop() -> void:
 
 	_current_index = 0
 	_is_swooping = true
+	_is_paused = false
 	set_physics_process(true)
 
 ## abort the swoop early (e.g. return to formation signal)
@@ -180,6 +193,28 @@ func _on_restart_swoop() -> void:
 	if not curve:
 		return
 	_pending_restart = true
+
+## pause the swoop, keeping the entity in place
+func _on_pause_swoop() -> void:
+	if not _is_swooping:
+		return
+	_is_paused = true
+
+## abort the swoop entirely, bypassing loop logic and emitting complete
+func _on_abort_swoop() -> void:
+	_is_paused = false
+	if not _is_swooping:
+		return
+	
+	## Force a clean exit without regenerating the curve (bypassing loop)
+	_is_swooping = false
+	_checkpoints.clear()
+	_current_index = 0
+	
+	for sig in complete_signals:
+		entity.bus_emit(sig)
+		
+	set_physics_process(false)
 
 ## --- checkpoint generation ---
 
@@ -208,6 +243,11 @@ func _physics_process(_delta: float) -> void:
 		return
 
 	if not _is_swooping or _checkpoints.is_empty():
+		return
+
+	## if paused, hold position and wait
+	if _is_paused:
+		entity.request_velocity_set(Vector2.ZERO)
 		return
 
 	var target_pos := _checkpoints[_current_index]
@@ -240,6 +280,7 @@ func _end_swoop() -> void:
 		return
 
 	_is_swooping = false
+	_is_paused = false
 	_checkpoints.clear()
 	_current_index = 0
 	_curve2d = null
@@ -254,17 +295,22 @@ func _end_swoop() -> void:
 func _on_entity_deactivating() -> void:
 	super._on_entity_deactivating()
 	_is_swooping = false
+	_is_paused = false
 	_pending_restart = false
 	_checkpoints.clear()
 	_current_index = 0
 	_curve2d = null
 	_curve_length = 0.0
 	for sig in start_signals:
-		entity.bus_disconnect(sig, _on_start_swoop)
+		self.bus_disconnect(sig, _on_start_swoop)
 	for sig in stop_signals:
-		entity.bus_disconnect(sig, _on_stop_swoop)
+		self.bus_disconnect(sig, _on_stop_swoop)
 	for sig in restart_signals:
-		entity.bus_disconnect(sig, _on_restart_swoop)
+		self.bus_disconnect(sig, _on_restart_swoop)
+	for sig in pause_signals:
+		self.bus_disconnect(sig, _on_pause_swoop)
+	for sig in abort_signals:
+		self.bus_disconnect(sig, _on_abort_swoop)
 
 ## disable physics processing on activation (waits for start signal)
 func _on_entity_activated() -> void:

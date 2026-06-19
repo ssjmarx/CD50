@@ -29,7 +29,7 @@ func _ready() -> void:
 ## on initialize
 func _on_initialize() -> void:
 	for sig in reset_signals:
-		entity.bus_connect(sig, _on_reset)
+		self.bus_connect(sig, _on_reset)
 
 ## read interval and direction from blackboard, write move on each step
 func _physics_process(delta: float) -> void:
@@ -51,4 +51,4 @@ func _on_entity_deactivating() -> void:
 	super._on_entity_deactivating()
 	_timer = 0.0
 	for sig in reset_signals:
-		entity.bus_disconnect(sig, _on_reset)
+		self.bus_disconnect(sig, _on_reset)

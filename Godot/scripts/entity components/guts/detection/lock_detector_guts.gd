@@ -45,11 +45,11 @@ func _ready() -> void:
 ## on initialize
 func _on_initialize() -> void:
 	for sig in step_blocked_signals:
-		entity.bus_connect(sig, _on_step_blocked)
+		self.bus_connect(sig, _on_step_blocked)
 	for sig in move_signals:
-		entity.bus_connect(sig, _on_moved)
+		self.bus_connect(sig, _on_moved)
 	for sig in rotate_signals:
-		entity.bus_connect(sig, _on_rotated)
+		self.bus_connect(sig, _on_rotated)
 
 ## --- signal handlers ---
 
@@ -114,11 +114,11 @@ func _on_entity_deactivating() -> void:
 	_lock_timer = 0.0
 	_reset_count = 0
 	for sig in step_blocked_signals:
-		entity.bus_disconnect(sig, _on_step_blocked)
+		self.bus_disconnect(sig, _on_step_blocked)
 	for sig in move_signals:
-		entity.bus_disconnect(sig, _on_moved)
+		self.bus_disconnect(sig, _on_moved)
 	for sig in rotate_signals:
-		entity.bus_disconnect(sig, _on_rotated)
+		self.bus_disconnect(sig, _on_rotated)
 	set_physics_process(false)
 
 ## on entity activated

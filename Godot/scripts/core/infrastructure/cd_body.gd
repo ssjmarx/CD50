@@ -45,10 +45,10 @@ func _on_initialize() -> void:
 	## connect control signals on the entity bus (auto-creates signals if needed)
 	for sig in sleep_on:
 		if sig != &"":
-			entity.bus_connect(sig, _on_sleep_signal)
+			self.bus_connect(sig, _on_sleep_signal)
 	for sig in wake_on:
 		if sig != &"":
-			entity.bus_connect(sig, _on_wake_signal)
+			self.bus_connect(sig, _on_wake_signal)
 
 ## --- Public API ---
 

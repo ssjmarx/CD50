@@ -108,11 +108,11 @@ func _on_initialize() -> void:
 	super._on_initialize()
 
 	for sig in trigger_glitch:
-		entity.bus_connect(sig, _force_glitch)
+		self.bus_connect(sig, _force_glitch)
 	for sig in trigger_corrupt:
-		entity.bus_connect(sig, _force_corrupt)
+		self.bus_connect(sig, _force_corrupt)
 	for sig in trigger_static:
-		entity.bus_connect(sig, _force_static)
+		self.bus_connect(sig, _force_static)
 
 ## update elapsed time, menace effects, and redraw each frame
 func _process(delta: float) -> void:
@@ -240,11 +240,11 @@ func _get_glitch_offset(y: float) -> float:
 ## on entity deactivating
 func _on_entity_deactivating() -> void:
 	for sig in trigger_glitch:
-		entity.bus_disconnect(sig, _force_glitch)
+		self.bus_disconnect(sig, _force_glitch)
 	for sig in trigger_corrupt:
-		entity.bus_disconnect(sig, _force_corrupt)
+		self.bus_disconnect(sig, _force_corrupt)
 	for sig in trigger_static:
-		entity.bus_disconnect(sig, _force_static)
+		self.bus_disconnect(sig, _force_static)
 	super._on_entity_deactivating()
 
 ## displace a point using seeded pseudo-random corruption

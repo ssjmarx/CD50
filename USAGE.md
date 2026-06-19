@@ -78,7 +78,7 @@ CD50 has two distinct component hierarchies. Components set their `component_cat
 
 | Base Class | Extends | Has `entity` | Has `game` |
 |------------|---------|-------------|-----------|
-| `CDComponent2D` | `Node2D` | Yes | Yes |
+| `CDEntityComponent` | `Node2D` | Yes | Yes |
 
 | ComponentCategory | Priority | Colloquial Name | Examples |
 |-------------------|----------|----------------|---------|
@@ -93,7 +93,7 @@ CD50 has two distinct component hierarchies. Components set their `component_cat
 
 | Base Class | Extends | Has `entity` | Has `game` | Category |
 |------------|---------|-------------|-----------|----------|
-| `CDStageComponent2D` | `Node2D` | No | Yes | RULES (70) |
+| `CDGameComponent` | `Node2D` | No | Yes | RULES (70) |
 | `CDCueCard` | `Control` | No | Yes | RULES (70) |
 | `CDMark` | `Area2D` | No | Yes | Event-driven (Area2D) |
 
@@ -101,10 +101,11 @@ CD50 has two distinct component hierarchies. Components set their `component_cat
 |-------------------|-------------|---------|
 | Cards | UI state display | ScoreCard, LivesCard, TimerCard, WaveCard |
 | Goals | Win/lose conditions | GroupCountGoal, ScoreThresholdGoal |
-| Directors | Entity group controllers | FormationDirector, SwoopDirector |
-| Marks | Spatial detection zones | CountMark, SafeZoneMark, TimedMark |
+| Directors | Entity group controllers | FormationDirector, StageDirector, StateDirector, ShootingDirector, AimingDirector, SwoopDirector, SignalSequenceDirector |
+| Managers | Data-driven stage orchestration | StageManager, StateManager, SignalManager |
+| Marks | Spatial detection zones | CountMark, SafeZoneMark, TimedMark, MobileMark, OccupancyMark |
 | Projectors | Visual post-processing | CRTProjector, CreditProjection |
-| Speakers | Game-level audio | SoundSpeaker, MusicSpeaker |
+| Speakers | Game-level audio | SoundSpeaker, ContinuousSpeaker, MusicSpeaker |
 | Trapdoors | Stage spawners | PointTrapdoor, EdgeTrapdoor, GridTrapdoor |
 
 ---
@@ -118,8 +119,8 @@ CD50 uses a hybrid signal system: two mechanisms chosen for what each is best at
 - **Mechanism:** Godot's native `add_user_signal()` — C++ backed, high performance
 - **Characteristics:** Zero-arg signals with data through `entity.blackboard`, high frequency (per-entity per-frame)
 - **Best for:** The hot path — INTENT → STEERING → PHYSICS → COLLISION → INTERACTION → STATE → VISUAL pipeline
-- **Registration:** `entity.bus_connect("signal_name", callable)` — auto-creates signal if needed
-- **Emission:** `entity.bus_emit("signal_name")` — zero-arg, auto-tracks self as emitter in `_signal_emitters`
+- **Registration:** `entity.connect("signal_name", callable)` — uses standard Godot signal connections. Signals must exist to be connected without errors.
+- **Emission:** `entity.bus_emit("signal_name")` — zero-arg wrapper for `emit_signal()`, auto-tracks self as emitter in `_signal_emitters` if the signal exists.
 - **Data flow:** Writer sets `entity.blackboard["key"] = value` before `bus_emit()`, listener reads `entity.blackboard["key"]` in callback
 
 **Standard entity bus signals (hardcoded on CDEntity):**
@@ -134,7 +135,7 @@ These signals are registered via `add_user_signal()` in `CDEntity._ready()` with
 | `"entity_deactivating"` | `()` | CDEntity during deferred cleanup | Components must disconnect signals and reset state here |
 | `"entity_activated"` | `()` | CDEntity on pool reuse | Components must reconnect signals and restore defaults here |
 
-**Common entity bus signals (via `bus_connect()` + component exports):**
+**Common entity bus signals (via `connect()` + component exports):**
 
 All dynamic entity signals are **zero-arg**. Data flows through `entity.blackboard` — the emitter writes to blackboard before calling `bus_emit()`, and the listener reads from blackboard in its callback. Signal names are configurable via `@export` arrays. The defaults below represent the most common conventions.
 
@@ -167,9 +168,9 @@ func _on_move():
 | `"move_to"` | `"target"` (Vector2) | Positional target — "go to this point" | Brains/Directors → Legs |
 | `"aim"` | `"aim_direction"` (Vector2) | Aim direction | Brains → Legs/Faces/VisionCones |
 | `"action"` | `"action"` (StringName) | Named action trigger | Brains → Arms |
-| `"action_end"` | `"action"` (StringName) | Named action release | Brains → Arms |
+| `"action_end"` | `"action"` (StringName) | Named release | Brains → Arms |
 | `"shoot"` | — | Fire weapon (no data) | Brains/Directors → GunArm |
-| `"take_damage"` | `"damage"` (int) | Apply damage to this entity | Arms → HealthpoolGuts |
+| `"take_damage"` | `"health_delta"` (int) | Apply damage to this entity | Arms → HealthpoolGuts |
 | `"heal"` | `"heal_amount"` (int) | Restore health | Arms → HealthpoolGuts |
 | `"zero_health"` | — | Health reached zero | HealthpoolGuts → DeathGuts/Arms |
 | `"health_changed"` | `"health"` (int) | Health value updated | HealthpoolGuts → Faces/UI |
@@ -327,7 +328,7 @@ Entity components use a two-phase init to solve the "other components don't exis
 
 **⚠️ Current limitation:** Entity initialization currently depends on CDGame infrastructure (group registry, collision buffer, input router, object pool). This means entities cannot run standalone outside a CDGame scene tree. An entity instantiated without a CDGame ancestor will fail to initialize properly. This coupling is a known constraint that may be relaxed in future iterations.
 
-Stage components (CDStageComponent2D, CDCueCard) often don't need `_on_initialize()` — they connect to the game bus (native signals, no ordering issues) directly in `_ready()` or via `call_deferred("_on_initialize")`.
+Stage components (CDGameComponent, CDCueCard) often don't need `_on_initialize()` — they connect to the game bus (native signals, no ordering issues) directly in `_ready()` or via `call_deferred("_on_initialize")`.
 
 ### Two-Phase Deactivation
 
@@ -369,7 +370,7 @@ The entity remains fully functional during this phase: components stay connected
 
 **Role:** Generate intent from input or AI. Never touch velocity, never move the entity, never affect other entities.
 
-**Base class:** `CDComponent2D` (via `CDEntityComponent`)
+**Base class:** `CDEntityComponent`
 
 **Standard lifecycle template:**
 
@@ -435,7 +436,7 @@ func _on_entity_deactivating():
 
 **Role:** Execute movement from intent signals. Never generate intent. Legs respond to signals, they don't create them.
 
-**Base class:** `CDComponent2D` (via `CDEntityComponent`)
+**Base class:** `CDEntityComponent`
 
 **Standard lifecycle template:**
 
@@ -446,7 +447,7 @@ func _ready():
 
 func _on_initialize():
     for sig in move_signals:
-        entity.bus_connect(sig, _on_move)
+        entity.connect(sig, _on_move)
 
 func _on_move():
     _input_direction = entity.blackboard.get("direction", Vector2.ZERO)
@@ -461,14 +462,15 @@ func _physics_process(delta):
 func _on_entity_deactivating():
     super._on_entity_deactivating()
     for sig in move_signals:
-        entity.bus_disconnect(sig, _on_move)
+        if entity.is_connected(sig, _on_move):
+            entity.disconnect(sig, _on_move)
     _input_direction = Vector2.ZERO
 ```
 
 **Must-Includes:**
 1. Set `component_category = STEERING` in `_ready()`
 2. Use `@export_group("Listen Signals")` for input signal arrays
-3. Use `entity.bus_connect()` to subscribe — auto-creates signal if needed
+3. Use `entity.connect()` to subscribe
 4. Disconnect all connections with validity guards in `_on_entity_deactivating()`
 5. Reset all runtime state in `_on_entity_deactivating()` (for object pool reuse)
 
@@ -504,7 +506,7 @@ func _on_entity_deactivating():
 
 **Role:** Affect the game state OUTSIDE the entity. Deal damage, announce score, apply forces, spawn projectiles. Never modify the entity's own velocity or internal health (that's Guts territory).
 
-**Base class:** `CDComponent2D` (via `CDEntityComponent`)
+**Base class:** `CDEntityComponent`
 
 **Standard lifecycle template:**
 
@@ -517,12 +519,17 @@ func _on_initialize():
     for sig in collision_signals:
         entity.connect(sig, _on_collision)  # "collision" is a hardcoded typed signal
 
-func _on_collision(collider: CDEntity, normal: Vector2):
+func _on_collision(collider: CDEntity, _normal: Vector2):
+    if not is_instance_valid(collider):
+        return
     if not _is_valid_target(collider):
         return
-    if is_instance_valid(collider) and collider.has_signal("take_damage"):
-        collider.blackboard["damage"] = damage_amount
-        collider.bus_emit("take_damage")
+    for key in damage_keys:
+        collider.blackboard[key] = damage_amount
+    for key in source_keys:
+        collider.blackboard[key] = entity
+    for sig in damage_signals:
+        collider.bus_emit(sig)
 
 func _on_entity_deactivating():
     super._on_entity_deactivating()
@@ -538,7 +545,7 @@ func _on_entity_deactivating():
 4. Use group filtering for collision/interaction arms
 5. Support object pools for spawn-based arms
 
-**Signal convention:** Arms use `@export_group("Listen Signals")` and `@export_group("Emit Signals")` — all signal names configurable via exports.
+**Signal convention:** Arms use `@export_group("Listen Signals")`, `@export_group("Emit Signals")`, and `@export_group("Blackboard Keys")` — all signal names and keys are configurable via exports.
 
 **Group filtering:**
 - Empty array `[]` = affect everything (no filter, trust the collision matrix)
@@ -547,13 +554,14 @@ func _on_entity_deactivating():
 
 **Arm subcategories:**
 
-| Subcategory | Count | Description |
-|-------------|-------|-------------|
-| Collision Reactions | 9 | Respond to collision signals (damage, death, pushback, score, status) |
-| Death Reactions | 2 | Respond to entity death (score, spawn) |
-| Triggered Arms | 2 | Fire on active entity input (gun, tractor beam) |
-| Powerup Arms | 2 | Powerup delivery/reception |
-| Other | 1 | Specialized (piece splitting) |
+| Subcategory | Count | Description | Examples |
+|-------------|-------|-------------|---------|
+| Collision Reactions | 6 | Respond to collision signals | DamageOnHit/Crash/Joust, DeathOnHit/Crash/Joust |
+| Scoring | 2 | Respond to collisions or death | ScoreOnCollisionArm, ScoreOnDeathArm |
+| Force & Status | 2 | Applies forces or status effects | PushbackArm, StatusEffectArm |
+| Spawn | 3 | Spawns entities | GunArm, SpawnOnDeathArm, PieceSplitterArm |
+| Powerup | 2 | Powerup delivery/reception | PowerUpDeliveryArm, PowerupWingmanArm |
+| Special | 1 | Tractor beam | TractorBeamArm |
 
 **The On Hit / On Crash matrix** (see [Core Patterns](#the-on-hit--on-crash-pattern)):
 
@@ -572,7 +580,7 @@ func _on_entity_deactivating():
 
 **Role:** Track INTERNAL entity state. Health, timers, resources, lock detection, shape. Purely self-centered — don't care about the outside world except for signals telling them to update.
 
-**Base class:** `CDComponent2D` (via `CDEntityComponent`)
+**Base class:** `CDEntityComponent`
 
 **Standard lifecycle template:**
 
@@ -584,10 +592,10 @@ func _ready():
     super._ready()
 
 func _on_initialize():
-    entity.bus_connect("take_damage", _on_take_damage)
+    entity.connect("take_damage", _on_take_damage)
 
 func _on_take_damage():
-    var damage: int = entity.blackboard.get("damage", 0)
+    var damage: int = entity.blackboard.get("health_delta", 0)
     health = max(0, health - damage)
     entity.blackboard["health"] = health
     entity.bus_emit("health_changed")
@@ -596,7 +604,8 @@ func _on_take_damage():
 
 func _on_entity_deactivating():
     super._on_entity_deactivating()
-    entity.bus_disconnect("take_damage", _on_take_damage)
+    if entity.is_connected("take_damage", _on_take_damage):
+        entity.disconnect("take_damage", _on_take_damage)
     health = max_health  # RESET for pool reuse
 
 func _on_entity_activated():
@@ -606,7 +615,7 @@ func _on_entity_activated():
 **Must-Includes:**
 1. Set `component_category = STATE` in `_ready()`
 2. Use `@export_group("Listen Signals")` and `@export_group("Emit Signals")` consistently
-3. Use `entity.bus_connect()` to subscribe — auto-creates signal if needed
+3. Use `entity.connect()` to subscribe
 4. Disconnect all connections with validity guards in `_on_entity_deactivating()`
 5. **Reset all runtime state** in `_on_entity_deactivating()` (for object pool reuse)
 6. Implement `_on_entity_activated()` if the guts manages timers or physics processing
@@ -615,12 +624,15 @@ func _on_entity_activated():
 
 | Subcategory | Count | Description | Examples |
 |-------------|-------|-------------|---------|
-| Pools | 3 | Numeric resources with depletion/regen | HealthpoolGuts, ShieldpoolGuts, ResourcepoolGuts |
-| Death | 4 | Entity termination conditions | DieAtZeroHealthGuts, DieOffscreenGuts, DieOnTimerGuts, DieOutOfBoundsGuts |
-| Physics | 3 | Collision and force handling | DeflectorBounceGuts, ImpulseReceiverGuts, ShapeColliderGuts |
-| Detection | 2 | Entity sensing | LockDetectorGuts, VisionConeGuts |
-| Input | 2 | Signal type adaptation | KBMGuts, MoveAdapterGuts |
-| Game Logic | 5 | Rules, scoring, status | AnnouncerGuts, PointsGuts, StunGuts, TSpinDetectorGuts, TimerGuts |
+| Collision & Shape | 2 | Collision shape handling | DeflectorBounceGuts, ShapeColliderGuts |
+| Health & Death | 3 | Health pools and basic death | HealthpoolGuts, DieAtZeroHealthGuts, PointsGuts |
+| Self-Destruction | 3 | Timed/spatial death conditions | DieOnTimerGuts, DieOutOfBoundsGuts, DieOffscreenGuts |
+| Force & Input | 3 | External forces and input translation | ImpulseReceiverGuts, KBMGuts, MoveAdapterGuts |
+| Resource Pools | 2 | Generic pool tracking | ShieldpoolGuts, ResourcepoolGuts |
+| Status Effects | 1 | Status tracking | StunGuts |
+| Grid / Tetris | 2 | Grid state and T-Spin detection | LockDetectorGuts, TSpinDetectorGuts |
+| Timers & Signals | 2 | Timers and bus announcement | TimerGuts, AnnouncerGuts |
+| Vision | 1 | Spatial detection | VisionConeGuts |
 
 **Pool pattern:** Starting value defaults to max when set to -1. All pools emit change signals for UI binding.
 
@@ -634,7 +646,7 @@ func _on_entity_activated():
 
 **Role:** Visual representation. Draws shapes, renders effects, updates appearance. Reads entity state and reflects it visually. **A Face bug should never change game outcome.**
 
-**Base class:** `CDComponent2D` (via `CDEntityComponent`)
+**Base class:** `CDEntityComponent`
 
 **Standard lifecycle template:**
 
@@ -647,7 +659,7 @@ func _ready():
     super._ready()
 
 func _on_initialize():
-    entity.bus_connect("shape_changed", _on_shape_changed)
+    entity.connect("shape_changed", _on_shape_changed)
     queue_redraw()
 
 func _process(_delta):
@@ -664,7 +676,8 @@ func _on_shape_changed():
 
 func _on_entity_deactivating():
     super._on_entity_deactivating()
-    entity.bus_disconnect("shape_changed", _on_shape_changed)
+    if entity.is_connected("shape_changed", _on_shape_changed):
+        entity.disconnect("shape_changed", _on_shape_changed)
 ```
 
 **Must-Includes:**
@@ -672,7 +685,7 @@ func _on_entity_deactivating():
 2. Set `component_category = VISUAL` in `_ready()`
 3. Add setter functions on exports that call `queue_redraw()` for live preview
 4. Add `_process()` that calls `queue_redraw()` when `Engine.is_editor_hint()`
-5. Use `entity.bus_connect()` for dynamic signals — auto-creates if needed
+5. Use `entity.connect()` for dynamic signals
 6. Disconnect all connections in `_on_entity_deactivating()`
 
 **The Binding System:** `VectorFace`, `PolygonFace`, and `SpriteFace` share a binding pattern using `CDFaceBinding` resources:
@@ -701,12 +714,12 @@ func _on_entity_deactivating():
 
 **Role:** Entity-level audio. Plays procedural sounds through `CDSoundBank`. **A Voice bug should be silent, not broken.**
 
-**Base class:** `CDComponent2D` (via `CDEntityComponent`), always `@tool`
+**Base class:** `CDEntityComponent`, always `@tool`
 
 **Must-Includes:**
 1. Add `@tool` annotation
 2. Find `CDSoundBank` via `game.find_child("CDSoundBank")` in `_on_initialize()`
-3. Use `entity.bus_connect()` for dynamic signals — auto-creates if needed
+3. Use `entity.connect()` for dynamic signals
 4. Disconnect in `_on_entity_deactivating()` with validity guards
 5. Deregister from sound bank on deactivation / exit tree
 6. Include preview infrastructure for editor testing
@@ -752,7 +765,7 @@ func _on_event(args):
 
 #### Goals — Win/Lose Conditions
 
-**Base class:** `CDStageComponent2D`
+**Base class:** `CDGameComponent`
 
 Fire-once-or-repeatable triggers that compare observed values against thresholds using `CDEnums.CountComparison` (`LESS_THAN`, `EQUAL_TO`, `GREATER_THAN`, `LESS_OR_EQUAL`, `GREATER_OR_EQUAL`).
 
@@ -760,7 +773,7 @@ Fire-once-or-repeatable triggers that compare observed values against thresholds
 
 #### Directors — Game-Level Controllers
 
-**Base class:** `CDStageComponent2D`
+**Base class:** `CDGameComponent`
 
 Observe and command groups of entities through the game bus and group registry. Command entities via `entity.bus_emit()` with data through `entity.blackboard`. Guard all entity access with `is_instance_valid()`.
 
@@ -772,7 +785,7 @@ Observe and command groups of entities through the game bus and group registry. 
 
 **Base class:** `CDMark extends Area2D`
 
-Event-driven spatial triggers. Auto-creates collision shapes, filters by groups, emits on game bus. Not a CDComponent2D — Area2D inheritance is required for physics detection.
+Event-driven spatial triggers. Auto-creates collision shapes, filters by groups, emits on game bus. Not a CDGameComponent — Area2D inheritance is required for physics detection.
 
 **Marks:** CDMark (base), CountMark, MobileMark, OccupancyMark, SafeZoneMark, TimedMark.
 
@@ -794,7 +807,7 @@ Screen-level visual effects. Use `_process()` (not `_physics_process()`) for vis
 
 #### Speakers — Game-Level Audio
 
-**Base class:** `CDStageComponent2D`
+**Base class:** `CDGameComponent`
 
 Game-level audio: synthesized one-shots, continuous tones, music playlist with crossfade.
 
@@ -866,8 +879,8 @@ Entity group membership IS entity state. An invader in group `"formation"` is in
 - StateDirector manages transitions via `CDTransition` resources
 - **Managers** (priority 75) are data-driven controllers that coordinate stage-level orchestration:
   - StageManager evaluates `CDStageRule` triggers to sleep/wake named CDStages
-  - StateManager runs group-as-state transitions (renamed from StateDirector, now at MANAGER priority)
-  - SignalManager plays timed signal macro sequences (renamed from SignalSequenceDirector)
+  - StateManager runs group-as-state transitions via `CDTransition` resources
+  - SignalManager plays timed signal macro sequences via `CDSequenceStep` resources
 
 ### The Pseudogrid Pattern
 
@@ -918,7 +931,7 @@ Calling a method directly on another component instead of emitting a signal.
 collider.take_damage(5)
 
 # ✅ CORRECT
-collider.blackboard["damage"] = 5
+collider.blackboard["health_delta"] = 5
 collider.bus_emit("take_damage")
 ```
 
@@ -969,9 +982,11 @@ Emitting on another entity's bus without validity guards.
 collider.bus_emit("take_damage")  # collider might be dead
 
 # ✅ CORRECT
-if is_instance_valid(collider) and collider.has_signal("take_damage"):
-    collider.blackboard["damage"] = 5
-    collider.bus_emit("take_damage")
+if is_instance_valid(collider):
+    for key in damage_keys:
+        collider.blackboard[key] = damage_amount
+    for sig in damage_signals:
+        collider.bus_emit(sig)
 ```
 
 One dead entity reference = crash. Always guard cross-entity emissions.
@@ -1193,9 +1208,11 @@ Always use these patterns when dealing with cross-entity references:
 
 ```gdscript
 # Before emitting on another entity's bus
-if is_instance_valid(collider) and collider.has_signal("take_damage"):
-    collider.blackboard["damage"] = amount
-    collider.bus_emit("take_damage")
+if is_instance_valid(collider):
+    for key in damage_keys:
+        collider.blackboard[key] = damage_amount
+    for sig in damage_signals:
+        collider.bus_emit(sig)
 
 # Before disconnecting a hardcoded typed signal
 if entity.is_connected("collision", _on_collision):
@@ -1277,11 +1294,11 @@ Does it coordinate stage-level orchestration (sleep/wake stages, signal macros, 
 1. **Pick the correct category** using the flowchart above
 2. **Choose the correct base class:**
    - Entity component → `CDEntityComponent` (has `entity` and `game`)
-   - Game component → `CDStageComponent2D` (has `game` only)
+   - Game component → `CDGameComponent` (has `game` only)
    - UI display → `CDCueCard` (has `game` + label management)
    - Spatial trigger → `CDMark` (Area2D-based)
 3. **Set `component_category`** in `_ready()`
-4. **Connect signals** in `_on_initialize()` (deferred) — `bus_connect()` auto-creates signals
+4. **Connect signals** in `_on_initialize()` (deferred) — `connect()` requires signal to exist
 5. **Implement processing** in `_physics_process()` (or `_process()` for visual/audio)
 6. **Disconnect and reset** in `_on_entity_deactivating()`
 7. **Export all signal names** as `Array[StringName]` with sensible defaults
@@ -1292,7 +1309,7 @@ Does it coordinate stage-level orchestration (sleep/wake stages, signal macros, 
 
 ### Adding New Signal Types
 
-All dynamic signals are zero-arg, created automatically by `bus_connect()`. Signal names are always configurable via `@export`. To add a new signal contract:
+All dynamic signals are zero-arg. Signal names are always configurable via `@export`. To add a new signal contract:
 
 1. Define the blackboard key and data type (e.g., `"direction"` → `Vector2`)
 2. Emitter writes to `entity.blackboard["key"]` before calling `bus_emit("signal_name")`
@@ -1344,16 +1361,32 @@ No game script needed. Every game is a scene tree assembly:
 
 ## Appendix: Component Count by Category
 
-| Category | Priority | Count | Key Components |
-|----------|----------|-------|----------------|
-| Core | varies | ~12 | CDEntity, CDGame, CDComponent2D, CDStageComponent2D, CDCollisionBuffer, CDGroupRegistry, CDCollisionMatrix, CDInputRouter, CDEnums, CDObjectPool, CDSoundBank, CDUpdater |
-| Brain | 10 | 17 | PlayerMove/MoveTo/KBMMove/Aim/ActionBrain, AIChase/Flee/Orbit/Formation/Swoop/Aim/RepeatAction/TractorBeam/PathMove/RandomSweep/TimedStep/IdleWanderBrain |
-| Legs | 20 | 15 | DirectMovement/Acceleration/Engine/Target/RotationLeg, GridMovement/Rotation/Drop/AlignmentLeg, Friction (Linear/Static), Boomerang, ScreenWrap |
-| Arms | 40 | 16 | DamageOnHit/Crash/JoustArm, DeathOnHit/Crash/JoustArm, ScoreOnCollision/DeathArm, PushbackArm, StatusOnHitArm, GunArm, SpawnOnDeathArm, PieceSplitterArm, PowerupDelivery/WingmanArm, TractorBeamArm |
-| Guts | 50 | 19 | Healthpool/Shieldpool/ResourcepoolGuts, DieAtZeroHealth/Offscreen/OnTimer/OutOfBoundsGuts, DeflectorBounce/ImpulseReceiver/ShapeColliderGuts, LockDetector/VisionConeGuts, KBM/MoveAdapterGuts, Announcer/Points/Stun/TSpinDetector/TimerGuts |
-| Faces | 60 | 7 | VectorFace, PolygonFace, SpriteFace, VectorEngineFace, VectorThrusterFace, DeathEffectFace, MenacingVectorFace |
-| Voices | 65 | 2 | SoundVoice, ContinuousVoice |
-| Stage (RULES) | 70 | 27 | ScoreCard, LivesCard, TimerCard, WaveCard, GroupCountGoal, ScoreThresholdGoal, CDMark, CountMark, MobileMark, OccupancyMark, SafeZoneMark, TimedMark, FormationDirector, StageDirector, StateDirector, ShootingDirector, AimingDirector, SwoopDirector, SignalSequenceDirector, SoundSpeaker, ContinuousSpeaker, MusicSpeaker, CRTProjector, CreditProjection, PointTrapdoor, EdgeTrapdoor, GridTrapdoor |
-| Manager | 75 | 3 | StageManager, StateManager, SignalManager |
-
-**Total: 172 V2 scripts + 47 custom resources**
+| Category | Count |
+|----------|-------|
+| Core Base Classes | 4 |
+| Core Infrastructure | 12 |
+| Core Resources: Infrastructure | 3 |
+| Core Resources: Audio | 3 |
+| Core Resources: Behavior | 9 |
+| Core Resources: Curves | 13 |
+| Core Resources: Selectors | 7 |
+| Core Resources: Spawners | 4 |
+| Core Resources: Triggers | 5 |
+| Core Resources: Formation | 2 |
+| Core Resources: Visuals | 1 |
+| Effects | 3 |
+| Brains | 17 |
+| Arms | 16 |
+| Guts | 19 |
+| Legs | 15 |
+| Faces | 7 |
+| Voices | 2 |
+| Cue Cards | 4 |
+| Directors | 7 |
+| Managers | 3 |
+| Goals | 2 |
+| Marks | 6 |
+| Projectors | 2 |
+| Speakers | 3 |
+| Trapdoors | 3 |
+| **Total V2 Scripts** | **172** |

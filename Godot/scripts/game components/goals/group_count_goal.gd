@@ -20,9 +20,16 @@ class_name GroupCountGoal extends CDGameComponent
 ## e.g. "enemies_count" for group &"enemies"
 @export var count_key_suffix: StringName = &"_count"
 
+@export_group("Game Result")
+## the result enum written to the blackboard when condition is met
+@export var game_result: CDEnums.GameResult = CDEnums.GameResult.VICTORY
+## key to write the game_result under on the blackboard
+@export var result_key: StringName = &"game_result"
+
 ## game bus signals emitted on condition match and count change
+## add "game_over" to this array in the inspector to trigger the end of the game
 @export_group("Emit Signals")
-@export var on_condition_met: Array[StringName] = [&"game_end_victory"]
+@export var on_condition_met: Array[StringName] = [&"goal_reached"]
 @export var on_count_changed: Array[StringName] = [&"enemies_count_changed"]
 
 ## --- lifecycle ---
@@ -37,6 +44,8 @@ func _on_initialize() -> void:
 func _on_group_count_changed(group_name: StringName, count: int) -> void:
 	if group_name not in target_groups:
 		return
+	if game.current_state == CDEnums.GameState.GAME_OVER:       
+		return
 	
 	game.blackboard[StringName(group_name + String(count_key_suffix))] = count
 	
@@ -44,6 +53,7 @@ func _on_group_count_changed(group_name: StringName, count: int) -> void:
 		game.bus_emit(sig)
 	
 	if _check_condition():
+		game.blackboard[result_key] = game_result
 		for sig in on_condition_met:
 			game.bus_emit(sig)
 

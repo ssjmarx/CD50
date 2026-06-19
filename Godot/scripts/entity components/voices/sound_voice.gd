@@ -49,7 +49,7 @@ func _on_initialize() -> void:
 	_bank = game.find_child("CDSoundBank") as CDSoundBank
 	
 	if trigger_signal != &"":
-		entity.bus_connect(trigger_signal, _on_trigger)
+		self.bus_connect(trigger_signal, _on_trigger)
 	
 	if play_on_spawn:
 		_try_play()

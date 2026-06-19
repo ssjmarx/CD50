@@ -43,11 +43,11 @@ func _ready() -> void:
 ## on initialize
 func _on_initialize() -> void:
 	for sig in pause_signals:
-		entity.bus_connect(sig, _on_paused)
+		self.bus_connect(sig, _on_paused)
 	for sig in resume_signals:
-		entity.bus_connect(sig, _on_resumed)
+		self.bus_connect(sig, _on_resumed)
 	for sig in reset_signals:
-		entity.bus_connect(sig, _on_reset)
+		self.bus_connect(sig, _on_reset)
 	
 	current_time = starting_time
 	entity.blackboard[value_key] = current_time
@@ -106,8 +106,8 @@ func _on_entity_deactivating() -> void:
 	_is_running = false
 	entity.blackboard.erase(value_key)
 	for sig in pause_signals:
-		entity.bus_disconnect(sig, _on_paused)
+		self.bus_disconnect(sig, _on_paused)
 	for sig in resume_signals:
-		entity.bus_disconnect(sig, _on_resumed)
+		self.bus_disconnect(sig, _on_resumed)
 	for sig in reset_signals:
-		entity.bus_disconnect(sig, _on_reset)
+		self.bus_disconnect(sig, _on_reset)

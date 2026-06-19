@@ -51,11 +51,11 @@ func _ready() -> void:
 ## on initialize
 func _on_initialize() -> void:
 	for sig in aim_signals:
-		entity.bus_connect(sig, _on_aim)
+		self.bus_connect(sig, _on_aim)
 	for sig in change_length_signals:
-		entity.bus_connect(sig, _on_change_length)
+		self.bus_connect(sig, _on_change_length)
 	for sig in change_angle_signals:
-		entity.bus_connect(sig, _on_change_angle)
+		self.bus_connect(sig, _on_change_angle)
 	
 	_prev_length = cone_length
 	_prev_angle = cone_angle
@@ -142,8 +142,8 @@ func _on_entity_deactivating() -> void:
 	super._on_entity_deactivating()
 	entity.blackboard.erase(target_key)
 	for sig in aim_signals:
-		entity.bus_disconnect(sig, _on_aim)
+		self.bus_disconnect(sig, _on_aim)
 	for sig in change_length_signals:
-		entity.bus_disconnect(sig, _on_change_length)
+		self.bus_disconnect(sig, _on_change_length)
 	for sig in change_angle_signals:
-		entity.bus_disconnect(sig, _on_change_angle)
+		self.bus_disconnect(sig, _on_change_angle)

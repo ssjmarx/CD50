@@ -40,7 +40,7 @@ func _ready() -> void:
 ## connect bindings and show default frame
 func _on_initialize() -> void:
 	for binding in bindings:
-		entity.bus_connect(binding.signal_name, _on_binding_signal.bind(binding))
+		self.bus_connect(binding.signal_name, _on_binding_signal.bind(binding))
 	_show_frame(default_frame)
 
 ## --- signal handlers ---
@@ -66,7 +66,7 @@ func _on_restore() -> void:
 func _on_entity_deactivating() -> void:
 	super._on_entity_deactivating()
 	for binding in bindings:
-		entity.bus_disconnect(binding.signal_name, _on_binding_signal.bind(binding))
+		self.bus_disconnect(binding.signal_name, _on_binding_signal.bind(binding))
 
 ## --- helpers ---
 

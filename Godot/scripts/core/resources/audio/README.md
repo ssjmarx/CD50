@@ -1,6 +1,8 @@
 # Audio Resources
 
-3 data-only resource classes that configure CDSoundBank and MusicSpeaker. No logic — just exported properties.
+3 data-only resource classes that configure `CDSoundBank` and `MusicSpeaker`. No logic — just exported properties. 
+
+These resources are typically attached as `@export` properties to Audio components like `SoundVoice`, `ContinuousVoice`, or `SoundSpeaker`.
 
 ---
 
@@ -15,14 +17,14 @@ Defines one note in a sequence. Used inside `CDSoundDef.notes`.
 
 ### Must-Includes
 
-- Set `note` to the desired pitch (CDEnums.Semitone enum covers C2→B6)
-- Set `duration` — 0.15s is a good default for arcade sounds
+- Set `note` to the desired pitch (`CDEnums.Semitone` enum covers C2→B6).
+- Set `duration` — `0.15s` is a good default for arcade sounds.
 
 ---
 
 ## CDSoundDef — A Sound Effect Definition
 
-Defines a complete sound effect (one-shot or jingle). Passed to `CDSoundBank.play_one_shot()`.
+Defines a complete sound effect (one-shot or jingle). Passed to `CDSoundBank.play_one_shot()` via a Voice/Speaker component.
 
 | Export | Type | Default | Purpose |
 |--------|------|---------|---------|
@@ -33,13 +35,13 @@ Defines a complete sound effect (one-shot or jingle). Passed to `CDSoundBank.pla
 
 ### Must-Includes
 
-1. Set `wave_shape` — SQUARE for retro, SINE for smooth, NOISE for percussion
-2. Add at least one `CDNote` to `notes`
-3. Adjust `volume` — 0.2 is a safe baseline, louder sounds can clip
+1. Set `wave_shape` — `SQUARE` for retro, `SINE` for smooth, `NOISE` for percussion.
+2. Add at least one `CDNote` to `notes`.
+3. Adjust `volume` — `0.2` is a safe baseline, louder sounds can clip.
 
 ### Jingle Pattern
 
-Multi-note sounds are played sequentially by CDSoundBank's fill loop. Each note gets its own duration and pitch. The bank handles phase resets between notes automatically.
+Multi-note sounds are played sequentially by `CDSoundBank`'s fill loop. Each note gets its own duration and pitch. The bank handles phase resets between notes automatically.
 
 ```
 notes = [
@@ -49,11 +51,32 @@ notes = [
 ]
 ```
 
+### Usage Boilerplate (Wiring to Components)
+
+You rarely instantiate audio resources in code. Instead, create them in the Godot Inspector and link them to your Audio components:
+
+```gdscript
+extends SoundVoice
+class_name MyCustomVoice
+
+# Assign this in the Godot Editor Inspector
+@export var shoot_sound: CDSoundDef
+
+func _on_initialize() -> void:
+	# Standard entity bus connection pattern
+	entity.bus_connect("shoot", _on_shoot)
+
+func _on_shoot() -> void:
+	# play_one_shot() is inherited from the audio base classes
+	if shoot_sound:
+		play_one_shot(shoot_sound)
+```
+
 ---
 
 ## CDMusicTrack — A Music Track
 
-Defines a music track for MusicSpeaker playlists. Supports loop points and crossfade.
+Defines a music track for `MusicSpeaker` playlists. Supports loop points and crossfade.
 
 | Export | Type | Default | Purpose |
 |--------|------|---------|---------|
@@ -66,6 +89,6 @@ Defines a music track for MusicSpeaker playlists. Supports loop points and cross
 
 ### Must-Includes
 
-1. Set `stream` to an AudioStream (OGG with loop import settings)
-2. Set `loop_start`/`loop_end` if the track has a loop section
-3. Set `loopfade_duration` to avoid clicks at loop boundaries
+1. Set `stream` to an `AudioStream` (OGG with loop import settings).
+2. Set `loop_start`/`loop_end` if the track has a loop section.
+3. Set `loopfade_duration` to avoid clicks at loop boundaries.

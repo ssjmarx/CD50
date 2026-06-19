@@ -1,4 +1,4 @@
-[gd_scene load_steps=156 format=3 uid="uid://c0q0c0v84x80"]
+[gd_scene load_steps=163 format=3 uid="uid://c0q0c0v84x80"]
 
 [ext_resource type="Script" uid="uid://dm0uehngpvbh7" path="res://scripts/core/infrastructure/cd_game.gd" id="1_62wb8"]
 [ext_resource type="PackedScene" uid="uid://cmbx6xnct372t" path="res://scenes/core/infrastructure/cd_collision_buffer.tscn" id="2_7y1r2"]
@@ -44,10 +44,15 @@
 [ext_resource type="PackedScene" uid="uid://c160d1kuwsrav" path="res://scenes/game components/projectors/crt_projector.tscn" id="39_4mgkk"]
 [ext_resource type="Script" uid="uid://c0l1od3pky1y1" path="res://scripts/core/resources/curves/cd_helix_curve.gd" id="40_helix"]
 [ext_resource type="Script" uid="uid://c5eo3m6tfj1b" path="res://scripts/core/resources/curves/cd_spiral_curve.gd" id="41_spiral"]
+[ext_resource type="PackedScene" uid="uid://b4uqwn5l54hms" path="res://scenes/game components/goals/group_count_goal.tscn" id="45_ifna5"]
+[ext_resource type="PackedScene" uid="uid://cbuw38k0wvnia" path="res://scenes/game components/cards/lives_card.tscn" id="46_j0bx8"]
+[ext_resource type="PackedScene" uid="uid://cytjg8wb58tpp" path="res://entities/player/bug_blaster_2_player.tscn" id="47_j0bx8"]
 [ext_resource type="PackedScene" uid="uid://5mmhkhj5u3tg" path="res://scenes/game components/speakers/sound_speaker.tscn" id="48_p87tt"]
 [ext_resource type="Script" uid="uid://ci2yaa2b1swsj" path="res://scripts/core/resources/audio/cd_note.gd" id="49_ifna5"]
-[ext_resource type="PackedScene" uid="uid://c5m6p46qsg1gv" path="res://entities/player/sprite_ship_player.tscn" id="49_s3e4k"]
 [ext_resource type="Script" uid="uid://d3l2c838cqwsm" path="res://scripts/core/resources/audio/cd_sound_def.gd" id="50_j0bx8"]
+[ext_resource type="PackedScene" uid="uid://c4upbp1v4vll8" path="res://scenes/game components/cards/score_card.tscn" id="52_j0bx8"]
+[ext_resource type="PackedScene" uid="uid://dqsat1yshg31w" path="res://scenes/game components/goals/score_threshold_goal.tscn" id="53_xatni"]
+[ext_resource type="PackedScene" uid="uid://d4b42pvesykqo" path="res://scenes/game components/marks/cd_mark.tscn" id="54_682rw"]
 [ext_resource type="PackedScene" uid="uid://mxejpxipdbii" path="res://scenes/game components/cards/wave_card.tscn" id="99_wave"]
 
 [sub_resource type="Resource" id="Resource_q4h5u"]
@@ -713,6 +718,11 @@ script = ExtResource("34_1nsuk")
 signals = Array[StringName]([&"spawn_bottom_left", &"spawn_bottom_right"])
 metadata/_custom_type_script = "uid://cyqs535s5vfg4"
 
+[sub_resource type="Resource" id="Resource_82ubq"]
+script = ExtResource("12_rgict")
+rotation = -1.571
+metadata/_custom_type_script = "uid://dcu4ocnin0htu"
+
 [sub_resource type="Resource" id="Resource_skele"]
 script = ExtResource("49_ifna5")
 note = 45
@@ -748,6 +758,9 @@ effect = 5
 volume = 0.4
 notes = Array[ExtResource("49_ifna5")]([SubResource("Resource_skele"), SubResource("Resource_8l2ml"), SubResource("Resource_8shry"), SubResource("Resource_kedvo")])
 metadata/_custom_type_script = "uid://d3l2c838cqwsm"
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_682rw"]
+size = Vector2(656, 8)
 
 [node name="BugBlaster2" type="Node2D"]
 script = ExtResource("1_62wb8")
@@ -1388,20 +1401,62 @@ offset_right = 16.0
 offset_bottom = 16.0
 on_advance_wave = Array[StringName]([&"level_one_complete", &"level_two_complete", &"level_three_complete", &"level_four_complete", &"level_five_complete"])
 
+[node name="LivesCounter" parent="." instance=ExtResource("45_ifna5")]
+target_groups = Array[StringName]([&"players"])
+on_condition_met = Array[StringName]([&"life_lost"])
+
+[node name="LivesCard" parent="." instance=ExtResource("46_j0bx8")]
+offset_left = 16.0
+offset_top = 16.0
+offset_right = 16.0
+offset_bottom = 16.0
+
+[node name="PlayerSpawner" parent="." instance=ExtResource("10_xb0do")]
+position = Vector2(320, 340)
+spawn_scene = ExtResource("47_j0bx8")
+spawn_count_equation = "1"
+offset_range = Vector2(0, 0)
+stagger_delay = 0.0
+spawn_context = SubResource("Resource_82ubq")
+trigger_delay = 3.0
+trigger_signals = Array[StringName]([&"life_lost"])
+
+[node name="PlayerSpawnerGameStart" parent="." instance=ExtResource("10_xb0do")]
+position = Vector2(320, 340)
+spawn_scene = ExtResource("47_j0bx8")
+spawn_count_equation = "1"
+offset_range = Vector2(0, 0)
+stagger_delay = 0.0
+spawn_context = SubResource("Resource_82ubq")
+trigger_signals = Array[StringName]([&"game_play"])
+
 [node name="ScrollingStarsEffect" parent="." instance=ExtResource("38_1tdfd")]
 star_count = 25
 
-[node name="SoundSpeaker" parent="." instance=ExtResource("48_p87tt")]
+[node name="AmbientSound" parent="." instance=ExtResource("48_p87tt")]
 sound = SubResource("Resource_fky46")
 trigger_signal = &"ambience"
 gameplay_only = true
 
-[node name="SpriteShip" parent="." instance=ExtResource("49_s3e4k")]
-position = Vector2(320, 340)
-rotation = -1.5707964
-lock_y = true
+[node name="ScoreCard" parent="." instance=ExtResource("52_j0bx8")]
+offset_left = 32.0
+offset_top = 328.0
+offset_right = 32.0
+offset_bottom = 328.0
+is_interface = true
 
-[node name="TargetRotationLeg" parent="SpriteShip" index="7"]
-direction_key = &"aim_direction"
+[node name="GameOverGoal" parent="." instance=ExtResource("53_xatni")]
+threshold = 0
+comparison = 0
+score_key = &"current_lives"
+game_result = 1
+on_score_changed = Array[StringName]([&"life_lost"])
+on_condition_met = Array[StringName]([&"game_over"])
 
-[editable path="SpriteShip"]
+[node name="CdMark" parent="." instance=ExtResource("54_682rw")]
+position = Vector2(320, 265)
+filter_groups = Array[StringName]([&"spider_ships"])
+on_entered_entity = Array[StringName]([&"fire_tractor_beam"])
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="CdMark"]
+shape = SubResource("RectangleShape2D_682rw")

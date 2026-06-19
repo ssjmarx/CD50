@@ -15,6 +15,13 @@ class_name CDEntity extends CharacterBody2D
 @export var clamp_to_bounds: bool = false
 @export var bounds_margin: float = 0.0
 
+@export_group("Physics Overrides")
+## signals that toggle physics flags at runtime
+@export var unlock_y_on: Array[StringName] = []
+@export var lock_y_on: Array[StringName] = []
+@export var unclamp_bounds_on: Array[StringName] = []
+@export var clamp_bounds_on: Array[StringName] = []
+
 ## --- Internal State ---
 
 ## angular velocity for newtonian rotation
@@ -94,6 +101,16 @@ func _ready() -> void:
 		add_to_group(group_name)
 		if game.group_registry:
 			game.group_registry.mark_dirty(group_name)
+
+	## connect physics override signals
+	for sig in unlock_y_on:
+		bus_connect(sig, _unlock_y)
+	for sig in lock_y_on:
+		bus_connect(sig, _lock_y)
+	for sig in unclamp_bounds_on:
+		bus_connect(sig, _unclamp_bounds)
+	for sig in clamp_bounds_on:
+		bus_connect(sig, _clamp_bounds)
 
 ## --- Physics Process ---
 
@@ -309,7 +326,7 @@ func set_collision_rect(width: float, height: float) -> void:
 
 ## --- Universal Bus API ---
 
-## bus connect — idempotent: guards against double-connection
+## bus connect — idempotent: guards against double-connection, creates signal if missing
 func bus_connect(signal_name: StringName, callable: Callable) -> void:
 	if not has_signal(signal_name):
 		add_user_signal(signal_name)
@@ -419,3 +436,17 @@ func _find_collision_handler(collider) -> Callable:
 			return entry["handler"]
 
 	return Callable()
+
+## --- Physics Overrides ---
+
+func _unlock_y() -> void:
+	lock_y = false
+
+func _lock_y() -> void:
+	lock_y = true
+
+func _unclamp_bounds() -> void:
+	clamp_to_bounds = false
+
+func _clamp_bounds() -> void:
+	clamp_to_bounds = true

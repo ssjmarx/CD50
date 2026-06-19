@@ -52,7 +52,7 @@ func _on_initialize() -> void:
 	entity.blackboard[delta_key] = 0.0
 	
 	for sig in damage_signals:
-		entity.bus_connect(sig, _on_take_damage)
+		self.bus_connect(sig, _on_take_damage)
 
 ## --- signal handlers ---
 
@@ -116,7 +116,7 @@ func _on_entity_deactivating() -> void:
 	entity.blackboard.erase(value_key)
 	entity.blackboard.erase(delta_key)
 	for sig in damage_signals:
-		entity.bus_disconnect(sig, _on_take_damage)
+		self.bus_disconnect(sig, _on_take_damage)
 	set_physics_process(false)
 
 ## on entity activated

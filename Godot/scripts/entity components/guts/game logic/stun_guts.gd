@@ -41,7 +41,7 @@ func _ready() -> void:
 ## on initialize
 func _on_initialize() -> void:
 	for sig in status_signals:
-		entity.bus_connect(sig, _on_apply_status)
+		self.bus_connect(sig, _on_apply_status)
 
 ## --- signal handlers ---
 
@@ -110,7 +110,7 @@ func _on_entity_deactivating() -> void:
 	if _is_stunned:
 		_end_stun()
 	for sig in status_signals:
-		entity.bus_disconnect(sig, _on_apply_status)
+		self.bus_disconnect(sig, _on_apply_status)
 	set_physics_process(false)
 
 ## on entity activated

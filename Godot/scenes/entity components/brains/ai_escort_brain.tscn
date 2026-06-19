@@ -1,0 +1,6 @@
+[gd_scene load_steps=2 format=3 uid="uid://ci8074saofo8y"]
+
+[ext_resource type="Script" uid="uid://dgwvnayvavr74" path="res://scripts/entity components/brains/ai movement/ai_escort_brain.gd" id="1_xhqrs"]
+
+[node name="AIEscortBrain" type="Node2D"]
+script = ExtResource("1_xhqrs")

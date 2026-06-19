@@ -27,7 +27,7 @@ func _ready() -> void:
 ## connect all listen signals to the unified handler
 func _on_initialize() -> void:
 	for sig_name: StringName in listen_signals:
-		entity.bus_connect(sig_name, _on_any_input)
+		self.bus_connect(sig_name, _on_any_input)
 
 ## --- signal handlers ---
 

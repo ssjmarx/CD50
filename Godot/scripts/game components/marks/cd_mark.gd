@@ -1,6 +1,8 @@
 ## CDMark
-## Base Area2D mark that detects body enter/exit and emits zero-arg game bus signals
-## Provides group filtering and auto-created collision shapes for subclasses Writes detected body to game blackboard before emitting
+## Base Area2D mark that detects body enter/exit and emits zero-arg signals
+## Emits on both the game bus and the entering/exiting entity's bus.
+## Provides group filtering and auto-created collision shapes for subclasses.
+## Writes detected body to game blackboard before emitting.
 
 class_name CDMark extends Area2D
 
@@ -22,9 +24,15 @@ class_name CDMark extends Area2D
 @export var shape_key: StringName = &"mark_shape"
 
 ## game bus signals emitted on body enter/exit (zero-arg)
-@export_group("Emit Signals")
+@export_group("Emit Game Bus Signals")
 @export var on_entered: Array[StringName] = [&"body_entered"]
 @export var on_exited: Array[StringName] = []
+
+## entity bus signals emitted on the body that enters/exits (zero-arg)
+## Allows a mark to trigger behavior directly on the entity that touched it
+@export_group("Emit Entity Bus Signals")
+@export var on_entered_entity: Array[StringName] = []
+@export var on_exited_entity: Array[StringName] = []
 
 ## game bus signals that swap the collision shape at runtime
 @export_group("Listen Signals")
@@ -72,19 +80,29 @@ func _ensure_collision_shape() -> void:
 
 ## --- body detection ---
 
-## write body to blackboard and emit zero-arg entered signals
+## write body to blackboard, emit game bus signals, and emit entity bus signals
 func _on_body_entered(body: Node2D) -> void:
 	if _passes_filter(body):
 		game.blackboard[entered_body_key] = body
 		for sig in on_entered:
 			game.bus_emit(sig)
+		
+		# Emit on the entering entity's bus if it is a CDEntity
+		if body is CDEntity:
+			for sig in on_entered_entity:
+				body.bus_emit(sig)
 
-## write body to blackboard and emit zero-arg exited signals
+## write body to blackboard, emit game bus signals, and emit entity bus signals
 func _on_body_exited(body: Node2D) -> void:
 	if _passes_filter(body):
 		game.blackboard[exited_body_key] = body
 		for sig in on_exited:
 			game.bus_emit(sig)
+			
+		# Emit on the exiting entity's bus if it is a CDEntity
+		if body is CDEntity:
+			for sig in on_exited_entity:
+				body.bus_emit(sig)
 
 ## --- runtime shape swap ---
 

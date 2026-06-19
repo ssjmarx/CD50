@@ -15,13 +15,20 @@ class_name ScoreThresholdGoal extends CDGameComponent
 ## key to read current score from game blackboard (int)
 @export var score_key: StringName = &"current_score"
 
+@export_group("Game Result")
+## the result enum written to the blackboard when condition is met
+@export var game_result: CDEnums.GameResult = CDEnums.GameResult.VICTORY
+## key to write the game_result under on the blackboard
+@export var result_key: StringName = &"game_result"
+
 ## game bus signals that indicate score has changed (zero-arg)
 @export_group("Listen Signals")
 @export var on_score_changed: Array[StringName] = [&"score_changed"]
 
 ## game bus signals emitted when the threshold is crossed
+## add "game_over" to this array in the inspector to trigger the end of the game
 @export_group("Emit Signals")
-@export var on_condition_met: Array[StringName] = [&"game_end_victory"]
+@export var on_condition_met: Array[StringName] = [&"goal_reached"]
 
 ## --- lifecycle ---
 
@@ -39,8 +46,12 @@ func _on_initialize() -> void:
 
 ## read score from blackboard and check condition (zero-arg)
 func _on_score_updated() -> void:
+	if game.current_state == CDEnums.GameState.GAME_OVER:       
+		return
+	
 	var score: int = game.blackboard.get(score_key, 0)
 	if _compare(score):
+		game.blackboard[result_key] = game_result
 		for sig in on_condition_met:
 			game.bus_emit(sig)
 

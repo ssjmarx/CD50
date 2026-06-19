@@ -11,19 +11,40 @@
 
 The first game built on V2 architecture. We are proving the V2 component system by building a complete game from it.
 
-### Current Focus: Capture Mechanics
-Bug Blaster 2 needs the signature Galaga-style capture/rescue mechanic:
-- Enemies dive (swoop) toward the player using `AISwoopBrain` + `CDCurve` paths
-- `AITractorBeamBrain` interrupts the dive to perform a capture attempt
-- `TractorBeamArm` is the active-frames arm that captures entities in the zone
-- Captured entities must transition to a "captured" group and be escortable
+### Current Focus: Capture Mechanics (The "Fat Player" Pattern)
 
-**Components already built for this** (in codebase, ready to wire):
-- `ai_tractor_beam_brain.gd` — `AITractorBeamBrain`
-- `tractor_beam_arm.gd` — `TractorBeamArm`
-- `ai_swoop_brain.gd` — `AISwoopBrain`
-- `swoop_director.gd` — `SwoopDirector` + 13 `CDCurve` resources for paths
-- `state_director.gd` / `state_manager.gd` — for group-as-state transitions (captured → escort)
+Bug Blaster 2 needs the signature Galaga-style capture/rescue mechanic. We are implementing this using `CDBody` to swap the player's behavior sets (Active, Captured, Rescued) based on entity bus signals. The player will handle its own lifecycle through the capture and release process, resulting in the classic dual-ship control upon successful rescue.
+
+#### Signal Flow & Architecture
+
+1. **Spider dives** via `AISwoopBrain` along a `CDCurve` path.
+2. **Spider enters `CDMark`** (positioned at capture height) → Mark emits `"fire_tractor_beam"` on Spider's entity bus.
+3. **`AITractorBeamBrain`** qualifies (checks `"diving"` group) → emits `"fire_tractor_beam"` to arm, emits `"capture_phase_started"` on game bus.
+4. **`TractorBeamArm` windup begins** → emits `"tractor_beam_windup"`.
+5. **Active frame:** Arm runs an immediate physics overlap query (`PhysicsDirectSpaceState2D.intersect_shape()`) on the tractor beam shape.
+6. **If hit:**
+   - Writes `target.blackboard["captured_by"] = entity`
+   - Emits `"player_captured"` on **target's entity bus**
+   - Writes `game.blackboard["captured_entity"] = target`
+   - Emits `"player_captured"` on **game bus**
+7. **Player's `CapturedBody` wakes** (`"player_captured"`), `ActiveBody` sleeps.
+8. **Inside CapturedBody:** `AIEscortBrain` reads own `blackboard["captured_by"]` → follows spider.
+9. **`LeaderTrackerGuts`** connects to spider's `entity_deactivating` signal.
+10. **Spider dies** → `LeaderTrackerGuts` emits `"leader_destroyed"` on entity bus.
+11. **Player's `RescuedBody` wakes**, `CapturedBody` sleeps.
+12. **Rescued `AIEscortBrain`** reads `game.blackboard["active_player"]` → descends to formation position.
+13. **In position** → emits `"escort_achieved"` → `ActiveBody` wakes (now with wingman firing).
+
+#### Component Checklist
+
+| Component | Status | Action Needed |
+|-----------|--------|---------------|
+| `CDMark` enhancement | Planned | Add `@export var emit_on_entering_entity: Array[StringName]` that calls `body.bus_emit(sig)` |
+| `TractorBeamArm` enhancement | Planned | Replace blackboard read with `PhysicsDirectSpaceState2D` overlap query. Add dual bus emission (target entity bus + game bus). |
+| `AITractorBeamBrain` enhancement | Planned | Replace Y-check with signal listener (`"fire_tractor_beam"`) emitted by the Mark. |
+| `AIEscortBrain` | **New** | Blackboard-target variant of `AIFormationBrain`. Calculates vector toward target entity + offset. |
+| `LeaderTrackerGuts` | **New** | State tracker that connects to an entity reference (from blackboard) and emits a signal when that entity dies. |
+| Player Scene (`bug_blaster_2.tscn`) | Planned | Wire up multiple `CDBody` children: `ActiveBody` (default), `CapturedBody` (wakes on `"player_captured"`), `RescuedBody` (wakes on `"leader_destroyed"`). |
 
 ### Next After Capture: Multi-Wave
 Once capture works, Bug Blaster 2 needs multi-wave progression via the `WaveCard` → `Trapdoor` relay pattern.

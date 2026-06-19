@@ -1,4 +1,4 @@
-[gd_scene load_steps=17 format=3 uid="uid://bmypbxacxkn6p"]
+[gd_scene load_steps=22 format=3 uid="uid://bmypbxacxkn6p"]
 
 [ext_resource type="PackedScene" uid="uid://vu1t14u6qvjf" path="res://entities/generic/spider_ship_smooth.tscn" id="1_18u38"]
 [ext_resource type="PackedScene" uid="uid://wghixqf83pas" path="res://scenes/entity components/brains/ai_swoop_brain.tscn" id="2_f0fqv"]
@@ -9,6 +9,10 @@
 [ext_resource type="PackedScene" uid="uid://c4jinp88xtitl" path="res://scenes/entity components/voices/sound_voice.tscn" id="7_g0k2m"]
 [ext_resource type="Script" uid="uid://ci2yaa2b1swsj" path="res://scripts/core/resources/audio/cd_note.gd" id="8_aafss"]
 [ext_resource type="Script" uid="uid://d3l2c838cqwsm" path="res://scripts/core/resources/audio/cd_sound_def.gd" id="9_otbcv"]
+[ext_resource type="PackedScene" uid="uid://cj3hnjl0sj608" path="res://scenes/entity components/guts/points_guts.tscn" id="10_aafss"]
+[ext_resource type="PackedScene" uid="uid://domsc1hbv4rsy" path="res://scenes/entity components/arms/score_on_death_arm.tscn" id="11_otbcv"]
+[ext_resource type="PackedScene" uid="uid://cvhjugy48g6ax" path="res://scenes/entity components/brains/ai_tractor_beam_brain.tscn" id="12_l5wtd"]
+[ext_resource type="PackedScene" uid="uid://8yty18auwkgf" path="res://scenes/entity components/arms/tractor_beam_arm.tscn" id="13_e2h7j"]
 
 [sub_resource type="Resource" id="Resource_s7cy4"]
 script = ExtResource("4_fkier")
@@ -55,6 +59,9 @@ wave_shape = 3
 notes = Array[ExtResource("8_aafss")]([SubResource("Resource_vdwk6"), SubResource("Resource_43xsa")])
 metadata/_custom_type_script = "uid://d3l2c838cqwsm"
 
+[sub_resource type="ConvexPolygonShape2D" id="ConvexPolygonShape2D_e2h7j"]
+points = PackedVector2Array(0, 0, 100, 50, 100, -50)
+
 [node name="BugShip" instance=ExtResource("1_18u38")]
 groups = Array[StringName]([&"spider_ships", &"ships", &"enemies", &"bosses"])
 
@@ -79,3 +86,19 @@ complete_signals = Array[StringName]([&"dive_complete"])
 sound = SubResource("Resource_l5wtd")
 trigger_signal = &"begin_dive"
 exclusive = true
+
+[node name="PointsGuts" parent="." index="14" instance=ExtResource("10_aafss")]
+points = 3
+
+[node name="ScoreOnDeathArm" parent="." index="15" instance=ExtResource("11_otbcv")]
+
+[node name="AITractorBeamBrain" parent="." index="16" instance=ExtResource("12_l5wtd")]
+qualifying_groups = Array[StringName]([&"diving"])
+arm_complete_signals = Array[StringName]([])
+arm_fire_signals = Array[StringName]([&"fire_tractor_beam"])
+capture_started_signals = Array[StringName]([&"capture_phase_started"])
+
+[node name="TractorBeamArm" parent="." index="17" instance=ExtResource("13_e2h7j")]
+beam_shape = SubResource("ConvexPolygonShape2D_e2h7j")
+collision_mask = 0
+target_groups = Array[StringName]([&"players"])

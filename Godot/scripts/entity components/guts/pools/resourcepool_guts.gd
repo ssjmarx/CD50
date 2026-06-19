@@ -47,7 +47,7 @@ func _on_initialize() -> void:
 	entity.blackboard[delta_key] = 0.0
 	
 	for sig in spend_signals:
-		entity.bus_connect(sig, _on_spend_resource)
+		self.bus_connect(sig, _on_spend_resource)
 
 ## --- signal handlers ---
 
@@ -96,7 +96,7 @@ func _on_entity_deactivating() -> void:
 	entity.blackboard.erase(value_key)
 	entity.blackboard.erase(delta_key)
 	for sig in spend_signals:
-		entity.bus_disconnect(sig, _on_spend_resource)
+		self.bus_disconnect(sig, _on_spend_resource)
 	set_physics_process(false)
 
 ## on entity activated

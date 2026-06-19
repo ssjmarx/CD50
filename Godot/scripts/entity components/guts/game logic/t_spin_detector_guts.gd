@@ -19,6 +19,10 @@ class_name TSpinDetectorGuts extends CDEntityComponent
 @export_group("Emit Signals (Game Bus)")
 @export var t_spin_signals: Array[StringName] = [&"t_spin_detected"]
 
+@export_group("Blackboard Keys")
+@export var is_t_spin_key: StringName = &"is_t_spin"
+@export var is_mini_key: StringName = &"is_mini"
+
 ## --- state ---
 
 ## whether the piece was rotated since last lock
@@ -113,8 +117,11 @@ func _is_corner_occupied(pos: Vector2) -> bool:
 ## broadcast T-spin result on the game bus
 func _announce(is_t_spin: bool, is_mini: bool) -> void:
 	if game:
+		game.blackboard[is_t_spin_key] = is_t_spin
+		game.blackboard[is_mini_key] = is_mini
+		
 		for sig in t_spin_signals:
-			game.bus_emit(sig, [is_t_spin, is_mini])
+			game.bus_emit(sig)
 
 ## --- cleanup ---
 

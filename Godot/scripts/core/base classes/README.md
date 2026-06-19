@@ -35,17 +35,47 @@ _on_initialize()   → YOUR CODE HERE: connect signals, read siblings
 | `_on_entity_deactivating()` | Entity is dying (pool return or free) | Reset state, disconnect from game bus |
 | `_on_entity_activated()` | Entity recycled from pool | Re-enable processing, reconnect signals |
 
-### Must-Includes for Every Subclass
-
-1. Set `component_category` export in the editor scene
-2. Override `_on_initialize()` for signal connections — never connect in `_ready()`
-3. Override `_on_entity_deactivating()` to reset internal state (pooled entities retain stale values)
-4. Override `_on_entity_activated()` if you disabled processing in deactivating
-
 ### Available References
 
 - `entity: CDEntity` — parent entity (velocity API, bus signals, lifecycle)
 - `game: CDGame` — ancestor game (game bus, group registry, collision matrix)
+
+### Component Boilerplate
+
+When creating a new entity component, use this template to ensure lifecycle and signal bus rules are followed. 
+
+```gdscript
+extends CDEntityComponent
+class_name MyCustomGuts
+
+# 1. Use export groups for configurable signals
+@export_group("Listen Signals")
+@export var listen_signals: Array[StringName] = []
+
+@export_group("Emit Signals")
+@export var emit_signals: Array[StringName] = []
+
+# 2. Set the category (determines execution priority)
+func _ready() -> void:
+	# Brains(10), Legs(20), Arms(40), Guts(50), Faces(60), Voices(65)
+	component_category = CDUtilities.ComponentCategory.GUTS
+	super._ready()
+
+# 3. Connect to buses in _on_initialize()
+func _on_initialize() -> void:
+	for sig in listen_signals:
+		entity.bus_connect(sig, _on_signal_received)
+
+# 4. Read from blackboard in signal callbacks
+func _on_signal_received() -> void:
+	var target_value = entity.blackboard.get("my_key", default_value)
+	# ... process intent/state ...
+
+# 5. ALWAYS reset state on deactivation to prevent the "Leaky Pool" anti-pattern
+func _on_entity_deactivating() -> void:
+	# Reset variables to default here
+	super._on_entity_deactivating()
+```
 
 ---
 
@@ -58,10 +88,32 @@ Same two-phase lifecycle as CDEntityComponent but simpler:
 - No pool lifecycle hooks (game components persist for the game's lifetime)
 - `_on_initialize()` is your one override point
 
-### Must-Includes
+### Component Boilerplate
 
-1. Set `component_category` export in the editor scene
-2. Override `_on_initialize()` to connect to game bus signals
+```gdscript
+extends CDGameComponent
+class_name MyCustomDirector
+
+# Game components commonly listen to the game bus and emit entity bus signals
+@export_group("Listen Signals")
+@export var listen_signals: Array[StringName] = []
+
+func _ready() -> void:
+	component_category = CDUtilities.ComponentCategory.STAGE # STAGE = 70
+	super._ready()
+
+func _on_initialize() -> void:
+	# Connect to game bus signals
+	for sig in listen_signals:
+		game.bus_connect(sig, _on_game_signal)
+
+	# Directors can force entities to act by emitting on their buses:
+	# target_entity.bus_emit("move_to")
+
+func _on_game_signal() -> void:
+	# Read from game.blackboard
+	var wave = game.blackboard.get("wave", 0)
+```
 
 ---
 
@@ -75,11 +127,29 @@ Extends **Control**, not Node2D — cue cards live in the UI layer, not the phys
 
 Set `is_interface = true` to auto-create a child Label. Call `_update_label(text)` whenever state changes. The label is created programmatically — no scene setup needed.
 
-### Must-Includes
+### Component Boilerplate
 
-1. Set `is_interface` if the card displays text
-2. Connect to game bus signals in `_ready()` (cue cards can skip two-phase — game bus is Dictionary-based, no ordering issues)
-3. Call `_update_label()` when state changes
+```gdscript
+extends CDCueCard
+class_name MyCustomCard
+
+@export var prefix: String = "Score: "
+
+func _ready() -> void:
+	# Fixed priority 70
+	super._ready()
+	
+	# Cards can connect in _ready() safely, bypassing two-phase init,
+	# because the game bus is Dictionary-based.
+	game.bus_connect("score_gained", _on_score_gained)
+	
+	# Trigger initial draw
+	_update_label("0")
+
+func _on_score_gained() -> void:
+	var current_score = game.blackboard.get("score", 0)
+	_update_label(str(current_score))
+```
 
 ---
 
@@ -119,10 +189,3 @@ Game bus signal (e.g. "wave_start")
 ### Safe Zone Pattern
 
 Trapdoors listen for `"zone_safe"` / `"zone_unsafe"` signals from SafeZoneMark components. When unsafe, spawning pauses (queue holds) until the zone clears. Prevents entities spawning on top of each other.
-
-### Must-Includes
-
-1. Set `component_category` to RULES (or let the base class do it in `_ready`)
-2. Override `_get_spawn_scene()` — this is the one required virtual
-3. Override `_get_spawn_count()` and `_get_spawn_position()` for anything beyond single-point spawning
-4. Set `pool` export if spawning pooled entities (bullets, asteroids, invaders)

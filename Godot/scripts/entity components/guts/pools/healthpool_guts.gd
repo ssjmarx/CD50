@@ -49,11 +49,11 @@ func _on_initialize() -> void:
 	entity.blackboard[delta_key] = 0
 	
 	for sig in damage_signals:
-		entity.bus_connect(sig, _on_take_damage)
+		self.bus_connect(sig, _on_take_damage)
 	for sig in heal_signals:
-		entity.bus_connect(sig, _on_heal)
+		self.bus_connect(sig, _on_heal)
 	for sig in invincibility_signals:
-		entity.bus_connect(sig, _on_set_invincible)
+		self.bus_connect(sig, _on_set_invincible)
 
 ## --- signal handlers ---
 
@@ -99,8 +99,8 @@ func _on_entity_deactivating() -> void:
 	entity.blackboard.erase(value_key)
 	entity.blackboard.erase(delta_key)
 	for sig in damage_signals:
-		entity.bus_disconnect(sig, _on_take_damage)
+		self.bus_disconnect(sig, _on_take_damage)
 	for sig in heal_signals:
-		entity.bus_disconnect(sig, _on_heal)
+		self.bus_disconnect(sig, _on_heal)
 	for sig in invincibility_signals:
-		entity.bus_disconnect(sig, _on_set_invincible)
+		self.bus_disconnect(sig, _on_set_invincible)

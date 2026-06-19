@@ -1,4 +1,4 @@
-[gd_scene load_steps=17 format=3 uid="uid://dn4605ei3ylto"]
+[gd_scene load_steps=19 format=3 uid="uid://dn4605ei3ylto"]
 
 [ext_resource type="PackedScene" uid="uid://dc5v6bawoxi2c" path="res://entities/generic/bug_ship_smooth.tscn" id="1_18u38"]
 [ext_resource type="PackedScene" uid="uid://wghixqf83pas" path="res://scenes/entity components/brains/ai_swoop_brain.tscn" id="2_f0fqv"]
@@ -9,6 +9,8 @@
 [ext_resource type="PackedScene" uid="uid://c4jinp88xtitl" path="res://scenes/entity components/voices/sound_voice.tscn" id="7_rgbre"]
 [ext_resource type="Script" uid="uid://ci2yaa2b1swsj" path="res://scripts/core/resources/audio/cd_note.gd" id="8_p66cl"]
 [ext_resource type="Script" uid="uid://d3l2c838cqwsm" path="res://scripts/core/resources/audio/cd_sound_def.gd" id="9_8ve2c"]
+[ext_resource type="PackedScene" uid="uid://cj3hnjl0sj608" path="res://scenes/entity components/guts/points_guts.tscn" id="10_p66cl"]
+[ext_resource type="PackedScene" uid="uid://domsc1hbv4rsy" path="res://scenes/entity components/arms/score_on_death_arm.tscn" id="11_8ve2c"]
 
 [sub_resource type="Resource" id="Resource_s7cy4"]
 script = ExtResource("4_fkier")
@@ -73,3 +75,8 @@ complete_signals = Array[StringName]([&"dive_complete"])
 sound = SubResource("Resource_ihg2i")
 trigger_signal = &"begin_dive"
 exclusive = true
+
+[node name="PointsGuts" parent="." index="13" instance=ExtResource("10_p66cl")]
+points = 1
+
+[node name="ScoreOnDeathArm" parent="." index="14" instance=ExtResource("11_8ve2c")]

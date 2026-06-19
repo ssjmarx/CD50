@@ -24,7 +24,7 @@ func _ready() -> void:
 ## on initialize
 func _on_initialize() -> void:
 	for sig in zero_health_signals:
-		entity.bus_connect(sig, _on_zero_health)
+		self.bus_connect(sig, _on_zero_health)
 
 ## --- signal handlers ---
 
@@ -39,4 +39,4 @@ func _on_zero_health() -> void:
 func _on_entity_deactivating() -> void:
 	super._on_entity_deactivating()
 	for sig in zero_health_signals:
-		entity.bus_disconnect(sig, _on_zero_health)
+		self.bus_disconnect(sig, _on_zero_health)

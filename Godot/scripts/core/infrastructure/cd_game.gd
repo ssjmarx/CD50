@@ -63,6 +63,9 @@ func _ready() -> void:
 		input_router.restart_pressed.connect(reset_game)
 		input_router.quit_pressed.connect(_quit_game)
 
+	## wire internal game over listener to the game bus
+	bus_connect("game_over", _end_game_from_bus)
+
 	## create attract mode label
 	_attract_label = Label.new()
 	_attract_label.text = "PRESS ENTER TO START"
@@ -110,6 +113,11 @@ func start_game() -> void:
 	blackboard.clear()
 	current_state = CDEnums.GameState.PLAYING
 	bus_emit("game_play")
+
+## reads result from blackboard and triggers state transition
+func _end_game_from_bus() -> void:
+	var result: CDEnums.GameResult = blackboard.get("game_result", CDEnums.GameResult.DEFEAT)
+	end_game(result)
 
 ## transition to GAME_OVER, pause the tree
 func end_game(result: CDEnums.GameResult) -> void:

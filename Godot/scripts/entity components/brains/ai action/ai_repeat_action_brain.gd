@@ -22,9 +22,9 @@ func _on_initialize() -> void:
 	if wave_scaler:
 		wave_scaler.initialize(entity.game)
 	for sig in start_signals:
-		entity.bus_connect(sig, _on_start)
+		self.bus_connect(sig, _on_start)
 	for sig in stop_signals:
-		entity.bus_connect(sig, _on_stop)
+		self.bus_connect(sig, _on_stop)
 
 ## physics process
 func _physics_process(delta: float) -> void:
@@ -56,6 +56,6 @@ func _on_entity_deactivating() -> void:
 	super._on_entity_deactivating()
 	if _is_active: _on_stop()
 	for sig in start_signals:
-		entity.bus_disconnect(sig, _on_start)
+		self.bus_disconnect(sig, _on_start)
 	for sig in stop_signals:
-		entity.bus_disconnect(sig, _on_stop)
+		self.bus_disconnect(sig, _on_stop)

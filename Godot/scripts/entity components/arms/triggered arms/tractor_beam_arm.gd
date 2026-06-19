@@ -1,19 +1,31 @@
 ## TractorBeamArm
-## Frame-based arm that captures the entity's current target after a windup
-## This arm handles: windup signal → read blackboard → capture → hold → complete
+## Active-frames arm that captures entities in tractor beam zone
+## Uses PhysicsDirectSpaceState2D.intersect_shape() for immediate overlap queries ("fighting game pattern")
+## Writes directly to the target's bus and blackboard, as well as the game bus.
 
 class_name TractorBeamArm extends CDEntityComponent
 
 ## frames to wait before capture attempt
-@export var windup_frames: int = 30
+@export var windup_frames: int = 60
 
 ## frames to hold after capture attempt
-@export var hold_frames: int = 15
+@export var hold_frames: int = 30
+
+## the shape used for the immediate physics overlap query
+@export var beam_shape: Shape2D
+
+## collision mask for the physics query (dynamically resolved in _on_initialize)
+@export_flags_2d_physics var collision_mask: int = 1
+
+@export_group("Target Filtering")
+## groups to filter for (empty = allow all). Used to resolve the collision mask dynamically.
+@export var target_groups: Array[StringName] = []
 
 @export_group("Blackboard Keys")
-@export var target_keys: Array[StringName] = [&"nearest_target"]
-@export var captured_entity_keys: Array[StringName] = [&"captured_entity"]
-@export var captured_by_keys: Array[StringName] = [&"captured_by"]
+## key to write the captured entity to on the game blackboard
+@export var target_blackboard_key: StringName = &"captured_entity"
+## key to write the captor (self) to on the target's entity blackboard
+@export var captor_blackboard_key: StringName = &"captured_by"
 
 @export_group("Listen Signals")
 @export var fire_signals: Array[StringName] = [&"fire_tractor_beam"]
@@ -38,10 +50,19 @@ func _ready() -> void:
 	component_category = CDEnums.ComponentCategory.INTERACTION
 	super._ready()
 
-## connect fire signals, all emit signals are auto-created by bus_connect/bus_emit
+## connect fire signals and dynamically resolve collision mask
 func _on_initialize() -> void:
+	## Dynamic mask resolution based on target groups
+	var mask := 0
+	if game:
+		var cm = game.get("collision_matrix")
+		if cm and cm.has_method("get_layer_for_group"):
+			for group_name in target_groups:
+				mask |= cm.get_layer_for_group(group_name)
+	collision_mask = mask
+
 	for sig in fire_signals:
-		entity.bus_connect(sig, _on_fire)
+		self.bus_connect(sig, _on_fire)
 
 ## start the tractor beam windup sequence
 func _on_fire() -> void:
@@ -55,7 +76,7 @@ func _on_fire() -> void:
 	for sig in windup_signals:
 		entity.bus_emit(sig)
 
-## frame-based windup → capture → hold sequence
+## frame-based windup -> capture -> hold sequence
 func _physics_process(_delta: float) -> void:
 	if not _is_active:
 		set_physics_process(false)
@@ -63,25 +84,57 @@ func _physics_process(_delta: float) -> void:
 
 	_frame_count += 1
 
-	## at windup_frames: attempt capture of whatever is on the blackboard
+	## at windup_frames: attempt capture using immediate physics query
 	if _frame_count == windup_frames and not _capture_attempted:
 		_capture_attempted = true
-		for key in target_keys:
-			var target = entity.blackboard.get(key)
-			if is_instance_valid(target):
-				## write capture data to game blackboard and notify
-				for blackboard_key in captured_entity_keys:
-					game.blackboard[blackboard_key] = target
-				for blackboard_key in captured_by_keys:
-					game.blackboard[blackboard_key] = entity
-				for sig in capture_signals:
-					game.bus_emit(sig)
-			else:
-				for sig in miss_signals:
-					entity.bus_emit(sig)
+		_attempt_capture()
 
 	if _frame_count >= windup_frames + hold_frames:
 		_end_tractor_beam()
+
+## execute the immediate physics overlap query
+func _attempt_capture() -> void:
+	if not beam_shape:
+		push_warning("TractorBeamArm has no beam_shape assigned!")
+		_emit_miss()
+		return
+
+	var space_state = get_world_2d().direct_space_state
+	var query = PhysicsShapeQueryParameters2D.new()
+	query.shape = beam_shape
+	query.transform = global_transform
+	query.collision_mask = collision_mask
+	query.collide_with_areas = true
+	query.collide_with_bodies = true
+
+	var intersections = space_state.intersect_shape(query)
+	for intersection in intersections:
+		var collider = intersection.collider
+		if _passes_filter(collider):
+			_execute_capture(collider)
+			return
+
+	_emit_miss()
+
+## write capture data to game blackboard, target blackboard, and emit signals
+func _execute_capture(target: CDEntity) -> void:
+	## write to game blackboard
+	game.blackboard[target_blackboard_key] = target
+	
+	## write to target's entity blackboard
+	target.blackboard[captor_blackboard_key] = entity
+	
+	## emit on target's entity bus
+	if target.has_signal("player_captured"):
+		target.bus_emit("player_captured")
+		
+	## emit on game bus
+	game.bus_emit("player_captured")
+
+## emit miss signals if no valid target was found
+func _emit_miss() -> void:
+	for sig in miss_signals:
+		entity.bus_emit(sig)
 
 ## clean up active state and emit complete signals
 func _end_tractor_beam() -> void:
@@ -95,4 +148,13 @@ func _on_entity_deactivating() -> void:
 	super._on_entity_deactivating()
 	_is_active = false
 	for sig in fire_signals:
-		entity.bus_disconnect(sig, _on_fire)
+		self.bus_disconnect(sig, _on_fire)
+
+## return true if body matches any filter group (or all if no filter)
+func _passes_filter(body: Node) -> bool:
+	if target_groups.is_empty():
+		return true
+	for g in target_groups:
+		if body.is_in_group(g):
+			return true
+	return false

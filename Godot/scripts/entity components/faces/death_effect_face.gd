@@ -21,7 +21,7 @@ func _ready() -> void:
 ## connect death signals
 func _on_initialize() -> void:
 	for sig in death_signals:
-		entity.bus_connect(sig, _on_death)
+		self.bus_connect(sig, _on_death)
 
 ## instantiate all effect scenes at entity position
 func _on_death() -> void:
@@ -37,4 +37,4 @@ func _on_death() -> void:
 func _on_entity_deactivating() -> void:
 	super._on_entity_deactivating()
 	for sig in death_signals:
-		entity.bus_disconnect(sig, _on_death)
+		self.bus_disconnect(sig, _on_death)
