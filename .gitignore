@@ -14,6 +14,7 @@ pythonscripts/
 
 # ── Secrets (NEVER commit API keys) ────────────────────────
 .env
+github*
 
 # ── Aider artifacts ────────────────────────────────────────
 .aider.chat.history.md
