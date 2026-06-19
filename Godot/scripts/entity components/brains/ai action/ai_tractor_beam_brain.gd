@@ -34,12 +34,14 @@ func _on_initialize() -> void:
 
 ## triggered by CDMark entity bus signal
 func _on_trigger() -> void:
+	print("on trigger")
 	if _is_capturing or not _qualifies():
 		return
 	_begin_capture()
 
 ## begin capture
 func _begin_capture() -> void:
+	print("begin capture")
 	_is_capturing = true
 	entity.request_velocity_set(Vector2.ZERO)
 	game.blackboard[capturing_entity_key] = entity

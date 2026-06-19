@@ -80,6 +80,7 @@ target_distance = 500.0
 loop = true
 restart_signals = Array[StringName]([&"screen_wrapped"])
 start_signals = Array[StringName]([&"begin_dive"])
+stop_signals = Array[StringName]([&"fire_tractor_beam"])
 complete_signals = Array[StringName]([&"dive_complete"])
 
 [node name="SoundVoice3" parent="." index="13" instance=ExtResource("7_g0k2m")]
@@ -97,6 +98,8 @@ qualifying_groups = Array[StringName]([&"diving"])
 arm_complete_signals = Array[StringName]([])
 arm_fire_signals = Array[StringName]([&"fire_tractor_beam"])
 capture_started_signals = Array[StringName]([&"capture_phase_started"])
+capture_ended_signals = Array[StringName]([&"capture_phase_ended"])
+component_category = 0
 
 [node name="TractorBeamArm" parent="." index="17" instance=ExtResource("13_e2h7j")]
 beam_shape = SubResource("ConvexPolygonShape2D_e2h7j")

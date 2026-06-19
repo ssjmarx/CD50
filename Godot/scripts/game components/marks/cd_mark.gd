@@ -82,15 +82,19 @@ func _ensure_collision_shape() -> void:
 
 ## write body to blackboard, emit game bus signals, and emit entity bus signals
 func _on_body_entered(body: Node2D) -> void:
+	#print("body entered")
 	if _passes_filter(body):
+		#print("body being counted")
 		game.blackboard[entered_body_key] = body
 		for sig in on_entered:
 			game.bus_emit(sig)
 		
 		# Emit on the entering entity's bus if it is a CDEntity
 		if body is CDEntity:
+			#print("entity detected")
 			for sig in on_entered_entity:
 				body.bus_emit(sig)
+				#print("emitted on entity")
 
 ## write body to blackboard, emit game bus signals, and emit entity bus signals
 func _on_body_exited(body: Node2D) -> void:
