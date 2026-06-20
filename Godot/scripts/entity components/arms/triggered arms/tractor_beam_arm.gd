@@ -125,11 +125,8 @@ func _execute_capture(target: CDEntity) -> void:
 	target.blackboard[captor_blackboard_key] = entity
 	
 	## emit on target's entity bus
-	if target.has_signal("player_captured"):
-		target.bus_emit("player_captured")
-		
-	## emit on game bus
-	game.bus_emit("player_captured")
+	for sig in capture_signals:
+		target.bus_emit(sig)
 
 ## emit miss signals if no valid target was found
 func _emit_miss() -> void:

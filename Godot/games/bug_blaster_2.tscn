@@ -1,4 +1,4 @@
-[gd_scene load_steps=164 format=3 uid="uid://c0q0c0v84x80"]
+[gd_scene load_steps=173 format=3 uid="uid://c0q0c0v84x80"]
 
 [ext_resource type="Script" uid="uid://dm0uehngpvbh7" path="res://scripts/core/infrastructure/cd_game.gd" id="1_62wb8"]
 [ext_resource type="PackedScene" uid="uid://cmbx6xnct372t" path="res://scenes/core/infrastructure/cd_collision_buffer.tscn" id="2_7y1r2"]
@@ -20,11 +20,11 @@
 [ext_resource type="PackedScene" uid="uid://ca4qbo05yiya" path="res://scenes/game components/directors/swoop_director.tscn" id="14_bnks8"]
 [ext_resource type="Script" uid="uid://dlalvxnq5qb5x" path="res://scripts/core/resources/curves/cd_curve.gd" id="15_34iby"]
 [ext_resource type="Script" uid="uid://dpgs8b1skt7t2" path="res://scripts/core/resources/curves/cd_sine_curve.gd" id="16_4yrl4"]
+[ext_resource type="PackedScene" path="res://scenes/game components/managers/state_manager.tscn" id="16_ifna5"]
 [ext_resource type="Script" uid="uid://dakcd8kk2xm44" path="res://scripts/core/resources/curves/cd_sequence_curve.gd" id="17_hm20g"]
 [ext_resource type="Script" uid="uid://b7yxnmuk1vkya" path="res://scripts/core/resources/curves/cd_parabola_curve.gd" id="17_la2sg"]
 [ext_resource type="PackedScene" uid="uid://b7uyqydnog2th" path="res://scenes/game components/directors/formation_director.tscn" id="18_156p0"]
 [ext_resource type="PackedScene" uid="uid://b0n0yuhdj7x5x" path="res://entities/nonplayer/wasp_ship_swooping_nonplayer.tscn" id="18_sjgbx"]
-[ext_resource type="PackedScene" uid="uid://bf43dpgnegd46" path="res://scenes/game components/directors/state_director.tscn" id="19_g3xn7"]
 [ext_resource type="PackedScene" uid="uid://bmypbxacxkn6p" path="res://entities/nonplayer/spider_ship_swooping_nonplayer.tscn" id="19_ldmk8"]
 [ext_resource type="Script" uid="uid://2krdfmhel0jp" path="res://scripts/core/resources/behavior/cd_transition.gd" id="20_k70bp"]
 [ext_resource type="Script" uid="uid://7j04axulu7rq" path="res://scripts/core/resources/curves/cd_circle_curve.gd" id="21_1nsuk"]
@@ -58,6 +58,7 @@
 [sub_resource type="Resource" id="Resource_q4h5u"]
 script = ExtResource("4_xb0do")
 group_name = &"players"
+collides_with = Array[StringName]([&"players"])
 metadata/_custom_type_script = "uid://b2ibop6r2cryj"
 
 [sub_resource type="Resource" id="Resource_qh32t"]
@@ -68,7 +69,6 @@ metadata/_custom_type_script = "uid://b2ibop6r2cryj"
 [sub_resource type="Resource" id="Resource_dg5ky"]
 script = ExtResource("4_xb0do")
 group_name = &"enemy_bullets"
-collides_with = Array[StringName]([&"players"])
 metadata/_custom_type_script = "uid://b2ibop6r2cryj"
 
 [sub_resource type="Resource" id="Resource_7ar12"]
@@ -184,6 +184,195 @@ sleep_stages = Array[StringName]([&"Level5Stage"])
 wake_stages = Array[StringName]([&"Level1Stage"])
 metadata/_custom_type_script = "uid://1ag25dxeklvd"
 
+[sub_resource type="Resource" id="Resource_4mgkk"]
+script = ExtResource("22_jix4n")
+preferred_group = &"bosses"
+columns = 12
+rows = 1
+offset = Vector2(0, -48)
+metadata/_custom_type_script = "uid://b3scrmy1vwk2j"
+
+[sub_resource type="Resource" id="Resource_kgu26"]
+script = ExtResource("22_jix4n")
+preferred_group = &"lieutenants"
+columns = 16
+rows = 3
+metadata/_custom_type_script = "uid://b3scrmy1vwk2j"
+
+[sub_resource type="Resource" id="Resource_vaj0o"]
+script = ExtResource("22_jix4n")
+columns = 20
+rows = 3
+offset = Vector2(0, 76)
+metadata/_custom_type_script = "uid://b3scrmy1vwk2j"
+
+[sub_resource type="Resource" id="Resource_asuvp"]
+script = ExtResource("23_1k33r")
+duration = 4.0
+distance = 64.0
+amplitude = 0.0
+expand_time = 0.0
+hold_time = 0.0
+metadata/_custom_type_script = "uid://cr36gmk66snrc"
+
+[sub_resource type="Resource" id="Resource_5umtv"]
+script = ExtResource("23_1k33r")
+duration = 8.0
+distance = -128.0
+amplitude = 0.0
+expand_time = 0.0
+hold_time = 0.0
+contract_time = 0.0
+metadata/_custom_type_script = "uid://cr36gmk66snrc"
+
+[sub_resource type="Resource" id="Resource_8nemr"]
+script = ExtResource("23_1k33r")
+duration = 4.0
+distance = 64.0
+amplitude = 0.0
+expand_time = 0.0
+hold_time = 0.0
+contract_time = 0.0
+metadata/_custom_type_script = "uid://cr36gmk66snrc"
+
+[sub_resource type="Resource" id="Resource_sjgbx"]
+script = ExtResource("23_1k33r")
+type = 1
+duration = 4.0
+amplitude = 2.0
+expand_time = 2.0
+hold_time = 0.0
+contract_time = 2.0
+metadata/_custom_type_script = "uid://cr36gmk66snrc"
+
+[sub_resource type="Resource" id="Resource_speed_scaler"]
+script = ExtResource("25_hc4eh")
+per_wave = 1.0
+minimum = 1.0
+maximum = 5.0
+metadata/_custom_type_script = "uid://bd5apwoshu3n6"
+
+[sub_resource type="Resource" id="Resource_xatni"]
+script = ExtResource("21_k70bp")
+signal_name = &"swoop_complete"
+metadata/_custom_type_script = "uid://3ciu0vvrmmb7"
+
+[sub_resource type="Resource" id="Resource_682rw"]
+script = ExtResource("21_g3xn7")
+signal_names = Array[StringName]([&"swoop_complete"])
+metadata/_custom_type_script = "uid://ca0k2u53egerl"
+
+[sub_resource type="Resource" id="Resource_sdj2a"]
+script = ExtResource("20_k70bp")
+remove_groups = Array[StringName]([&"swooping"])
+add_groups = Array[StringName]([&"formation"])
+target_groups = Array[StringName]([&"swooping"])
+trigger = SubResource("Resource_682rw")
+selector = SubResource("Resource_xatni")
+metadata/_custom_type_script = "uid://2krdfmhel0jp"
+
+[sub_resource type="Resource" id="Resource_8klk8"]
+script = ExtResource("27_1nsuk")
+metadata/_custom_type_script = "uid://bgl0fyqd8o0w5"
+
+[sub_resource type="Resource" id="Resource_0na4m"]
+script = ExtResource("25_hc4eh")
+per_wave = -1.0
+minimum = 5.0
+metadata/_custom_type_script = "uid://bd5apwoshu3n6"
+
+[sub_resource type="Resource" id="Resource_45xdf"]
+script = ExtResource("24_gc4j8")
+interval = 10.0
+wave_scaler = SubResource("Resource_0na4m")
+random_variance = 2.0
+metadata/_custom_type_script = "uid://dm2djsydyr0u1"
+
+[sub_resource type="Resource" id="Resource_huovk"]
+script = ExtResource("20_k70bp")
+remove_groups = Array[StringName]([&"formation"])
+add_groups = Array[StringName]([&"diving"])
+target_groups = Array[StringName]([&"formation"])
+trigger = SubResource("Resource_45xdf")
+selector = SubResource("Resource_8klk8")
+entity_signals = Array[StringName]([&"begin_dive"])
+metadata/_custom_type_script = "uid://2krdfmhel0jp"
+
+[sub_resource type="Resource" id="Resource_lgav2"]
+script = ExtResource("21_k70bp")
+signal_name = &"player_captured"
+metadata/_custom_type_script = "uid://3ciu0vvrmmb7"
+
+[sub_resource type="Resource" id="Resource_mo7to"]
+script = ExtResource("21_g3xn7")
+signal_names = Array[StringName]([&"player_captured"])
+metadata/_custom_type_script = "uid://ca0k2u53egerl"
+
+[sub_resource type="Resource" id="Resource_17gxj"]
+script = ExtResource("20_k70bp")
+remove_groups = Array[StringName]([&"players"])
+add_groups = Array[StringName]([&"enemies"])
+target_groups = Array[StringName]([&"players"])
+trigger = SubResource("Resource_mo7to")
+selector = SubResource("Resource_lgav2")
+metadata/_custom_type_script = "uid://2krdfmhel0jp"
+
+[sub_resource type="Resource" id="Resource_tcsmy"]
+script = ExtResource("21_k70bp")
+signal_name = &"player_rescued"
+metadata/_custom_type_script = "uid://3ciu0vvrmmb7"
+
+[sub_resource type="Resource" id="Resource_ex8ce"]
+script = ExtResource("21_g3xn7")
+signal_names = Array[StringName]([&"player_rescued"])
+metadata/_custom_type_script = "uid://ca0k2u53egerl"
+
+[sub_resource type="Resource" id="Resource_wavnc"]
+script = ExtResource("20_k70bp")
+remove_groups = Array[StringName]([&"enemies"])
+add_groups = Array[StringName]([&"players"])
+target_groups = Array[StringName]([&"enemies"])
+trigger = SubResource("Resource_ex8ce")
+selector = SubResource("Resource_tcsmy")
+metadata/_custom_type_script = "uid://2krdfmhel0jp"
+
+[sub_resource type="Resource" id="Resource_vjjft"]
+script = ExtResource("21_k70bp")
+signal_name = &"dive_complete"
+metadata/_custom_type_script = "uid://3ciu0vvrmmb7"
+
+[sub_resource type="Resource" id="Resource_tmxlt"]
+script = ExtResource("21_g3xn7")
+signal_names = Array[StringName]([&"dive_complete"])
+metadata/_custom_type_script = "uid://ca0k2u53egerl"
+
+[sub_resource type="Resource" id="Resource_qsrt0"]
+script = ExtResource("20_k70bp")
+remove_groups = Array[StringName]([&"diving"])
+add_groups = Array[StringName]([&"formation"])
+target_groups = Array[StringName]([&"diving"])
+trigger = SubResource("Resource_tmxlt")
+selector = SubResource("Resource_vjjft")
+metadata/_custom_type_script = "uid://2krdfmhel0jp"
+
+[sub_resource type="Resource" id="Resource_20wdp"]
+script = ExtResource("25_hc4eh")
+per_wave = -1.1875
+base = 5.0
+minimum = 0.25
+metadata/_custom_type_script = "uid://bd5apwoshu3n6"
+
+[sub_resource type="Resource" id="Resource_blp8l"]
+script = ExtResource("24_gc4j8")
+interval = 6.0
+wave_scaler = SubResource("Resource_20wdp")
+random_variance = 1.0
+metadata/_custom_type_script = "uid://dm2djsydyr0u1"
+
+[sub_resource type="Resource" id="Resource_hc4eh"]
+script = ExtResource("26_gc4j8")
+metadata/_custom_type_script = "uid://b3xaxo1yp2dn1"
+
 [sub_resource type="Resource" id="Resource_la2sg"]
 script = ExtResource("12_rgict")
 additional_groups = Array[StringName]([&"swooping", &"left"])
@@ -267,138 +456,6 @@ loops = 2
 curve_seed = -2
 offset = Vector2(192, 192)
 metadata/_custom_type_script = "uid://7j04axulu7rq"
-
-[sub_resource type="Resource" id="Resource_4mgkk"]
-script = ExtResource("22_jix4n")
-preferred_group = &"bosses"
-columns = 12
-rows = 1
-offset = Vector2(0, -48)
-metadata/_custom_type_script = "uid://b3scrmy1vwk2j"
-
-[sub_resource type="Resource" id="Resource_kgu26"]
-script = ExtResource("22_jix4n")
-preferred_group = &"lieutenants"
-columns = 16
-rows = 3
-metadata/_custom_type_script = "uid://b3scrmy1vwk2j"
-
-[sub_resource type="Resource" id="Resource_vaj0o"]
-script = ExtResource("22_jix4n")
-columns = 20
-rows = 3
-offset = Vector2(0, 76)
-metadata/_custom_type_script = "uid://b3scrmy1vwk2j"
-
-[sub_resource type="Resource" id="Resource_asuvp"]
-script = ExtResource("23_1k33r")
-duration = 4.0
-distance = 64.0
-amplitude = 0.0
-expand_time = 0.0
-hold_time = 0.0
-metadata/_custom_type_script = "uid://cr36gmk66snrc"
-
-[sub_resource type="Resource" id="Resource_5umtv"]
-script = ExtResource("23_1k33r")
-duration = 8.0
-distance = -128.0
-amplitude = 0.0
-expand_time = 0.0
-hold_time = 0.0
-contract_time = 0.0
-metadata/_custom_type_script = "uid://cr36gmk66snrc"
-
-[sub_resource type="Resource" id="Resource_8nemr"]
-script = ExtResource("23_1k33r")
-duration = 4.0
-distance = 64.0
-amplitude = 0.0
-expand_time = 0.0
-hold_time = 0.0
-contract_time = 0.0
-metadata/_custom_type_script = "uid://cr36gmk66snrc"
-
-[sub_resource type="Resource" id="Resource_sjgbx"]
-script = ExtResource("23_1k33r")
-type = 1
-duration = 4.0
-amplitude = 2.0
-expand_time = 2.0
-hold_time = 0.0
-contract_time = 2.0
-metadata/_custom_type_script = "uid://cr36gmk66snrc"
-
-[sub_resource type="Resource" id="Resource_speed_scaler"]
-script = ExtResource("25_hc4eh")
-per_wave = 1.0
-minimum = 1.0
-maximum = 5.0
-metadata/_custom_type_script = "uid://bd5apwoshu3n6"
-
-[sub_resource type="Resource" id="Resource_r24yj"]
-script = ExtResource("21_k70bp")
-signal_name = &"swoop_complete"
-
-[sub_resource type="Resource" id="Resource_k70bp"]
-script = ExtResource("21_g3xn7")
-signal_names = Array[StringName]([&"swoop_complete"])
-metadata/_custom_type_script = "uid://ca0k2u53egerl"
-
-[sub_resource type="Resource" id="Resource_5kasm"]
-script = ExtResource("20_k70bp")
-remove_groups = Array[StringName]([&"swooping"])
-add_groups = Array[StringName]([&"formation"])
-target_groups = Array[StringName]([&"swooping"])
-trigger = SubResource("Resource_k70bp")
-selector = SubResource("Resource_r24yj")
-metadata/_custom_type_script = "uid://2krdfmhel0jp"
-
-[sub_resource type="Resource" id="Resource_sdj2a"]
-script = ExtResource("27_1nsuk")
-metadata/_custom_type_script = "uid://bgl0fyqd8o0w5"
-
-[sub_resource type="Resource" id="Resource_dive_scaler"]
-script = ExtResource("25_hc4eh")
-per_wave = -2.25
-base = 10.0
-minimum = 1.0
-metadata/_custom_type_script = "uid://bd5apwoshu3n6"
-
-[sub_resource type="Resource" id="Resource_xatni"]
-script = ExtResource("24_gc4j8")
-interval = 10.0
-wave_scaler = SubResource("Resource_dive_scaler")
-random_variance = 1.0
-metadata/_custom_type_script = "uid://dm2djsydyr0u1"
-
-[sub_resource type="Resource" id="Resource_682rw"]
-script = ExtResource("20_k70bp")
-remove_groups = Array[StringName]([&"formation"])
-add_groups = Array[StringName]([&"diving"])
-target_groups = Array[StringName]([&"formation"])
-trigger = SubResource("Resource_xatni")
-selector = SubResource("Resource_sdj2a")
-entity_signals = Array[StringName]([&"begin_dive"])
-metadata/_custom_type_script = "uid://2krdfmhel0jp"
-
-[sub_resource type="Resource" id="Resource_20wdp"]
-script = ExtResource("25_hc4eh")
-per_wave = -1.1875
-base = 5.0
-minimum = 0.25
-metadata/_custom_type_script = "uid://bd5apwoshu3n6"
-
-[sub_resource type="Resource" id="Resource_blp8l"]
-script = ExtResource("24_gc4j8")
-interval = 6.0
-wave_scaler = SubResource("Resource_20wdp")
-random_variance = 1.0
-metadata/_custom_type_script = "uid://dm2djsydyr0u1"
-
-[sub_resource type="Resource" id="Resource_hc4eh"]
-script = ExtResource("26_gc4j8")
-metadata/_custom_type_script = "uid://b3xaxo1yp2dn1"
 
 [sub_resource type="Resource" id="Resource_x8buj"]
 script = ExtResource("34_1nsuk")
@@ -792,6 +849,29 @@ tracked_actions = Array[StringName]([&"fire", &"thrust", &"thrust_end"])
 [node name="StageManager" parent="." instance=ExtResource("8_kgu26")]
 rules = Array[ExtResource("9_vaj0o")]([SubResource("Resource_dsfuj"), SubResource("Resource_1ivtp"), SubResource("Resource_rule_l2l3"), SubResource("Resource_rule_l3l4"), SubResource("Resource_rule_l4l5"), SubResource("Resource_rule_l5l1")])
 
+[node name="FormationDirector" parent="." instance=ExtResource("18_156p0")]
+position = Vector2(320, 64)
+formations = Array[ExtResource("22_jix4n")]([SubResource("Resource_4mgkk"), SubResource("Resource_kgu26"), SubResource("Resource_vaj0o")])
+breathing_amplitude = 0.25
+breathing_duration = 10.0
+marching_orders = Array[ExtResource("23_1k33r")]([SubResource("Resource_asuvp"), SubResource("Resource_5umtv"), SubResource("Resource_8nemr"), SubResource("Resource_sjgbx")])
+speed_scaler = SubResource("Resource_speed_scaler")
+preview_color = Color(1, 0.64705884, 0, 1)
+component_category = 10
+
+[node name="StateManager" parent="." instance=ExtResource("16_ifna5")]
+transitions = Array[ExtResource("20_k70bp")]([SubResource("Resource_sdj2a"), SubResource("Resource_huovk"), SubResource("Resource_17gxj"), SubResource("Resource_wavnc"), SubResource("Resource_qsrt0")])
+
+[node name="ShootingDirector" parent="." instance=ExtResource("23_7jcia")]
+target_groups = Array[StringName]([&"bug_ships", &"wasp_ships"])
+trigger = SubResource("Resource_blp8l")
+selector = SubResource("Resource_hc4eh")
+component_category = 10
+
+[node name="AimingDirector" parent="." instance=ExtResource("27_hc4eh")]
+targeting_noise = 4.0
+component_category = 10
+
 [node name="Level1Stage" parent="." groups=["level_stages"] instance=ExtResource("8_4mgkk")]
 start_asleep = true
 on_wake_signal = &"level_start"
@@ -883,29 +963,6 @@ formation_offset = 32.0
 lane_count = 2
 trigger_signals = Array[StringName]([&"spawning_complete_bottom_right"])
 preview_color = Color(0.75, 0.75, 0.75, 1)
-
-[node name="FormationDirector" parent="Level1Stage" instance=ExtResource("18_156p0")]
-position = Vector2(320, 64)
-formations = Array[ExtResource("22_jix4n")]([SubResource("Resource_4mgkk"), SubResource("Resource_kgu26"), SubResource("Resource_vaj0o")])
-breathing_amplitude = 0.25
-breathing_duration = 10.0
-marching_orders = Array[ExtResource("23_1k33r")]([SubResource("Resource_asuvp"), SubResource("Resource_5umtv"), SubResource("Resource_8nemr"), SubResource("Resource_sjgbx")])
-speed_scaler = SubResource("Resource_speed_scaler")
-preview_color = Color(1, 0.64705884, 0, 1)
-component_category = 10
-
-[node name="StateDirector" parent="Level1Stage" instance=ExtResource("19_g3xn7")]
-position = Vector2(320, -16)
-transitions = Array[ExtResource("20_k70bp")]([SubResource("Resource_5kasm"), SubResource("Resource_682rw")])
-
-[node name="ShootingDirector" parent="Level1Stage" instance=ExtResource("23_7jcia")]
-trigger = SubResource("Resource_blp8l")
-selector = SubResource("Resource_hc4eh")
-component_category = 10
-
-[node name="AimingDirector" parent="Level1Stage" instance=ExtResource("27_hc4eh")]
-targeting_noise = 4.0
-component_category = 10
 
 [node name="SignalManager" parent="Level1Stage" instance=ExtResource("32_acn14")]
 steps = Array[ExtResource("34_1nsuk")]([SubResource("Resource_x8buj"), SubResource("Resource_p87tt"), SubResource("Resource_ifna5"), SubResource("Resource_j0bx8"), SubResource("Resource_52c78"), SubResource("Resource_q4en4")])
@@ -1007,29 +1064,6 @@ lane_count = 2
 trigger_signals = Array[StringName]([&"spawning_complete_bottom_right"])
 preview_color = Color(1, 0.5, 0.5, 1)
 
-[node name="FormationDirector" parent="Level2Stage" instance=ExtResource("18_156p0")]
-position = Vector2(320, 64)
-formations = Array[ExtResource("22_jix4n")]([SubResource("Resource_4mgkk"), SubResource("Resource_kgu26"), SubResource("Resource_vaj0o")])
-breathing_amplitude = 0.25
-breathing_duration = 10.0
-marching_orders = Array[ExtResource("23_1k33r")]([SubResource("Resource_asuvp"), SubResource("Resource_5umtv"), SubResource("Resource_8nemr"), SubResource("Resource_sjgbx")])
-speed_scaler = SubResource("Resource_speed_scaler")
-preview_color = Color(0, 0.8, 1, 1)
-component_category = 10
-
-[node name="StateDirector" parent="Level2Stage" instance=ExtResource("19_g3xn7")]
-position = Vector2(320, -16)
-transitions = Array[ExtResource("20_k70bp")]([SubResource("Resource_5kasm"), SubResource("Resource_682rw")])
-
-[node name="ShootingDirector" parent="Level2Stage" instance=ExtResource("23_7jcia")]
-trigger = SubResource("Resource_blp8l")
-selector = SubResource("Resource_hc4eh")
-component_category = 10
-
-[node name="AimingDirector" parent="Level2Stage" instance=ExtResource("27_hc4eh")]
-targeting_noise = 4.0
-component_category = 10
-
 [node name="SignalManager" parent="Level2Stage" instance=ExtResource("32_acn14")]
 steps = Array[ExtResource("34_1nsuk")]([SubResource("Resource_4ia1r"), SubResource("Resource_l2_s1"), SubResource("Resource_l2_s2"), SubResource("Resource_l2_s3"), SubResource("Resource_l2_s4"), SubResource("Resource_l2_s5")])
 trigger = SubResource("Resource_acn14")
@@ -1127,29 +1161,6 @@ formation_offset = 32.0
 lane_count = 2
 trigger_signals = Array[StringName]([&"spawning_complete_bottom_right"])
 preview_color = Color(0.6, 0, 1, 1)
-
-[node name="FormationDirector" parent="Level3Stage" instance=ExtResource("18_156p0")]
-position = Vector2(320, 64)
-formations = Array[ExtResource("22_jix4n")]([SubResource("Resource_4mgkk"), SubResource("Resource_kgu26"), SubResource("Resource_vaj0o")])
-breathing_amplitude = 0.25
-breathing_duration = 10.0
-marching_orders = Array[ExtResource("23_1k33r")]([SubResource("Resource_asuvp"), SubResource("Resource_5umtv"), SubResource("Resource_8nemr"), SubResource("Resource_sjgbx")])
-speed_scaler = SubResource("Resource_speed_scaler")
-preview_color = Color(1, 0, 0.8, 1)
-component_category = 10
-
-[node name="StateDirector" parent="Level3Stage" instance=ExtResource("19_g3xn7")]
-position = Vector2(320, -16)
-transitions = Array[ExtResource("20_k70bp")]([SubResource("Resource_5kasm"), SubResource("Resource_682rw")])
-
-[node name="ShootingDirector" parent="Level3Stage" instance=ExtResource("23_7jcia")]
-trigger = SubResource("Resource_blp8l")
-selector = SubResource("Resource_hc4eh")
-component_category = 10
-
-[node name="AimingDirector" parent="Level3Stage" instance=ExtResource("27_hc4eh")]
-targeting_noise = 4.0
-component_category = 10
 
 [node name="SignalManager" parent="Level3Stage" instance=ExtResource("32_acn14")]
 steps = Array[ExtResource("34_1nsuk")]([SubResource("Resource_umh4f"), SubResource("Resource_l3_s1"), SubResource("Resource_l3_s2"), SubResource("Resource_l3_s3"), SubResource("Resource_l3_s4"), SubResource("Resource_l3_s5")])
@@ -1251,29 +1262,6 @@ lane_count = 2
 trigger_signals = Array[StringName]([&"spawning_complete_bottom_right"])
 preview_color = Color(0, 1, 0.5, 1)
 
-[node name="FormationDirector" parent="Level4Stage" instance=ExtResource("18_156p0")]
-position = Vector2(320, 64)
-formations = Array[ExtResource("22_jix4n")]([SubResource("Resource_4mgkk"), SubResource("Resource_kgu26"), SubResource("Resource_vaj0o")])
-breathing_amplitude = 0.25
-breathing_duration = 10.0
-marching_orders = Array[ExtResource("23_1k33r")]([SubResource("Resource_asuvp"), SubResource("Resource_5umtv"), SubResource("Resource_8nemr"), SubResource("Resource_sjgbx")])
-speed_scaler = SubResource("Resource_speed_scaler")
-preview_color = Color(0.5, 1, 0, 1)
-component_category = 10
-
-[node name="StateDirector" parent="Level4Stage" instance=ExtResource("19_g3xn7")]
-position = Vector2(320, -16)
-transitions = Array[ExtResource("20_k70bp")]([SubResource("Resource_5kasm"), SubResource("Resource_682rw")])
-
-[node name="ShootingDirector" parent="Level4Stage" instance=ExtResource("23_7jcia")]
-trigger = SubResource("Resource_blp8l")
-selector = SubResource("Resource_hc4eh")
-component_category = 10
-
-[node name="AimingDirector" parent="Level4Stage" instance=ExtResource("27_hc4eh")]
-targeting_noise = 4.0
-component_category = 10
-
 [node name="SignalManager" parent="Level4Stage" instance=ExtResource("32_acn14")]
 steps = Array[ExtResource("34_1nsuk")]([SubResource("Resource_drhtc"), SubResource("Resource_l4_s1"), SubResource("Resource_l4_s2"), SubResource("Resource_l4_s3")])
 trigger = SubResource("Resource_acn14")
@@ -1372,29 +1360,6 @@ formation_offset = 32.0
 trigger_signals = Array[StringName]([&"spawning_complete_bottom_right"])
 preview_color = Color(1, 0.4, 0.7, 1)
 
-[node name="FormationDirector" parent="Level5Stage" instance=ExtResource("18_156p0")]
-position = Vector2(320, 64)
-formations = Array[ExtResource("22_jix4n")]([SubResource("Resource_4mgkk"), SubResource("Resource_kgu26"), SubResource("Resource_vaj0o")])
-breathing_amplitude = 0.25
-breathing_duration = 10.0
-marching_orders = Array[ExtResource("23_1k33r")]([SubResource("Resource_asuvp"), SubResource("Resource_5umtv"), SubResource("Resource_8nemr"), SubResource("Resource_sjgbx")])
-speed_scaler = SubResource("Resource_speed_scaler")
-preview_color = Color(1, 0.84, 0, 1)
-component_category = 10
-
-[node name="StateDirector" parent="Level5Stage" instance=ExtResource("19_g3xn7")]
-position = Vector2(320, -16)
-transitions = Array[ExtResource("20_k70bp")]([SubResource("Resource_5kasm"), SubResource("Resource_682rw")])
-
-[node name="ShootingDirector" parent="Level5Stage" instance=ExtResource("23_7jcia")]
-trigger = SubResource("Resource_blp8l")
-selector = SubResource("Resource_hc4eh")
-component_category = 10
-
-[node name="AimingDirector" parent="Level5Stage" instance=ExtResource("27_hc4eh")]
-targeting_noise = 4.0
-component_category = 10
-
 [node name="SignalManager" parent="Level5Stage" instance=ExtResource("32_acn14")]
 steps = Array[ExtResource("34_1nsuk")]([SubResource("Resource_dq8qt"), SubResource("Resource_l5_s1"), SubResource("Resource_l5_s2"), SubResource("Resource_l5_s3"), SubResource("Resource_l5_s4"), SubResource("Resource_l5_s5")])
 trigger = SubResource("Resource_acn14")
@@ -1459,11 +1424,20 @@ game_result = 1
 on_score_changed = Array[StringName]([&"life_lost"])
 on_condition_met = Array[StringName]([&"game_over"])
 
-[node name="CdMark" parent="." instance=ExtResource("54_682rw")]
+[node name="TractorMark" parent="." instance=ExtResource("54_682rw")]
 position = Vector2(320, 265)
 groups = Array[StringName]([&"tractor_line"])
-filter_groups = Array[StringName]([&"spider_ships"])
+filter_groups = Array[StringName]([&"diving"])
 on_entered_entity = Array[StringName]([&"fire_tractor_beam"])
 
-[node name="CollisionShape2D" type="CollisionShape2D" parent="CdMark"]
+[node name="CollisionShape2D" type="CollisionShape2D" parent="TractorMark"]
+shape = SubResource("RectangleShape2D_682rw")
+
+[node name="DiveMark" parent="." instance=ExtResource("54_682rw")]
+position = Vector2(320, -16)
+groups = Array[StringName]([&"tractor_line"])
+filter_groups = Array[StringName]([&"diving"])
+on_entered_entity = Array[StringName]([&"begin_dive"])
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="DiveMark"]
 shape = SubResource("RectangleShape2D_682rw")

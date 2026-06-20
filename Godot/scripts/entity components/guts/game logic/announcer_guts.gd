@@ -34,7 +34,7 @@ func _on_initialize() -> void:
 ## called when any listen_signal fires; rebroadcasts on game bus if qualified
 func _on_any_input() -> void:
 	for rebroadcast: StringName in rebroadcast_signals:
-		game.bus_emit(rebroadcast)
+		game.bus_emit_from(rebroadcast, entity)
 
 ## --- cleanup ---
 

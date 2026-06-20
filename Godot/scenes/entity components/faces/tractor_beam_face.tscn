@@ -1,0 +1,8 @@
+[gd_scene load_steps=3 format=3 uid="uid://cd5trsg3jfg2b"]
+
+[ext_resource type="Script" uid="uid://duqp7pk1vg26i" path="res://scripts/entity components/faces/tractor_beam_face.gd" id="1_ejw81"]
+[ext_resource type="PackedScene" uid="uid://b212xehudt1vq" path="res://scenes/effects/tractor_cone_effect.tscn" id="2_xiewj"]
+
+[node name="TractorBeamFace" type="Node2D"]
+script = ExtResource("1_ejw81")
+effect_scene = ExtResource("2_xiewj")

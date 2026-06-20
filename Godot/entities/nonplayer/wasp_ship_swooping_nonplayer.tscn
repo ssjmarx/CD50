@@ -70,8 +70,8 @@ bullet_scene = ExtResource("2_fkier")
 curve = SubResource("Resource_ysyd6")
 target_distance = 500.0
 loop = true
-restart_signals = Array[StringName]([&"screen_wrapped"])
 start_signals = Array[StringName]([&"begin_dive"])
+stop_signals = Array[StringName]([&"screen_wrapped"])
 complete_signals = Array[StringName]([&"dive_complete"])
 
 [node name="SoundVoice3" parent="." index="12" instance=ExtResource("7_umhyd")]

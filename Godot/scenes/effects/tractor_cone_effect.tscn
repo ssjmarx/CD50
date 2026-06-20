@@ -1,0 +1,6 @@
+[gd_scene load_steps=2 format=3 uid="uid://b212xehudt1vq"]
+
+[ext_resource type="Script" uid="uid://da2avdxcx8uu5" path="res://scripts/effects/tractor_cone_effect.gd" id="1_nviid"]
+
+[node name="TractorConeEffect" type="Node2D"]
+script = ExtResource("1_nviid")

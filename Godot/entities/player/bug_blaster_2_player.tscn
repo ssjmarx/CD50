@@ -1,4 +1,4 @@
-[gd_scene load_steps=8 format=3 uid="uid://cytjg8wb58tpp"]
+[gd_scene load_steps=9 format=3 uid="uid://cytjg8wb58tpp"]
 
 [ext_resource type="PackedScene" uid="uid://btfoj4emj6uld" path="res://entities/generic/sprite_ship.tscn" id="1_b0gck"]
 [ext_resource type="PackedScene" path="res://scenes/core/infrastructure/cd_body.tscn" id="2_gyn25"]
@@ -7,11 +7,17 @@
 [ext_resource type="PackedScene" uid="uid://c1qciuyo0tvhf" path="res://scenes/entity components/guts/leader_tracker_guts.tscn" id="5_uf4lp"]
 [ext_resource type="PackedScene" uid="uid://br86r51jieatg" path="res://scenes/entity components/brains/player_action_brain.tscn" id="5_vf8ie"]
 [ext_resource type="PackedScene" uid="uid://ci8074saofo8y" path="res://scenes/entity components/brains/ai_escort_brain.tscn" id="6_oqelq"]
+[ext_resource type="PackedScene" uid="uid://irkjutuwceju" path="res://scenes/entity components/guts/announcer_guts.tscn" id="8_aoipd"]
 
-[node name="SpriteShip" instance=ExtResource("1_b0gck")]
+[node name="PlayerShip" instance=ExtResource("1_b0gck")]
 groups = Array[StringName]([&"sprite_ships", &"ships", &"players"])
+collision_radius = 8.0
 lock_y = true
 clamp_to_bounds = true
+unlock_y_on = Array[StringName]([&"player_captured"])
+lock_y_on = Array[StringName]([&"escort_achieved"])
+unclamp_bounds_on = Array[StringName]([&"player_captured"])
+clamp_bounds_on = Array[StringName]([&"escort_achieved"])
 
 [node name="GunArm" parent="." index="1"]
 bullet_scene = ExtResource("2_vf8ie")
@@ -37,7 +43,16 @@ wake_on = Array[StringName]([&"player_captured"])
 [node name="LeaderTrackerGuts" parent="CapturedBody" index="0" instance=ExtResource("5_uf4lp")]
 
 [node name="AIEscortBrain" parent="CapturedBody" index="1" instance=ExtResource("6_oqelq")]
-offset = Vector2(0, -8)
+blackboard_source = null
+target_entity_key = null
+target_groups = null
+offset = Vector2(0, -16)
+stop_when_close = false
+close_distance = 0.0
+move_direction_key = null
+move_distance_key = null
+arrived_signals = Array[StringName]([])
+component_category = null
 
 [node name="RescuedBody" parent="." index="12" instance=ExtResource("2_gyn25")]
 start_asleep = true
@@ -46,6 +61,20 @@ wake_on = Array[StringName]([&"leader_destroyed"])
 
 [node name="AIEscortBrain" parent="RescuedBody" index="0" instance=ExtResource("6_oqelq")]
 blackboard_source = 1
-target_entity_key = &"active_player"
+target_entity_key = &""
+target_groups = Array[StringName]([&"players"])
 offset = Vector2(16, 0)
-close_distance = 0.01
+stop_when_close = null
+close_distance = 0.1
+move_direction_key = null
+move_distance_key = null
+arrived_signals = null
+component_category = null
+
+[node name="CapturedAnnouncer" parent="." index="13" instance=ExtResource("8_aoipd")]
+listen_signals = Array[StringName]([&"player_captured"])
+rebroadcast_signals = Array[StringName]([&"player_captured"])
+
+[node name="RescuedAnnouncer2" parent="." index="14" instance=ExtResource("8_aoipd")]
+listen_signals = Array[StringName]([&"escort_achieved"])
+rebroadcast_signals = Array[StringName]([&"player_rescued"])

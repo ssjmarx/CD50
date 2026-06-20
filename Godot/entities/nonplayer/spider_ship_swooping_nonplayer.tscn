@@ -1,4 +1,4 @@
-[gd_scene load_steps=22 format=3 uid="uid://bmypbxacxkn6p"]
+[gd_scene load_steps=24 format=3 uid="uid://bmypbxacxkn6p"]
 
 [ext_resource type="PackedScene" uid="uid://vu1t14u6qvjf" path="res://entities/generic/spider_ship_smooth.tscn" id="1_18u38"]
 [ext_resource type="PackedScene" uid="uid://wghixqf83pas" path="res://scenes/entity components/brains/ai_swoop_brain.tscn" id="2_f0fqv"]
@@ -13,6 +13,8 @@
 [ext_resource type="PackedScene" uid="uid://domsc1hbv4rsy" path="res://scenes/entity components/arms/score_on_death_arm.tscn" id="11_otbcv"]
 [ext_resource type="PackedScene" uid="uid://cvhjugy48g6ax" path="res://scenes/entity components/brains/ai_tractor_beam_brain.tscn" id="12_l5wtd"]
 [ext_resource type="PackedScene" uid="uid://8yty18auwkgf" path="res://scenes/entity components/arms/tractor_beam_arm.tscn" id="13_e2h7j"]
+[ext_resource type="PackedScene" uid="uid://cd5trsg3jfg2b" path="res://scenes/entity components/faces/tractor_beam_face.tscn" id="14_isa45"]
+[ext_resource type="PackedScene" uid="uid://irkjutuwceju" path="res://scenes/entity components/guts/announcer_guts.tscn" id="16_bf6or"]
 
 [sub_resource type="Resource" id="Resource_s7cy4"]
 script = ExtResource("4_fkier")
@@ -60,9 +62,9 @@ notes = Array[ExtResource("8_aafss")]([SubResource("Resource_vdwk6"), SubResourc
 metadata/_custom_type_script = "uid://d3l2c838cqwsm"
 
 [sub_resource type="ConvexPolygonShape2D" id="ConvexPolygonShape2D_e2h7j"]
-points = PackedVector2Array(0, 0, 100, 50, 100, -50)
+points = PackedVector2Array(0, 0, 100, 37.5, 100, -37.5)
 
-[node name="BugShip" instance=ExtResource("1_18u38")]
+[node name="SpiderShip" instance=ExtResource("1_18u38")]
 groups = Array[StringName]([&"spider_ships", &"ships", &"enemies", &"bosses"])
 
 [node name="ScreenWrapLeg" parent="." index="0"]
@@ -78,9 +80,8 @@ max_health = 2
 curve = SubResource("Resource_rgbre")
 target_distance = 500.0
 loop = true
-restart_signals = Array[StringName]([&"screen_wrapped"])
 start_signals = Array[StringName]([&"begin_dive"])
-stop_signals = Array[StringName]([&"fire_tractor_beam"])
+stop_signals = Array[StringName]([&"fire_tractor_beam", &"screen_wrapped"])
 complete_signals = Array[StringName]([&"dive_complete"])
 
 [node name="SoundVoice3" parent="." index="13" instance=ExtResource("7_g0k2m")]
@@ -105,3 +106,8 @@ component_category = 0
 beam_shape = SubResource("ConvexPolygonShape2D_e2h7j")
 collision_mask = 0
 target_groups = Array[StringName]([&"players"])
+
+[node name="TractorBeamFace" parent="." index="18" instance=ExtResource("14_isa45")]
+
+[node name="ReturnToFormationAnnouncerGuts" parent="." index="19" instance=ExtResource("16_bf6or")]
+listen_signals = Array[StringName]([&"tractor_beam_complete"])
