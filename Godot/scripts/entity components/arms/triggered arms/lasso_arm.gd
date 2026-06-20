@@ -1,11 +1,14 @@
 ## LassoArm                                                               
-## Spawns the lasso bullet payload when fired.                            
-## Reads the firing entity and passes it to the bullet so the bullet knows who to report back to 
+## Spawns the lasso bullet payload and optional effect when fired.                            
+## Reads the firing entity and passes it to the bullet so the bullet knows who to report back to.
+## Writes generic captor/target keys to the blackboard for visual effects to read.
 
 class_name LassoArm extends CDEntityComponent                             
 
 @export var bullet_pool: CDObjectPool                                     
 @export var bullet_scene: PackedScene  
+## Optional effect (e.g. LassoEffect, muzzle flash) spawned at fire position
+@export var effect_scene: PackedScene
   
 ## optional spawn context to apply to each projectile                     
 @export var spawn_context: CDSpawnContext = null                          
@@ -14,7 +17,9 @@ class_name LassoArm extends CDEntityComponent
 @export var inherit_rotation: bool = true                                
   
 @export_group("Blackboard Keys")                                          
-@export var captor_key: StringName = &"captor"                            
+@export var captor_key: StringName = &"lasso_captor"                            
+@export var target_key: StringName = &"lasso_target"
+@export var bullet_captor_key: StringName = &"captor"
 
 @export_group("Listen Signals")                                           
 @export var fire_signals: Array[StringName] = [&"fire_tractor_beam"]      
@@ -27,13 +32,13 @@ func _ready() -> void:
 ## connect fire signals                                                   
 func _on_initialize() -> void:                                            
 	for sig in fire_signals:                                              
-		self.bus_connect(sig, _on_fire)                                  
+		self.bus_connect(sig, _on_fire)                                   
 		  
 ## catch signal and defer to avoid physics state errors                   
 func _on_fire() -> void:                                                  
 	call_deferred("_deferred_fire")                                       
 	 
-## spawn bullet and initialize capture payload                            
+## spawn bullet, write blackboard, and spawn effect
 func _deferred_fire() -> void:                                            
 	var bullet: CDEntity = null                                        
 	  
@@ -50,14 +55,31 @@ func _deferred_fire() -> void:
 		return                                                            
 		 
 	CDUtilities.apply_spawn_context(bullet, spawn_context)              
-	  
+  
 	if inherit_rotation:                                                  
 		bullet.rotation = global_rotation                                 
 		bullet.velocity = bullet.velocity.rotated(global_rotation)        
 		 
-	# Write captor reference to bullet                                    
-	bullet.blackboard[captor_key] = entity                              
+	# Write captor reference to bullet (for capture logic)                                    
+	bullet.blackboard[bullet_captor_key] = entity                              
 	
+	# Write generic captor/target keys to entity blackboard for effects to read
+	entity.blackboard[captor_key] = entity
+	entity.blackboard[target_key] = bullet
+	
+	# Spawn effect if assigned
+	if effect_scene:
+		var effect = effect_scene.instantiate()
+		game.add_child(effect)
+		effect.global_position = global_position
+		
+		# Inject the blackboard source so the effect knows where to read.
+		# Using duck-typing ensures we don't tightly couple to LassoEffect.
+		if effect.has_method("set_source"):
+			effect.set_source(entity)
+		elif "source_node" in effect:
+			effect.source_node = entity
+		  
 	## activate pooled entity or add to scene tree                        
 	if bullet_pool:                                                       
 		bullet.activate()                                                 
