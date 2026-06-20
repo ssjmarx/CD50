@@ -13,7 +13,7 @@
 [ext_resource type="PackedScene" uid="uid://domsc1hbv4rsy" path="res://scenes/entity components/arms/score_on_death_arm.tscn" id="11_otbcv"]
 [ext_resource type="PackedScene" uid="uid://crb76onibgeom" path="res://scenes/entity components/brains/lasso_brain.tscn" id="12_lassob"]
 [ext_resource type="PackedScene" uid="uid://blassoarm002" path="res://scenes/entity components/arms/lasso_arm.tscn" id="13_lassoa"]
-[ext_resource type="PackedScene" uid="uid://blww1qp13aqye" path="res://entities/nonplayer/lasso_bullet_nonplayer.tscn" id="14_isa45"]
+[ext_resource type="PackedScene" uid="uid://wnufnvl5tlq5" path="res://entities/nonplayer/lasso_bullet_homing_nonplayer.tscn" id="14_0d06w"]
 [ext_resource type="PackedScene" uid="uid://cci3aqsutxdx3" path="res://scenes/effects/lasso_effect.tscn" id="15_bd0jv"]
 [ext_resource type="Script" uid="uid://dcu4ocnin0htu" path="res://scripts/core/resources/spawners/cd_spawn_context.gd" id="15_bf6or"]
 [ext_resource type="PackedScene" uid="uid://irkjutuwceju" path="res://scenes/entity components/guts/announcer_guts.tscn" id="16_bf6or"]
@@ -102,17 +102,15 @@ points = 3
 [node name="LassoBrain" parent="." index="16" instance=ExtResource("12_lassob")]
 
 [node name="LassoArm" parent="." index="17" instance=ExtResource("13_lassoa")]
-bullet_scene = ExtResource("14_isa45")
+bullet_scene = ExtResource("14_0d06w")
 effect_scene = ExtResource("15_bd0jv")
 spawn_context = SubResource("Resource_bd0jv")
 
 [node name="ReturnToFormationAnnouncerGuts" parent="." index="18" instance=ExtResource("16_bf6or")]
 listen_signals = Array[StringName]([&"lasso_end", &"timer_expired"])
-rebroadcast_signals = Array[StringName]([&"dive_complete"])
 
-[node name="DiveTimer" parent="." instance=ExtResource("17_timer")]
-auto_start = false
+[node name="DiveTimer" parent="." index="19" instance=ExtResource("17_timer")]
 starting_time = 8.0
+auto_start = false
 pause_signals = Array[StringName]([&"dive_complete"])
 resume_signals = Array[StringName]([&"begin_dive"])
-expired_signals = Array[StringName]([&"timer_expired"])

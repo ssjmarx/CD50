@@ -66,6 +66,4 @@ func configure(node: CollisionObject2D) -> void:
 
 ## resolve the group source for a node (CDEntity export vs Godot built-in)
 func _get_groups_for(node: CollisionObject2D) -> Array:
-	if node is CDEntity:
-		return node.groups
 	return node.get_groups()

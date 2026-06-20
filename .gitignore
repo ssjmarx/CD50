@@ -21,6 +21,7 @@ github*
 .aider.input.history
 .aider.tags.cache.v3/
 .aider*
+d
 
 # ── OS / editor cruft ──────────────────────────────────────
 .DS_Store

@@ -1,8 +1,15 @@
-[gd_scene load_steps=4 format=3 uid="uid://blassobullet004"]
+[gd_scene load_steps=7 format=3 uid="uid://81piltqrfxb"]
 
-[ext_resource type="Script" path="res://scripts/core/infrastructure/cd_entity.gd" id="1_cdentity"]
-[ext_resource type="PackedScene" path="res://scenes/entity components/arms/capture_on_hit_arm.tscn" id="2_caparm"]
-[ext_resource type="PackedScene" path="res://scenes/entity components/guts/die_on_timer_guts.tscn" id="3_timer"]
+[ext_resource type="Script" uid="uid://dfbv2tw3cl4pe" path="res://scripts/core/infrastructure/cd_entity.gd" id="1_cdentity"]
+[ext_resource type="PackedScene" uid="uid://bcaponhit003" path="res://scenes/entity components/arms/capture_on_hit_arm.tscn" id="2_caparm"]
+[ext_resource type="PackedScene" uid="uid://bd5qh5p4li7tm" path="res://scenes/entity components/guts/die_on_timer_guts.tscn" id="3_timer"]
+[ext_resource type="PackedScene" uid="uid://bxcu3ebyva6rn" path="res://scenes/entity components/faces/polygon_face.tscn" id="4_20h8d"]
+[ext_resource type="Script" uid="uid://brwnooso7th47" path="res://scripts/core/resources/behavior/cd_shape.gd" id="5_vhtmx"]
+
+[sub_resource type="Resource" id="Resource_oq2jl"]
+script = ExtResource("5_vhtmx")
+points = PackedVector2Array(-8, 0, 0, 1, 8, 0, 0, -1)
+metadata/_custom_type_script = "uid://brwnooso7th47"
 
 [node name="LassoBullet" type="CharacterBody2D"]
 script = ExtResource("1_cdentity")
@@ -11,6 +18,10 @@ collision_radius = 4.0
 collision_response = 1
 
 [node name="CaptureOnHitArm" parent="." instance=ExtResource("2_caparm")]
+target_groups = Array[StringName]([])
 
 [node name="DieOnTimerGuts" parent="." instance=ExtResource("3_timer")]
-lifespan = 1.0
+
+[node name="PolygonFace" parent="." instance=ExtResource("4_20h8d")]
+shapes = Array[ExtResource("5_vhtmx")]([SubResource("Resource_oq2jl")])
+shape_key = &"shape_points"

@@ -1,0 +1,6 @@
+[gd_scene load_steps=2 format=3 uid="uid://bcaponhit003"]
+
+[ext_resource type="Script" path="res://scripts/entity components/arms/collision reactions/capture_on_hit_arm.gd" id="1_caparm"]
+
+[node name="CaptureOnHitArm" type="Node2D"]
+script = ExtResource("1_caparm")

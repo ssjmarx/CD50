@@ -1,0 +1,6 @@
+[gd_scene load_steps=2 format=3 uid="uid://blassoarm002"]
+
+[ext_resource type="Script" uid="uid://de16eh7cdcrbm" path="res://scripts/entity components/arms/triggered arms/lasso_arm.gd" id="1_lassoa"]
+
+[node name="LassoArm" type="Node2D"]
+script = ExtResource("1_lassoa")

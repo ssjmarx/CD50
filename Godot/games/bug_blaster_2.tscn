@@ -69,6 +69,7 @@ metadata/_custom_type_script = "uid://b2ibop6r2cryj"
 [sub_resource type="Resource" id="Resource_dg5ky"]
 script = ExtResource("4_xb0do")
 group_name = &"enemy_bullets"
+collides_with = Array[StringName]([&"players"])
 metadata/_custom_type_script = "uid://b2ibop6r2cryj"
 
 [sub_resource type="Resource" id="Resource_7ar12"]
@@ -850,7 +851,7 @@ tracked_actions = Array[StringName]([&"fire", &"thrust", &"thrust_end"])
 rules = Array[ExtResource("9_vaj0o")]([SubResource("Resource_dsfuj"), SubResource("Resource_1ivtp"), SubResource("Resource_rule_l2l3"), SubResource("Resource_rule_l3l4"), SubResource("Resource_rule_l4l5"), SubResource("Resource_rule_l5l1")])
 
 [node name="FormationDirector" parent="." instance=ExtResource("18_156p0")]
-position = Vector2(320, 64)
+position = Vector2(320, 96)
 formations = Array[ExtResource("22_jix4n")]([SubResource("Resource_4mgkk"), SubResource("Resource_kgu26"), SubResource("Resource_vaj0o")])
 breathing_amplitude = 0.25
 breathing_duration = 10.0
@@ -873,6 +874,7 @@ targeting_noise = 4.0
 component_category = 10
 
 [node name="Level1Stage" parent="." groups=["level_stages"] instance=ExtResource("8_4mgkk")]
+visible = false
 start_asleep = true
 on_wake_signal = &"level_start"
 

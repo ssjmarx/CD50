@@ -1,0 +1,16 @@
+[gd_scene load_steps=4 format=3 uid="uid://ds31gy1snjy5"]
+
+[ext_resource type="PackedScene" uid="uid://81piltqrfxb" path="res://entities/generic/lasso_bullet.tscn" id="1_ubimm"]
+[ext_resource type="PackedScene" uid="uid://c0bdes7lqqmym" path="res://scenes/entity components/brains/ai_chase_brain.tscn" id="2_gm7tr"]
+[ext_resource type="PackedScene" uid="uid://dnupvpm1xtec8" path="res://scenes/entity components/legs/acceleration_target_leg.tscn" id="3_75c73"]
+
+[node name="LassoBullet" instance=ExtResource("1_ubimm")]
+
+[node name="AIChaseBrain" parent="." index="3" instance=ExtResource("2_gm7tr")]
+target_groups = Array[StringName]([])
+stop_distance = 0.0
+
+[node name="AccelerationTargetLeg" parent="." index="4" instance=ExtResource("3_75c73")]
+acceleration = 50.0
+slow_distance = 0.0
+stop_distance = 0.0

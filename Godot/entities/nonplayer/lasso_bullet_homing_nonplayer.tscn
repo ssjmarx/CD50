@@ -1,0 +1,12 @@
+[gd_scene load_steps=2 format=3 uid="uid://wnufnvl5tlq5"]
+
+[ext_resource type="PackedScene" uid="uid://ds31gy1snjy5" path="res://entities/generic/lasso_bullet_homing.tscn" id="1_7naef"]
+
+[node name="LassoBullet" instance=ExtResource("1_7naef")]
+groups = Array[StringName]([&"enemy_bullets"])
+
+[node name="CaptureOnHitArm" parent="." index="0"]
+target_groups = Array[StringName]([&"players"])
+
+[node name="AIChaseBrain" parent="." index="3"]
+target_groups = Array[StringName]([&"players"])

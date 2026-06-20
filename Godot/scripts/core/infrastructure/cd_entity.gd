@@ -93,14 +93,14 @@ func _ready() -> void:
 
 	_collision_buffer = game.collision_buffer
 
-	if game.collision_matrix:
-		game.collision_matrix.configure(self)
-
 	## register with all assigned groups and mark them dirty
 	for group_name in groups:
 		add_to_group(group_name)
 		if game.group_registry:
 			game.group_registry.mark_dirty(group_name)
+
+	if game.collision_matrix:
+		game.collision_matrix.configure(self)
 
 	## connect physics override signals
 	for sig in unlock_y_on:
