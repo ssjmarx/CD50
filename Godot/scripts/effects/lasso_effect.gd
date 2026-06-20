@@ -17,7 +17,7 @@ enum RopeState { LOOSE, TAUT }
 
 @export_group("Visuals")
 @export var wave_amplitude: float = 8.0
-@export var wave_frequency: float = 0.5
+@export var wave_length: float = 40.0 # Length in pixels of one full sine wave cycle
 @export var rope_color: Color = Color.WHITE
 @export var rope_width: float = 2.0
 
@@ -76,23 +76,34 @@ func _draw() -> void:
 		
 func _draw_sine_wave(p1: Vector2, p2: Vector2) -> void:
 	var dist = p1.distance_to(p2)
+	if dist <= 0.0:
+		return
+
 	var dir = (p2 - p1).normalized()
 	var perp = dir.orthogonal()
 	
 	var points = PackedVector2Array()
-	var segments = max(2, int(dist / 5.0)) # Resolution of the curve
+	
+	# Use a fixed pixel step for resolution to prevent shimmering/jitter
+	var step = 2.0 
+	var segments = max(1, int(dist / step))
 	
 	for i in range(segments + 1):
-		var t = float(i) / float(segments)
-		var base_pos = p1.lerp(p2, t)
+		var d = float(i) * step
+		if i == segments:
+			d = dist # Ensure exact endpoint connection
+			
+		var base_pos = p1 + dir * d
 		
-		# Static retro wave: fixed amplitude, stretches with distance
-		var wave_offset = sin(t * wave_frequency * PI * 2.0) * wave_amplitude
+		# Phase is based on absolute distance, acting like a repeating texture
+		var phase = (d / wave_length) * TAU
+		var wave_offset = sin(phase) * wave_amplitude
 		
 		points.append(base_pos + perp * wave_offset)
 		
 	if points.size() > 1:
-		draw_polyline(points, rope_color, rope_width)
+		# true enables anti-aliasing for smooth, non-jagged edges
+		draw_polyline(points, rope_color, rope_width, true) 
 		
 func _on_player_captured() -> void:
 	if game and game_captured_key in game.blackboard:
