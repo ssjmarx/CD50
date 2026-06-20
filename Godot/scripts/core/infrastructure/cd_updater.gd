@@ -75,6 +75,10 @@ func _flush() -> void:
 				if group != &"" and group not in remove_groups:
 					entity.game.group_registry.mark_dirty(group)
 
+		## reconfigure collision layers based on new groups
+		if entity.game and entity.game.collision_matrix:
+			entity.game.collision_matrix.configure(entity)
+
 		## emit exit signals on the entity (ensure first — idempotent)
 		for sig in entity_signals:
 			if sig != &"":

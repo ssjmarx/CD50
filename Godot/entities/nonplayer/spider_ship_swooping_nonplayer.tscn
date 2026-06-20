@@ -1,4 +1,4 @@
-[gd_scene load_steps=26 format=3 uid="uid://bmypbxacxkn6p"]
+[gd_scene load_steps=27 format=3 uid="uid://bmypbxacxkn6p"]
 
 [ext_resource type="PackedScene" uid="uid://vu1t14u6qvjf" path="res://entities/generic/spider_ship_smooth.tscn" id="1_18u38"]
 [ext_resource type="PackedScene" uid="uid://wghixqf83pas" path="res://scenes/entity components/brains/ai_swoop_brain.tscn" id="2_f0fqv"]
@@ -17,6 +17,7 @@
 [ext_resource type="PackedScene" uid="uid://cci3aqsutxdx3" path="res://scenes/effects/lasso_effect.tscn" id="15_bd0jv"]
 [ext_resource type="Script" uid="uid://dcu4ocnin0htu" path="res://scripts/core/resources/spawners/cd_spawn_context.gd" id="15_bf6or"]
 [ext_resource type="PackedScene" uid="uid://irkjutuwceju" path="res://scenes/entity components/guts/announcer_guts.tscn" id="16_bf6or"]
+[ext_resource type="PackedScene" uid="uid://dgvpukhg57el7" path="res://scenes/entity components/guts/timer_guts.tscn" id="17_timer"]
 
 [sub_resource type="Resource" id="Resource_s7cy4"]
 script = ExtResource("4_fkier")
@@ -106,4 +107,12 @@ effect_scene = ExtResource("15_bd0jv")
 spawn_context = SubResource("Resource_bd0jv")
 
 [node name="ReturnToFormationAnnouncerGuts" parent="." index="18" instance=ExtResource("16_bf6or")]
-listen_signals = Array[StringName]([&"lasso_end"])
+listen_signals = Array[StringName]([&"lasso_end", &"timer_expired"])
+rebroadcast_signals = Array[StringName]([&"dive_complete"])
+
+[node name="DiveTimer" parent="." instance=ExtResource("17_timer")]
+auto_start = false
+starting_time = 8.0
+pause_signals = Array[StringName]([&"dive_complete"])
+resume_signals = Array[StringName]([&"begin_dive"])
+expired_signals = Array[StringName]([&"timer_expired"])
