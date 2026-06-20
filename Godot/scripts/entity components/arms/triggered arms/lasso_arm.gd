@@ -5,6 +5,7 @@
 class_name LassoArm extends CDEntityComponent
 
 @export var bullet_pool: CDObjectPool
+@export var bullet_scene: PackedScene
 @export var spawn_offset: Vector2 = Vector2.ZERO
 @export var initial_speed: float = 600.0
 
@@ -26,14 +27,21 @@ func _on_initialize() -> void:
 
 ## spawn bullet and initialize capture payload
 func _on_fire() -> void:
-	if not bullet_pool:
-		push_warning("LassoArm has no bullet_pool assigned!")
-		return
-
-	var bullet = bullet_pool.acquire()
-	# Assuming standard CD50 game structure where entities are added to the game root
-	game.add_child(bullet)
+	var bullet: CDEntity = null
 	
+	# Prefer object pool if assigned, otherwise instantiate directly
+	if bullet_pool:
+		bullet = bullet_pool.acquire()
+		if not bullet.is_inside_tree():
+			game.add_child(bullet)
+	elif bullet_scene:
+		bullet = bullet_scene.instantiate()
+		game.add_child(bullet)
+		
+	if not bullet:
+		push_warning("LassoArm has no bullet_pool or bullet_scene assigned!")
+		return
+		
 	bullet.global_position = entity.global_position + spawn_offset
 	
 	# Fire bullet downwards (classic Galaga style)
