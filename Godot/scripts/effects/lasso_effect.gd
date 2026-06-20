@@ -29,6 +29,8 @@ var _captor: Node2D = null
 var _target: Node2D = null
 var _time: float = 0.0
 
+@onready var game = CDGame.find_ancestor(self)
+
 func _ready() -> void:
 	super._ready() # Initialize CDEffect timer/fallback
 	
