@@ -1,4 +1,4 @@
-[gd_scene load_steps=22 format=3 uid="uid://bmypbxacxkn6p"]
+[gd_scene load_steps=26 format=3 uid="uid://bmypbxacxkn6p"]
 
 [ext_resource type="PackedScene" uid="uid://vu1t14u6qvjf" path="res://entities/generic/spider_ship_smooth.tscn" id="1_18u38"]
 [ext_resource type="PackedScene" uid="uid://wghixqf83pas" path="res://scenes/entity components/brains/ai_swoop_brain.tscn" id="2_f0fqv"]
@@ -11,9 +11,11 @@
 [ext_resource type="Script" uid="uid://d3l2c838cqwsm" path="res://scripts/core/resources/audio/cd_sound_def.gd" id="9_otbcv"]
 [ext_resource type="PackedScene" uid="uid://cj3hnjl0sj608" path="res://scenes/entity components/guts/points_guts.tscn" id="10_aafss"]
 [ext_resource type="PackedScene" uid="uid://domsc1hbv4rsy" path="res://scenes/entity components/arms/score_on_death_arm.tscn" id="11_otbcv"]
-[ext_resource type="PackedScene" path="res://scenes/entity components/brains/lasso_brain.tscn" id="12_lassob"]
-[ext_resource type="PackedScene" path="res://scenes/entity components/arms/lasso_arm.tscn" id="13_lassoa"]
-[ext_resource type="PackedScene" uid="uid://blassobullet004" path="res://entities/generic/lasso_bullet.tscn" id="14_lassob"]
+[ext_resource type="PackedScene" uid="uid://crb76onibgeom" path="res://scenes/entity components/brains/lasso_brain.tscn" id="12_lassob"]
+[ext_resource type="PackedScene" uid="uid://blassoarm002" path="res://scenes/entity components/arms/lasso_arm.tscn" id="13_lassoa"]
+[ext_resource type="PackedScene" uid="uid://blww1qp13aqye" path="res://entities/nonplayer/lasso_bullet_nonplayer.tscn" id="14_isa45"]
+[ext_resource type="PackedScene" uid="uid://cci3aqsutxdx3" path="res://scenes/effects/lasso_effect.tscn" id="15_bd0jv"]
+[ext_resource type="Script" uid="uid://dcu4ocnin0htu" path="res://scripts/core/resources/spawners/cd_spawn_context.gd" id="15_bf6or"]
 [ext_resource type="PackedScene" uid="uid://irkjutuwceju" path="res://scenes/entity components/guts/announcer_guts.tscn" id="16_bf6or"]
 
 [sub_resource type="Resource" id="Resource_s7cy4"]
@@ -61,6 +63,11 @@ wave_shape = 3
 notes = Array[ExtResource("8_aafss")]([SubResource("Resource_vdwk6"), SubResource("Resource_43xsa")])
 metadata/_custom_type_script = "uid://d3l2c838cqwsm"
 
+[sub_resource type="Resource" id="Resource_bd0jv"]
+script = ExtResource("15_bf6or")
+velocity = Vector2(400, 0)
+metadata/_custom_type_script = "uid://dcu4ocnin0htu"
+
 [node name="SpiderShip" instance=ExtResource("1_18u38")]
 groups = Array[StringName]([&"spider_ships", &"ships", &"enemies", &"bosses"])
 
@@ -92,14 +99,11 @@ points = 3
 [node name="ScoreOnDeathArm" parent="." index="15" instance=ExtResource("11_otbcv")]
 
 [node name="LassoBrain" parent="." index="16" instance=ExtResource("12_lassob")]
-qualifying_groups = Array[StringName]([&"diving"])
-capture_duration = 1.0
-lasso_start_signals = Array[StringName]([&"lasso_start"])
-lasso_end_signals = Array[StringName]([&"lasso_end"])
-arm_fire_signals = Array[StringName]([&"fire_tractor_beam"])
 
 [node name="LassoArm" parent="." index="17" instance=ExtResource("13_lassoa")]
-bullet_scene = ExtResource("14_lassob")
+bullet_scene = ExtResource("14_isa45")
+effect_scene = ExtResource("15_bd0jv")
+spawn_context = SubResource("Resource_bd0jv")
 
 [node name="ReturnToFormationAnnouncerGuts" parent="." index="18" instance=ExtResource("16_bf6or")]
 listen_signals = Array[StringName]([&"lasso_end"])
