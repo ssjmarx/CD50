@@ -1,6 +1,6 @@
 ## LassoEffect
 ## A visual "rope" effect that dynamically connects two entities.
-## Reads generic captor/target keys from a source blackboard on spawn.
+## Automatically reads generic captor/target keys from its parent CDEntity on spawn.
 ## 
 ## State 1 (Loose): Sine wave between captor and target (bullet).
 ## State 2 (Taut): Straight line between captor and target (captured player).
@@ -9,8 +9,6 @@ extends CDEffect
 class_name LassoEffect
 
 enum RopeState { LOOSE, TAUT }
-
-@export var source_node: Node2D
 
 @export_group("Blackboard Keys")
 @export var captor_key: StringName = &"lasso_captor"
@@ -25,6 +23,7 @@ enum RopeState { LOOSE, TAUT }
 @export var rope_width: float = 2.0
 
 var _state: RopeState = RopeState.LOOSE
+var _source_entity: CDEntity = null
 var _captor: Node2D = null
 var _target: Node2D = null
 var _time: float = 0.0
@@ -34,17 +33,20 @@ var _time: float = 0.0
 func _ready() -> void:
 	super._ready() # Initialize CDEffect timer/fallback
 	
-	if source_node and "blackboard" in source_node:
-		_captor = source_node.blackboard.get(captor_key)
-		_target = source_node.blackboard.get(target_key)
+	var parent = get_parent()
+	if parent is CDEntity:
+		_source_entity = parent as CDEntity
 	else:
-		# No source, nothing to draw
+		push_error("LassoEffect must be parented to a CDEntity to read its blackboard!")
 		queue_free()
 		return
 		
+	_captor = _source_entity.blackboard.get(captor_key)
+	_target = _source_entity.blackboard.get(target_key)
+		
 	# Listen for capture phase end on the source node (e.g., the Spider)
-	if source_node.has_method("bus_connect"):
-		source_node.bus_connect("lasso_end", _on_lasso_end)
+	if _source_entity.has_method("bus_connect"):
+		_source_entity.bus_connect("lasso_end", _on_lasso_end)
 		
 	# Listen for player capture on game bus
 	if game and game.has_method("bus_connect"):

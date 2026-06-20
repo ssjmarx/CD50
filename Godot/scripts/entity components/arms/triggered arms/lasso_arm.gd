@@ -70,15 +70,10 @@ func _deferred_fire() -> void:
 	# Spawn effect if assigned
 	if effect_scene:
 		var effect = effect_scene.instantiate()
-		game.add_child(effect)
-		effect.global_position = global_position
-		
-		# Inject the blackboard source so the effect knows where to read.
-		# Using duck-typing ensures we don't tightly couple to LassoEffect.
-		if effect.has_method("set_source"):
-			effect.set_source(entity)
-		elif "source_node" in effect:
-			effect.source_node = entity
+		# Add as a child of the entity so it can read the blackboard instantly
+		entity.add_child(effect)
+		# Set local position to zero so it doesn't double-offset from the arm
+		effect.position = Vector2.ZERO
 		  
 	## activate pooled entity or add to scene tree                        
 	if bullet_pool:                                                       
