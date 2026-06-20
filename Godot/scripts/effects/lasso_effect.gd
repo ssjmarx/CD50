@@ -18,7 +18,6 @@ enum RopeState { LOOSE, TAUT }
 @export_group("Visuals")
 @export var wave_amplitude: float = 8.0
 @export var wave_frequency: float = 0.5
-@export var wave_speed: float = 10.0
 @export var rope_color: Color = Color.WHITE
 @export var rope_width: float = 2.0
 
@@ -26,7 +25,6 @@ var _state: RopeState = RopeState.LOOSE
 var _source_entity: CDEntity = null
 var _captor: Node2D = null
 var _target: Node2D = null
-var _time: float = 0.0
 
 @onready var game = CDGame.find_ancestor(self)
 
@@ -53,8 +51,6 @@ func _ready() -> void:
 		game.bus_connect("player_captured", _on_player_captured)
 		
 func _process(delta: float) -> void:
-	_time += delta
-	
 	# If either endpoint vanishes, stop drawing
 	if not is_instance_valid(_captor) or not is_instance_valid(_target):
 		_captor = null
@@ -90,9 +86,8 @@ func _draw_sine_wave(p1: Vector2, p2: Vector2) -> void:
 		var t = float(i) / float(segments)
 		var base_pos = p1.lerp(p2, t)
 		
-		# Taper the amplitude at the ends so it looks securely attached
-		var taper = sin(t * PI) 
-		var wave_offset = sin(t * wave_frequency * PI * 2.0 + _time * wave_speed) * wave_amplitude * taper
+		# Static retro wave: fixed amplitude, stretches with distance
+		var wave_offset = sin(t * wave_frequency * PI * 2.0) * wave_amplitude
 		
 		points.append(base_pos + perp * wave_offset)
 		
