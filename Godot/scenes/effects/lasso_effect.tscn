@@ -1,0 +1,6 @@
+[gd_scene load_steps=2 format=3 uid="uid://blasso3ff3ct"]
+
+[ext_resource type="Script" uid="uid://bc4a0flassoeffect" path="res://scripts/effects/lasso_effect.gd" id="1_lasso"]
+
+[node name="LassoEffect" type="Node2D"]
+script = ExtResource("1_lasso")
