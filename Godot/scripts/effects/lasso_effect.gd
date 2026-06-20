@@ -50,7 +50,7 @@ func _ready() -> void:
 	if game and game.has_method("bus_connect"):
 		game.bus_connect("player_captured", _on_player_captured)
 		
-func _process(delta: float) -> void:
+func _process(_delta: float) -> void:
 	# If either endpoint vanishes, stop drawing
 	if not is_instance_valid(_captor) or not is_instance_valid(_target):
 		_captor = null
