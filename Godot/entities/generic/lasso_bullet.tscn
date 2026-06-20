@@ -1,11 +1,11 @@
 [gd_scene load_steps=4 format=3 uid="uid://blassobullet004"]
 
-[ext_resource type="Script" path="res://scripts/entity components/lasso_bullet.gd" id="1_lassobul"]
+[ext_resource type="Script" path="res://scripts/core/infrastructure/cd_entity.gd" id="1_cdentity"]
 [ext_resource type="PackedScene" path="res://scenes/entity components/arms/capture_on_hit_arm.tscn" id="2_caparm"]
 [ext_resource type="PackedScene" path="res://scenes/entity components/guts/die_on_timer_guts.tscn" id="3_timer"]
 
 [node name="LassoBullet" type="CharacterBody2D"]
-script = ExtResource("1_lassobul")
+script = ExtResource("1_cdentity")
 groups = Array[StringName]([&"bullets"])
 collision_radius = 4.0
 collision_response = 1

@@ -1,7 +1,7 @@
 ## CaptureOnHitArm
 ## Delivers the lasso payload on collision.
 ## Writes capture data to game blackboard, target blackboard, and emits the standard capture signals.
-## Cleans up the bullet on successful hit.
+## Cleans up the bullet on successful hit and notifies the captor that the phase is complete.
 
 class_name CaptureOnHitArm extends CDEntityComponent
 
@@ -16,8 +16,11 @@ class_name CaptureOnHitArm extends CDEntityComponent
 @export_group("Listen Signals")
 @export var collision_signals: Array[StringName] = [&"collision"]
 
-@export_group("Emit Signals")
+@export_group("Emit Signals on Target")
 @export var capture_signals: Array[StringName] = [&"player_captured"]
+
+@export_group("Emit Signals on Captor")
+@export var captor_complete_signals: Array[StringName] = [&"tractor_beam_complete"]
 
 ## ready
 func _ready() -> void:
@@ -45,6 +48,10 @@ func _on_collision(collider: CDEntity, _normal: Vector2) -> void:
 	# Emit capture signal on target's bus
 	for sig in capture_signals:
 		collider.bus_emit(sig)
+
+	# Emit complete signal on captor's bus so it knows to end capture phase
+	for sig in captor_complete_signals:
+		captor.bus_emit(sig)
 
 	# Flag bullet as successful capture so it emits correct signals on cleanup
 	entity.blackboard[success_key] = true
