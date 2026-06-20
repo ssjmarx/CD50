@@ -114,5 +114,5 @@ Godot/
 ### Music
 *   **El Manisero** — Moisés Simons (1928) · Public Domain
 *   **Son de la Loma** — Miguel Matamoros (1922) · Public Domain
-*   Rendered with [RoyTheRailfanner's 8-Bit NES Soundfont](https://musical-artifacts.com/artifacts/2759), licensed under CC-BY 3.0.
+*   Rendered with [RoyTheRailfanner's 8-Bit NES Soundfont](https://musical-artifacts.com/artifacts/8369), licensed under CC-BY 3.0.
 *   **Hunted by Machines** — [Karl Casey](https://www.youtube.com/@WhiteBatAudio) @ [White Bat Audio](https://whitebataudio.com/), licensed under CC-BY 4.0.
