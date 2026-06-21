@@ -1,4 +1,4 @@
-[gd_scene load_steps=185 format=3 uid="uid://c0q0c0v84x80"]
+[gd_scene load_steps=186 format=3 uid="uid://c0q0c0v84x80"]
 
 [ext_resource type="Script" uid="uid://dm0uehngpvbh7" path="res://scripts/core/infrastructure/cd_game.gd" id="1_62wb8"]
 [ext_resource type="PackedScene" uid="uid://cmbx6xnct372t" path="res://scenes/core/infrastructure/cd_collision_buffer.tscn" id="2_7y1r2"]
@@ -55,6 +55,7 @@
 [ext_resource type="PackedScene" uid="uid://dqsat1yshg31w" path="res://scenes/game components/goals/score_threshold_goal.tscn" id="53_xatni"]
 [ext_resource type="PackedScene" uid="uid://d4b42pvesykqo" path="res://scenes/game components/marks/cd_mark.tscn" id="54_682rw"]
 [ext_resource type="PackedScene" uid="uid://dksj54blfwuum" path="res://scenes/game components/marks/timed_mark.tscn" id="55_sdj2a"]
+[ext_resource type="PackedScene" path="res://scenes/game components/cards/capture_card.tscn" id="57_eb2hk"]
 [ext_resource type="PackedScene" uid="uid://mxejpxipdbii" path="res://scenes/game components/cards/wave_card.tscn" id="99_wave"]
 
 [sub_resource type="Resource" id="Resource_q4h5u"]
@@ -791,7 +792,7 @@ rules = Array[ExtResource("9_vaj0o")]([SubResource("Resource_dsfuj"), SubResourc
 [node name="FormationDirector" parent="." instance=ExtResource("18_156p0")]
 position = Vector2(320, 96)
 formations = Array[ExtResource("22_jix4n")]([SubResource("Resource_4mgkk"), SubResource("Resource_kgu26"), SubResource("Resource_vaj0o")])
-breathing_amplitude = 0.25
+breathing_amplitude = 1.0
 breathing_duration = 10.0
 marching_orders = Array[ExtResource("23_1k33r")]([SubResource("Resource_asuvp"), SubResource("Resource_5umtv"), SubResource("Resource_8nemr"), SubResource("Resource_sjgbx")])
 speed_scaler = SubResource("Resource_speed_scaler")
@@ -809,6 +810,9 @@ component_category = 10
 
 [node name="AimingDirector" parent="." instance=ExtResource("27_hc4eh")]
 targeting_noise = 4.0
+use_angle_limit = true
+min_angle_offset = 45.0
+max_angle_offset = 135.0
 component_category = 10
 
 [node name="Level1Stage" parent="." groups=["level_stages"] instance=ExtResource("8_4mgkk")]
@@ -1396,3 +1400,5 @@ shape = SubResource("RectangleShape2D_sdj2a")
 [node name="CollisionShape2D4" type="CollisionShape2D" parent="TimedMark"]
 position = Vector2(644, 180)
 shape = SubResource("RectangleShape2D_sdj2a")
+
+[node name="CaptureCard" parent="." instance=ExtResource("57_eb2hk")]

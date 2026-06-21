@@ -1,4 +1,4 @@
-[gd_scene load_steps=31 format=3 uid="uid://cytjg8wb58tpp"]
+[gd_scene load_steps=32 format=3 uid="uid://cytjg8wb58tpp"]
 
 [ext_resource type="PackedScene" uid="uid://btfoj4emj6uld" path="res://entities/generic/sprite_ship.tscn" id="1_b0gck"]
 [ext_resource type="PackedScene" path="res://scenes/core/infrastructure/cd_body.tscn" id="2_gyn25"]
@@ -9,6 +9,7 @@
 [ext_resource type="PackedScene" uid="uid://ci8074saofo8y" path="res://scenes/entity components/brains/ai_escort_brain.tscn" id="6_oqelq"]
 [ext_resource type="PackedScene" uid="uid://irkjutuwceju" path="res://scenes/entity components/guts/announcer_guts.tscn" id="8_aoipd"]
 [ext_resource type="PackedScene" uid="uid://btr1f3svl7y3m" path="res://scenes/entity components/guts/healthpool_guts.tscn" id="8_bkepp"]
+[ext_resource type="PackedScene" path="res://scenes/entity components/legs/leader_teleport_leg.tscn" id="9_2smha"]
 [ext_resource type="Script" uid="uid://ci2yaa2b1swsj" path="res://scripts/core/resources/audio/cd_note.gd" id="10_captured_sound"]
 [ext_resource type="Script" uid="uid://d3l2c838cqwsm" path="res://scripts/core/resources/audio/cd_sound_def.gd" id="11_captured_sound"]
 [ext_resource type="PackedScene" uid="uid://c4jinp88xtitl" path="res://scenes/entity components/voices/sound_voice.tscn" id="12_sound_voice"]
@@ -151,6 +152,8 @@ value_key = &" "
 delta_key = &" "
 health_changed_signals = Array[StringName]([&"captive_player_destroyed"])
 zero_health_signals = Array[StringName]([&"captive_player_destroyed"])
+
+[node name="LeaderTeleportLeg" parent="CapturedBody" index="3" instance=ExtResource("9_2smha")]
 
 [node name="RescuedBody" parent="." index="12" instance=ExtResource("2_gyn25")]
 start_asleep = true

@@ -1,0 +1,6 @@
+[gd_scene load_steps=2 format=3 uid="uid://b8h4n2lal0m1p"]
+
+[ext_resource type="Script" path="res://scripts/entity components/legs/other/leader_teleport_leg.gd" id="1_xyzab"]
+
+[node name="LeaderTeleportLeg" type="Node2D"]
+script = ExtResource("1_xyzab")

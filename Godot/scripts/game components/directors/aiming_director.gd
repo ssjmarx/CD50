@@ -25,6 +25,16 @@ class_name AimingDirector extends CDGameComponent
 ## key for writing aim direction to entity blackboard (Vector2, normalized)
 @export var aim_key: StringName = &"aim_direction"
 
+@export_group("Angle Limits")
+## Enable angle clamping. If false, 360-degree aiming is allowed.
+@export var use_angle_limit: bool = false
+
+## Minimum absolute angle limit (in degrees, 0 = East).
+@export var min_angle_offset: float = -180.0
+
+## Maximum absolute angle limit (in degrees, 0 = East).
+@export var max_angle_offset: float = 180.0
+
 ## --- state ---
 
 ## timer for throttled target recalculation
@@ -82,9 +92,26 @@ func _calculate_aim(shooter: CDEntity) -> Vector2:
 				nearest_pos = target.global_position
 	
 	if nearest_dist_sq < INF:
-		return shooter.global_position.direction_to(_apply_noise(nearest_pos))
+		var raw_direction := shooter.global_position.direction_to(_apply_noise(nearest_pos))
+		
+		if use_angle_limit:
+			raw_direction = _clamp_angle_absolute(raw_direction)
+		
+		return raw_direction
 	
 	return Vector2.ZERO
+
+## Clamps a direction vector to within [min_angle_offset, max_angle_offset] in absolute world space.
+## Godot angles: 0 is East, positive is Clockwise (Down), negative is Counter-Clockwise (Up).
+func _clamp_angle_absolute(direction: Vector2) -> Vector2:
+	# 1. Get the angle of the desired direction in degrees
+	var angle_deg := rad_to_deg(direction.angle())
+	
+	# 2. Clamp the angle to the absolute limits
+	var clamped_deg := clampf(angle_deg, min_angle_offset, max_angle_offset)
+	
+	# 3. Return the new direction vector
+	return Vector2.from_angle(deg_to_rad(clamped_deg))
 
 ## add random offset to target position if noise is configured
 func _apply_noise(pos: Vector2) -> Vector2:

@@ -1,8 +1,8 @@
 ## LassoBrain
 ## Triggers the lasso firing sequence by listening for the mark signal.
+## Checks a global blackboard key to enforce a maximum number of simultaneous captures.
 ## Emits a start signal, fires the lasso, and then emits an end signal after a short duration.
 ## This allows the spider to halt, shoot, and then seamlessly return to formation.
-## Supports a capture limit (default 1) per lifecycle.
 
 class_name LassoBrain extends CDEntityComponent
 
@@ -11,9 +11,12 @@ class_name LassoBrain extends CDEntityComponent
 @export var qualifying_groups: Array[StringName] = [&"diving"]
 @export var capture_duration: float = 1.0
 
+## The blackboard key to read to check the current number of active captures.
+## If left empty, no limit is enforced (legacy behavior).
+@export var capture_limit_key: StringName = &"active_capture_count"
+
 @export_group("Listen Signals")
 @export var trigger_signals: Array[StringName] = [&"fire_tractor_beam"]
-@export var capture_success_signals: Array[StringName] = [&"capture_succeeded"]
 
 @export_group("Emit Signals")
 @export var lasso_start_signals: Array[StringName] = [&"lasso_start"]
@@ -21,7 +24,6 @@ class_name LassoBrain extends CDEntityComponent
 @export var arm_fire_signals: Array[StringName] = [&"fire_tractor_beam"]
 
 var _is_capturing: bool = false
-var _captures_remaining: int = 0
 var _timer: Timer
 
 ## ready
@@ -37,17 +39,20 @@ func _ready() -> void:
 
 ## on initialize
 func _on_initialize() -> void:
-	_captures_remaining = max_captures
-	
 	for sig in trigger_signals:
 		self.bus_connect(sig, _on_trigger)
-	for sig in capture_success_signals:
-		self.bus_connect(sig, _on_capture_success)
 
 ## triggered by CDMark entity bus signal
 func _on_trigger() -> void:
-	if _is_capturing or not _qualifies() or _captures_remaining <= 0:
+	if _is_capturing or not _qualifies():
 		return
+		
+	# Check global capture limit if a key is configured
+	if not capture_limit_key.is_empty():
+		var current_captures: int = game.blackboard.get(capture_limit_key, 0)
+		if current_captures >= max_captures:
+			return # Limit reached, ignore trigger
+			
 	_begin_capture()
 
 ## begin capture
@@ -74,15 +79,10 @@ func _on_timer_timeout() -> void:
 	for sig in lasso_end_signals:
 		entity.bus_emit(sig)
 
-## on capture success
-func _on_capture_success() -> void:
-	_captures_remaining -= 1
-
 ## on entity deactivating
 func _on_entity_deactivating() -> void:
 	super._on_entity_deactivating()
 	_is_capturing = false
-	_captures_remaining = max_captures
 	
 	if _timer:
 		_timer.stop()
@@ -90,9 +90,6 @@ func _on_entity_deactivating() -> void:
 	for sig in trigger_signals:
 		if entity.is_connected(sig, _on_trigger):
 			entity.bus_disconnect(sig, _on_trigger)
-	for sig in capture_success_signals:
-		if entity.is_connected(sig, _on_capture_success):
-			entity.bus_disconnect(sig, _on_capture_success)
 
 ## qualifies
 func _qualifies() -> bool:
