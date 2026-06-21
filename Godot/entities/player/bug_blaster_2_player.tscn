@@ -1,4 +1,4 @@
-[gd_scene load_steps=9 format=3 uid="uid://cytjg8wb58tpp"]
+[gd_scene load_steps=31 format=3 uid="uid://cytjg8wb58tpp"]
 
 [ext_resource type="PackedScene" uid="uid://btfoj4emj6uld" path="res://entities/generic/sprite_ship.tscn" id="1_b0gck"]
 [ext_resource type="PackedScene" path="res://scenes/core/infrastructure/cd_body.tscn" id="2_gyn25"]
@@ -8,6 +8,97 @@
 [ext_resource type="PackedScene" uid="uid://br86r51jieatg" path="res://scenes/entity components/brains/player_action_brain.tscn" id="5_vf8ie"]
 [ext_resource type="PackedScene" uid="uid://ci8074saofo8y" path="res://scenes/entity components/brains/ai_escort_brain.tscn" id="6_oqelq"]
 [ext_resource type="PackedScene" uid="uid://irkjutuwceju" path="res://scenes/entity components/guts/announcer_guts.tscn" id="8_aoipd"]
+[ext_resource type="PackedScene" uid="uid://btr1f3svl7y3m" path="res://scenes/entity components/guts/healthpool_guts.tscn" id="8_bkepp"]
+[ext_resource type="Script" uid="uid://ci2yaa2b1swsj" path="res://scripts/core/resources/audio/cd_note.gd" id="10_captured_sound"]
+[ext_resource type="Script" uid="uid://d3l2c838cqwsm" path="res://scripts/core/resources/audio/cd_sound_def.gd" id="11_captured_sound"]
+[ext_resource type="PackedScene" uid="uid://c4jinp88xtitl" path="res://scenes/entity components/voices/sound_voice.tscn" id="12_sound_voice"]
+[ext_resource type="PackedScene" uid="uid://5mmhkhj5u3tg" path="res://scenes/game components/speakers/sound_speaker.tscn" id="13_2smha"]
+
+[sub_resource type="Resource" id="Captured_Note_1"]
+script = ExtResource("10_captured_sound")
+note = 72
+duration = 0.3
+
+[sub_resource type="Resource" id="Captured_Note_2"]
+script = ExtResource("10_captured_sound")
+note = 68
+duration = 0.3
+
+[sub_resource type="Resource" id="Captured_Note_3"]
+script = ExtResource("10_captured_sound")
+note = 64
+duration = 0.3
+
+[sub_resource type="Resource" id="Captured_Note_4"]
+script = ExtResource("10_captured_sound")
+duration = 0.9
+
+[sub_resource type="Resource" id="Captured_Sound"]
+script = ExtResource("11_captured_sound")
+wave_shape = 2
+effect = 1
+volume = 0.4
+notes = Array[ExtResource("10_captured_sound")]([SubResource("Captured_Note_1"), SubResource("Captured_Note_2"), SubResource("Captured_Note_3"), SubResource("Captured_Note_4")])
+
+[sub_resource type="Resource" id="Rescued_Note_1"]
+script = ExtResource("10_captured_sound")
+note = 72
+
+[sub_resource type="Resource" id="Rescued_Note_2"]
+script = ExtResource("10_captured_sound")
+note = 76
+
+[sub_resource type="Resource" id="Rescued_Note_3"]
+script = ExtResource("10_captured_sound")
+note = 79
+
+[sub_resource type="Resource" id="Rescued_Note_4"]
+script = ExtResource("10_captured_sound")
+note = 84
+duration = 0.3
+
+[sub_resource type="Resource" id="Resource_08qb3"]
+script = ExtResource("10_captured_sound")
+note = 79
+metadata/_custom_type_script = "uid://ci2yaa2b1swsj"
+
+[sub_resource type="Resource" id="Resource_myf8i"]
+script = ExtResource("10_captured_sound")
+note = 84
+duration = 0.6
+metadata/_custom_type_script = "uid://ci2yaa2b1swsj"
+
+[sub_resource type="Resource" id="Rescued_Sound"]
+script = ExtResource("11_captured_sound")
+wave_shape = 3
+effect = 2
+volume = 0.4
+notes = Array[ExtResource("10_captured_sound")]([SubResource("Rescued_Note_1"), SubResource("Rescued_Note_2"), SubResource("Rescued_Note_3"), SubResource("Rescued_Note_4"), SubResource("Resource_08qb3"), SubResource("Resource_myf8i")])
+
+[sub_resource type="Resource" id="Captive_Destroyed_Note_1"]
+script = ExtResource("10_captured_sound")
+note = 67
+duration = 0.5
+
+[sub_resource type="Resource" id="Captive_Destroyed_Note_2"]
+script = ExtResource("10_captured_sound")
+note = 64
+duration = 0.5
+
+[sub_resource type="Resource" id="Captive_Destroyed_Note_3"]
+script = ExtResource("10_captured_sound")
+duration = 0.5
+
+[sub_resource type="Resource" id="Captive_Destroyed_Note_4"]
+script = ExtResource("10_captured_sound")
+note = 55
+duration = 1.5
+
+[sub_resource type="Resource" id="Resource_vhbca"]
+script = ExtResource("11_captured_sound")
+wave_shape = 5
+effect = 7
+notes = Array[ExtResource("10_captured_sound")]([SubResource("Captive_Destroyed_Note_1"), SubResource("Captive_Destroyed_Note_2"), SubResource("Captive_Destroyed_Note_3"), SubResource("Captive_Destroyed_Note_4")])
 
 [node name="PlayerShip" instance=ExtResource("1_b0gck")]
 groups = Array[StringName]([&"sprite_ships", &"ships", &"players"])
@@ -54,6 +145,13 @@ move_distance_key = null
 arrived_signals = Array[StringName]([])
 component_category = null
 
+[node name="HealthpoolGuts" parent="CapturedBody" index="2" instance=ExtResource("8_bkepp")]
+max_health = 1
+value_key = &" "
+delta_key = &" "
+health_changed_signals = Array[StringName]([&"captive_player_destroyed"])
+zero_health_signals = Array[StringName]([&"captive_player_destroyed"])
+
 [node name="RescuedBody" parent="." index="12" instance=ExtResource("2_gyn25")]
 start_asleep = true
 sleep_on = Array[StringName]([&"escort_achieved"])
@@ -71,6 +169,13 @@ move_distance_key = null
 arrived_signals = null
 component_category = null
 
+[node name="HealthpoolGuts" parent="RescuedBody" index="1" instance=ExtResource("8_bkepp")]
+max_health = 1
+value_key = &" "
+delta_key = &" "
+health_changed_signals = Array[StringName]([&"captive_player_destroyed"])
+zero_health_signals = Array[StringName]([&"captive_player_destroyed"])
+
 [node name="CapturedAnnouncer" parent="." index="13" instance=ExtResource("8_aoipd")]
 listen_signals = Array[StringName]([&"player_captured"])
 rebroadcast_signals = Array[StringName]([&"player_captured"])
@@ -78,3 +183,18 @@ rebroadcast_signals = Array[StringName]([&"player_captured"])
 [node name="RescuedAnnouncer2" parent="." index="14" instance=ExtResource("8_aoipd")]
 listen_signals = Array[StringName]([&"escort_achieved"])
 rebroadcast_signals = Array[StringName]([&"player_rescued"])
+
+[node name="CapturedSoundVoice" parent="." index="15" instance=ExtResource("12_sound_voice")]
+sound = SubResource("Captured_Sound")
+trigger_signal = &"player_captured"
+exclusive = true
+
+[node name="RescuedSoundVoice" parent="." index="16" instance=ExtResource("12_sound_voice")]
+sound = SubResource("Rescued_Sound")
+trigger_signal = &"escort_achieved"
+exclusive = true
+
+[node name="CaptiveDestroyedSpeaker" parent="." index="17" instance=ExtResource("13_2smha")]
+sound = SubResource("Resource_vhbca")
+trigger_signal = &"captive_player_destroyed"
+gameplay_only = true

@@ -41,6 +41,8 @@ class_name AISwoopBrain extends CDEntityComponent
 @export var start_signals: Array[StringName] = [&"begin_swoop"]
 ## entity bus signals that abort the swoop early
 @export var stop_signals: Array[StringName] = []
+## entity bus signals that immediately stop and restart the swoop from the current position
+@export var reset_signals: Array[StringName] = []
 
 @export_group("Emit Signals")
 ## entity bus signals emitted when swoop path completes or is aborted
@@ -134,6 +136,9 @@ func _on_initialize() -> void:
 
 	for sig in stop_signals:
 		self.bus_connect(sig, _on_stop_swoop)
+		
+	for sig in reset_signals:
+		self.bus_connect(sig, _on_reset_swoop)
 
 ## --- swoop triggers ---
 
@@ -164,6 +169,11 @@ func _on_stop_swoop() -> void:
 	if not _is_swooping:
 		return
 	_end_swoop()
+
+## cleanly stop and restart the swoop from current position
+func _on_reset_swoop() -> void:
+	_cleanup_swoop()
+	_on_start_swoop()
 
 ## --- checkpoint generation ---
 
@@ -215,8 +225,8 @@ func _regenerate_curve() -> void:
 	_checkpoints = _generate_checkpoints()
 	_current_index = 0
 
-## end the swoop, clear intent, and emit complete signals
-func _end_swoop() -> void:
+## internal cleanup logic used by both stop and reset
+func _cleanup_swoop() -> void:
 	_is_swooping = false
 	_checkpoints.clear()
 	_current_index = 0
@@ -226,11 +236,15 @@ func _end_swoop() -> void:
 	## Clear intent from the blackboard so legs stop moving the entity
 	entity.blackboard[move_key] = Vector2.ZERO
 	entity.blackboard[distance_key] = 0.0
+	
+	set_physics_process(false)
+
+## end the swoop, clear intent, and emit complete signals
+func _end_swoop() -> void:
+	_cleanup_swoop()
 
 	for sig in complete_signals:
 		entity.bus_emit(sig)
-		
-	set_physics_process(false)
 
 ## --- cleanup ---
 
@@ -247,6 +261,8 @@ func _on_entity_deactivating() -> void:
 		self.bus_disconnect(sig, _on_start_swoop)
 	for sig in stop_signals:
 		self.bus_disconnect(sig, _on_stop_swoop)
+	for sig in reset_signals:
+		self.bus_disconnect(sig, _on_reset_swoop)
 
 ## disable physics processing on activation (waits for start signal)
 func _on_entity_activated() -> void:

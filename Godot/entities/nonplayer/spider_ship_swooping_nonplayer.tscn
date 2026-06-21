@@ -1,4 +1,4 @@
-[gd_scene load_steps=27 format=3 uid="uid://bmypbxacxkn6p"]
+[gd_scene load_steps=34 format=3 uid="uid://bmypbxacxkn6p"]
 
 [ext_resource type="PackedScene" uid="uid://vu1t14u6qvjf" path="res://entities/generic/spider_ship_smooth.tscn" id="1_18u38"]
 [ext_resource type="PackedScene" uid="uid://wghixqf83pas" path="res://scenes/entity components/brains/ai_swoop_brain.tscn" id="2_f0fqv"]
@@ -17,66 +17,95 @@
 [ext_resource type="PackedScene" uid="uid://cci3aqsutxdx3" path="res://scenes/effects/lasso_effect.tscn" id="15_bd0jv"]
 [ext_resource type="Script" uid="uid://dcu4ocnin0htu" path="res://scripts/core/resources/spawners/cd_spawn_context.gd" id="15_bf6or"]
 [ext_resource type="PackedScene" uid="uid://irkjutuwceju" path="res://scenes/entity components/guts/announcer_guts.tscn" id="16_bf6or"]
-[ext_resource type="PackedScene" uid="uid://dgvpukhg57el7" path="res://scenes/entity components/guts/timer_guts.tscn" id="17_timer"]
+
+[sub_resource type="Resource" id="Resource_0d06w"]
+script = ExtResource("15_bf6or")
+velocity = Vector2(200, 0)
+metadata/_custom_type_script = "uid://dcu4ocnin0htu"
 
 [sub_resource type="Resource" id="Resource_s7cy4"]
 script = ExtResource("4_fkier")
 amplitude = 200.0
 frequency = 4
-metadata/_custom_type_script = "uid://dpgs8b1skt7t2"
 
 [sub_resource type="Resource" id="Resource_5neny"]
 script = ExtResource("4_fkier")
 amplitude = 200.0
 frequency = 4
 curve_seed = 1
-metadata/_custom_type_script = "uid://dpgs8b1skt7t2"
 
 [sub_resource type="Resource" id="Resource_pptwy"]
 script = ExtResource("4_fkier")
 amplitude = 200.0
 frequency = 4
 curve_seed = -1
-metadata/_custom_type_script = "uid://dpgs8b1skt7t2"
 
 [sub_resource type="Resource" id="Resource_rgbre"]
 script = ExtResource("6_pptwy")
 curves = Array[ExtResource("4_5neny")]([SubResource("Resource_s7cy4"), SubResource("Resource_5neny"), SubResource("Resource_pptwy")])
-metadata/_custom_type_script = "uid://dakcd8kk2xm44"
 
 [sub_resource type="Resource" id="Resource_vdwk6"]
 script = ExtResource("8_aafss")
 note = 93
 duration = 0.0
 glide = true
-metadata/_custom_type_script = "uid://ci2yaa2b1swsj"
 
 [sub_resource type="Resource" id="Resource_43xsa"]
 script = ExtResource("8_aafss")
 note = 57
 duration = 3.0
 glide = true
-metadata/_custom_type_script = "uid://ci2yaa2b1swsj"
 
 [sub_resource type="Resource" id="Resource_l5wtd"]
 script = ExtResource("9_otbcv")
 wave_shape = 3
 notes = Array[ExtResource("8_aafss")]([SubResource("Resource_vdwk6"), SubResource("Resource_43xsa")])
-metadata/_custom_type_script = "uid://d3l2c838cqwsm"
 
 [sub_resource type="Resource" id="Resource_bd0jv"]
 script = ExtResource("15_bf6or")
 velocity = Vector2(400, 0)
-metadata/_custom_type_script = "uid://dcu4ocnin0htu"
+
+[sub_resource type="Resource" id="Lasso_Zap_Note_1"]
+script = ExtResource("8_aafss")
+note = 81
+duration = 0.1
+
+[sub_resource type="Resource" id="Lasso_Zap_Note_2"]
+script = ExtResource("8_aafss")
+note = 79
+duration = 0.1
+
+[sub_resource type="Resource" id="Lasso_Zap_Note_3"]
+script = ExtResource("8_aafss")
+note = 81
+duration = 0.1
+
+[sub_resource type="Resource" id="Lasso_Zap_Note_4"]
+script = ExtResource("8_aafss")
+note = 79
+duration = 0.1
+
+[sub_resource type="Resource" id="Lasso_Zap_Note_5"]
+script = ExtResource("8_aafss")
+note = 81
+duration = 0.1
+
+[sub_resource type="Resource" id="Lasso_Zap_Note_6"]
+script = ExtResource("8_aafss")
+note = 79
+duration = 0.2
+
+[sub_resource type="Resource" id="Lasso_Zap_Sound"]
+script = ExtResource("9_otbcv")
+effect = 5
+notes = Array[ExtResource("8_aafss")]([SubResource("Lasso_Zap_Note_1"), SubResource("Lasso_Zap_Note_2"), SubResource("Lasso_Zap_Note_3"), SubResource("Lasso_Zap_Note_4"), SubResource("Lasso_Zap_Note_5"), SubResource("Lasso_Zap_Note_6")])
 
 [node name="SpiderShip" instance=ExtResource("1_18u38")]
 groups = Array[StringName]([&"spider_ships", &"ships", &"enemies", &"bosses"])
 
-[node name="ScreenWrapLeg" parent="." index="0"]
-wrap_signals = Array[StringName]([&"screen_wrapped"])
-
 [node name="GunArm" parent="." index="6"]
 bullet_scene = ExtResource("2_fkier")
+spawn_context = SubResource("Resource_0d06w")
 
 [node name="HealthpoolGuts" parent="." index="7"]
 max_health = 2
@@ -86,8 +115,9 @@ curve = SubResource("Resource_rgbre")
 target_distance = 500.0
 loop = true
 start_signals = Array[StringName]([&"begin_dive"])
-stop_signals = Array[StringName]([&"lasso_start", &"screen_wrapped"])
-complete_signals = Array[StringName]([&"dive_complete"])
+stop_signals = Array[StringName]([&"lasso_start"])
+reset_signals = Array[StringName]([&"screen_wrapped"])
+complete_signals = Array[StringName]([])
 
 [node name="SoundVoice3" parent="." index="13" instance=ExtResource("7_g0k2m")]
 sound = SubResource("Resource_l5wtd")
@@ -105,12 +135,12 @@ points = 3
 bullet_scene = ExtResource("14_0d06w")
 effect_scene = ExtResource("15_bd0jv")
 spawn_context = SubResource("Resource_bd0jv")
+fire_signals = Array[StringName]([&"lasso_start"])
 
 [node name="ReturnToFormationAnnouncerGuts" parent="." index="18" instance=ExtResource("16_bf6or")]
-listen_signals = Array[StringName]([&"lasso_end", &"timer_expired"])
+listen_signals = Array[StringName]([&"lasso_end", &"dive_complete"])
 
-[node name="DiveTimer" parent="." index="19" instance=ExtResource("17_timer")]
-starting_time = 8.0
-auto_start = false
-pause_signals = Array[StringName]([&"dive_complete"])
-resume_signals = Array[StringName]([&"begin_dive"])
+[node name="LassoSoundVoice" parent="." index="19" instance=ExtResource("7_g0k2m")]
+sound = SubResource("Lasso_Zap_Sound")
+trigger_signal = &"lasso_start"
+exclusive = true

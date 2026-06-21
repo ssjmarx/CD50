@@ -33,6 +33,7 @@ class_name TractorBeamArm extends CDEntityComponent
 @export_group("Emit Signals")
 @export var windup_signals: Array[StringName] = [&"tractor_beam_windup"]
 @export var capture_signals: Array[StringName] = [&"player_captured"]
+@export var captured_signals: Array[StringName] = [&"capture_succeeded"]
 @export var miss_signals: Array[StringName] = [&"capture_missed"]
 @export var complete_signals: Array[StringName] = [&"tractor_beam_complete"]
 
@@ -127,6 +128,10 @@ func _execute_capture(target: CDEntity) -> void:
 	## emit on target's entity bus
 	for sig in capture_signals:
 		target.bus_emit(sig)
+	
+	## emit on captor's entity bus
+	for sig in captured_signals:
+		entity.bus_emit(sig)
 
 ## emit miss signals if no valid target was found
 func _emit_miss() -> void:

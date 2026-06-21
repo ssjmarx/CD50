@@ -1,4 +1,4 @@
-[gd_scene load_steps=173 format=3 uid="uid://c0q0c0v84x80"]
+[gd_scene load_steps=185 format=3 uid="uid://c0q0c0v84x80"]
 
 [ext_resource type="Script" uid="uid://dm0uehngpvbh7" path="res://scripts/core/infrastructure/cd_game.gd" id="1_62wb8"]
 [ext_resource type="PackedScene" uid="uid://cmbx6xnct372t" path="res://scenes/core/infrastructure/cd_collision_buffer.tscn" id="2_7y1r2"]
@@ -34,6 +34,7 @@
 [ext_resource type="Script" uid="uid://cr36gmk66snrc" path="res://scripts/core/resources/formation/cd_marching_order.gd" id="23_1k33r"]
 [ext_resource type="PackedScene" path="res://scenes/game components/directors/shooting_director.tscn" id="23_7jcia"]
 [ext_resource type="Script" uid="uid://dm2djsydyr0u1" path="res://scripts/core/resources/triggers/cd_timer_trigger.gd" id="24_gc4j8"]
+[ext_resource type="Script" uid="uid://c0vh1ticpmvx5" path="res://scripts/core/resources/selectors/cd_select_all.gd" id="25_82ubq"]
 [ext_resource type="Script" uid="uid://bd5apwoshu3n6" path="res://scripts/core/resources/behavior/cd_wave_scaler.gd" id="25_hc4eh"]
 [ext_resource type="Script" uid="uid://b3xaxo1yp2dn1" path="res://scripts/core/resources/selectors/cd_select_nearest_n_to_group.gd" id="26_gc4j8"]
 [ext_resource type="Script" uid="uid://bgl0fyqd8o0w5" path="res://scripts/core/resources/selectors/cd_select_random_n.gd" id="27_1nsuk"]
@@ -53,137 +54,115 @@
 [ext_resource type="PackedScene" uid="uid://c4upbp1v4vll8" path="res://scenes/game components/cards/score_card.tscn" id="52_j0bx8"]
 [ext_resource type="PackedScene" uid="uid://dqsat1yshg31w" path="res://scenes/game components/goals/score_threshold_goal.tscn" id="53_xatni"]
 [ext_resource type="PackedScene" uid="uid://d4b42pvesykqo" path="res://scenes/game components/marks/cd_mark.tscn" id="54_682rw"]
+[ext_resource type="PackedScene" uid="uid://dksj54blfwuum" path="res://scenes/game components/marks/timed_mark.tscn" id="55_sdj2a"]
 [ext_resource type="PackedScene" uid="uid://mxejpxipdbii" path="res://scenes/game components/cards/wave_card.tscn" id="99_wave"]
 
 [sub_resource type="Resource" id="Resource_q4h5u"]
 script = ExtResource("4_xb0do")
 group_name = &"players"
 collides_with = Array[StringName]([&"players"])
-metadata/_custom_type_script = "uid://b2ibop6r2cryj"
 
 [sub_resource type="Resource" id="Resource_qh32t"]
 script = ExtResource("4_xb0do")
 group_name = &"enemies"
-metadata/_custom_type_script = "uid://b2ibop6r2cryj"
 
 [sub_resource type="Resource" id="Resource_dg5ky"]
 script = ExtResource("4_xb0do")
 group_name = &"enemy_bullets"
 collides_with = Array[StringName]([&"players"])
-metadata/_custom_type_script = "uid://b2ibop6r2cryj"
 
 [sub_resource type="Resource" id="Resource_7ar12"]
 script = ExtResource("4_xb0do")
 group_name = &"player_bullets"
 collides_with = Array[StringName]([&"enemies"])
-metadata/_custom_type_script = "uid://b2ibop6r2cryj"
 
 [sub_resource type="Resource" id="Resource_eb2hk"]
 script = ExtResource("4_xb0do")
 group_name = &"tractor_line"
 collides_with = Array[StringName]([&"enemies"])
-metadata/_custom_type_script = "uid://b2ibop6r2cryj"
 
 [sub_resource type="Resource" id="Resource_osfbp"]
 script = ExtResource("21_g3xn7")
 signal_names = Array[StringName]([&"game_play"])
-metadata/_custom_type_script = "uid://ca0k2u53egerl"
 
 [sub_resource type="Resource" id="Resource_dsfuj"]
 script = ExtResource("9_vaj0o")
 trigger = SubResource("Resource_osfbp")
 wake_stages = Array[StringName]([&"Level1Stage"])
-metadata/_custom_type_script = "uid://1ag25dxeklvd"
 
 [sub_resource type="Resource" id="Resource_ssbpx"]
 script = ExtResource("21_g3xn7")
 signal_names = Array[StringName]([&"level_one_complete"])
-metadata/_custom_type_script = "uid://ca0k2u53egerl"
 
 [sub_resource type="Resource" id="Resource_73s3c"]
 script = ExtResource("13_sjgbx")
 group_names = Array[StringName]([&"enemies"])
-metadata/_custom_type_script = "uid://deqlfyqjebr6v"
 
 [sub_resource type="Resource" id="Resource_wibil"]
 script = ExtResource("11_5umtv")
 triggers = Array[ExtResource("12_8nemr")]([SubResource("Resource_ssbpx"), SubResource("Resource_73s3c")])
-metadata/_custom_type_script = "uid://dctlu6ei0yhha"
 
 [sub_resource type="Resource" id="Resource_1ivtp"]
 script = ExtResource("9_vaj0o")
 trigger = SubResource("Resource_wibil")
 sleep_stages = Array[StringName]([&"Level1Stage"])
 wake_stages = Array[StringName]([&"Level2Stage"])
-metadata/_custom_type_script = "uid://1ag25dxeklvd"
 
 [sub_resource type="Resource" id="Resource_sig_l2c"]
 script = ExtResource("21_g3xn7")
 signal_names = Array[StringName]([&"level_two_complete"])
-metadata/_custom_type_script = "uid://ca0k2u53egerl"
 
 [sub_resource type="Resource" id="Resource_comp_l2l3"]
 script = ExtResource("11_5umtv")
 triggers = Array[ExtResource("12_8nemr")]([SubResource("Resource_sig_l2c"), SubResource("Resource_73s3c")])
-metadata/_custom_type_script = "uid://dctlu6ei0yhha"
 
 [sub_resource type="Resource" id="Resource_rule_l2l3"]
 script = ExtResource("9_vaj0o")
 trigger = SubResource("Resource_comp_l2l3")
 sleep_stages = Array[StringName]([&"Level2Stage"])
 wake_stages = Array[StringName]([&"Level3Stage"])
-metadata/_custom_type_script = "uid://1ag25dxeklvd"
 
 [sub_resource type="Resource" id="Resource_sig_l3c"]
 script = ExtResource("21_g3xn7")
 signal_names = Array[StringName]([&"level_three_complete"])
-metadata/_custom_type_script = "uid://ca0k2u53egerl"
 
 [sub_resource type="Resource" id="Resource_comp_l3l4"]
 script = ExtResource("11_5umtv")
 triggers = Array[ExtResource("12_8nemr")]([SubResource("Resource_sig_l3c"), SubResource("Resource_73s3c")])
-metadata/_custom_type_script = "uid://dctlu6ei0yhha"
 
 [sub_resource type="Resource" id="Resource_rule_l3l4"]
 script = ExtResource("9_vaj0o")
 trigger = SubResource("Resource_comp_l3l4")
 sleep_stages = Array[StringName]([&"Level3Stage"])
 wake_stages = Array[StringName]([&"Level4Stage"])
-metadata/_custom_type_script = "uid://1ag25dxeklvd"
 
 [sub_resource type="Resource" id="Resource_sig_l4c"]
 script = ExtResource("21_g3xn7")
 signal_names = Array[StringName]([&"level_four_complete"])
-metadata/_custom_type_script = "uid://ca0k2u53egerl"
 
 [sub_resource type="Resource" id="Resource_comp_l4l5"]
 script = ExtResource("11_5umtv")
 triggers = Array[ExtResource("12_8nemr")]([SubResource("Resource_sig_l4c"), SubResource("Resource_73s3c")])
-metadata/_custom_type_script = "uid://dctlu6ei0yhha"
 
 [sub_resource type="Resource" id="Resource_rule_l4l5"]
 script = ExtResource("9_vaj0o")
 trigger = SubResource("Resource_comp_l4l5")
 sleep_stages = Array[StringName]([&"Level4Stage"])
 wake_stages = Array[StringName]([&"Level5Stage"])
-metadata/_custom_type_script = "uid://1ag25dxeklvd"
 
 [sub_resource type="Resource" id="Resource_sig_l5c"]
 script = ExtResource("21_g3xn7")
 signal_names = Array[StringName]([&"level_five_complete"])
-metadata/_custom_type_script = "uid://ca0k2u53egerl"
 
 [sub_resource type="Resource" id="Resource_comp_l5l1"]
 script = ExtResource("11_5umtv")
 triggers = Array[ExtResource("12_8nemr")]([SubResource("Resource_sig_l5c"), SubResource("Resource_73s3c")])
-metadata/_custom_type_script = "uid://dctlu6ei0yhha"
 
 [sub_resource type="Resource" id="Resource_rule_l5l1"]
 script = ExtResource("9_vaj0o")
 trigger = SubResource("Resource_comp_l5l1")
 sleep_stages = Array[StringName]([&"Level5Stage"])
 wake_stages = Array[StringName]([&"Level1Stage"])
-metadata/_custom_type_script = "uid://1ag25dxeklvd"
 
 [sub_resource type="Resource" id="Resource_4mgkk"]
 script = ExtResource("22_jix4n")
@@ -191,21 +170,18 @@ preferred_group = &"bosses"
 columns = 12
 rows = 1
 offset = Vector2(0, -48)
-metadata/_custom_type_script = "uid://b3scrmy1vwk2j"
 
 [sub_resource type="Resource" id="Resource_kgu26"]
 script = ExtResource("22_jix4n")
 preferred_group = &"lieutenants"
 columns = 16
 rows = 3
-metadata/_custom_type_script = "uid://b3scrmy1vwk2j"
 
 [sub_resource type="Resource" id="Resource_vaj0o"]
 script = ExtResource("22_jix4n")
 columns = 20
 rows = 3
 offset = Vector2(0, 76)
-metadata/_custom_type_script = "uid://b3scrmy1vwk2j"
 
 [sub_resource type="Resource" id="Resource_asuvp"]
 script = ExtResource("23_1k33r")
@@ -214,7 +190,6 @@ distance = 64.0
 amplitude = 0.0
 expand_time = 0.0
 hold_time = 0.0
-metadata/_custom_type_script = "uid://cr36gmk66snrc"
 
 [sub_resource type="Resource" id="Resource_5umtv"]
 script = ExtResource("23_1k33r")
@@ -222,9 +197,7 @@ duration = 8.0
 distance = -128.0
 amplitude = 0.0
 expand_time = 0.0
-hold_time = 0.0
 contract_time = 0.0
-metadata/_custom_type_script = "uid://cr36gmk66snrc"
 
 [sub_resource type="Resource" id="Resource_8nemr"]
 script = ExtResource("23_1k33r")
@@ -232,9 +205,7 @@ duration = 4.0
 distance = 64.0
 amplitude = 0.0
 expand_time = 0.0
-hold_time = 0.0
 contract_time = 0.0
-metadata/_custom_type_script = "uid://cr36gmk66snrc"
 
 [sub_resource type="Resource" id="Resource_sjgbx"]
 script = ExtResource("23_1k33r")
@@ -244,24 +215,20 @@ amplitude = 2.0
 expand_time = 2.0
 hold_time = 0.0
 contract_time = 2.0
-metadata/_custom_type_script = "uid://cr36gmk66snrc"
 
 [sub_resource type="Resource" id="Resource_speed_scaler"]
 script = ExtResource("25_hc4eh")
 per_wave = 1.0
 minimum = 1.0
 maximum = 5.0
-metadata/_custom_type_script = "uid://bd5apwoshu3n6"
 
 [sub_resource type="Resource" id="Resource_xatni"]
 script = ExtResource("21_k70bp")
 signal_name = &"swoop_complete"
-metadata/_custom_type_script = "uid://3ciu0vvrmmb7"
 
 [sub_resource type="Resource" id="Resource_682rw"]
 script = ExtResource("21_g3xn7")
 signal_names = Array[StringName]([&"swoop_complete"])
-metadata/_custom_type_script = "uid://ca0k2u53egerl"
 
 [sub_resource type="Resource" id="Resource_sdj2a"]
 script = ExtResource("20_k70bp")
@@ -270,24 +237,20 @@ add_groups = Array[StringName]([&"formation"])
 target_groups = Array[StringName]([&"swooping"])
 trigger = SubResource("Resource_682rw")
 selector = SubResource("Resource_xatni")
-metadata/_custom_type_script = "uid://2krdfmhel0jp"
 
 [sub_resource type="Resource" id="Resource_8klk8"]
 script = ExtResource("27_1nsuk")
-metadata/_custom_type_script = "uid://bgl0fyqd8o0w5"
 
 [sub_resource type="Resource" id="Resource_0na4m"]
 script = ExtResource("25_hc4eh")
 per_wave = -1.0
 minimum = 5.0
-metadata/_custom_type_script = "uid://bd5apwoshu3n6"
 
 [sub_resource type="Resource" id="Resource_45xdf"]
 script = ExtResource("24_gc4j8")
 interval = 10.0
 wave_scaler = SubResource("Resource_0na4m")
 random_variance = 2.0
-metadata/_custom_type_script = "uid://dm2djsydyr0u1"
 
 [sub_resource type="Resource" id="Resource_huovk"]
 script = ExtResource("20_k70bp")
@@ -297,17 +260,14 @@ target_groups = Array[StringName]([&"formation"])
 trigger = SubResource("Resource_45xdf")
 selector = SubResource("Resource_8klk8")
 entity_signals = Array[StringName]([&"begin_dive"])
-metadata/_custom_type_script = "uid://2krdfmhel0jp"
 
 [sub_resource type="Resource" id="Resource_lgav2"]
 script = ExtResource("21_k70bp")
 signal_name = &"player_captured"
-metadata/_custom_type_script = "uid://3ciu0vvrmmb7"
 
 [sub_resource type="Resource" id="Resource_mo7to"]
 script = ExtResource("21_g3xn7")
 signal_names = Array[StringName]([&"player_captured"])
-metadata/_custom_type_script = "uid://ca0k2u53egerl"
 
 [sub_resource type="Resource" id="Resource_17gxj"]
 script = ExtResource("20_k70bp")
@@ -316,17 +276,14 @@ add_groups = Array[StringName]([&"enemies"])
 target_groups = Array[StringName]([&"players"])
 trigger = SubResource("Resource_mo7to")
 selector = SubResource("Resource_lgav2")
-metadata/_custom_type_script = "uid://2krdfmhel0jp"
 
 [sub_resource type="Resource" id="Resource_tcsmy"]
 script = ExtResource("21_k70bp")
 signal_name = &"player_rescued"
-metadata/_custom_type_script = "uid://3ciu0vvrmmb7"
 
 [sub_resource type="Resource" id="Resource_ex8ce"]
 script = ExtResource("21_g3xn7")
 signal_names = Array[StringName]([&"player_rescued"])
-metadata/_custom_type_script = "uid://ca0k2u53egerl"
 
 [sub_resource type="Resource" id="Resource_wavnc"]
 script = ExtResource("20_k70bp")
@@ -335,17 +292,14 @@ add_groups = Array[StringName]([&"players"])
 target_groups = Array[StringName]([&"enemies"])
 trigger = SubResource("Resource_ex8ce")
 selector = SubResource("Resource_tcsmy")
-metadata/_custom_type_script = "uid://2krdfmhel0jp"
 
 [sub_resource type="Resource" id="Resource_vjjft"]
 script = ExtResource("21_k70bp")
 signal_name = &"dive_complete"
-metadata/_custom_type_script = "uid://3ciu0vvrmmb7"
 
 [sub_resource type="Resource" id="Resource_tmxlt"]
 script = ExtResource("21_g3xn7")
 signal_names = Array[StringName]([&"dive_complete"])
-metadata/_custom_type_script = "uid://ca0k2u53egerl"
 
 [sub_resource type="Resource" id="Resource_qsrt0"]
 script = ExtResource("20_k70bp")
@@ -354,6 +308,23 @@ add_groups = Array[StringName]([&"formation"])
 target_groups = Array[StringName]([&"diving"])
 trigger = SubResource("Resource_tmxlt")
 selector = SubResource("Resource_vjjft")
+
+[sub_resource type="Resource" id="Resource_5ysjq"]
+script = ExtResource("25_82ubq")
+metadata/_custom_type_script = "uid://c0vh1ticpmvx5"
+
+[sub_resource type="Resource" id="Resource_rtas7"]
+script = ExtResource("21_g3xn7")
+signal_names = Array[StringName]([&"clean_up_formation"])
+metadata/_custom_type_script = "uid://ca0k2u53egerl"
+
+[sub_resource type="Resource" id="Resource_4c3l3"]
+script = ExtResource("20_k70bp")
+remove_groups = Array[StringName]([&"diving"])
+add_groups = Array[StringName]([&"formation"])
+target_groups = Array[StringName]([&"enemies"])
+trigger = SubResource("Resource_rtas7")
+selector = SubResource("Resource_5ysjq")
 metadata/_custom_type_script = "uid://2krdfmhel0jp"
 
 [sub_resource type="Resource" id="Resource_20wdp"]
@@ -361,38 +332,31 @@ script = ExtResource("25_hc4eh")
 per_wave = -1.1875
 base = 5.0
 minimum = 0.25
-metadata/_custom_type_script = "uid://bd5apwoshu3n6"
 
 [sub_resource type="Resource" id="Resource_blp8l"]
 script = ExtResource("24_gc4j8")
 interval = 6.0
 wave_scaler = SubResource("Resource_20wdp")
 random_variance = 1.0
-metadata/_custom_type_script = "uid://dm2djsydyr0u1"
 
 [sub_resource type="Resource" id="Resource_hc4eh"]
 script = ExtResource("26_gc4j8")
-metadata/_custom_type_script = "uid://b3xaxo1yp2dn1"
 
 [sub_resource type="Resource" id="Resource_la2sg"]
 script = ExtResource("12_rgict")
 additional_groups = Array[StringName]([&"swooping", &"left"])
-metadata/_custom_type_script = "uid://dcu4ocnin0htu"
 
 [sub_resource type="Resource" id="Resource_s3e4k"]
 script = ExtResource("12_rgict")
 additional_groups = Array[StringName]([&"swooping", &"right"])
-metadata/_custom_type_script = "uid://dcu4ocnin0htu"
 
 [sub_resource type="Resource" id="Resource_owvki"]
 script = ExtResource("12_rgict")
 additional_groups = Array[StringName]([&"swooping", &"bottom_left"])
-metadata/_custom_type_script = "uid://dcu4ocnin0htu"
 
 [sub_resource type="Resource" id="Resource_ldmk8"]
 script = ExtResource("12_rgict")
 additional_groups = Array[StringName]([&"swooping", &"bottom_right"])
-metadata/_custom_type_script = "uid://dcu4ocnin0htu"
 
 [sub_resource type="Resource" id="Resource_qhmbs"]
 script = ExtResource("17_la2sg")
@@ -402,19 +366,16 @@ direction = 2
 curve_seed = 2
 offset = Vector2(-32, 32)
 reverse = true
-metadata/_custom_type_script = "uid://b7yxnmuk1vkya"
 
 [sub_resource type="Resource" id="Resource_156p0"]
 script = ExtResource("16_4yrl4")
 amplitude = 96.0
 frequency = 2
 offset = Vector2(0, 64)
-metadata/_custom_type_script = "uid://dpgs8b1skt7t2"
 
 [sub_resource type="Resource" id="Resource_jix4n"]
 script = ExtResource("17_hm20g")
 curves = Array[ExtResource("15_34iby")]([SubResource("Resource_qhmbs"), SubResource("Resource_156p0")])
-metadata/_custom_type_script = "uid://dakcd8kk2xm44"
 
 [sub_resource type="Resource" id="Resource_1nsuk"]
 script = ExtResource("17_la2sg")
@@ -424,7 +385,6 @@ direction = 2
 curve_seed = 2
 offset = Vector2(32, 32)
 reverse = true
-metadata/_custom_type_script = "uid://b7yxnmuk1vkya"
 
 [sub_resource type="Resource" id="Resource_1tdfd"]
 script = ExtResource("16_4yrl4")
@@ -432,12 +392,10 @@ amplitude = 96.0
 frequency = 2
 offset = Vector2(0, 64)
 reverse = true
-metadata/_custom_type_script = "uid://dpgs8b1skt7t2"
 
 [sub_resource type="Resource" id="Resource_g3xn7"]
 script = ExtResource("17_hm20g")
 curves = Array[ExtResource("15_34iby")]([SubResource("Resource_1nsuk"), SubResource("Resource_1tdfd")])
-metadata/_custom_type_script = "uid://dakcd8kk2xm44"
 
 [sub_resource type="Resource" id="Resource_2bq8q"]
 script = ExtResource("21_1nsuk")
@@ -447,7 +405,6 @@ loops = 2
 curve_seed = -1
 offset = Vector2(-192, 192)
 reverse = true
-metadata/_custom_type_script = "uid://7j04axulu7rq"
 
 [sub_resource type="Resource" id="Resource_rvvw1"]
 script = ExtResource("21_1nsuk")
@@ -456,54 +413,45 @@ radius_y = 48.0
 loops = 2
 curve_seed = -2
 offset = Vector2(192, 192)
-metadata/_custom_type_script = "uid://7j04axulu7rq"
 
 [sub_resource type="Resource" id="Resource_x8buj"]
 script = ExtResource("34_1nsuk")
 signals = Array[StringName]([&"ambience"])
 delay_after = 2.0
-metadata/_custom_type_script = "uid://cyqs535s5vfg4"
 
 [sub_resource type="Resource" id="Resource_p87tt"]
 script = ExtResource("34_1nsuk")
 signals = Array[StringName]([&"spawn_top_left", &"spawn_top_right"])
 delay_after = 3.0
-metadata/_custom_type_script = "uid://cyqs535s5vfg4"
 
 [sub_resource type="Resource" id="Resource_ifna5"]
 script = ExtResource("34_1nsuk")
 signals = Array[StringName]([&"spawn_bottom_left"])
 delay_after = 3.0
-metadata/_custom_type_script = "uid://cyqs535s5vfg4"
 
 [sub_resource type="Resource" id="Resource_j0bx8"]
 script = ExtResource("34_1nsuk")
 signals = Array[StringName]([&"spawn_bottom_right"])
 delay_after = 3.0
-metadata/_custom_type_script = "uid://cyqs535s5vfg4"
 
 [sub_resource type="Resource" id="Resource_52c78"]
 script = ExtResource("34_1nsuk")
 signals = Array[StringName]([&"spawn_top_left"])
 delay_after = 3.0
-metadata/_custom_type_script = "uid://cyqs535s5vfg4"
 
 [sub_resource type="Resource" id="Resource_q4en4"]
 script = ExtResource("34_1nsuk")
 signals = Array[StringName]([&"spawn_top_right"])
-metadata/_custom_type_script = "uid://cyqs535s5vfg4"
 
 [sub_resource type="Resource" id="Resource_acn14"]
 script = ExtResource("21_g3xn7")
 signal_names = Array[StringName]([&"level_start"])
-metadata/_custom_type_script = "uid://ca0k2u53egerl"
 
 [sub_resource type="Resource" id="Resource_l2_helix_l"]
 script = ExtResource("40_helix")
 radius = 80.0
 turns = 2
 curve_seed = 2
-metadata/_custom_type_script = "uid://c0l1od3pky1y1"
 
 [sub_resource type="Resource" id="Resource_l2_helix_r"]
 script = ExtResource("40_helix")
@@ -511,7 +459,6 @@ radius = 80.0
 turns = 2
 curve_seed = 7
 reverse = true
-metadata/_custom_type_script = "uid://c0l1od3pky1y1"
 
 [sub_resource type="Resource" id="Resource_l2_spir_bl"]
 script = ExtResource("41_spiral")
@@ -519,7 +466,6 @@ max_radius = 100.0
 turns = 2
 curve_seed = 5
 offset = Vector2(-32, 0)
-metadata/_custom_type_script = "uid://c5eo3m6tfj1b"
 
 [sub_resource type="Resource" id="Resource_l2_spir_br"]
 script = ExtResource("41_spiral")
@@ -527,55 +473,46 @@ max_radius = 100.0
 turns = 2
 curve_seed = 5
 offset = Vector2(32, 0)
-metadata/_custom_type_script = "uid://c5eo3m6tfj1b"
 
 [sub_resource type="Resource" id="Resource_4ia1r"]
 script = ExtResource("34_1nsuk")
 signals = Array[StringName]([&"ambience"])
 delay_after = 2.0
-metadata/_custom_type_script = "uid://cyqs535s5vfg4"
 
 [sub_resource type="Resource" id="Resource_l2_s1"]
 script = ExtResource("34_1nsuk")
 signals = Array[StringName]([&"spawn_bottom_left"])
 delay_after = 3.0
-metadata/_custom_type_script = "uid://cyqs535s5vfg4"
 
 [sub_resource type="Resource" id="Resource_l2_s2"]
 script = ExtResource("34_1nsuk")
 signals = Array[StringName]([&"spawn_bottom_right"])
 delay_after = 3.0
-metadata/_custom_type_script = "uid://cyqs535s5vfg4"
 
 [sub_resource type="Resource" id="Resource_l2_s3"]
 script = ExtResource("34_1nsuk")
 signals = Array[StringName]([&"spawn_top_left"])
 delay_after = 3.0
-metadata/_custom_type_script = "uid://cyqs535s5vfg4"
 
 [sub_resource type="Resource" id="Resource_l2_s4"]
 script = ExtResource("34_1nsuk")
 signals = Array[StringName]([&"spawn_top_right"])
 delay_after = 6.0
-metadata/_custom_type_script = "uid://cyqs535s5vfg4"
 
 [sub_resource type="Resource" id="Resource_l2_s5"]
 script = ExtResource("34_1nsuk")
 signals = Array[StringName]([&"spawn_top_left", &"spawn_top_right"])
-metadata/_custom_type_script = "uid://cyqs535s5vfg4"
 
 [sub_resource type="Resource" id="Resource_l3_helix_l"]
 script = ExtResource("40_helix")
 radius = 60.0
 curve_seed = 3
-metadata/_custom_type_script = "uid://c0l1od3pky1y1"
 
 [sub_resource type="Resource" id="Resource_l3_helix_r"]
 script = ExtResource("40_helix")
 radius = -60.0
 curve_seed = -3
 reverse = true
-metadata/_custom_type_script = "uid://c0l1od3pky1y1"
 
 [sub_resource type="Resource" id="Resource_l3_para_bl"]
 script = ExtResource("17_la2sg")
@@ -584,7 +521,6 @@ curvature = 8.0
 direction = 2
 curve_seed = 4
 offset = Vector2(250, 48)
-metadata/_custom_type_script = "uid://b7yxnmuk1vkya"
 
 [sub_resource type="Resource" id="Resource_l3_para_br"]
 script = ExtResource("17_la2sg")
@@ -593,42 +529,35 @@ direction = 2
 curve_seed = 4
 offset = Vector2(-48, 96)
 reverse = true
-metadata/_custom_type_script = "uid://b7yxnmuk1vkya"
 
 [sub_resource type="Resource" id="Resource_umh4f"]
 script = ExtResource("34_1nsuk")
 signals = Array[StringName]([&"ambience"])
 delay_after = 2.0
-metadata/_custom_type_script = "uid://cyqs535s5vfg4"
 
 [sub_resource type="Resource" id="Resource_l3_s1"]
 script = ExtResource("34_1nsuk")
 signals = Array[StringName]([&"spawn_top_left"])
 delay_after = 2.0
-metadata/_custom_type_script = "uid://cyqs535s5vfg4"
 
 [sub_resource type="Resource" id="Resource_l3_s2"]
 script = ExtResource("34_1nsuk")
 signals = Array[StringName]([&"spawn_bottom_right"])
 delay_after = 2.0
-metadata/_custom_type_script = "uid://cyqs535s5vfg4"
 
 [sub_resource type="Resource" id="Resource_l3_s3"]
 script = ExtResource("34_1nsuk")
 signals = Array[StringName]([&"spawn_top_right"])
 delay_after = 2.0
-metadata/_custom_type_script = "uid://cyqs535s5vfg4"
 
 [sub_resource type="Resource" id="Resource_l3_s4"]
 script = ExtResource("34_1nsuk")
 signals = Array[StringName]([&"spawn_bottom_left"])
 delay_after = 2.0
-metadata/_custom_type_script = "uid://cyqs535s5vfg4"
 
 [sub_resource type="Resource" id="Resource_l3_s5"]
 script = ExtResource("34_1nsuk")
 signals = Array[StringName]([&"spawn_top_left", &"spawn_top_right"])
-metadata/_custom_type_script = "uid://cyqs535s5vfg4"
 
 [sub_resource type="Resource" id="Resource_l4_para_l"]
 script = ExtResource("17_la2sg")
@@ -637,19 +566,16 @@ direction = 2
 curve_seed = 6
 offset = Vector2(-48, 32)
 reverse = true
-metadata/_custom_type_script = "uid://b7yxnmuk1vkya"
 
 [sub_resource type="Resource" id="Resource_l4_sine_l"]
 script = ExtResource("16_4yrl4")
 amplitude = 96.0
 frequency = 4
 offset = Vector2(0, 64)
-metadata/_custom_type_script = "uid://dpgs8b1skt7t2"
 
 [sub_resource type="Resource" id="Resource_l4_seql"]
 script = ExtResource("17_hm20g")
 curves = Array[ExtResource("15_34iby")]([SubResource("Resource_l4_para_l"), SubResource("Resource_l4_sine_l")])
-metadata/_custom_type_script = "uid://dakcd8kk2xm44"
 
 [sub_resource type="Resource" id="Resource_l4_para_r"]
 script = ExtResource("17_la2sg")
@@ -658,7 +584,6 @@ direction = 2
 curve_seed = 6
 offset = Vector2(48, 32)
 reverse = true
-metadata/_custom_type_script = "uid://b7yxnmuk1vkya"
 
 [sub_resource type="Resource" id="Resource_l4_sine_r"]
 script = ExtResource("16_4yrl4")
@@ -666,19 +591,16 @@ amplitude = 96.0
 frequency = 4
 offset = Vector2(0, 64)
 reverse = true
-metadata/_custom_type_script = "uid://dpgs8b1skt7t2"
 
 [sub_resource type="Resource" id="Resource_l4_seqr"]
 script = ExtResource("17_hm20g")
 curves = Array[ExtResource("15_34iby")]([SubResource("Resource_l4_para_r"), SubResource("Resource_l4_sine_r")])
-metadata/_custom_type_script = "uid://dakcd8kk2xm44"
 
 [sub_resource type="Resource" id="Resource_l4_spir_bl"]
 script = ExtResource("41_spiral")
 max_radius = 80.0
 curve_seed = 3
 offset = Vector2(0, -32)
-metadata/_custom_type_script = "uid://c5eo3m6tfj1b"
 
 [sub_resource type="Resource" id="Resource_l4_spir_br"]
 script = ExtResource("41_spiral")
@@ -686,30 +608,25 @@ max_radius = 80.0
 inward = false
 curve_seed = 3
 offset = Vector2(0, 32)
-metadata/_custom_type_script = "uid://c5eo3m6tfj1b"
 
 [sub_resource type="Resource" id="Resource_drhtc"]
 script = ExtResource("34_1nsuk")
 signals = Array[StringName]([&"ambience"])
 delay_after = 2.0
-metadata/_custom_type_script = "uid://cyqs535s5vfg4"
 
 [sub_resource type="Resource" id="Resource_l4_s1"]
 script = ExtResource("34_1nsuk")
 signals = Array[StringName]([&"spawn_top_left", &"spawn_top_right", &"spawn_bottom_left", &"spawn_bottom_right"])
 delay_after = 4.0
-metadata/_custom_type_script = "uid://cyqs535s5vfg4"
 
 [sub_resource type="Resource" id="Resource_l4_s2"]
 script = ExtResource("34_1nsuk")
 signals = Array[StringName]([&"spawn_top_left"])
 delay_after = 3.0
-metadata/_custom_type_script = "uid://cyqs535s5vfg4"
 
 [sub_resource type="Resource" id="Resource_l4_s3"]
 script = ExtResource("34_1nsuk")
 signals = Array[StringName]([&"spawn_bottom_right"])
-metadata/_custom_type_script = "uid://cyqs535s5vfg4"
 
 [sub_resource type="Resource" id="Resource_l5_helix_l"]
 script = ExtResource("40_helix")
@@ -717,7 +634,6 @@ radius = 120.0
 turns = 2
 curve_seed = 4
 offset = Vector2(-64, 0)
-metadata/_custom_type_script = "uid://c0l1od3pky1y1"
 
 [sub_resource type="Resource" id="Resource_l5_circ_r"]
 script = ExtResource("21_1nsuk")
@@ -726,7 +642,6 @@ radius_y = 64.0
 loops = 3
 curve_seed = 5
 reverse = true
-metadata/_custom_type_script = "uid://7j04axulu7rq"
 
 [sub_resource type="Resource" id="Resource_l5_para_bl"]
 script = ExtResource("17_la2sg")
@@ -736,7 +651,6 @@ direction = 2
 curve_seed = 7
 offset = Vector2(64, 128)
 reverse = true
-metadata/_custom_type_script = "uid://b7yxnmuk1vkya"
 
 [sub_resource type="Resource" id="Resource_l5_para_br"]
 script = ExtResource("17_la2sg")
@@ -745,75 +659,63 @@ curvature = 8.0
 direction = 2
 curve_seed = 7
 offset = Vector2(-64, 0)
-metadata/_custom_type_script = "uid://b7yxnmuk1vkya"
 
 [sub_resource type="Resource" id="Resource_dq8qt"]
 script = ExtResource("34_1nsuk")
 signals = Array[StringName]([&"ambience"])
 delay_after = 2.0
-metadata/_custom_type_script = "uid://cyqs535s5vfg4"
 
 [sub_resource type="Resource" id="Resource_l5_s1"]
 script = ExtResource("34_1nsuk")
 signals = Array[StringName]([&"spawn_bottom_left"])
 delay_after = 3.0
-metadata/_custom_type_script = "uid://cyqs535s5vfg4"
 
 [sub_resource type="Resource" id="Resource_l5_s2"]
 script = ExtResource("34_1nsuk")
 signals = Array[StringName]([&"spawn_bottom_right"])
 delay_after = 3.0
-metadata/_custom_type_script = "uid://cyqs535s5vfg4"
 
 [sub_resource type="Resource" id="Resource_l5_s3"]
 script = ExtResource("34_1nsuk")
 signals = Array[StringName]([&"spawn_top_left"])
 delay_after = 2.0
-metadata/_custom_type_script = "uid://cyqs535s5vfg4"
 
 [sub_resource type="Resource" id="Resource_l5_s4"]
 script = ExtResource("34_1nsuk")
 signals = Array[StringName]([&"spawn_top_right"])
 delay_after = 2.0
-metadata/_custom_type_script = "uid://cyqs535s5vfg4"
 
 [sub_resource type="Resource" id="Resource_l5_s5"]
 script = ExtResource("34_1nsuk")
 signals = Array[StringName]([&"spawn_bottom_left", &"spawn_bottom_right"])
-metadata/_custom_type_script = "uid://cyqs535s5vfg4"
 
 [sub_resource type="Resource" id="Resource_82ubq"]
 script = ExtResource("12_rgict")
 rotation = -1.571
-metadata/_custom_type_script = "uid://dcu4ocnin0htu"
 
 [sub_resource type="Resource" id="Resource_skele"]
 script = ExtResource("49_ifna5")
 note = 45
 duration = 0.3
 glide = true
-metadata/_custom_type_script = "uid://ci2yaa2b1swsj"
 
 [sub_resource type="Resource" id="Resource_8l2ml"]
 script = ExtResource("49_ifna5")
 note = 45
 duration = 0.3
 glide = true
-metadata/_custom_type_script = "uid://ci2yaa2b1swsj"
 
 [sub_resource type="Resource" id="Resource_8shry"]
 script = ExtResource("49_ifna5")
 note = 45
 duration = 0.6
 glide = true
-metadata/_custom_type_script = "uid://ci2yaa2b1swsj"
 
 [sub_resource type="Resource" id="Resource_kedvo"]
 script = ExtResource("49_ifna5")
 note = 45
 duration = 0.9
 glide = true
-metadata/_custom_type_script = "uid://ci2yaa2b1swsj"
 
 [sub_resource type="Resource" id="Resource_fky46"]
 script = ExtResource("50_j0bx8")
@@ -821,10 +723,46 @@ wave_shape = 3
 effect = 5
 volume = 0.4
 notes = Array[ExtResource("49_ifna5")]([SubResource("Resource_skele"), SubResource("Resource_8l2ml"), SubResource("Resource_8shry"), SubResource("Resource_kedvo")])
-metadata/_custom_type_script = "uid://d3l2c838cqwsm"
+
+[sub_resource type="Resource" id="GameOver_Note_2"]
+script = ExtResource("49_ifna5")
+note = 55
+duration = 0.8
+
+[sub_resource type="Resource" id="GameOver_Note_3"]
+script = ExtResource("49_ifna5")
+note = 48
+duration = 0.8
+
+[sub_resource type="Resource" id="GameOver_Note_4"]
+script = ExtResource("49_ifna5")
+note = 43
+duration = 0.3
+glide = true
+
+[sub_resource type="Resource" id="GameOver_Note_5"]
+script = ExtResource("49_ifna5")
+note = 36
+duration = 0.3
+glide = true
+
+[sub_resource type="Resource" id="Resource_y21tw"]
+script = ExtResource("49_ifna5")
+note = 36
+duration = 2.0
+glide = true
+metadata/_custom_type_script = "uid://ci2yaa2b1swsj"
+
+[sub_resource type="Resource" id="GameOver_Sound"]
+script = ExtResource("50_j0bx8")
+effect = 7
+notes = Array[ExtResource("49_ifna5")]([SubResource("GameOver_Note_2"), SubResource("GameOver_Note_3"), SubResource("GameOver_Note_4"), SubResource("GameOver_Note_5"), SubResource("Resource_y21tw")])
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_682rw"]
 size = Vector2(656, 8)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_sdj2a"]
+size = Vector2(8, 376)
 
 [node name="BugBlaster2" type="Node2D"]
 script = ExtResource("1_62wb8")
@@ -861,7 +799,7 @@ preview_color = Color(1, 0.64705884, 0, 1)
 component_category = 10
 
 [node name="StateManager" parent="." instance=ExtResource("16_ifna5")]
-transitions = Array[ExtResource("20_k70bp")]([SubResource("Resource_sdj2a"), SubResource("Resource_huovk"), SubResource("Resource_17gxj"), SubResource("Resource_wavnc"), SubResource("Resource_qsrt0")])
+transitions = Array[ExtResource("20_k70bp")]([SubResource("Resource_sdj2a"), SubResource("Resource_huovk"), SubResource("Resource_17gxj"), SubResource("Resource_wavnc"), SubResource("Resource_qsrt0"), SubResource("Resource_4c3l3")])
 
 [node name="ShootingDirector" parent="." instance=ExtResource("23_7jcia")]
 target_groups = Array[StringName]([&"bug_ships", &"wasp_ships"])
@@ -1383,6 +1321,7 @@ offset_left = 16.0
 offset_top = 16.0
 offset_right = 16.0
 offset_bottom = 16.0
+starting_lives = 30
 
 [node name="PlayerSpawner" parent="." instance=ExtResource("10_xb0do")]
 position = Vector2(320, 340)
@@ -1426,6 +1365,10 @@ game_result = 1
 on_score_changed = Array[StringName]([&"life_lost"])
 on_condition_met = Array[StringName]([&"game_over"])
 
+[node name="GameOverSpeaker" parent="." instance=ExtResource("48_p87tt")]
+sound = SubResource("GameOver_Sound")
+trigger_signal = &"game_over"
+
 [node name="TractorMark" parent="." instance=ExtResource("54_682rw")]
 position = Vector2(320, 265)
 groups = Array[StringName]([&"tractor_line"])
@@ -1435,11 +1378,21 @@ on_entered_entity = Array[StringName]([&"fire_tractor_beam"])
 [node name="CollisionShape2D" type="CollisionShape2D" parent="TractorMark"]
 shape = SubResource("RectangleShape2D_682rw")
 
-[node name="DiveMark" parent="." instance=ExtResource("54_682rw")]
-position = Vector2(320, -16)
-groups = Array[StringName]([&"tractor_line"])
-filter_groups = Array[StringName]([&"diving"])
-on_entered_entity = Array[StringName]([&"begin_dive"])
+[node name="TimedMark" parent="." instance=ExtResource("55_sdj2a")]
+on_complete = Array[StringName]([&"clean_up_formation"])
 
-[node name="CollisionShape2D" type="CollisionShape2D" parent="DiveMark"]
+[node name="CollisionShape2D" type="CollisionShape2D" parent="TimedMark"]
+position = Vector2(320, -4)
 shape = SubResource("RectangleShape2D_682rw")
+
+[node name="CollisionShape2D2" type="CollisionShape2D" parent="TimedMark"]
+position = Vector2(320, 364)
+shape = SubResource("RectangleShape2D_682rw")
+
+[node name="CollisionShape2D3" type="CollisionShape2D" parent="TimedMark"]
+position = Vector2(-4, 180)
+shape = SubResource("RectangleShape2D_sdj2a")
+
+[node name="CollisionShape2D4" type="CollisionShape2D" parent="TimedMark"]
+position = Vector2(644, 180)
+shape = SubResource("RectangleShape2D_sdj2a")

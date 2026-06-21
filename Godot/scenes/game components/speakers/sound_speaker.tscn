@@ -6,12 +6,10 @@
 
 [sub_resource type="Resource" id="Resource_dv6ba"]
 script = ExtResource("2_dv6ba")
-metadata/_custom_type_script = "uid://ci2yaa2b1swsj"
 
 [sub_resource type="Resource" id="Resource_xxjw6"]
 script = ExtResource("2_q383s")
-notes = Array[ExtResource("2_dv6ba")]([SubResource("Resource_dv6ba")])
-metadata/_custom_type_script = "uid://d3l2c838cqwsm"
+notes = Array[Resource]([SubResource("Resource_dv6ba")])
 
 [node name="SoundSpeaker" type="Node2D"]
 script = ExtResource("1_wdxjk")

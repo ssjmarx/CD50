@@ -10,8 +10,10 @@ class_name ScreenWrapLeg extends CDEntityComponent
 @export var check_interval: float = 0.1
 
 @export_group("Emit Signals")
-## entity bus signals emitted when the entity wraps around the screen
-@export var wrap_signals: Array[StringName] = []
+## entity bus signals emitted immediately BEFORE the entity wraps
+@export var wrapping_signals: Array[StringName] = [&"screen_wrapping"]
+## entity bus signals emitted AFTER the entity wraps (deferred to idle)
+@export var wrapped_signals: Array[StringName] = [&"screen_wrapped"]
 
 ## --- state ---
 
@@ -55,9 +57,24 @@ func _physics_process(delta: float) -> void:
 		wrapped = true
 	
 	if wrapped:
-		entity.request_position_set(pos)
-		for sig in wrap_signals:
+		## emit before-wrap signals immediately
+		for sig in wrapping_signals:
 			entity.bus_emit(sig)
+		
+		entity.request_position_set(pos)
+		
+		## defer after-wrap signals to ensure position has updated
+		if not wrapped_signals.is_empty():
+			_emit_wrapped_signals.call_deferred()
+
+## --- internal ---
+
+## emit signals after the position update has processed
+func _emit_wrapped_signals() -> void:
+	if not entity or not is_instance_valid(entity):
+		return
+	for sig in wrapped_signals:
+		entity.bus_emit(sig)
 
 ## --- cleanup ---
 

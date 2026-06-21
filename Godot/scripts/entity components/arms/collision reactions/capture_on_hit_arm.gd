@@ -20,6 +20,7 @@ class_name CaptureOnHitArm extends CDEntityComponent
 @export var capture_signals: Array[StringName] = [&"player_captured"]
 
 @export_group("Emit Signals on Captor")
+@export var captor_success_signals: Array[StringName] = [&"capture_succeeded"]
 @export var captor_complete_signals: Array[StringName] = [&"tractor_beam_complete"]
 
 ## ready
@@ -48,6 +49,10 @@ func _on_collision(collider: CDEntity, _normal: Vector2) -> void:
 	# Emit capture signal on target's bus
 	for sig in capture_signals:
 		collider.bus_emit(sig)
+
+	# Emit success signal on captor's bus (for limit tracking in LassoBrain)
+	for sig in captor_success_signals:
+		captor.bus_emit(sig)
 
 	# Emit complete signal on captor's bus so it knows to end capture phase
 	for sig in captor_complete_signals:
