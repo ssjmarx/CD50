@@ -1325,7 +1325,6 @@ offset_left = 16.0
 offset_top = 16.0
 offset_right = 16.0
 offset_bottom = 16.0
-starting_lives = 30
 
 [node name="PlayerSpawner" parent="." instance=ExtResource("10_xb0do")]
 position = Vector2(320, 340)
