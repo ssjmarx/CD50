@@ -1,6 +1,7 @@
 ## FormationDirector
 ## Manages multiple sub-formation grids (CDFormation) for tiered enemy placement
 ## Auto-assigns group members to slots, animates breathing, writes move data to entity blackboards
+## Supports data-driven marching orders (Step, Pause) with editor preview
 
 @tool
 class_name FormationDirector extends CDGameComponent
@@ -27,9 +28,15 @@ class_name FormationDirector extends CDGameComponent
 ## duration in seconds for one full breathe-in/breathe-out cycle
 @export var breathing_duration: float = 4.0
 
-## ordered movement commands — step, breathe, pause
+## ordered movement commands — step, pause
 @export_group("Marching")
-@export var marching_orders: Array[CDMarchingOrder] = []
+@export var marching_orders: Array[CDMarchingOrder] = []:
+	set(v):
+		marching_orders = v
+		if is_node_ready():
+			_reset_marching_state()
+			queue_redraw()
+
 ## optional scaler that multiplies marching speed (higher = faster, divides effective duration)
 @export var speed_scaler: CDScaler
 
@@ -65,10 +72,10 @@ var _assigned_this_frame: Dictionary = {}
 var _marching_index: int = -1
 ## time elapsed on current marching order
 var _marching_timer: float = 0.0
-## accumulated offset from step orders
-var _marching_offset: Vector2 = Vector2.ZERO
-## override breathing scale from breathe orders (<= 0 = use continuous breathing)
-var _marching_breath_scale: float = -1.0
+## accumulated offset from completed step orders
+var _accumulated_offset: Vector2 = Vector2.ZERO
+## total current offset (accumulated + active order progress) applied to formation
+var _total_marching_offset: Vector2 = Vector2.ZERO
 
 ## --- lifecycle ---
 
@@ -79,23 +86,31 @@ func _ready() -> void:
 
 ## --- editor preview ---
 
-## animate breathing in editor for preview
+## animate breathing and marching orders in editor for preview
 func _process(delta: float) -> void:
 	if not Engine.is_editor_hint():
 		return
+	
+	if not marching_orders.is_empty():
+		_advance_marching(delta)
+	
 	if breathing_amplitude > 0.0:
 		_advance_breathing(delta)
-		queue_redraw()
+		
+	queue_redraw()
 
-## draw a circle at each slot center for each sub-formation
+## draw formation slots at their current animated positions
 func _draw() -> void:
 	if not Engine.is_editor_hint():
 		return
 	
 	var breathing_scale := _get_breathing_scale()
+	
 	for formation in formations:
 		for i in formation.columns * formation.rows:
 			var pos := formation.get_slot_position_local(i, breathing_scale)
+			## Apply the current marching offset to the slot position
+			pos += _total_marching_offset
 			draw_circle(pos, preview_radius, preview_color)
 
 ## --- processing ---
@@ -119,9 +134,6 @@ func _advance_breathing(delta: float) -> void:
 		_breathing_phase += delta / breathing_duration * TAU
 
 func _get_breathing_scale() -> float:
-	## marching breathe orders override continuous breathing
-	if _marching_breath_scale > 0.0:
-		return _marching_breath_scale
 	return 1.0 + abs(sin(_breathing_phase)) * breathing_amplitude
 
 ## --- marching orders ---
@@ -131,57 +143,74 @@ func _on_initialize() -> void:
 	if speed_scaler:
 		speed_scaler.initialize(game)
 	if not marching_orders.is_empty():
-		_marching_index = 0
-		_marching_timer = 0.0
+		_reset_marching_state()
+
+## reset state machine for marching
+func _reset_marching_state() -> void:
+	_marching_index = 0
+	_marching_timer = 0.0
+	_accumulated_offset = Vector2.ZERO
+	_total_marching_offset = Vector2.ZERO
 
 ## advance the current marching order and auto-cycle through the sequence
 func _advance_marching(delta: float) -> void:
-	if marching_orders.is_empty() or _marching_index < 0:
+	if marching_orders.is_empty():
+		_total_marching_offset = Vector2.ZERO
+		return
+	
+	if _marching_index < 0 or _marching_index >= marching_orders.size():
+		_reset_marching_state()
 		return
 	
 	var order: CDMarchingOrder = marching_orders[_marching_index]
-	var effective_duration := order.duration
-	if order.type == CDMarchingOrder.Type.STEP and order.speed_scaler:
-		effective_duration = order.speed_scaler.evaluate()
 	
-	## apply global speed multiplier (divides duration → faster marching)
-	if speed_scaler:
+	## calculate duration with speed multiplier
+	var base_duration := 0.0
+	if order is MarchingOrderStep:
+		base_duration = (order as MarchingOrderStep).duration
+	elif order is MarchingOrderPause:
+		base_duration = (order as MarchingOrderPause).duration
+	
+	var effective_duration := base_duration
+	## Guard speed_scaler access for editor safety (game may not be initialized)
+	if speed_scaler and is_instance_valid(game):
 		var multiplier := speed_scaler.evaluate()
 		if multiplier > 0.0:
 			effective_duration /= multiplier
 	
 	_marching_timer += delta
 	
-	match order.type:
-		CDMarchingOrder.Type.STEP:
-			_marching_breath_scale = -1.0
-			## apply continuous offset during the step duration
-			if effective_duration > 0.0:
-				_marching_offset.x += order.distance * (delta / effective_duration)
+	## calculate current offset based on order type
+	if order is MarchingOrderStep:
+		## linear interpolation for step
+		var t := 1.0
+		if effective_duration > 0.0:
+			t = clamp(_marching_timer / effective_duration, 0.0, 1.0)
+		var step: MarchingOrderStep = order as MarchingOrderStep
+		var active_offset: Vector2 = step.offset * t
+		_total_marching_offset = _accumulated_offset + active_offset
 		
-		CDMarchingOrder.Type.BREATHE:
-			## compute breathing scale based on phase within the breathe order
-			var total_time := order.expand_time + order.hold_time + order.contract_time
-			if total_time > 0.0:
-				var t := _marching_timer / effective_duration
-				t = fmod(t, 1.0)
-				if t < order.expand_time / total_time:
-					_marching_breath_scale = 1.0 + order.amplitude * (t * total_time / order.expand_time)
-				elif t < (order.expand_time + order.hold_time) / total_time:
-					_marching_breath_scale = 1.0 + order.amplitude
-				else:
-					var contract_t := (t * total_time - order.expand_time - order.hold_time) / order.contract_time
-					_marching_breath_scale = 1.0 + order.amplitude * (1.0 - contract_t)
-		
-		CDMarchingOrder.Type.PAUSE:
-			_marching_breath_scale = -1.0
+	elif order is MarchingOrderPause:
+		## hold position during pause
+		_total_marching_offset = _accumulated_offset
 	
 	## advance to next order when timer exceeds duration
 	if _marching_timer >= effective_duration:
 		_marching_timer = 0.0
+		
+		## commit the step offset to accumulator
+		if order is MarchingOrderStep:
+			var step: MarchingOrderStep = order as MarchingOrderStep
+			_accumulated_offset += step.offset
+		
 		_marching_index += 1
 		if _marching_index >= marching_orders.size():
 			_marching_index = 0  ## loop marching orders
+			_accumulated_offset = Vector2.ZERO ## reset loop to keep positions bounded or keep accumulating? 
+			## For looping patterns like Galaga, we usually want to return to start or repeat from current. 
+			## Resetting accumulator forces the pattern to snap back to start. 
+			## Comment out the line below to allow endless drifting.
+			_accumulated_offset = Vector2.ZERO 
 
 ## --- slot management ---
 
@@ -267,7 +296,7 @@ func _write_move_data() -> void:
 			if slot_entity.state != CDEnums.EntityState.ACTIVE:
 				continue
 			
-			var target := formation.get_slot_position(i, global_position + _marching_offset, breathing_scale)
+			var target := formation.get_slot_position(i, global_position + _total_marching_offset, breathing_scale)
 			var distance := slot_entity.global_position.distance_to(target)
 			
 			if distance > 0.001:
@@ -319,7 +348,4 @@ func reset() -> void:
 	_init_all_slots()
 	_breathing_phase = 0.0
 	_assigned_this_frame.clear()
-	_marching_index = -1
-	_marching_timer = 0.0
-	_marching_offset = Vector2.ZERO
-	_marching_breath_scale = -1.0
+	_reset_marching_state()

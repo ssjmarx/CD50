@@ -1,18 +1,20 @@
 ## CDGame
 ## Root node for every game scene — state machine and signal router
 ## Provides game bus (Dictionary-based), required child refs, and lifecycle
+## Robust initialization: finds components even if nested in CDStage, or creates them with defaults.
 
 class_name CDGame extends Node2D
 
 ## play area bounds used by entities for clamping and spawning
 @export var game_bounds: Rect2
 
-## required infrastructure children — placed in editor for easy configuration
-@onready var collision_buffer: CDCollisionBuffer = $CDCollisionBuffer
-@onready var group_registry: CDGroupRegistry = $CDGroupRegistry
-@onready var collision_matrix: CDCollisionMatrix = $CDCollisionMatrix
-@onready var input_router: CDInputRouter = $CDInputRouter
-@onready var update: CDUpdater = $CDUpdater
+## infrastructure component references (initialized in _ready)
+## supports nested structures (e.g., inside CDStage) or auto-creation
+var collision_buffer: CDCollisionBuffer
+var group_registry: CDGroupRegistry
+var collision_matrix: CDCollisionMatrix
+var input_router: CDInputRouter
+var update: CDUpdater
 
 ## blackboard for shared game state
 var blackboard: Dictionary = {}
@@ -42,6 +44,10 @@ var current_state: CDEnums.GameState:
 func _ready() -> void:
 	if Engine.is_editor_hint():
 		return
+
+	## 1. Robust Infrastructure Initialization
+	## Attempts to find existing components (even if nested) or creates them with defaults.
+	_ensure_infrastructure()
 
 	process_mode = Node.PROCESS_MODE_ALWAYS
 	for child in get_children():
@@ -73,6 +79,43 @@ func _ready() -> void:
 	_attract_label.position = Vector2(0, 10)
 	_attract_label.size = Vector2(480, 20)
 	add_child(_attract_label)
+
+## --- Infrastructure Initialization ---
+
+## Finds or creates required infrastructure components.
+## 1. Tries to find a child by exact name.
+## 2. Tries to find a child by class type (handles nesting).
+## 3. Creates a new instance with defaults if missing.
+func _ensure_infrastructure() -> void:
+	collision_buffer = _find_or_create(CDCollisionBuffer, "CDCollisionBuffer")
+	group_registry = _find_or_create(CDGroupRegistry, "CDGroupRegistry")
+	collision_matrix = _find_or_create(CDCollisionMatrix, "CDCollisionMatrix")
+	input_router = _find_or_create(CDInputRouter, "CDInputRouter")
+	update = _find_or_create(CDUpdater, "CDUpdater")
+
+## Generic helper to find an existing node or create a new one.
+func _find_or_create(script_class: GDScript, default_name: StringName) -> Node:
+	## 1. Try exact match by name (direct child or recursive)
+	var node := find_child(default_name, true, false)
+	
+	## 2. If not found by name, try to find any instance of this class in the scene tree
+	if not node:
+		## find_children returns Array, filter by specific class type match
+		var candidates := find_children("*", "", true, false)
+		for candidate in candidates:
+			## verify exact type match by comparing script resources
+			if candidate.get_script() == script_class:
+				node = candidate
+				break
+	
+	## 3. Create default instance if still missing
+	if not node:
+		node = script_class.new()
+		node.name = default_name
+		add_child(node)
+		push_warning("CDGame: Auto-created missing infrastructure component '%s' with default settings." % default_name)
+	
+	return node
 
 ## --- Game Bus API ---
 

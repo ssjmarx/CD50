@@ -1,4 +1,4 @@
-[gd_scene load_steps=186 format=3 uid="uid://c0q0c0v84x80"]
+[gd_scene load_steps=188 format=3 uid="uid://c0q0c0v84x80"]
 
 [ext_resource type="Script" uid="uid://dm0uehngpvbh7" path="res://scripts/core/infrastructure/cd_game.gd" id="1_62wb8"]
 [ext_resource type="PackedScene" uid="uid://cmbx6xnct372t" path="res://scenes/core/infrastructure/cd_collision_buffer.tscn" id="2_7y1r2"]
@@ -17,8 +17,10 @@
 [ext_resource type="Script" uid="uid://bdb8g4cd5tnki" path="res://scripts/core/resources/triggers/cd_trigger.gd" id="12_8nemr"]
 [ext_resource type="Script" uid="uid://dcu4ocnin0htu" path="res://scripts/core/resources/spawners/cd_spawn_context.gd" id="12_rgict"]
 [ext_resource type="Script" uid="uid://deqlfyqjebr6v" path="res://scripts/core/resources/triggers/cd_group_count_trigger.gd" id="13_sjgbx"]
+[ext_resource type="Script" uid="uid://di72xxfkrnsjj" path="res://scripts/core/resources/formation/marching_order_step.gd" id="14_52c78"]
 [ext_resource type="PackedScene" uid="uid://ca4qbo05yiya" path="res://scenes/game components/directors/swoop_director.tscn" id="14_bnks8"]
 [ext_resource type="Script" uid="uid://dlalvxnq5qb5x" path="res://scripts/core/resources/curves/cd_curve.gd" id="15_34iby"]
+[ext_resource type="Script" uid="uid://gaem34ik0cah" path="res://scripts/core/resources/formation/marching_order_pause.gd" id="15_q4en4"]
 [ext_resource type="Script" uid="uid://dpgs8b1skt7t2" path="res://scripts/core/resources/curves/cd_sine_curve.gd" id="16_4yrl4"]
 [ext_resource type="PackedScene" path="res://scenes/game components/managers/state_manager.tscn" id="16_ifna5"]
 [ext_resource type="Script" uid="uid://dakcd8kk2xm44" path="res://scripts/core/resources/curves/cd_sequence_curve.gd" id="17_hm20g"]
@@ -55,7 +57,7 @@
 [ext_resource type="PackedScene" uid="uid://dqsat1yshg31w" path="res://scenes/game components/goals/score_threshold_goal.tscn" id="53_xatni"]
 [ext_resource type="PackedScene" uid="uid://d4b42pvesykqo" path="res://scenes/game components/marks/cd_mark.tscn" id="54_682rw"]
 [ext_resource type="PackedScene" uid="uid://dksj54blfwuum" path="res://scenes/game components/marks/timed_mark.tscn" id="55_sdj2a"]
-[ext_resource type="PackedScene" path="res://scenes/game components/cards/capture_card.tscn" id="57_eb2hk"]
+[ext_resource type="PackedScene" uid="uid://bxq8y6t7j8kmq" path="res://scenes/game components/cards/capture_card.tscn" id="57_eb2hk"]
 [ext_resource type="PackedScene" uid="uid://mxejpxipdbii" path="res://scenes/game components/cards/wave_card.tscn" id="99_wave"]
 
 [sub_resource type="Resource" id="Resource_q4h5u"]
@@ -82,95 +84,12 @@ script = ExtResource("4_xb0do")
 group_name = &"tractor_line"
 collides_with = Array[StringName]([&"enemies"])
 
-[sub_resource type="Resource" id="Resource_osfbp"]
-script = ExtResource("21_g3xn7")
-signal_names = Array[StringName]([&"game_play"])
-
-[sub_resource type="Resource" id="Resource_dsfuj"]
-script = ExtResource("9_vaj0o")
-trigger = SubResource("Resource_osfbp")
-wake_stages = Array[StringName]([&"Level1Stage"])
-
-[sub_resource type="Resource" id="Resource_ssbpx"]
-script = ExtResource("21_g3xn7")
-signal_names = Array[StringName]([&"level_one_complete"])
-
-[sub_resource type="Resource" id="Resource_73s3c"]
-script = ExtResource("13_sjgbx")
-group_names = Array[StringName]([&"enemies"])
-
-[sub_resource type="Resource" id="Resource_wibil"]
-script = ExtResource("11_5umtv")
-triggers = Array[ExtResource("12_8nemr")]([SubResource("Resource_ssbpx"), SubResource("Resource_73s3c")])
-
-[sub_resource type="Resource" id="Resource_1ivtp"]
-script = ExtResource("9_vaj0o")
-trigger = SubResource("Resource_wibil")
-sleep_stages = Array[StringName]([&"Level1Stage"])
-wake_stages = Array[StringName]([&"Level2Stage"])
-
-[sub_resource type="Resource" id="Resource_sig_l2c"]
-script = ExtResource("21_g3xn7")
-signal_names = Array[StringName]([&"level_two_complete"])
-
-[sub_resource type="Resource" id="Resource_comp_l2l3"]
-script = ExtResource("11_5umtv")
-triggers = Array[ExtResource("12_8nemr")]([SubResource("Resource_sig_l2c"), SubResource("Resource_73s3c")])
-
-[sub_resource type="Resource" id="Resource_rule_l2l3"]
-script = ExtResource("9_vaj0o")
-trigger = SubResource("Resource_comp_l2l3")
-sleep_stages = Array[StringName]([&"Level2Stage"])
-wake_stages = Array[StringName]([&"Level3Stage"])
-
-[sub_resource type="Resource" id="Resource_sig_l3c"]
-script = ExtResource("21_g3xn7")
-signal_names = Array[StringName]([&"level_three_complete"])
-
-[sub_resource type="Resource" id="Resource_comp_l3l4"]
-script = ExtResource("11_5umtv")
-triggers = Array[ExtResource("12_8nemr")]([SubResource("Resource_sig_l3c"), SubResource("Resource_73s3c")])
-
-[sub_resource type="Resource" id="Resource_rule_l3l4"]
-script = ExtResource("9_vaj0o")
-trigger = SubResource("Resource_comp_l3l4")
-sleep_stages = Array[StringName]([&"Level3Stage"])
-wake_stages = Array[StringName]([&"Level4Stage"])
-
-[sub_resource type="Resource" id="Resource_sig_l4c"]
-script = ExtResource("21_g3xn7")
-signal_names = Array[StringName]([&"level_four_complete"])
-
-[sub_resource type="Resource" id="Resource_comp_l4l5"]
-script = ExtResource("11_5umtv")
-triggers = Array[ExtResource("12_8nemr")]([SubResource("Resource_sig_l4c"), SubResource("Resource_73s3c")])
-
-[sub_resource type="Resource" id="Resource_rule_l4l5"]
-script = ExtResource("9_vaj0o")
-trigger = SubResource("Resource_comp_l4l5")
-sleep_stages = Array[StringName]([&"Level4Stage"])
-wake_stages = Array[StringName]([&"Level5Stage"])
-
-[sub_resource type="Resource" id="Resource_sig_l5c"]
-script = ExtResource("21_g3xn7")
-signal_names = Array[StringName]([&"level_five_complete"])
-
-[sub_resource type="Resource" id="Resource_comp_l5l1"]
-script = ExtResource("11_5umtv")
-triggers = Array[ExtResource("12_8nemr")]([SubResource("Resource_sig_l5c"), SubResource("Resource_73s3c")])
-
-[sub_resource type="Resource" id="Resource_rule_l5l1"]
-script = ExtResource("9_vaj0o")
-trigger = SubResource("Resource_comp_l5l1")
-sleep_stages = Array[StringName]([&"Level5Stage"])
-wake_stages = Array[StringName]([&"Level1Stage"])
-
 [sub_resource type="Resource" id="Resource_4mgkk"]
 script = ExtResource("22_jix4n")
 preferred_group = &"bosses"
 columns = 12
 rows = 1
-offset = Vector2(0, -48)
+offset = Vector2(0, -40)
 
 [sub_resource type="Resource" id="Resource_kgu26"]
 script = ExtResource("22_jix4n")
@@ -182,40 +101,30 @@ rows = 3
 script = ExtResource("22_jix4n")
 columns = 20
 rows = 3
-offset = Vector2(0, 76)
+offset = Vector2(0, 60)
 
-[sub_resource type="Resource" id="Resource_asuvp"]
-script = ExtResource("23_1k33r")
+[sub_resource type="Resource" id="Resource_jyyib"]
+script = ExtResource("14_52c78")
+offset = Vector2(64, 0)
 duration = 4.0
-distance = 64.0
-amplitude = 0.0
-expand_time = 0.0
-hold_time = 0.0
+metadata/_custom_type_script = "uid://di72xxfkrnsjj"
 
-[sub_resource type="Resource" id="Resource_5umtv"]
-script = ExtResource("23_1k33r")
+[sub_resource type="Resource" id="Resource_mis0g"]
+script = ExtResource("14_52c78")
+offset = Vector2(-128, 0)
 duration = 8.0
-distance = -128.0
-amplitude = 0.0
-expand_time = 0.0
-contract_time = 0.0
+metadata/_custom_type_script = "uid://di72xxfkrnsjj"
 
-[sub_resource type="Resource" id="Resource_8nemr"]
-script = ExtResource("23_1k33r")
+[sub_resource type="Resource" id="Resource_3o88d"]
+script = ExtResource("14_52c78")
+offset = Vector2(64, 0)
 duration = 4.0
-distance = 64.0
-amplitude = 0.0
-expand_time = 0.0
-contract_time = 0.0
+metadata/_custom_type_script = "uid://di72xxfkrnsjj"
 
-[sub_resource type="Resource" id="Resource_sjgbx"]
-script = ExtResource("23_1k33r")
-type = 1
-duration = 4.0
-amplitude = 2.0
-expand_time = 2.0
-hold_time = 0.0
-contract_time = 2.0
+[sub_resource type="Resource" id="Resource_f646s"]
+script = ExtResource("15_q4en4")
+duration = 8.0
+metadata/_custom_type_script = "uid://gaem34ik0cah"
 
 [sub_resource type="Resource" id="Resource_speed_scaler"]
 script = ExtResource("25_hc4eh")
@@ -342,6 +251,12 @@ random_variance = 1.0
 
 [sub_resource type="Resource" id="Resource_hc4eh"]
 script = ExtResource("26_gc4j8")
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_682rw"]
+size = Vector2(656, 8)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_sdj2a"]
+size = Vector2(8, 376)
 
 [sub_resource type="Resource" id="Resource_la2sg"]
 script = ExtResource("12_rgict")
@@ -690,10 +605,6 @@ delay_after = 2.0
 script = ExtResource("34_1nsuk")
 signals = Array[StringName]([&"spawn_bottom_left", &"spawn_bottom_right"])
 
-[sub_resource type="Resource" id="Resource_82ubq"]
-script = ExtResource("12_rgict")
-rotation = -1.571
-
 [sub_resource type="Resource" id="Resource_skele"]
 script = ExtResource("49_ifna5")
 note = 45
@@ -724,6 +635,93 @@ wave_shape = 3
 effect = 5
 volume = 0.4
 notes = Array[ExtResource("49_ifna5")]([SubResource("Resource_skele"), SubResource("Resource_8l2ml"), SubResource("Resource_8shry"), SubResource("Resource_kedvo")])
+
+[sub_resource type="Resource" id="Resource_osfbp"]
+script = ExtResource("21_g3xn7")
+signal_names = Array[StringName]([&"game_play"])
+
+[sub_resource type="Resource" id="Resource_dsfuj"]
+script = ExtResource("9_vaj0o")
+trigger = SubResource("Resource_osfbp")
+wake_stages = Array[StringName]([&"Level1Stage"])
+
+[sub_resource type="Resource" id="Resource_ssbpx"]
+script = ExtResource("21_g3xn7")
+signal_names = Array[StringName]([&"level_one_complete"])
+
+[sub_resource type="Resource" id="Resource_73s3c"]
+script = ExtResource("13_sjgbx")
+group_names = Array[StringName]([&"enemies"])
+
+[sub_resource type="Resource" id="Resource_wibil"]
+script = ExtResource("11_5umtv")
+triggers = Array[ExtResource("12_8nemr")]([SubResource("Resource_ssbpx"), SubResource("Resource_73s3c")])
+
+[sub_resource type="Resource" id="Resource_1ivtp"]
+script = ExtResource("9_vaj0o")
+trigger = SubResource("Resource_wibil")
+sleep_stages = Array[StringName]([&"Level1Stage"])
+wake_stages = Array[StringName]([&"Level2Stage"])
+
+[sub_resource type="Resource" id="Resource_sig_l2c"]
+script = ExtResource("21_g3xn7")
+signal_names = Array[StringName]([&"level_two_complete"])
+
+[sub_resource type="Resource" id="Resource_comp_l2l3"]
+script = ExtResource("11_5umtv")
+triggers = Array[ExtResource("12_8nemr")]([SubResource("Resource_sig_l2c"), SubResource("Resource_73s3c")])
+
+[sub_resource type="Resource" id="Resource_rule_l2l3"]
+script = ExtResource("9_vaj0o")
+trigger = SubResource("Resource_comp_l2l3")
+sleep_stages = Array[StringName]([&"Level2Stage"])
+wake_stages = Array[StringName]([&"Level3Stage"])
+
+[sub_resource type="Resource" id="Resource_sig_l3c"]
+script = ExtResource("21_g3xn7")
+signal_names = Array[StringName]([&"level_three_complete"])
+
+[sub_resource type="Resource" id="Resource_comp_l3l4"]
+script = ExtResource("11_5umtv")
+triggers = Array[ExtResource("12_8nemr")]([SubResource("Resource_sig_l3c"), SubResource("Resource_73s3c")])
+
+[sub_resource type="Resource" id="Resource_rule_l3l4"]
+script = ExtResource("9_vaj0o")
+trigger = SubResource("Resource_comp_l3l4")
+sleep_stages = Array[StringName]([&"Level3Stage"])
+wake_stages = Array[StringName]([&"Level4Stage"])
+
+[sub_resource type="Resource" id="Resource_sig_l4c"]
+script = ExtResource("21_g3xn7")
+signal_names = Array[StringName]([&"level_four_complete"])
+
+[sub_resource type="Resource" id="Resource_comp_l4l5"]
+script = ExtResource("11_5umtv")
+triggers = Array[ExtResource("12_8nemr")]([SubResource("Resource_sig_l4c"), SubResource("Resource_73s3c")])
+
+[sub_resource type="Resource" id="Resource_rule_l4l5"]
+script = ExtResource("9_vaj0o")
+trigger = SubResource("Resource_comp_l4l5")
+sleep_stages = Array[StringName]([&"Level4Stage"])
+wake_stages = Array[StringName]([&"Level5Stage"])
+
+[sub_resource type="Resource" id="Resource_sig_l5c"]
+script = ExtResource("21_g3xn7")
+signal_names = Array[StringName]([&"level_five_complete"])
+
+[sub_resource type="Resource" id="Resource_comp_l5l1"]
+script = ExtResource("11_5umtv")
+triggers = Array[ExtResource("12_8nemr")]([SubResource("Resource_sig_l5c"), SubResource("Resource_73s3c")])
+
+[sub_resource type="Resource" id="Resource_rule_l5l1"]
+script = ExtResource("9_vaj0o")
+trigger = SubResource("Resource_comp_l5l1")
+sleep_stages = Array[StringName]([&"Level5Stage"])
+wake_stages = Array[StringName]([&"Level1Stage"])
+
+[sub_resource type="Resource" id="Resource_82ubq"]
+script = ExtResource("12_rgict")
+rotation = -1.571
 
 [sub_resource type="Resource" id="GameOver_Note_2"]
 script = ExtResource("49_ifna5")
@@ -759,68 +757,91 @@ script = ExtResource("50_j0bx8")
 effect = 7
 notes = Array[ExtResource("49_ifna5")]([SubResource("GameOver_Note_2"), SubResource("GameOver_Note_3"), SubResource("GameOver_Note_4"), SubResource("GameOver_Note_5"), SubResource("Resource_y21tw")])
 
-[sub_resource type="RectangleShape2D" id="RectangleShape2D_682rw"]
-size = Vector2(656, 8)
-
-[sub_resource type="RectangleShape2D" id="RectangleShape2D_sdj2a"]
-size = Vector2(8, 376)
-
 [node name="BugBlaster2" type="Node2D"]
 script = ExtResource("1_62wb8")
 game_bounds = Rect2(0, 0, 640, 360)
 
-[node name="CRTProjector" parent="." instance=ExtResource("39_4mgkk")]
+[node name="Infrastructure" parent="." instance=ExtResource("8_4mgkk")]
 
-[node name="CDSoundBank" parent="." instance=ExtResource("3_2bq8q")]
+[node name="CRTProjector" parent="Infrastructure" instance=ExtResource("39_4mgkk")]
+
+[node name="CDSoundBank" parent="Infrastructure" instance=ExtResource("3_2bq8q")]
 max_channels = 4
 
-[node name="CDCollisionBuffer" parent="." instance=ExtResource("2_7y1r2")]
+[node name="CDCollisionBuffer" parent="Infrastructure" instance=ExtResource("2_7y1r2")]
 
-[node name="CDCollisionMatrix" parent="." instance=ExtResource("3_wnudv")]
+[node name="CDCollisionMatrix" parent="Infrastructure" instance=ExtResource("3_wnudv")]
 collision_groups = Array[ExtResource("4_xb0do")]([SubResource("Resource_q4h5u"), SubResource("Resource_qh32t"), SubResource("Resource_dg5ky"), SubResource("Resource_7ar12"), SubResource("Resource_eb2hk")])
 
-[node name="CDGroupRegistry" parent="." instance=ExtResource("5_qyrdw")]
+[node name="CDGroupRegistry" parent="Infrastructure" instance=ExtResource("5_qyrdw")]
 
-[node name="CDInputRouter" parent="." instance=ExtResource("6_2v676")]
+[node name="CDInputRouter" parent="Infrastructure" instance=ExtResource("6_2v676")]
 tracked_actions = Array[StringName]([&"fire", &"thrust", &"thrust_end"])
 
-[node name="CDUpdater" parent="." instance=ExtResource("7_fjsfa")]
+[node name="CDUpdater" parent="Infrastructure" instance=ExtResource("7_fjsfa")]
 
-[node name="StageManager" parent="." instance=ExtResource("8_kgu26")]
-rules = Array[ExtResource("9_vaj0o")]([SubResource("Resource_dsfuj"), SubResource("Resource_1ivtp"), SubResource("Resource_rule_l2l3"), SubResource("Resource_rule_l3l4"), SubResource("Resource_rule_l4l5"), SubResource("Resource_rule_l5l1")])
+[node name="AI Stuff" parent="." instance=ExtResource("8_4mgkk")]
 
-[node name="FormationDirector" parent="." instance=ExtResource("18_156p0")]
+[node name="FormationDirector" parent="AI Stuff" instance=ExtResource("18_156p0")]
 position = Vector2(320, 96)
 formations = Array[ExtResource("22_jix4n")]([SubResource("Resource_4mgkk"), SubResource("Resource_kgu26"), SubResource("Resource_vaj0o")])
-breathing_amplitude = 1.0
-breathing_duration = 10.0
-marching_orders = Array[ExtResource("23_1k33r")]([SubResource("Resource_asuvp"), SubResource("Resource_5umtv"), SubResource("Resource_8nemr"), SubResource("Resource_sjgbx")])
+marching_orders = Array[ExtResource("23_1k33r")]([SubResource("Resource_jyyib"), SubResource("Resource_mis0g"), SubResource("Resource_3o88d"), SubResource("Resource_f646s")])
 speed_scaler = SubResource("Resource_speed_scaler")
 preview_color = Color(1, 0.64705884, 0, 1)
 component_category = 10
 
-[node name="StateManager" parent="." instance=ExtResource("16_ifna5")]
+[node name="StateManager" parent="AI Stuff" instance=ExtResource("16_ifna5")]
 transitions = Array[ExtResource("20_k70bp")]([SubResource("Resource_sdj2a"), SubResource("Resource_huovk"), SubResource("Resource_17gxj"), SubResource("Resource_wavnc"), SubResource("Resource_qsrt0"), SubResource("Resource_4c3l3")])
 
-[node name="ShootingDirector" parent="." instance=ExtResource("23_7jcia")]
+[node name="ShootingDirector" parent="AI Stuff" instance=ExtResource("23_7jcia")]
 target_groups = Array[StringName]([&"bug_ships", &"wasp_ships"])
 trigger = SubResource("Resource_blp8l")
 selector = SubResource("Resource_hc4eh")
 component_category = 10
 
-[node name="AimingDirector" parent="." instance=ExtResource("27_hc4eh")]
+[node name="AimingDirector" parent="AI Stuff" instance=ExtResource("27_hc4eh")]
 targeting_noise = 4.0
 use_angle_limit = true
 min_angle_offset = 45.0
 max_angle_offset = 135.0
 component_category = 10
 
-[node name="Level1Stage" parent="." groups=["level_stages"] instance=ExtResource("8_4mgkk")]
+[node name="TractorMark" parent="AI Stuff" instance=ExtResource("54_682rw")]
+position = Vector2(320, 265)
+groups = Array[StringName]([&"tractor_line"])
+filter_groups = Array[StringName]([&"diving"])
+on_entered_entity = Array[StringName]([&"fire_tractor_beam"])
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="AI Stuff/TractorMark"]
+shape = SubResource("RectangleShape2D_682rw")
+
+[node name="TimedMark" parent="AI Stuff" instance=ExtResource("55_sdj2a")]
+on_complete = Array[StringName]([&"clean_up_formation"])
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="AI Stuff/TimedMark"]
+position = Vector2(320, -4)
+shape = SubResource("RectangleShape2D_682rw")
+
+[node name="CollisionShape2D2" type="CollisionShape2D" parent="AI Stuff/TimedMark"]
+position = Vector2(320, 364)
+shape = SubResource("RectangleShape2D_682rw")
+
+[node name="CollisionShape2D3" type="CollisionShape2D" parent="AI Stuff/TimedMark"]
+position = Vector2(-4, 180)
+shape = SubResource("RectangleShape2D_sdj2a")
+
+[node name="CollisionShape2D4" type="CollisionShape2D" parent="AI Stuff/TimedMark"]
+position = Vector2(644, 180)
+shape = SubResource("RectangleShape2D_sdj2a")
+
+[node name="Stages" parent="." instance=ExtResource("8_4mgkk")]
+
+[node name="Level1Stage" parent="Stages" groups=["level_stages"] instance=ExtResource("8_4mgkk")]
 visible = false
 start_asleep = true
 on_wake_signal = &"level_start"
 
-[node name="PointTrapdoor" parent="Level1Stage" instance=ExtResource("10_xb0do")]
+[node name="PointTrapdoor" parent="Stages/Level1Stage" instance=ExtResource("10_xb0do")]
 position = Vector2(256, -16)
 spawn_scene = ExtResource("11_2v676")
 spawn_count_equation = "8"
@@ -830,7 +851,7 @@ spawn_context = SubResource("Resource_la2sg")
 trigger_signals = Array[StringName]([&"spawn_top_left"])
 on_spawning_complete = Array[StringName]([&"spawning_complete_left"])
 
-[node name="PointTrapdoor2" parent="Level1Stage" instance=ExtResource("10_xb0do")]
+[node name="PointTrapdoor2" parent="Stages/Level1Stage" instance=ExtResource("10_xb0do")]
 position = Vector2(384, -16)
 spawn_scene = ExtResource("11_2v676")
 spawn_count_equation = "8"
@@ -840,7 +861,7 @@ spawn_context = SubResource("Resource_s3e4k")
 trigger_signals = Array[StringName]([&"spawn_top_right"])
 on_spawning_complete = Array[StringName]([&"spawning_complete_right"])
 
-[node name="PointTrapdoor3" parent="Level1Stage" instance=ExtResource("10_xb0do")]
+[node name="PointTrapdoor3" parent="Stages/Level1Stage" instance=ExtResource("10_xb0do")]
 position = Vector2(-16, 340)
 spawn_scene = ExtResource("18_sjgbx")
 spawn_count_equation = "12"
@@ -851,7 +872,7 @@ spawn_scenes = Array[PackedScene]([ExtResource("19_ldmk8"), ExtResource("18_sjgb
 trigger_signals = Array[StringName]([&"spawn_bottom_left"])
 on_spawning_complete = Array[StringName]([&"spawning_complete_bottom_left"])
 
-[node name="PointTrapdoor4" parent="Level1Stage" instance=ExtResource("10_xb0do")]
+[node name="PointTrapdoor4" parent="Stages/Level1Stage" instance=ExtResource("10_xb0do")]
 position = Vector2(656, 340)
 spawn_scene = ExtResource("19_ldmk8")
 spawn_count_equation = "12"
@@ -862,7 +883,7 @@ spawn_scenes = Array[PackedScene]([ExtResource("19_ldmk8"), ExtResource("18_sjgb
 trigger_signals = Array[StringName]([&"spawn_bottom_right"])
 on_spawning_complete = Array[StringName]([&"spawning_complete_bottom_right"])
 
-[node name="SwoopDirector" parent="Level1Stage" instance=ExtResource("14_bnks8")]
+[node name="SwoopDirector" parent="Stages/Level1Stage" instance=ExtResource("14_bnks8")]
 position = Vector2(256, -16)
 swooping_groups = Array[StringName]([&"swooping", &"left"])
 require_all = true
@@ -873,7 +894,7 @@ formation_offset = 32.0
 trigger_signals = Array[StringName]([&"spawning_complete_left"])
 preview_color = Color(0, 0.8, 1, 1)
 
-[node name="SwoopDirector2" parent="Level1Stage" instance=ExtResource("14_bnks8")]
+[node name="SwoopDirector2" parent="Stages/Level1Stage" instance=ExtResource("14_bnks8")]
 position = Vector2(384, -16)
 swooping_groups = Array[StringName]([&"swooping", &"right"])
 require_all = true
@@ -884,7 +905,7 @@ formation_offset = 32.0
 trigger_signals = Array[StringName]([&"spawning_complete_right"])
 preview_color = Color(0, 0.8, 1, 1)
 
-[node name="SwoopDirector3" parent="Level1Stage" instance=ExtResource("14_bnks8")]
+[node name="SwoopDirector3" parent="Stages/Level1Stage" instance=ExtResource("14_bnks8")]
 position = Vector2(-16, 340)
 swooping_groups = Array[StringName]([&"swooping", &"bottom_left"])
 require_all = true
@@ -896,7 +917,7 @@ lane_count = 2
 trigger_signals = Array[StringName]([&"spawning_complete_bottom_left"])
 preview_color = Color(0.75, 0.75, 0.75, 1)
 
-[node name="SwoopDirector4" parent="Level1Stage" instance=ExtResource("14_bnks8")]
+[node name="SwoopDirector4" parent="Stages/Level1Stage" instance=ExtResource("14_bnks8")]
 position = Vector2(656, 340)
 swooping_groups = Array[StringName]([&"swooping", &"bottom_right"])
 require_all = true
@@ -908,17 +929,17 @@ lane_count = 2
 trigger_signals = Array[StringName]([&"spawning_complete_bottom_right"])
 preview_color = Color(0.75, 0.75, 0.75, 1)
 
-[node name="SignalManager" parent="Level1Stage" instance=ExtResource("32_acn14")]
+[node name="SignalManager" parent="Stages/Level1Stage" instance=ExtResource("32_acn14")]
 steps = Array[ExtResource("34_1nsuk")]([SubResource("Resource_x8buj"), SubResource("Resource_p87tt"), SubResource("Resource_ifna5"), SubResource("Resource_j0bx8"), SubResource("Resource_52c78"), SubResource("Resource_q4en4")])
 trigger = SubResource("Resource_acn14")
 on_sequence_complete = Array[StringName]([&"level_one_complete"])
 
-[node name="Level2Stage" parent="." groups=["level_stages"] instance=ExtResource("8_4mgkk")]
+[node name="Level2Stage" parent="Stages" groups=["level_stages"] instance=ExtResource("8_4mgkk")]
 visible = false
 start_asleep = true
 on_wake_signal = &"level_start"
 
-[node name="PointTrapdoor" parent="Level2Stage" instance=ExtResource("10_xb0do")]
+[node name="PointTrapdoor" parent="Stages/Level2Stage" instance=ExtResource("10_xb0do")]
 position = Vector2(128, -16)
 spawn_scene = ExtResource("11_2v676")
 spawn_count_equation = "10"
@@ -929,7 +950,7 @@ spawn_scenes = Array[PackedScene]([ExtResource("11_2v676"), ExtResource("11_2v67
 trigger_signals = Array[StringName]([&"spawn_top_left"])
 on_spawning_complete = Array[StringName]([&"spawning_complete_left"])
 
-[node name="PointTrapdoor2" parent="Level2Stage" instance=ExtResource("10_xb0do")]
+[node name="PointTrapdoor2" parent="Stages/Level2Stage" instance=ExtResource("10_xb0do")]
 position = Vector2(512, -16)
 spawn_scene = ExtResource("11_2v676")
 spawn_count_equation = "10"
@@ -940,7 +961,7 @@ spawn_scenes = Array[PackedScene]([ExtResource("11_2v676"), ExtResource("11_2v67
 trigger_signals = Array[StringName]([&"spawn_top_right"])
 on_spawning_complete = Array[StringName]([&"spawning_complete_right"])
 
-[node name="PointTrapdoor3" parent="Level2Stage" instance=ExtResource("10_xb0do")]
+[node name="PointTrapdoor3" parent="Stages/Level2Stage" instance=ExtResource("10_xb0do")]
 position = Vector2(-16, 160)
 spawn_scene = ExtResource("18_sjgbx")
 spawn_count_equation = "8"
@@ -951,7 +972,7 @@ spawn_scenes = Array[PackedScene]([ExtResource("11_2v676"), ExtResource("19_ldmk
 trigger_signals = Array[StringName]([&"spawn_bottom_left"])
 on_spawning_complete = Array[StringName]([&"spawning_complete_bottom_left"])
 
-[node name="PointTrapdoor4" parent="Level2Stage" instance=ExtResource("10_xb0do")]
+[node name="PointTrapdoor4" parent="Stages/Level2Stage" instance=ExtResource("10_xb0do")]
 position = Vector2(656, 200)
 spawn_scene = ExtResource("19_ldmk8")
 spawn_count_equation = "8"
@@ -962,7 +983,7 @@ spawn_scenes = Array[PackedScene]([ExtResource("11_2v676"), ExtResource("19_ldmk
 trigger_signals = Array[StringName]([&"spawn_bottom_right"])
 on_spawning_complete = Array[StringName]([&"spawning_complete_bottom_right"])
 
-[node name="SwoopDirector" parent="Level2Stage" instance=ExtResource("14_bnks8")]
+[node name="SwoopDirector" parent="Stages/Level2Stage" instance=ExtResource("14_bnks8")]
 position = Vector2(128, -16)
 swooping_groups = Array[StringName]([&"swooping", &"left"])
 require_all = true
@@ -973,7 +994,7 @@ formation_offset = 32.0
 trigger_signals = Array[StringName]([&"spawning_complete_left"])
 preview_color = Color(1, 0.65, 0, 1)
 
-[node name="SwoopDirector2" parent="Level2Stage" instance=ExtResource("14_bnks8")]
+[node name="SwoopDirector2" parent="Stages/Level2Stage" instance=ExtResource("14_bnks8")]
 position = Vector2(512, -16)
 swooping_groups = Array[StringName]([&"swooping", &"right"])
 require_all = true
@@ -984,7 +1005,7 @@ formation_offset = 32.0
 trigger_signals = Array[StringName]([&"spawning_complete_right"])
 preview_color = Color(1, 0.65, 0, 1)
 
-[node name="SwoopDirector3" parent="Level2Stage" instance=ExtResource("14_bnks8")]
+[node name="SwoopDirector3" parent="Stages/Level2Stage" instance=ExtResource("14_bnks8")]
 position = Vector2(-16, 160)
 swooping_groups = Array[StringName]([&"swooping", &"bottom_left"])
 require_all = true
@@ -996,7 +1017,7 @@ lane_count = 2
 trigger_signals = Array[StringName]([&"spawning_complete_bottom_left"])
 preview_color = Color(1, 0.5, 0.5, 1)
 
-[node name="SwoopDirector4" parent="Level2Stage" instance=ExtResource("14_bnks8")]
+[node name="SwoopDirector4" parent="Stages/Level2Stage" instance=ExtResource("14_bnks8")]
 position = Vector2(656, 200)
 swooping_groups = Array[StringName]([&"swooping", &"bottom_right"])
 require_all = true
@@ -1008,17 +1029,17 @@ lane_count = 2
 trigger_signals = Array[StringName]([&"spawning_complete_bottom_right"])
 preview_color = Color(1, 0.5, 0.5, 1)
 
-[node name="SignalManager" parent="Level2Stage" instance=ExtResource("32_acn14")]
+[node name="SignalManager" parent="Stages/Level2Stage" instance=ExtResource("32_acn14")]
 steps = Array[ExtResource("34_1nsuk")]([SubResource("Resource_4ia1r"), SubResource("Resource_l2_s1"), SubResource("Resource_l2_s2"), SubResource("Resource_l2_s3"), SubResource("Resource_l2_s4"), SubResource("Resource_l2_s5")])
 trigger = SubResource("Resource_acn14")
 on_sequence_complete = Array[StringName]([&"level_two_complete"])
 
-[node name="Level3Stage" parent="." groups=["level_stages"] instance=ExtResource("8_4mgkk")]
+[node name="Level3Stage" parent="Stages" groups=["level_stages"] instance=ExtResource("8_4mgkk")]
 visible = false
 start_asleep = true
 on_wake_signal = &"level_start"
 
-[node name="PointTrapdoor" parent="Level3Stage" instance=ExtResource("10_xb0do")]
+[node name="PointTrapdoor" parent="Stages/Level3Stage" instance=ExtResource("10_xb0do")]
 position = Vector2(96, -16)
 spawn_scene = ExtResource("11_2v676")
 spawn_count_equation = "8"
@@ -1028,7 +1049,7 @@ spawn_context = SubResource("Resource_la2sg")
 trigger_signals = Array[StringName]([&"spawn_top_left"])
 on_spawning_complete = Array[StringName]([&"spawning_complete_left"])
 
-[node name="PointTrapdoor2" parent="Level3Stage" instance=ExtResource("10_xb0do")]
+[node name="PointTrapdoor2" parent="Stages/Level3Stage" instance=ExtResource("10_xb0do")]
 position = Vector2(544, -16)
 spawn_scene = ExtResource("11_2v676")
 spawn_count_equation = "8"
@@ -1038,7 +1059,7 @@ spawn_context = SubResource("Resource_s3e4k")
 trigger_signals = Array[StringName]([&"spawn_top_right"])
 on_spawning_complete = Array[StringName]([&"spawning_complete_right"])
 
-[node name="PointTrapdoor3" parent="Level3Stage" instance=ExtResource("10_xb0do")]
+[node name="PointTrapdoor3" parent="Stages/Level3Stage" instance=ExtResource("10_xb0do")]
 position = Vector2(-16, 320)
 spawn_scene = ExtResource("18_sjgbx")
 spawn_count_equation = "12"
@@ -1049,7 +1070,7 @@ spawn_scenes = Array[PackedScene]([ExtResource("19_ldmk8"), ExtResource("18_sjgb
 trigger_signals = Array[StringName]([&"spawn_bottom_left"])
 on_spawning_complete = Array[StringName]([&"spawning_complete_bottom_left"])
 
-[node name="PointTrapdoor4" parent="Level3Stage" instance=ExtResource("10_xb0do")]
+[node name="PointTrapdoor4" parent="Stages/Level3Stage" instance=ExtResource("10_xb0do")]
 position = Vector2(656, 40)
 spawn_scene = ExtResource("19_ldmk8")
 spawn_count_equation = "12"
@@ -1060,7 +1081,7 @@ spawn_scenes = Array[PackedScene]([ExtResource("19_ldmk8"), ExtResource("18_sjgb
 trigger_signals = Array[StringName]([&"spawn_bottom_right"])
 on_spawning_complete = Array[StringName]([&"spawning_complete_bottom_right"])
 
-[node name="SwoopDirector" parent="Level3Stage" instance=ExtResource("14_bnks8")]
+[node name="SwoopDirector" parent="Stages/Level3Stage" instance=ExtResource("14_bnks8")]
 position = Vector2(96, -16)
 swooping_groups = Array[StringName]([&"swooping", &"left"])
 require_all = true
@@ -1071,7 +1092,7 @@ formation_offset = 32.0
 trigger_signals = Array[StringName]([&"spawning_complete_left"])
 preview_color = Color(1, 0, 0.8, 1)
 
-[node name="SwoopDirector2" parent="Level3Stage" instance=ExtResource("14_bnks8")]
+[node name="SwoopDirector2" parent="Stages/Level3Stage" instance=ExtResource("14_bnks8")]
 position = Vector2(544, -16)
 swooping_groups = Array[StringName]([&"swooping", &"right"])
 require_all = true
@@ -1082,7 +1103,7 @@ formation_offset = 32.0
 trigger_signals = Array[StringName]([&"spawning_complete_right"])
 preview_color = Color(1, 0, 0.8, 1)
 
-[node name="SwoopDirector3" parent="Level3Stage" instance=ExtResource("14_bnks8")]
+[node name="SwoopDirector3" parent="Stages/Level3Stage" instance=ExtResource("14_bnks8")]
 position = Vector2(-16, 320)
 swooping_groups = Array[StringName]([&"swooping", &"bottom_left"])
 require_all = true
@@ -1094,7 +1115,7 @@ lane_count = 2
 trigger_signals = Array[StringName]([&"spawning_complete_bottom_left"])
 preview_color = Color(0.6, 0, 1, 1)
 
-[node name="SwoopDirector4" parent="Level3Stage" instance=ExtResource("14_bnks8")]
+[node name="SwoopDirector4" parent="Stages/Level3Stage" instance=ExtResource("14_bnks8")]
 position = Vector2(656, 40)
 swooping_groups = Array[StringName]([&"swooping", &"bottom_right"])
 require_all = true
@@ -1106,17 +1127,17 @@ lane_count = 2
 trigger_signals = Array[StringName]([&"spawning_complete_bottom_right"])
 preview_color = Color(0.6, 0, 1, 1)
 
-[node name="SignalManager" parent="Level3Stage" instance=ExtResource("32_acn14")]
+[node name="SignalManager" parent="Stages/Level3Stage" instance=ExtResource("32_acn14")]
 steps = Array[ExtResource("34_1nsuk")]([SubResource("Resource_umh4f"), SubResource("Resource_l3_s1"), SubResource("Resource_l3_s2"), SubResource("Resource_l3_s3"), SubResource("Resource_l3_s4"), SubResource("Resource_l3_s5")])
 trigger = SubResource("Resource_acn14")
 on_sequence_complete = Array[StringName]([&"level_three_complete"])
 
-[node name="Level4Stage" parent="." groups=["level_stages"] instance=ExtResource("8_4mgkk")]
+[node name="Level4Stage" parent="Stages" groups=["level_stages"] instance=ExtResource("8_4mgkk")]
 visible = false
 start_asleep = true
 on_wake_signal = &"level_start"
 
-[node name="PointTrapdoor" parent="Level4Stage" instance=ExtResource("10_xb0do")]
+[node name="PointTrapdoor" parent="Stages/Level4Stage" instance=ExtResource("10_xb0do")]
 position = Vector2(192, -16)
 spawn_scene = ExtResource("11_2v676")
 spawn_count_equation = "10"
@@ -1127,7 +1148,7 @@ spawn_scenes = Array[PackedScene]([ExtResource("11_2v676"), ExtResource("11_2v67
 trigger_signals = Array[StringName]([&"spawn_top_left"])
 on_spawning_complete = Array[StringName]([&"spawning_complete_left"])
 
-[node name="PointTrapdoor2" parent="Level4Stage" instance=ExtResource("10_xb0do")]
+[node name="PointTrapdoor2" parent="Stages/Level4Stage" instance=ExtResource("10_xb0do")]
 position = Vector2(448, -16)
 spawn_scene = ExtResource("18_sjgbx")
 spawn_count_equation = "8"
@@ -1138,7 +1159,7 @@ spawn_scenes = Array[PackedScene]([ExtResource("11_2v676"), ExtResource("19_ldmk
 trigger_signals = Array[StringName]([&"spawn_top_right"])
 on_spawning_complete = Array[StringName]([&"spawning_complete_right"])
 
-[node name="PointTrapdoor3" parent="Level4Stage" instance=ExtResource("10_xb0do")]
+[node name="PointTrapdoor3" parent="Stages/Level4Stage" instance=ExtResource("10_xb0do")]
 position = Vector2(-16, 256)
 spawn_scene = ExtResource("19_ldmk8")
 spawn_count_equation = "8"
@@ -1149,7 +1170,7 @@ spawn_scenes = Array[PackedScene]([ExtResource("11_2v676"), ExtResource("19_ldmk
 trigger_signals = Array[StringName]([&"spawn_bottom_left"])
 on_spawning_complete = Array[StringName]([&"spawning_complete_bottom_left"])
 
-[node name="PointTrapdoor4" parent="Level4Stage" instance=ExtResource("10_xb0do")]
+[node name="PointTrapdoor4" parent="Stages/Level4Stage" instance=ExtResource("10_xb0do")]
 position = Vector2(656, 104)
 spawn_scene = ExtResource("11_2v676")
 spawn_count_equation = "10"
@@ -1160,7 +1181,7 @@ spawn_scenes = Array[PackedScene]([ExtResource("11_2v676"), ExtResource("11_2v67
 trigger_signals = Array[StringName]([&"spawn_bottom_right"])
 on_spawning_complete = Array[StringName]([&"spawning_complete_bottom_right"])
 
-[node name="SwoopDirector" parent="Level4Stage" instance=ExtResource("14_bnks8")]
+[node name="SwoopDirector" parent="Stages/Level4Stage" instance=ExtResource("14_bnks8")]
 position = Vector2(192, -16)
 swooping_groups = Array[StringName]([&"swooping", &"left"])
 require_all = true
@@ -1171,7 +1192,7 @@ formation_offset = 32.0
 trigger_signals = Array[StringName]([&"spawning_complete_left"])
 preview_color = Color(0.5, 1, 0, 1)
 
-[node name="SwoopDirector2" parent="Level4Stage" instance=ExtResource("14_bnks8")]
+[node name="SwoopDirector2" parent="Stages/Level4Stage" instance=ExtResource("14_bnks8")]
 position = Vector2(448, -16)
 swooping_groups = Array[StringName]([&"swooping", &"right"])
 require_all = true
@@ -1182,7 +1203,7 @@ formation_offset = 32.0
 trigger_signals = Array[StringName]([&"spawning_complete_right"])
 preview_color = Color(0.5, 1, 0, 1)
 
-[node name="SwoopDirector3" parent="Level4Stage" instance=ExtResource("14_bnks8")]
+[node name="SwoopDirector3" parent="Stages/Level4Stage" instance=ExtResource("14_bnks8")]
 position = Vector2(-16, 256)
 swooping_groups = Array[StringName]([&"swooping", &"bottom_left"])
 require_all = true
@@ -1194,7 +1215,7 @@ lane_count = 2
 trigger_signals = Array[StringName]([&"spawning_complete_bottom_left"])
 preview_color = Color(0, 1, 0.5, 1)
 
-[node name="SwoopDirector4" parent="Level4Stage" instance=ExtResource("14_bnks8")]
+[node name="SwoopDirector4" parent="Stages/Level4Stage" instance=ExtResource("14_bnks8")]
 position = Vector2(656, 104)
 swooping_groups = Array[StringName]([&"swooping", &"bottom_right"])
 require_all = true
@@ -1206,17 +1227,17 @@ lane_count = 2
 trigger_signals = Array[StringName]([&"spawning_complete_bottom_right"])
 preview_color = Color(0, 1, 0.5, 1)
 
-[node name="SignalManager" parent="Level4Stage" instance=ExtResource("32_acn14")]
+[node name="SignalManager" parent="Stages/Level4Stage" instance=ExtResource("32_acn14")]
 steps = Array[ExtResource("34_1nsuk")]([SubResource("Resource_drhtc"), SubResource("Resource_l4_s1"), SubResource("Resource_l4_s2"), SubResource("Resource_l4_s3")])
 trigger = SubResource("Resource_acn14")
 on_sequence_complete = Array[StringName]([&"level_four_complete"])
 
-[node name="Level5Stage" parent="." groups=["level_stages"] instance=ExtResource("8_4mgkk")]
+[node name="Level5Stage" parent="Stages" groups=["level_stages"] instance=ExtResource("8_4mgkk")]
 visible = false
 start_asleep = true
 on_wake_signal = &"level_start"
 
-[node name="PointTrapdoor" parent="Level5Stage" instance=ExtResource("10_xb0do")]
+[node name="PointTrapdoor" parent="Stages/Level5Stage" instance=ExtResource("10_xb0do")]
 position = Vector2(160, -16)
 spawn_scene = ExtResource("18_sjgbx")
 spawn_count_equation = "12"
@@ -1227,7 +1248,7 @@ spawn_scenes = Array[PackedScene]([ExtResource("19_ldmk8"), ExtResource("18_sjgb
 trigger_signals = Array[StringName]([&"spawn_top_left"])
 on_spawning_complete = Array[StringName]([&"spawning_complete_left"])
 
-[node name="PointTrapdoor2" parent="Level5Stage" instance=ExtResource("10_xb0do")]
+[node name="PointTrapdoor2" parent="Stages/Level5Stage" instance=ExtResource("10_xb0do")]
 position = Vector2(480, -16)
 spawn_scene = ExtResource("19_ldmk8")
 spawn_count_equation = "12"
@@ -1238,7 +1259,7 @@ spawn_scenes = Array[PackedScene]([ExtResource("19_ldmk8"), ExtResource("18_sjgb
 trigger_signals = Array[StringName]([&"spawn_top_right"])
 on_spawning_complete = Array[StringName]([&"spawning_complete_right"])
 
-[node name="PointTrapdoor3" parent="Level5Stage" instance=ExtResource("10_xb0do")]
+[node name="PointTrapdoor3" parent="Stages/Level5Stage" instance=ExtResource("10_xb0do")]
 position = Vector2(-16, 180)
 spawn_scene = ExtResource("11_2v676")
 spawn_count_equation = "8"
@@ -1248,7 +1269,7 @@ spawn_context = SubResource("Resource_owvki")
 trigger_signals = Array[StringName]([&"spawn_bottom_left"])
 on_spawning_complete = Array[StringName]([&"spawning_complete_bottom_left"])
 
-[node name="PointTrapdoor4" parent="Level5Stage" instance=ExtResource("10_xb0do")]
+[node name="PointTrapdoor4" parent="Stages/Level5Stage" instance=ExtResource("10_xb0do")]
 position = Vector2(656, 180)
 spawn_scene = ExtResource("11_2v676")
 spawn_count_equation = "8"
@@ -1258,7 +1279,7 @@ spawn_context = SubResource("Resource_ldmk8")
 trigger_signals = Array[StringName]([&"spawn_bottom_right"])
 on_spawning_complete = Array[StringName]([&"spawning_complete_bottom_right"])
 
-[node name="SwoopDirector" parent="Level5Stage" instance=ExtResource("14_bnks8")]
+[node name="SwoopDirector" parent="Stages/Level5Stage" instance=ExtResource("14_bnks8")]
 position = Vector2(160, -16)
 swooping_groups = Array[StringName]([&"swooping", &"left"])
 require_all = true
@@ -1270,7 +1291,7 @@ lane_count = 2
 trigger_signals = Array[StringName]([&"spawning_complete_left"])
 preview_color = Color(1, 0.84, 0, 1)
 
-[node name="SwoopDirector2" parent="Level5Stage" instance=ExtResource("14_bnks8")]
+[node name="SwoopDirector2" parent="Stages/Level5Stage" instance=ExtResource("14_bnks8")]
 position = Vector2(480, -16)
 swooping_groups = Array[StringName]([&"swooping", &"right"])
 require_all = true
@@ -1282,7 +1303,7 @@ lane_count = 2
 trigger_signals = Array[StringName]([&"spawning_complete_right"])
 preview_color = Color(1, 0.84, 0, 1)
 
-[node name="SwoopDirector3" parent="Level5Stage" instance=ExtResource("14_bnks8")]
+[node name="SwoopDirector3" parent="Stages/Level5Stage" instance=ExtResource("14_bnks8")]
 position = Vector2(-16, 180)
 swooping_groups = Array[StringName]([&"swooping", &"bottom_left"])
 require_all = true
@@ -1293,7 +1314,7 @@ formation_offset = 32.0
 trigger_signals = Array[StringName]([&"spawning_complete_bottom_left"])
 preview_color = Color(1, 0.4, 0.7, 1)
 
-[node name="SwoopDirector4" parent="Level5Stage" instance=ExtResource("14_bnks8")]
+[node name="SwoopDirector4" parent="Stages/Level5Stage" instance=ExtResource("14_bnks8")]
 position = Vector2(656, 180)
 swooping_groups = Array[StringName]([&"swooping", &"bottom_right"])
 require_all = true
@@ -1304,29 +1325,25 @@ formation_offset = 32.0
 trigger_signals = Array[StringName]([&"spawning_complete_bottom_right"])
 preview_color = Color(1, 0.4, 0.7, 1)
 
-[node name="SignalManager" parent="Level5Stage" instance=ExtResource("32_acn14")]
+[node name="SignalManager" parent="Stages/Level5Stage" instance=ExtResource("32_acn14")]
 steps = Array[ExtResource("34_1nsuk")]([SubResource("Resource_dq8qt"), SubResource("Resource_l5_s1"), SubResource("Resource_l5_s2"), SubResource("Resource_l5_s3"), SubResource("Resource_l5_s4"), SubResource("Resource_l5_s5")])
 trigger = SubResource("Resource_acn14")
 on_sequence_complete = Array[StringName]([&"level_five_complete"])
 
-[node name="WaveCard" parent="." instance=ExtResource("99_wave")]
-offset_left = 16.0
-offset_top = 16.0
-offset_right = 16.0
-offset_bottom = 16.0
-on_advance_wave = Array[StringName]([&"level_one_complete", &"level_two_complete", &"level_three_complete", &"level_four_complete", &"level_five_complete"])
+[node name="ScrollingStarsEffect" parent="Stages" instance=ExtResource("38_1tdfd")]
+star_count = 25
 
-[node name="LivesCounter" parent="." instance=ExtResource("45_ifna5")]
-target_groups = Array[StringName]([&"players"])
-on_condition_met = Array[StringName]([&"life_lost"])
+[node name="AmbientSound" parent="Stages" instance=ExtResource("48_p87tt")]
+sound = SubResource("Resource_fky46")
+trigger_signal = &"ambience"
+gameplay_only = true
 
-[node name="LivesCard" parent="." instance=ExtResource("46_j0bx8")]
-offset_left = 16.0
-offset_top = 16.0
-offset_right = 16.0
-offset_bottom = 16.0
+[node name="StageManager" parent="Stages" instance=ExtResource("8_kgu26")]
+rules = Array[ExtResource("9_vaj0o")]([SubResource("Resource_dsfuj"), SubResource("Resource_1ivtp"), SubResource("Resource_rule_l2l3"), SubResource("Resource_rule_l3l4"), SubResource("Resource_rule_l4l5"), SubResource("Resource_rule_l5l1")])
 
-[node name="PlayerSpawner" parent="." instance=ExtResource("10_xb0do")]
+[node name="Player Stuff" parent="." instance=ExtResource("8_4mgkk")]
+
+[node name="PlayerSpawner" parent="Player Stuff" instance=ExtResource("10_xb0do")]
 position = Vector2(320, 340)
 spawn_scene = ExtResource("47_j0bx8")
 spawn_count_equation = "1"
@@ -1336,7 +1353,7 @@ spawn_context = SubResource("Resource_82ubq")
 trigger_delay = 3.0
 trigger_signals = Array[StringName]([&"life_lost"])
 
-[node name="PlayerSpawnerGameStart" parent="." instance=ExtResource("10_xb0do")]
+[node name="PlayerSpawnerGameStart" parent="Player Stuff" instance=ExtResource("10_xb0do")]
 position = Vector2(320, 340)
 spawn_scene = ExtResource("47_j0bx8")
 spawn_count_equation = "1"
@@ -1345,22 +1362,9 @@ stagger_delay = 0.0
 spawn_context = SubResource("Resource_82ubq")
 trigger_signals = Array[StringName]([&"game_play"])
 
-[node name="ScrollingStarsEffect" parent="." instance=ExtResource("38_1tdfd")]
-star_count = 25
+[node name="Game State" parent="." instance=ExtResource("8_4mgkk")]
 
-[node name="AmbientSound" parent="." instance=ExtResource("48_p87tt")]
-sound = SubResource("Resource_fky46")
-trigger_signal = &"ambience"
-gameplay_only = true
-
-[node name="ScoreCard" parent="." instance=ExtResource("52_j0bx8")]
-offset_left = 32.0
-offset_top = 328.0
-offset_right = 32.0
-offset_bottom = 328.0
-is_interface = true
-
-[node name="GameOverGoal" parent="." instance=ExtResource("53_xatni")]
+[node name="GameOverGoal" parent="Game State" instance=ExtResource("53_xatni")]
 threshold = 0
 comparison = 0
 score_key = &"current_lives"
@@ -1368,36 +1372,32 @@ game_result = 1
 on_score_changed = Array[StringName]([&"life_lost"])
 on_condition_met = Array[StringName]([&"game_over"])
 
-[node name="GameOverSpeaker" parent="." instance=ExtResource("48_p87tt")]
+[node name="LivesCounter" parent="Game State" instance=ExtResource("45_ifna5")]
+target_groups = Array[StringName]([&"players"])
+on_condition_met = Array[StringName]([&"life_lost"])
+
+[node name="WaveCard" parent="Game State" instance=ExtResource("99_wave")]
+offset_left = 16.0
+offset_top = 16.0
+offset_right = 16.0
+offset_bottom = 16.0
+on_advance_wave = Array[StringName]([&"level_one_complete", &"level_two_complete", &"level_three_complete", &"level_four_complete", &"level_five_complete"])
+
+[node name="LivesCard" parent="Game State" instance=ExtResource("46_j0bx8")]
+offset_left = 16.0
+offset_top = 16.0
+offset_right = 16.0
+offset_bottom = 16.0
+
+[node name="ScoreCard" parent="Game State" instance=ExtResource("52_j0bx8")]
+offset_left = 32.0
+offset_top = 328.0
+offset_right = 32.0
+offset_bottom = 328.0
+is_interface = true
+
+[node name="CaptureCard" parent="Game State" instance=ExtResource("57_eb2hk")]
+
+[node name="GameOverSpeaker" parent="Game State" instance=ExtResource("48_p87tt")]
 sound = SubResource("GameOver_Sound")
 trigger_signal = &"game_over"
-
-[node name="TractorMark" parent="." instance=ExtResource("54_682rw")]
-position = Vector2(320, 265)
-groups = Array[StringName]([&"tractor_line"])
-filter_groups = Array[StringName]([&"diving"])
-on_entered_entity = Array[StringName]([&"fire_tractor_beam"])
-
-[node name="CollisionShape2D" type="CollisionShape2D" parent="TractorMark"]
-shape = SubResource("RectangleShape2D_682rw")
-
-[node name="TimedMark" parent="." instance=ExtResource("55_sdj2a")]
-on_complete = Array[StringName]([&"clean_up_formation"])
-
-[node name="CollisionShape2D" type="CollisionShape2D" parent="TimedMark"]
-position = Vector2(320, -4)
-shape = SubResource("RectangleShape2D_682rw")
-
-[node name="CollisionShape2D2" type="CollisionShape2D" parent="TimedMark"]
-position = Vector2(320, 364)
-shape = SubResource("RectangleShape2D_682rw")
-
-[node name="CollisionShape2D3" type="CollisionShape2D" parent="TimedMark"]
-position = Vector2(-4, 180)
-shape = SubResource("RectangleShape2D_sdj2a")
-
-[node name="CollisionShape2D4" type="CollisionShape2D" parent="TimedMark"]
-position = Vector2(644, 180)
-shape = SubResource("RectangleShape2D_sdj2a")
-
-[node name="CaptureCard" parent="." instance=ExtResource("57_eb2hk")]
