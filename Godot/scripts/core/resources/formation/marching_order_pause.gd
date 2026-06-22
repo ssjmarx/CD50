@@ -1,3 +1,5 @@
+@tool
+
 ## MarchingOrderPause
 ## Defines a wait time for the formation at its current position.
 

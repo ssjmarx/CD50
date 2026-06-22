@@ -1,3 +1,5 @@
+@tool
+
 ## MarchingOrderStep
 ## Defines a physical movement of the formation by a relative offset over a duration.
 

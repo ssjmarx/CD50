@@ -20,7 +20,7 @@
 [ext_resource type="Script" uid="uid://di72xxfkrnsjj" path="res://scripts/core/resources/formation/marching_order_step.gd" id="14_52c78"]
 [ext_resource type="PackedScene" uid="uid://ca4qbo05yiya" path="res://scenes/game components/directors/swoop_director.tscn" id="14_bnks8"]
 [ext_resource type="Script" uid="uid://dlalvxnq5qb5x" path="res://scripts/core/resources/curves/cd_curve.gd" id="15_34iby"]
-[ext_resource type="Script" uid="uid://gaem34ik0cah" path="res://scripts/core/resources/formation/marching_order_pause.gd" id="15_q4en4"]
+[ext_resource type="Script" uid="uid://b3ytiyd6wv8mq" path="res://scripts/core/resources/formation/marching_order_breathe.gd" id="15_52c78"]
 [ext_resource type="Script" uid="uid://dpgs8b1skt7t2" path="res://scripts/core/resources/curves/cd_sine_curve.gd" id="16_4yrl4"]
 [ext_resource type="PackedScene" path="res://scenes/game components/managers/state_manager.tscn" id="16_ifna5"]
 [ext_resource type="Script" uid="uid://dakcd8kk2xm44" path="res://scripts/core/resources/curves/cd_sequence_curve.gd" id="17_hm20g"]
@@ -89,7 +89,7 @@ script = ExtResource("22_jix4n")
 preferred_group = &"bosses"
 columns = 12
 rows = 1
-offset = Vector2(0, -40)
+offset = Vector2(0, -20)
 
 [sub_resource type="Resource" id="Resource_kgu26"]
 script = ExtResource("22_jix4n")
@@ -101,7 +101,7 @@ rows = 3
 script = ExtResource("22_jix4n")
 columns = 20
 rows = 3
-offset = Vector2(0, 60)
+offset = Vector2(0, 30)
 
 [sub_resource type="Resource" id="Resource_jyyib"]
 script = ExtResource("14_52c78")
@@ -122,9 +122,11 @@ duration = 4.0
 metadata/_custom_type_script = "uid://di72xxfkrnsjj"
 
 [sub_resource type="Resource" id="Resource_f646s"]
-script = ExtResource("15_q4en4")
-duration = 8.0
-metadata/_custom_type_script = "uid://gaem34ik0cah"
+script = ExtResource("15_52c78")
+spacing_amplitude = 2.0
+spacing_duration = 8.0
+offset_amplitude = 1.0
+metadata/_custom_type_script = "uid://b3ytiyd6wv8mq"
 
 [sub_resource type="Resource" id="Resource_speed_scaler"]
 script = ExtResource("25_hc4eh")

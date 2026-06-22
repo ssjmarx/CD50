@@ -1,7 +1,7 @@
 ## FormationDirector
 ## Manages multiple sub-formation grids (CDFormation) for tiered enemy placement
 ## Auto-assigns group members to slots, animates breathing, writes move data to entity blackboards
-## Supports data-driven marching orders (Step, Pause) with editor preview
+## Supports data-driven marching orders (Step, Pause, Breathe) with editor preview
 
 @tool
 class_name FormationDirector extends CDGameComponent
@@ -21,14 +21,7 @@ class_name FormationDirector extends CDGameComponent
 			_init_all_slots()
 			queue_redraw()
 
-## continuous breathing animation (used when no marching orders are assigned)
-@export_group("Breathing")
-## amplitude of spacing scale (0 = no breathing, 1.0 = spacing doubles at peak)
-@export var breathing_amplitude: float = 0.0
-## duration in seconds for one full breathe-in/breathe-out cycle
-@export var breathing_duration: float = 4.0
-
-## ordered movement commands — step, pause
+## ordered movement commands — step, pause, breathe
 @export_group("Marching")
 @export var marching_orders: Array[CDMarchingOrder] = []:
 	set(v):
@@ -61,8 +54,6 @@ class_name FormationDirector extends CDGameComponent
 
 ## --- state ---
 
-## current phase for breathing animation
-var _breathing_phase: float = 0.0
 ## entities assigned this frame (prevents stale cleanup from removing them)
 var _assigned_this_frame: Dictionary = {}
 
@@ -86,16 +77,13 @@ func _ready() -> void:
 
 ## --- editor preview ---
 
-## animate breathing and marching orders in editor for preview
+## animate marching orders in editor for preview
 func _process(delta: float) -> void:
 	if not Engine.is_editor_hint():
 		return
 	
 	if not marching_orders.is_empty():
 		_advance_marching(delta)
-	
-	if breathing_amplitude > 0.0:
-		_advance_breathing(delta)
 		
 	queue_redraw()
 
@@ -104,37 +92,39 @@ func _draw() -> void:
 	if not Engine.is_editor_hint():
 		return
 	
-	var breathing_scale := _get_breathing_scale()
+	var breathing_data: Dictionary = _get_current_breathing_data()
+	var breathing_scale: float = breathing_data["spacing_scale"]
+	var offset_scale: float = breathing_data["offset_scale"]
 	
 	for formation in formations:
 		for i in formation.columns * formation.rows:
-			var pos := formation.get_slot_position_local(i, breathing_scale)
-			## Apply the current marching offset to the slot position
-			pos += _total_marching_offset
+			## Calculate base origin including marching offset.
+			## Note: _draw operates in local space, so we do not add global_position here.
+			## _total_marching_offset is a displacement vector, valid in both local and global space.
+			var base_origin_local: Vector2 = _total_marching_offset
+			var formation_center_offset: Vector2 = formation.offset * offset_scale
+			var origin_local: Vector2 = base_origin_local + formation_center_offset
+			
+			var pos: Vector2 = formation.get_slot_position_local(i, breathing_scale)
+			## Apply the origin to the slot position
+			pos += origin_local
 			draw_circle(pos, preview_radius, preview_color)
 
 ## --- processing ---
 
-## advance marching orders, breathing, clean stale slots, write move data
+## advance marching orders, clean stale slots, write move data
 func _physics_process(delta: float) -> void:
 	if Engine.is_editor_hint():
 		return
 	
 	_advance_marching(delta)
-	_advance_breathing(delta)
 	_auto_assign_slots()
 	_clean_stale_slots()
-	_write_move_data()
+	
+	var breathing_data_physics: Dictionary = _get_current_breathing_data()
+	_write_move_data(breathing_data_physics["spacing_scale"], breathing_data_physics["offset_scale"])
+	
 	_assigned_this_frame.clear()
-
-## --- breathing ---
-
-func _advance_breathing(delta: float) -> void:
-	if breathing_duration > 0.0:
-		_breathing_phase += delta / breathing_duration * TAU
-
-func _get_breathing_scale() -> float:
-	return 1.0 + abs(sin(_breathing_phase)) * breathing_amplitude
 
 ## --- marching orders ---
 
@@ -170,6 +160,8 @@ func _advance_marching(delta: float) -> void:
 		base_duration = (order as MarchingOrderStep).duration
 	elif order is MarchingOrderPause:
 		base_duration = (order as MarchingOrderPause).duration
+	elif order is MarchingOrderBreathe:
+		base_duration = (order as MarchingOrderBreathe).spacing_duration
 	
 	var effective_duration := base_duration
 	## Guard speed_scaler access for editor safety (game may not be initialized)
@@ -190,8 +182,8 @@ func _advance_marching(delta: float) -> void:
 		var active_offset: Vector2 = step.offset * t
 		_total_marching_offset = _accumulated_offset + active_offset
 		
-	elif order is MarchingOrderPause:
-		## hold position during pause
+	elif order is MarchingOrderPause or order is MarchingOrderBreathe:
+		## hold position during pause or breathe
 		_total_marching_offset = _accumulated_offset
 	
 	## advance to next order when timer exceeds duration
@@ -211,6 +203,18 @@ func _advance_marching(delta: float) -> void:
 			## Resetting accumulator forces the pattern to snap back to start. 
 			## Comment out the line below to allow endless drifting.
 			_accumulated_offset = Vector2.ZERO 
+
+## --- breathing helpers ---
+
+## fetch breathing data from the current marching order, if supported
+func _get_current_breathing_data() -> Dictionary:
+	if _marching_index >= 0 and _marching_index < marching_orders.size():
+		var order: CDMarchingOrder = marching_orders[_marching_index]
+		if order.has_method("get_breathing_values"):
+			return order.get_breathing_values(_marching_timer)
+	
+	## default to no breathing
+	return { "spacing_scale": 1.0, "offset_scale": 1.0 }
 
 ## --- slot management ---
 
@@ -282,8 +286,7 @@ func _clean_stale_slots() -> void:
 				formation.slots[i] = null
 
 ## write move_direction + move_distance to entity blackboards
-func _write_move_data() -> void:
-	var breathing_scale := _get_breathing_scale()
+func _write_move_data(spacing_scale: float, offset_scale: float) -> void:
 	for formation in formations:
 		for i in formation.slots.size():
 			var slot = formation.slots[i]
@@ -296,8 +299,11 @@ func _write_move_data() -> void:
 			if slot_entity.state != CDEnums.EntityState.ACTIVE:
 				continue
 			
-			var target := formation.get_slot_position(i, global_position + _total_marching_offset, breathing_scale)
-			var distance := slot_entity.global_position.distance_to(target)
+			var base_origin: Vector2 = global_position + _total_marching_offset
+			var formation_center_offset: Vector2 = formation.offset * offset_scale
+			var target: Vector2 = formation.get_slot_position(i, base_origin + formation_center_offset, spacing_scale)
+			
+			var distance: float = slot_entity.global_position.distance_to(target)
 			
 			if distance > 0.001:
 				slot_entity.blackboard[direction_key] = slot_entity.global_position.direction_to(target)
@@ -346,6 +352,5 @@ func reset() -> void:
 	if speed_scaler:
 		speed_scaler.reset()
 	_init_all_slots()
-	_breathing_phase = 0.0
 	_assigned_this_frame.clear()
 	_reset_marching_state()
