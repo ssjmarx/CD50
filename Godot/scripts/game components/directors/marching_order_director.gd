@@ -27,19 +27,18 @@ func _on_initialize() -> void:
 	super._on_initialize()
 	
 	if start_signal != &"":
-		game.bus_connect(start_signal, _start_marching)
+		bus_connect(start_signal, _start_marching)
 	else:
 		_start_marching()
 		
 	if stop_signal != &"":
-		game.bus_connect(stop_signal, _stop_marching)
+		bus_connect(stop_signal, _stop_marching)
 
-func _on_deinitialize() -> void:
-	if start_signal != &"" and game.has_signal(start_signal):
-		game.bus_disconnect(start_signal, _start_marching)
-	if stop_signal != &"" and game.has_signal(stop_signal):
-		game.bus_disconnect(stop_signal, _stop_marching)
-	super._on_deinitialize()
+func _exit_tree() -> void:
+	if start_signal != &"" and is_instance_valid(game) and game.has_signal(start_signal):
+		bus_disconnect(start_signal, _start_marching)
+	if stop_signal != &"" and is_instance_valid(game) and game.has_signal(stop_signal):
+		bus_disconnect(stop_signal, _stop_marching)
 
 func _start_marching() -> void:
 	_is_marching = true
