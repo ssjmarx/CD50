@@ -61,8 +61,10 @@ var _assigned_this_frame: Dictionary = {}
 
 ## current marching order index (-1 = not marching)
 var _marching_index: int = -1
-## time elapsed on current marching order
+## time elapsed on current marching order (raw delta time)
 var _marching_timer: float = 0.0
+## time elapsed scaled by speed multiplier (used for curve evaluations)
+var _scaled_marching_timer: float = 0.0
 ## accumulated offset from completed step orders
 var _accumulated_offset: Vector2 = Vector2.ZERO
 ## total current offset (accumulated + active order progress) applied to formation
@@ -139,6 +141,7 @@ func _on_initialize() -> void:
 func _reset_marching_state() -> void:
 	_marching_index = 0
 	_marching_timer = 0.0
+	_scaled_marching_timer = 0.0
 	_accumulated_offset = Vector2.ZERO
 	_total_marching_offset = Vector2.ZERO
 
@@ -153,25 +156,28 @@ func _advance_marching(delta: float) -> void:
 		return
 	
 	var order: CDMarchingOrder = marching_orders[_marching_index]
-	
-	## calculate duration with speed multiplier
 	var base_duration := order.get_duration()
-	var effective_duration := base_duration
 	
-	## Guard speed_scaler access for editor safety (game may not be initialized)
+	## Calculate speed multiplier, defaulting to 1.0 if missing or invalid
+	var multiplier := 1.0
 	if speed_scaler and is_instance_valid(game):
-		var multiplier := speed_scaler.evaluate()
-		if multiplier > 0.0:
-			effective_duration /= multiplier
+		var evaluated := speed_scaler.evaluate()
+		if evaluated > 0.0:
+			multiplier = evaluated
+			
+	## Scale the total duration inversely by speed
+	var effective_duration := base_duration / multiplier
 	
 	_marching_timer += delta
+	_scaled_marching_timer = _marching_timer * multiplier
 	
-	## calculate current offset based on the order's own internal logic
-	_total_marching_offset = _accumulated_offset + order.get_offset_at_time(_marching_timer)
+	## Evaluate offset using the scaled time
+	_total_marching_offset = _accumulated_offset + order.get_offset_at_time(_scaled_marching_timer)
 	
-	## advance to next order when timer exceeds duration
+	## advance to next order when raw timer exceeds effective duration
 	if _marching_timer >= effective_duration:
 		_marching_timer = 0.0
+		_scaled_marching_timer = 0.0
 		
 		## commit the final offset to accumulator
 		_accumulated_offset += order.get_accumulated_offset()
@@ -191,7 +197,8 @@ func _advance_marching(delta: float) -> void:
 func _get_current_breathing_data() -> Dictionary:
 	if _marching_index >= 0 and _marching_index < marching_orders.size():
 		var order: CDMarchingOrder = marching_orders[_marching_index]
-		return order.get_breathing_values(_marching_timer)
+		## Use scaled timer so breathing matches the scaled movement speed
+		return order.get_breathing_values(_scaled_marching_timer)
 	
 	## default to no breathing
 	return { "spacing_scale": 1.0, "offset_scale": 1.0 }
