@@ -1,21 +1,56 @@
+@tool
+class_name GridTrapdoor extends CDStageTrapdoor
+
 ## GridTrapdoor
 ## Spawns entities in a centered 2D grid with two modes: data-driven or math-driven
 ## Mode A uses CDGridLayout resources, Mode B uses CDGridEquation with random skip logic
 
-class_name GridTrapdoor extends CDStageTrapdoor
-
 ## --- exports ---
 
 ## data-driven grid layout (Mode A) — maps cells to scenes
-@export var layout: CDGridLayout = null
+@export var layout: CDGridLayout = null:
+	set(v):
+		layout = v
+		if is_node_ready():
+			queue_redraw()
+
 ## single scene for all cells (Mode B)
 @export var spawn_scene: PackedScene = null
+
 ## math-driven grid equation (Mode B) — columns, rows, skip chance
-@export var equation: CDGridEquation = null
+@export var equation: CDGridEquation = null:
+	set(v):
+		equation = v
+		if is_node_ready():
+			queue_redraw()
+
 ## size of each grid cell
-@export var cell_size: Vector2 = Vector2(16, 16)
+@export var cell_size: Vector2 = Vector2(16, 16):
+	set(v):
+		cell_size = v
+		if is_node_ready():
+			queue_redraw()
+
 ## gap between cells
-@export var cell_spacing: Vector2 = Vector2(2, 2)
+@export var cell_spacing: Vector2 = Vector2(2, 2):
+	set(v):
+		cell_spacing = v
+		if is_node_ready():
+			queue_redraw()
+
+## --- preview settings ---
+
+@export_group("Preview")
+@export var preview_color: Color = Color.CYAN:
+	set(v):
+		preview_color = v
+		if is_node_ready():
+			queue_redraw()
+@export var preview_radius: float = 4.0:
+	set(v):
+		preview_radius = v
+		if is_node_ready():
+			queue_redraw()
 
 ## --- state ---
 
@@ -102,8 +137,11 @@ func _get_spawn_position(index: int, _total: int) -> Vector2:
 	var row := index / _grid_columns
 	var step_x := cell_size.x + cell_spacing.x
 	var step_y := cell_size.y + cell_spacing.y
-	var grid_width := _grid_columns * step_x - cell_spacing.x
-	var grid_height := _grid_rows * step_y - cell_spacing.y
+	
+	## Center the entities/slots themselves (matches FormationDirector math)
+	var grid_width := (_grid_columns - 1) * step_x
+	var grid_height := (_grid_rows - 1) * step_y
+	
 	## center the grid on the trapdoor's global position
 	return global_position + Vector2(
 		col * step_x - grid_width * 0.5,
@@ -115,3 +153,48 @@ func _get_spawn_scene(index: int, _total: int) -> PackedScene:
 	if layout != null:
 		return layout.get_cell(index)
 	return spawn_scene
+
+## --- editor preview ---
+
+func _get_total_cells() -> int:
+	if layout != null:
+		return layout.rows.size() * layout.columns
+	elif equation != null:
+		return equation.columns * equation.rows
+	return 0
+
+func _draw() -> void:
+	if not Engine.is_editor_hint():
+		return
+		
+	var total_cells := _get_total_cells()
+	if total_cells == 0:
+		return
+		
+	## Update dimensions based on what's configured for the preview
+	if layout != null:
+		_grid_columns = layout.columns
+		_grid_rows = layout.rows.size()
+	elif equation != null:
+		_grid_columns = equation.columns
+		_grid_rows = equation.rows
+	else:
+		return
+		
+	var step_x := cell_size.x + cell_spacing.x
+	var step_y := cell_size.y + cell_spacing.y
+	
+	## Use the new centering math here so the preview matches reality
+	var grid_width := (_grid_columns - 1) * step_x
+	var grid_height := (_grid_rows - 1) * step_y
+	
+	for i in total_cells:
+		var col := i % _grid_columns
+		@warning_ignore("integer_division")
+		var row := i / _grid_columns
+		
+		var pos := Vector2(
+			col * step_x - grid_width * 0.5,
+			row * step_y - grid_height * 0.5
+		)
+		draw_circle(pos, preview_radius, preview_color)
