@@ -21,6 +21,9 @@ class_name MarchingOrderBreathe extends CDMarchingOrder
 
 ## --- public methods ---
 
+func get_duration() -> float:
+	return spacing_duration
+
 ## Returns breathing data for this frame.
 ## time: The elapsed time on the current marching order.
 func get_breathing_values(time: float) -> Dictionary:

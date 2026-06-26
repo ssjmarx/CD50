@@ -9,3 +9,8 @@ class_name MarchingOrderPause extends CDMarchingOrder
 
 ## duration of the pause in seconds
 @export var duration: float = 1.0
+
+## --- public methods ---
+
+func get_duration() -> float:
+	return duration

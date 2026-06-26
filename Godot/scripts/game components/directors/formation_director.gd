@@ -155,15 +155,9 @@ func _advance_marching(delta: float) -> void:
 	var order: CDMarchingOrder = marching_orders[_marching_index]
 	
 	## calculate duration with speed multiplier
-	var base_duration := 0.0
-	if order is MarchingOrderStep:
-		base_duration = (order as MarchingOrderStep).duration
-	elif order is MarchingOrderPause:
-		base_duration = (order as MarchingOrderPause).duration
-	elif order is MarchingOrderBreathe:
-		base_duration = (order as MarchingOrderBreathe).spacing_duration
-	
+	var base_duration := order.get_duration()
 	var effective_duration := base_duration
+	
 	## Guard speed_scaler access for editor safety (game may not be initialized)
 	if speed_scaler and is_instance_valid(game):
 		var multiplier := speed_scaler.evaluate()
@@ -172,28 +166,15 @@ func _advance_marching(delta: float) -> void:
 	
 	_marching_timer += delta
 	
-	## calculate current offset based on order type
-	if order is MarchingOrderStep:
-		## linear interpolation for step
-		var t := 1.0
-		if effective_duration > 0.0:
-			t = clamp(_marching_timer / effective_duration, 0.0, 1.0)
-		var step: MarchingOrderStep = order as MarchingOrderStep
-		var active_offset: Vector2 = step.offset * t
-		_total_marching_offset = _accumulated_offset + active_offset
-		
-	elif order is MarchingOrderPause or order is MarchingOrderBreathe:
-		## hold position during pause or breathe
-		_total_marching_offset = _accumulated_offset
+	## calculate current offset based on the order's own internal logic
+	_total_marching_offset = _accumulated_offset + order.get_offset_at_time(_marching_timer)
 	
 	## advance to next order when timer exceeds duration
 	if _marching_timer >= effective_duration:
 		_marching_timer = 0.0
 		
-		## commit the step offset to accumulator
-		if order is MarchingOrderStep:
-			var step: MarchingOrderStep = order as MarchingOrderStep
-			_accumulated_offset += step.offset
+		## commit the final offset to accumulator
+		_accumulated_offset += order.get_accumulated_offset()
 		
 		_marching_index += 1
 		if _marching_index >= marching_orders.size():
@@ -210,8 +191,7 @@ func _advance_marching(delta: float) -> void:
 func _get_current_breathing_data() -> Dictionary:
 	if _marching_index >= 0 and _marching_index < marching_orders.size():
 		var order: CDMarchingOrder = marching_orders[_marching_index]
-		if order.has_method("get_breathing_values"):
-			return order.get_breathing_values(_marching_timer)
+		return order.get_breathing_values(_marching_timer)
 	
 	## default to no breathing
 	return { "spacing_scale": 1.0, "offset_scale": 1.0 }
