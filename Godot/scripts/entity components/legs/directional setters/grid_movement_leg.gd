@@ -1,6 +1,7 @@
 ## GridMovementLeg
 ## Moves entity by a fixed grid step, one step per hop_delay interval
 ## Uses edge detection on blackboard direction to capture discrete inputs into a queue
+## If continuous distance is provided, chops it into discrete steps automatically
 
 class_name GridMovementLeg extends CDEntityComponent
 
@@ -20,6 +21,8 @@ class_name GridMovementLeg extends CDEntityComponent
 @export_group("Blackboard Keys")
 ## key to read movement direction from (Vector2)
 @export var direction_key: StringName = &"move_direction"
+## key to read continuous movement distance/speed from (float). If present, enables continuous stepping.
+@export var distance_key: StringName = &"move_distance"
 ## key written after a successful step (Vector2), for sibling components
 @export var step_direction_key: StringName = &"step_direction"
 
@@ -35,8 +38,8 @@ var _input_queue: Array[Vector2i] = []
 var _prev_direction: Vector2 = Vector2.ZERO
 ## hop delay accumulator
 var _hop_timer: float = 0.0
-## whether waiting for next hop interval
-var _hop_pending: bool = false
+## continuous movement accumulator (chops continuous intent into discrete steps)
+var _accumulated_step_distance: float = 0.0
 
 ## --- lifecycle ---
 
@@ -52,8 +55,43 @@ func _physics_process(delta: float) -> void:
 	if not entity:
 		return
 	
-	## 1. edge detection — capture new discrete inputs
 	var direction: Vector2 = entity.blackboard.get(direction_key, Vector2.ZERO)
+	var continuous_dist: float = entity.blackboard.get(distance_key, -1.0)
+	
+	if continuous_dist >= 0.0:
+		_process_continuous_move(direction, continuous_dist)
+	else:
+		_process_discrete_move(direction, delta)
+		
+	_prev_direction = direction
+
+## --- movement modes ---
+
+## process continuous movement intent (e.g. MarchingOrderDirector), chopping it into discrete grid steps
+func _process_continuous_move(direction: Vector2, distance: float) -> void:
+	if direction == Vector2.ZERO or distance <= 0.0:
+		_accumulated_step_distance = 0.0
+		return
+		
+	_accumulated_step_distance += distance
+	
+	var step_size := cell_size.x
+	if absf(direction.y) > absf(direction.x):
+		step_size = cell_size.y
+		
+	# We might need to step multiple times if distance is huge (frame lag)
+	while _accumulated_step_distance >= step_size:
+		_accumulated_step_distance -= step_size
+		var step := _direction_to_step(direction)
+		# We bypass the input queue for continuous movement to avoid desync/buffering
+		if not _try_step(step):
+			# If blocked, reset accumulator to prevent spamming blocked signals or queueing up massive offsets
+			_accumulated_step_distance = 0.0
+			break
+
+## process discrete input (e.g. button presses) via edge detection and queue
+func _process_discrete_move(direction: Vector2, delta: float) -> void:
+	## 1. edge detection — capture new discrete inputs
 	if direction != _prev_direction and direction != Vector2.ZERO:
 		var step := _direction_to_step(direction)
 		if step != Vector2i.ZERO:
@@ -62,7 +100,6 @@ func _physics_process(delta: float) -> void:
 					_input_queue.append(step)
 			else:
 				_try_step(step)
-	_prev_direction = direction
 	
 	if _input_queue.is_empty():
 		return
@@ -131,4 +168,4 @@ func _on_entity_deactivating() -> void:
 	_input_queue.clear()
 	_prev_direction = Vector2.ZERO
 	_hop_timer = 0.0
-	_hop_pending = false
+	_accumulated_step_distance = 0.0
