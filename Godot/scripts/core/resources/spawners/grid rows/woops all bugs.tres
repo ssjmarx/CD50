@@ -1,0 +1,9 @@
+[gd_resource type="Resource" script_class="CDGridRow" load_steps=3 format=3 uid="uid://c7yai6wu3v2f0"]
+
+[ext_resource type="PackedScene" uid="uid://tjhphobh52hi" path="res://entities/generic/bug_ship_grid.tscn" id="1_ggm16"]
+[ext_resource type="Script" uid="uid://bnrmcpa7s0qvi" path="res://scripts/core/resources/spawners/cd_grid_row.gd" id="2_e3rbu"]
+
+[resource]
+script = ExtResource("2_e3rbu")
+cells = Array[PackedScene]([ExtResource("1_ggm16"), ExtResource("1_ggm16"), ExtResource("1_ggm16"), ExtResource("1_ggm16"), ExtResource("1_ggm16"), ExtResource("1_ggm16"), ExtResource("1_ggm16"), ExtResource("1_ggm16"), ExtResource("1_ggm16"), ExtResource("1_ggm16"), ExtResource("1_ggm16")])
+metadata/_custom_type_script = "uid://bnrmcpa7s0qvi"

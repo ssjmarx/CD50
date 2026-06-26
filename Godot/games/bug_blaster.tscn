@@ -1,0 +1,137 @@
+[gd_scene load_steps=36 format=3 uid="uid://l7axebdmvaep"]
+
+[ext_resource type="Script" uid="uid://dm0uehngpvbh7" path="res://scripts/core/infrastructure/cd_game.gd" id="1_bu0qt"]
+[ext_resource type="PackedScene" path="res://scenes/core/infrastructure/cd_stage.tscn" id="1_rqens"]
+[ext_resource type="PackedScene" uid="uid://c160d1kuwsrav" path="res://scenes/game components/projectors/crt_projector.tscn" id="2_cj4ar"]
+[ext_resource type="PackedScene" uid="uid://dp5wrnwomehwo" path="res://scenes/core/infrastructure/cd_sound_bank.tscn" id="3_mjnc3"]
+[ext_resource type="PackedScene" uid="uid://cmbx6xnct372t" path="res://scenes/core/infrastructure/cd_collision_buffer.tscn" id="4_km13u"]
+[ext_resource type="PackedScene" uid="uid://bcwv07gabsxif" path="res://scenes/core/infrastructure/cd_collision_matrix.tscn" id="5_mpy0c"]
+[ext_resource type="Script" uid="uid://b2ibop6r2cryj" path="res://scripts/core/resources/infrastructure/cd_collision_group.gd" id="6_beg6j"]
+[ext_resource type="PackedScene" uid="uid://25g1ygl8nuv6" path="res://scenes/core/infrastructure/cd_group_registry.tscn" id="7_np6gk"]
+[ext_resource type="PackedScene" uid="uid://c6mp0pt27mfal" path="res://scenes/core/infrastructure/cd_input_router.tscn" id="8_k1pfx"]
+[ext_resource type="PackedScene" uid="uid://csgdjkq3gf26a" path="res://scenes/core/infrastructure/cd_updater.tscn" id="9_jd2sg"]
+[ext_resource type="PackedScene" uid="uid://b7uyqydnog2th" path="res://scenes/game components/directors/formation_director.tscn" id="10_np6gk"]
+[ext_resource type="Script" uid="uid://b3scrmy1vwk2j" path="res://scripts/core/resources/formation/cd_formation.gd" id="11_k1pfx"]
+[ext_resource type="Script" uid="uid://cr36gmk66snrc" path="res://scripts/core/resources/formation/cd_marching_order.gd" id="12_jd2sg"]
+[ext_resource type="Script" uid="uid://pfjv46gi1ii" path="res://scripts/core/resources/behavior/cd_group_count_scaler.gd" id="12_km13u"]
+[ext_resource type="Script" uid="uid://di72xxfkrnsjj" path="res://scripts/core/resources/formation/marching_order_step.gd" id="13_6oqxc"]
+[ext_resource type="Script" uid="uid://odf21vxxstxx" path="res://scripts/core/resources/formation/marching_order_repeat.gd" id="14_np6gk"]
+[ext_resource type="PackedScene" uid="uid://caatm0w6gg3b1" path="res://scenes/game components/trapdoors/grid_trapdoor.tscn" id="16_jd2sg"]
+[ext_resource type="Script" uid="uid://bnrmcpa7s0qvi" path="res://scripts/core/resources/spawners/cd_grid_row.gd" id="17_o17xb"]
+[ext_resource type="Resource" uid="uid://c7yai6wu3v2f0" path="res://scripts/core/resources/spawners/grid rows/woops all bugs.tres" id="18_bu0qt"]
+[ext_resource type="Script" uid="uid://0latvushbloy" path="res://scripts/core/resources/spawners/cd_grid_layout.gd" id="19_tgn32"]
+[ext_resource type="Script" uid="uid://dcu4ocnin0htu" path="res://scripts/core/resources/spawners/cd_spawn_context.gd" id="21_bu0qt"]
+
+[sub_resource type="Resource" id="Resource_q4h5u"]
+script = ExtResource("6_beg6j")
+group_name = &"players"
+collides_with = Array[StringName]([&"players"])
+
+[sub_resource type="Resource" id="Resource_qh32t"]
+script = ExtResource("6_beg6j")
+group_name = &"enemies"
+
+[sub_resource type="Resource" id="Resource_dg5ky"]
+script = ExtResource("6_beg6j")
+group_name = &"enemy_bullets"
+collides_with = Array[StringName]([&"players"])
+
+[sub_resource type="Resource" id="Resource_7ar12"]
+script = ExtResource("6_beg6j")
+group_name = &"player_bullets"
+collides_with = Array[StringName]([&"enemies"])
+
+[sub_resource type="Resource" id="Resource_beg6j"]
+script = ExtResource("11_k1pfx")
+columns = 11
+metadata/_custom_type_script = "uid://b3scrmy1vwk2j"
+
+[sub_resource type="Resource" id="Resource_k1pfx"]
+script = ExtResource("13_6oqxc")
+offset = Vector2(128, 0)
+duration = 4.0
+metadata/_custom_type_script = "uid://di72xxfkrnsjj"
+
+[sub_resource type="Resource" id="Resource_jd2sg"]
+script = ExtResource("13_6oqxc")
+offset = Vector2(0, 20)
+duration = 0.0
+metadata/_custom_type_script = "uid://di72xxfkrnsjj"
+
+[sub_resource type="Resource" id="Resource_6oqxc"]
+script = ExtResource("13_6oqxc")
+offset = Vector2(-256, 0)
+duration = 8.0
+metadata/_custom_type_script = "uid://di72xxfkrnsjj"
+
+[sub_resource type="Resource" id="Resource_kybkw"]
+script = ExtResource("13_6oqxc")
+offset = Vector2(0, 20)
+duration = 0.0
+metadata/_custom_type_script = "uid://di72xxfkrnsjj"
+
+[sub_resource type="Resource" id="Resource_o17xb"]
+script = ExtResource("13_6oqxc")
+offset = Vector2(128, 0)
+duration = 4.0
+metadata/_custom_type_script = "uid://di72xxfkrnsjj"
+
+[sub_resource type="Resource" id="Resource_bu0qt"]
+script = ExtResource("14_np6gk")
+orders = Array[ExtResource("12_jd2sg")]([SubResource("Resource_k1pfx"), SubResource("Resource_jd2sg"), SubResource("Resource_6oqxc"), SubResource("Resource_kybkw"), SubResource("Resource_o17xb")])
+metadata/_custom_type_script = "uid://odf21vxxstxx"
+
+[sub_resource type="Resource" id="Resource_tgn32"]
+script = ExtResource("12_km13u")
+group_name = &"enemies"
+minimum = 1.0
+maximum = 8.0
+metadata/_custom_type_script = "uid://pfjv46gi1ii"
+
+[sub_resource type="Resource" id="Resource_6gcr2"]
+script = ExtResource("19_tgn32")
+rows = Array[ExtResource("17_o17xb")]([ExtResource("18_bu0qt"), ExtResource("18_bu0qt"), ExtResource("18_bu0qt"), ExtResource("18_bu0qt"), ExtResource("18_bu0qt")])
+metadata/_custom_type_script = "uid://0latvushbloy"
+
+[sub_resource type="Resource" id="Resource_0luh7"]
+script = ExtResource("21_bu0qt")
+additional_groups = Array[StringName]([&"enemies"])
+metadata/_custom_type_script = "uid://dcu4ocnin0htu"
+
+[node name="BugBlaster" type="Node2D"]
+script = ExtResource("1_bu0qt")
+
+[node name="Infrastructure" parent="." instance=ExtResource("1_rqens")]
+
+[node name="CRTProjector" parent="Infrastructure" instance=ExtResource("2_cj4ar")]
+
+[node name="CDSoundBank" parent="Infrastructure" instance=ExtResource("3_mjnc3")]
+max_channels = 4
+
+[node name="CDCollisionBuffer" parent="Infrastructure" instance=ExtResource("4_km13u")]
+
+[node name="CDCollisionMatrix" parent="Infrastructure" instance=ExtResource("5_mpy0c")]
+collision_groups = Array[ExtResource("6_beg6j")]([SubResource("Resource_q4h5u"), SubResource("Resource_qh32t"), SubResource("Resource_dg5ky"), SubResource("Resource_7ar12")])
+
+[node name="CDGroupRegistry" parent="Infrastructure" instance=ExtResource("7_np6gk")]
+
+[node name="CDInputRouter" parent="Infrastructure" instance=ExtResource("8_k1pfx")]
+
+[node name="CDUpdater" parent="Infrastructure" instance=ExtResource("9_jd2sg")]
+
+[node name="FormationDirector" parent="." instance=ExtResource("10_np6gk")]
+position = Vector2(320, 96)
+formation_groups = Array[StringName]([&"enemies"])
+formations = Array[ExtResource("11_k1pfx")]([SubResource("Resource_beg6j")])
+marching_orders = Array[ExtResource("12_jd2sg")]([SubResource("Resource_bu0qt")])
+speed_scaler = SubResource("Resource_tgn32")
+preview_color = Color(1, 0.64705884, 0, 1)
+component_category = 10
+
+[node name="GridTrapdoor" parent="." instance=ExtResource("16_jd2sg")]
+position = Vector2(320, 96)
+layout = SubResource("Resource_6gcr2")
+cell_size = Vector2(16, 16)
+cell_spacing = Vector2(4, 0)
+spawn_context = SubResource("Resource_0luh7")
+trigger_signals = Array[StringName]([&"game_play"])

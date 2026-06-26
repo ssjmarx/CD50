@@ -778,7 +778,6 @@ collision_groups = Array[ExtResource("4_xb0do")]([SubResource("Resource_q4h5u"),
 [node name="CDGroupRegistry" parent="Infrastructure" instance=ExtResource("5_qyrdw")]
 
 [node name="CDInputRouter" parent="Infrastructure" instance=ExtResource("6_2v676")]
-tracked_actions = Array[StringName]([&"fire", &"thrust", &"thrust_end"])
 
 [node name="CDUpdater" parent="Infrastructure" instance=ExtResource("7_fjsfa")]
 

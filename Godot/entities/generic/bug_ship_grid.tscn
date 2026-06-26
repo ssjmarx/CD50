@@ -1,0 +1,26 @@
+[gd_scene load_steps=7 format=3 uid="uid://tjhphobh52hi"]
+
+[ext_resource type="PackedScene" uid="uid://crldddsx3c7ck" path="res://entities/generic/bug_ship.tscn" id="1_buomt"]
+[ext_resource type="Texture2D" uid="uid://c2xhyo80temb" path="res://v1/Assets/invaders/crab_1.png" id="2_20bx2"]
+[ext_resource type="PackedScene" uid="uid://depq50k1fa0v6" path="res://scenes/entity components/legs/grid_movement_leg.tscn" id="2_rtcwv"]
+[ext_resource type="Texture2D" uid="uid://b50rfv8r5yb4i" path="res://assets/seafood/crab_2.png" id="3_2377d"]
+[ext_resource type="PackedScene" uid="uid://c6frknsc6yg83" path="res://scenes/entity components/legs/grid_alignment_leg.tscn" id="3_ixcvx"]
+
+[sub_resource type="AnimatedTexture" id="AnimatedTexture_haubq"]
+frames = 2
+frame_0/texture = ExtResource("2_20bx2")
+frame_1/texture = ExtResource("3_2377d")
+frame_1/duration = 1.0
+
+[node name="BugShip" instance=ExtResource("1_buomt")]
+
+[node name="SpriteFace" parent="." index="0"]
+scale = Vector2(1, 1)
+frames = Array[Texture2D]([SubResource("AnimatedTexture_haubq")])
+
+[node name="GridMovementLeg" parent="." index="6" instance=ExtResource("2_rtcwv")]
+cell_size = Vector2(20, 20)
+hop_delay = 1.0
+
+[node name="GridAlignmentLeg" parent="." index="7" instance=ExtResource("3_ixcvx")]
+cell_size = Vector2(20, 20)

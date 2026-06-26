@@ -45,11 +45,6 @@ func _ready() -> void:
 	component_category = CDEnums.ComponentCategory.STEERING
 	super._ready()
 
-## on initialize
-func _on_initialize() -> void:
-	for sig in step_blocked_signals:
-		entity.ensure_signal(sig)
-
 ## --- processing ---
 
 ## physics process
