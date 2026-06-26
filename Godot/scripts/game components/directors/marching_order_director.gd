@@ -1,91 +1,182 @@
+@tool
 class_name MarchingOrderDirector extends CDGameComponent
 
 ## MarchingOrderDirector
-## A blind conductor that issues directional marching steps to the game bus.
-## Intended for Space Invaders-style discrete grid movement where entities
-## listen for the "march_step" signal and read "march_direction" from the blackboard.
+## A blind conductor that translates continuous CDMarchingOrder resources
+## into discrete grid step commands for target entities.
+## It evaluates the path, samples the movement delta, and issues discrete steps via the blackboard.
 
-enum MarchState { RIGHT, LEFT, DOWN }
+## --- exports ---
 
-@export_group("Marching Config")
-## Time in seconds between each march step.
-@export var step_interval: float = 0.5
-## How many horizontal steps to take before stepping down.
-@export var horizontal_steps: int = 10
-## The game bus signal that starts the marching. Leave empty to start immediately.
-@export var start_signal: StringName = &"wave_start"
-## The game bus signal that stops the marching.
-@export var stop_signal: StringName = &"wave_clear"
+## groups containing entities that should receive the move commands
+@export var target_groups: Array[StringName] = [&"enemies"]
+## true = entity must be in ALL groups; false = entity must be in ANY group
+@export var require_all: bool = false
 
-var _timer: float = 0.0
-var _state: MarchState = MarchState.RIGHT
-var _prev_horizontal_state: MarchState = MarchState.RIGHT
-var _current_horizontal_steps: int = 0
-var _is_marching: bool = false
+## ordered movement commands — step, pause, breathe (same data as FormationDirector)
+@export_group("Marching")
+@export var marching_orders: Array[CDMarchingOrder] = []:
+	set(v):
+		marching_orders = v
+		if is_node_ready():
+			_reset_marching_state()
+
+## optional scaler that multiplies marching speed (higher = faster)
+@export var speed_scaler: CDScaler
+
+@export_group("Discrete Stepping")
+## The world-unit distance of a single grid step/cell
+@export var step_size: float = 16.0
+
+@export_group("Blackboard Keys")
+## key for writing movement direction to entity blackboard (Vector2)
+@export var direction_key: StringName = &"move_direction"
+## key for writing step distance to entity blackboard (float)
+@export var distance_key: StringName = &"move_distance"
+
+## --- marching state ---
+var _marching_index: int = -1
+var _marching_timer: float = 0.0
+var _scaled_marching_timer: float = 0.0
+var _accumulated_offset: Vector2 = Vector2.ZERO
+var _total_marching_offset: Vector2 = Vector2.ZERO
+
+## --- step tracking state ---
+var _accumulated_step_distance: float = 0.0
+var _last_step_dir: Vector2 = Vector2.ZERO
+
+## --- lifecycle ---
+
+func _ready() -> void:
+	component_category = CDEnums.ComponentCategory.RULES
+	super._ready()
 
 func _on_initialize() -> void:
 	super._on_initialize()
-	
-	if start_signal != &"":
-		bus_connect(start_signal, _start_marching)
-	else:
-		_start_marching()
-		
-	if stop_signal != &"":
-		bus_connect(stop_signal, _stop_marching)
+	if speed_scaler:
+		speed_scaler.initialize(game)
+	if not marching_orders.is_empty():
+		_reset_marching_state()
 
-func _exit_tree() -> void:
-	if start_signal != &"" and is_instance_valid(game) and game.has_signal(start_signal):
-		bus_disconnect(start_signal, _start_marching)
-	if stop_signal != &"" and is_instance_valid(game) and game.has_signal(stop_signal):
-		bus_disconnect(stop_signal, _stop_marching)
+## --- processing ---
 
-func _start_marching() -> void:
-	_is_marching = true
-	_timer = step_interval
-	_state = MarchState.RIGHT
-	_prev_horizontal_state = MarchState.RIGHT
-	_current_horizontal_steps = 0
-	set_physics_process(true)
-
-func _stop_marching() -> void:
-	_is_marching = false
-	set_physics_process(false)
-
+## advance marching orders, sample delta, issue discrete steps
 func _physics_process(delta: float) -> void:
-	if not _is_marching:
-		return
-		
-	_timer -= delta
-	if _timer <= 0.0:
-		_timer += step_interval
-		_process_step()
+	if Engine.is_editor_hint(): return
+	if marching_orders.is_empty(): return
 
-func _process_step() -> void:
-	var dir: Vector2 = Vector2.ZERO
+	# 1. Evaluate continuous offset for this frame
+	var prev_offset := _total_marching_offset
+	_advance_marching(delta)
+	var delta_offset := _total_marching_offset - prev_offset
+
+	# 2. Convert continuous offset into discrete grid steps
+	if delta_offset.length() > 0.001:
+		var dir := delta_offset.normalized()
+		
+		# Snap to dominant axis for strict grid movement (strictly horizontal or vertical)
+		var step_dir := Vector2.ZERO
+		if abs(dir.x) > abs(dir.y):
+			step_dir = Vector2(sign(dir.x), 0)
+		elif abs(dir.y) > 0:
+			step_dir = Vector2(0, sign(dir.y))
+			
+		if step_dir == Vector2.ZERO:
+			return
+			
+		# If direction changed, force an immediate step so movement feels responsive
+		if step_dir != _last_step_dir:
+			_last_step_dir = step_dir
+			_accumulated_step_distance = step_size
+			
+		_accumulated_step_distance += delta_offset.length()
+		
+		# Issue discrete steps while accumulated distance exceeds step size
+		# (A large delta or low framerate can issue multiple steps to catch up)
+		while _accumulated_step_distance >= step_size:
+			_accumulated_step_distance -= step_size
+			_issue_step_command(step_dir, step_size)
+
+## --- marching orders logic (mirrors FormationDirector) ---
+
+## reset state machine for marching
+func _reset_marching_state() -> void:
+	_marching_index = 0
+	_marching_timer = 0.0
+	_scaled_marching_timer = 0.0
+	_accumulated_offset = Vector2.ZERO
+	_total_marching_offset = Vector2.ZERO
+	_accumulated_step_distance = step_size # Force first step to trigger immediately
+	_last_step_dir = Vector2.ZERO
+
+## advance the current marching order and auto-cycle through the sequence
+func _advance_marching(delta: float) -> void:
+	if marching_orders.is_empty():
+		_total_marching_offset = Vector2.ZERO
+		return
 	
-	match _state:
-		MarchState.RIGHT:
-			dir = Vector2.RIGHT
-			_current_horizontal_steps += 1
-			if _current_horizontal_steps >= horizontal_steps:
-				_prev_horizontal_state = MarchState.RIGHT
-				_state = MarchState.DOWN
-				
-		MarchState.LEFT:
-			dir = Vector2.LEFT
-			_current_horizontal_steps += 1
-			if _current_horizontal_steps >= horizontal_steps:
-				_prev_horizontal_state = MarchState.LEFT
-				_state = MarchState.DOWN
-				
-		MarchState.DOWN:
-			dir = Vector2.DOWN
-			_current_horizontal_steps = 0
-			if _prev_horizontal_state == MarchState.RIGHT:
-				_state = MarchState.LEFT
-			else:
-				_state = MarchState.RIGHT
-				
-	game.blackboard["march_direction"] = dir
-	game.bus_emit("march_step")
+	if _marching_index < 0 or _marching_index >= marching_orders.size():
+		_reset_marching_state()
+		return
+	
+	var order: CDMarchingOrder = marching_orders[_marching_index]
+	var base_duration := order.get_duration()
+	
+	## Calculate speed multiplier, defaulting to 1.0 if missing or invalid
+	var multiplier := 1.0
+	if speed_scaler and is_instance_valid(game):
+		var evaluated := speed_scaler.evaluate()
+		if evaluated > 0.0:
+			multiplier = evaluated
+			
+	## Scale the total duration inversely by speed
+	var effective_duration := base_duration / multiplier
+	
+	_marching_timer += delta
+	_scaled_marching_timer = _marching_timer * multiplier
+	
+	## Evaluate offset using the scaled time
+	_total_marching_offset = _accumulated_offset + order.get_offset_at_time(_scaled_marching_timer)
+	
+	## advance to next order when raw timer exceeds effective duration
+	if _marching_timer >= effective_duration:
+		_marching_timer = 0.0
+		_scaled_marching_timer = 0.0
+		
+		## commit the final offset to accumulator
+		_accumulated_offset += order.get_accumulated_offset()
+		
+		_marching_index += 1
+		if _marching_index >= marching_orders.size():
+			_marching_index = 0  ## loop marching orders
+			_accumulated_offset = Vector2.ZERO 
+
+## --- command execution ---
+
+func _issue_step_command(dir: Vector2, dist: float) -> void:
+	var entities := _gather_target_entities()
+	for entity in entities:
+		if not is_instance_valid(entity): continue
+		if entity.state != CDEnums.EntityState.ACTIVE: continue
+		
+		# Write the discrete packet to the blackboard
+		entity.blackboard[direction_key] = dir
+		entity.blackboard[distance_key] = dist
+		# Emit the signal so GridMovementLeg knows a concrete step was queued
+		entity.bus_emit(&"move")
+
+## --- helpers ---
+
+## gather entities from all target groups (deduplicated)
+func _gather_target_entities() -> Array[CDEntity]:
+	var seen: Dictionary = {}
+	var result: Array[CDEntity] = []
+	if not is_instance_valid(game) or not is_instance_valid(game.group_registry):
+		return result
+		
+	for group_name in target_groups:
+		for entity in game.group_registry.get_group(group_name):
+			if not seen.has(entity):
+				seen[entity] = true
+				result.append(entity)
+	return result
