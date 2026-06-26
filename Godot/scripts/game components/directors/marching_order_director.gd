@@ -3,8 +3,9 @@ class_name MarchingOrderDirector extends CDGameComponent
 
 ## MarchingOrderDirector
 ## A blind conductor that translates continuous CDMarchingOrder resources
-## into discrete grid step commands for target entities.
-## It evaluates the path, samples the movement delta, and issues discrete steps via the blackboard.
+## into a continuous movement intent for target entities.
+## It evaluates the path delta every frame and writes the direction/velocity 
+## to entity blackboards, leaving discrete stepping logic to the Legs.
 
 ## --- exports ---
 
@@ -24,14 +25,10 @@ class_name MarchingOrderDirector extends CDGameComponent
 ## optional scaler that multiplies marching speed (higher = faster)
 @export var speed_scaler: CDScaler
 
-@export_group("Discrete Stepping")
-## The world-unit distance of a single grid step/cell
-@export var step_size: float = 16.0
-
 @export_group("Blackboard Keys")
-## key for writing movement direction to entity blackboard (Vector2)
+## key for writing continuous movement direction to entity blackboard (Vector2)
 @export var direction_key: StringName = &"move_direction"
-## key for writing step distance to entity blackboard (float)
+## key for writing movement magnitude (speed) to entity blackboard (float)
 @export var distance_key: StringName = &"move_distance"
 
 ## --- marching state ---
@@ -40,10 +37,6 @@ var _marching_timer: float = 0.0
 var _scaled_marching_timer: float = 0.0
 var _accumulated_offset: Vector2 = Vector2.ZERO
 var _total_marching_offset: Vector2 = Vector2.ZERO
-
-## --- step tracking state ---
-var _accumulated_step_distance: float = 0.0
-var _last_step_dir: Vector2 = Vector2.ZERO
 
 ## --- lifecycle ---
 
@@ -60,7 +53,7 @@ func _on_initialize() -> void:
 
 ## --- processing ---
 
-## advance marching orders, sample delta, issue discrete steps
+## advance marching orders and write continuous move data to entities
 func _physics_process(delta: float) -> void:
 	if Engine.is_editor_hint(): return
 	if marching_orders.is_empty(): return
@@ -70,32 +63,8 @@ func _physics_process(delta: float) -> void:
 	_advance_marching(delta)
 	var delta_offset := _total_marching_offset - prev_offset
 
-	# 2. Convert continuous offset into discrete grid steps
-	if delta_offset.length() > 0.001:
-		var dir := delta_offset.normalized()
-		
-		# Snap to dominant axis for strict grid movement (strictly horizontal or vertical)
-		var step_dir := Vector2.ZERO
-		if abs(dir.x) > abs(dir.y):
-			step_dir = Vector2(sign(dir.x), 0)
-		elif abs(dir.y) > 0:
-			step_dir = Vector2(0, sign(dir.y))
-			
-		if step_dir == Vector2.ZERO:
-			return
-			
-		# If direction changed, force an immediate step so movement feels responsive
-		if step_dir != _last_step_dir:
-			_last_step_dir = step_dir
-			_accumulated_step_distance = step_size
-			
-		_accumulated_step_distance += delta_offset.length()
-		
-		# Issue discrete steps while accumulated distance exceeds step size
-		# (A large delta or low framerate can issue multiple steps to catch up)
-		while _accumulated_step_distance >= step_size:
-			_accumulated_step_distance -= step_size
-			_issue_step_command(step_dir, step_size)
+	# 2. Write the continuous intent to all target entities
+	_write_move_data(delta_offset)
 
 ## --- marching orders logic (mirrors FormationDirector) ---
 
@@ -106,8 +75,6 @@ func _reset_marching_state() -> void:
 	_scaled_marching_timer = 0.0
 	_accumulated_offset = Vector2.ZERO
 	_total_marching_offset = Vector2.ZERO
-	_accumulated_step_distance = step_size # Force first step to trigger immediately
-	_last_step_dir = Vector2.ZERO
 
 ## advance the current marching order and auto-cycle through the sequence
 func _advance_marching(delta: float) -> void:
@@ -153,17 +120,25 @@ func _advance_marching(delta: float) -> void:
 
 ## --- command execution ---
 
-func _issue_step_command(dir: Vector2, dist: float) -> void:
+## translate the delta vector into a continuous blackboard write
+func _write_move_data(delta_offset: Vector2) -> void:
 	var entities := _gather_target_entities()
+	
+	var dir: Vector2 = delta_offset.normalized()
+	var dist: float = delta_offset.length()
+	
+	# Snap to zero to avoid floating point noise on stops
+	if dist < 0.001:
+		dir = Vector2.ZERO
+		dist = 0.0
+		
 	for entity in entities:
 		if not is_instance_valid(entity): continue
 		if entity.state != CDEnums.EntityState.ACTIVE: continue
 		
-		# Write the discrete packet to the blackboard
+		# Write the continuous packet to the blackboard
 		entity.blackboard[direction_key] = dir
 		entity.blackboard[distance_key] = dist
-		# Emit the signal so GridMovementLeg knows a concrete step was queued
-		entity.bus_emit(&"move")
 
 ## --- helpers ---
 
