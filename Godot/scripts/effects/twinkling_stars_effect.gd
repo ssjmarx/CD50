@@ -1,16 +1,17 @@
-## CDScrollingStarsEffect
-## Creates randomized stars that scroll down
-## configurable size, speed, density, and shape
+## CDTwinklingStarsEffect
+## Creates a randomized, non-scrolling star background that twinkles
+## configurable size, density, shape, and twinkle speed
 
-class_name CDScrollingStarsEffect extends CDEffect
+class_name CDTwinklingStarsEffect extends CDEffect
 
 enum StarType { CIRCLE, FOUR_POINT, SIX_POINT }
 
 @export var star_count: int = 100
-@export var min_speed: Vector2 = Vector2(0, 10.0)
-@export var max_speed: Vector2 = Vector2(0, 50.0)
 @export var min_size: float = 1.0
 @export var max_size: float = 4.0
+@export var min_alpha: float = 0.2
+@export var max_alpha: float = 1.0
+@export var twinkle_speed: float = 2.0
 @export var star_colors: Array[Color] = [Color.WHITE, Color.RED, Color.BLUE, Color.ORANGE, Color.GREEN]
 
 ## effect size defaults to game bounds, override it here
@@ -18,10 +19,10 @@ enum StarType { CIRCLE, FOUR_POINT, SIX_POINT }
 @export var effect_height: float = 0.0
 
 var _positions: Array = []
-var _speeds: Array = []
 var _sizes: Array = []
-var _colors: Array = []
+var _base_colors: Array = []
 var _types: Array[int] = []
+var _phases: Array = []
 
 func _ready() -> void:
 	super._ready()
@@ -32,46 +33,44 @@ func _ready() -> void:
 			effect_width = viewport_size.x
 		if effect_height <= 0.0:
 			effect_height = viewport_size.y
-	
+			
 	for index in star_count:
 		var star_position: Vector2
 		star_position.x = randf_range(0, effect_width)
 		star_position.y = randf_range(0, effect_height)
 		_positions.append(star_position)
 		
-		var speed: Vector2
-		speed.x = randf_range(min_speed.x, max_speed.x)
-		speed.y = randf_range(min_speed.y, max_speed.y)
-		_speeds.append(speed)
-		
 		var size: float = randf_range(min_size, max_size)
 		_sizes.append(size)
 		
 		var color: Color = star_colors[randi() % star_colors.size()]
-		_colors.append(color)
+		_base_colors.append(color)
 		
 		var type: int = randi() % 3 # CIRCLE, FOUR_POINT, or SIX_POINT
 		_types.append(type)
+		
+		# Random phase so they don't all twinkle in sync
+		var phase: float = randf() * TAU
+		_phases.append(phase)
 
-func _process(delta: float) -> void:
-	for index in star_count:
-		_positions[index] += _speeds[index] * delta
-		if _positions[index].y > effect_height:
-			_positions[index].y = 0.0
-			_positions[index].x = randf_range(0, effect_width)
-		if _positions[index].x > effect_width:
-			_positions[index].x = 0.0
-			_positions[index].y = randf_range(0, effect_height)
-	
+func _process(_delta: float) -> void:
 	queue_redraw()
 
 func _draw() -> void:
+	var time := Time.get_ticks_msec() / 1000.0
 	for index in star_count:
 		var size: float = _sizes[index]
 		var half: float = size / 2.0
 		var pos: Vector2 = _positions[index]
-		var color: Color = _colors[index]
 		var type: int = _types[index]
+		
+		# Calculate twinkle alpha
+		var phase = _phases[index]
+		var t = sin(time * twinkle_speed + phase) * 0.5 + 0.5 # Range 0 to 1
+		var alpha = lerpf(min_alpha, max_alpha, t)
+		
+		var color: Color = _base_colors[index]
+		color.a = alpha
 		
 		match type:
 			StarType.CIRCLE:
