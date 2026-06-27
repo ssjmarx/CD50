@@ -1,4 +1,4 @@
-[gd_scene load_steps=36 format=3 uid="uid://l7axebdmvaep"]
+[gd_scene load_steps=61 format=3 uid="uid://l7axebdmvaep"]
 
 [ext_resource type="Script" uid="uid://dm0uehngpvbh7" path="res://scripts/core/infrastructure/cd_game.gd" id="1_bu0qt"]
 [ext_resource type="PackedScene" path="res://scenes/core/infrastructure/cd_stage.tscn" id="1_rqens"]
@@ -10,17 +10,28 @@
 [ext_resource type="PackedScene" uid="uid://25g1ygl8nuv6" path="res://scenes/core/infrastructure/cd_group_registry.tscn" id="7_np6gk"]
 [ext_resource type="PackedScene" uid="uid://c6mp0pt27mfal" path="res://scenes/core/infrastructure/cd_input_router.tscn" id="8_k1pfx"]
 [ext_resource type="PackedScene" uid="uid://csgdjkq3gf26a" path="res://scenes/core/infrastructure/cd_updater.tscn" id="9_jd2sg"]
-[ext_resource type="PackedScene" uid="uid://b7uyqydnog2th" path="res://scenes/game components/directors/formation_director.tscn" id="10_np6gk"]
-[ext_resource type="Script" uid="uid://b3scrmy1vwk2j" path="res://scripts/core/resources/formation/cd_formation.gd" id="11_k1pfx"]
-[ext_resource type="Script" uid="uid://cr36gmk66snrc" path="res://scripts/core/resources/formation/cd_marching_order.gd" id="12_jd2sg"]
-[ext_resource type="Script" uid="uid://pfjv46gi1ii" path="res://scripts/core/resources/behavior/cd_group_count_scaler.gd" id="12_km13u"]
-[ext_resource type="Script" uid="uid://di72xxfkrnsjj" path="res://scripts/core/resources/formation/marching_order_step.gd" id="13_6oqxc"]
-[ext_resource type="Script" uid="uid://odf21vxxstxx" path="res://scripts/core/resources/formation/marching_order_repeat.gd" id="14_np6gk"]
+[ext_resource type="PackedScene" uid="uid://yb62w7afhy0l" path="res://entities/nonplayer/bug_ship_grid_nonplayer.tscn" id="12_o17xb"]
+[ext_resource type="Script" uid="uid://cv08kmn638bch" path="res://scripts/core/resources/spawners/cd_grid_equation.gd" id="13_np6gk"]
+[ext_resource type="PackedScene" path="res://scenes/game components/directors/marching_order_director.tscn" id="15_np6gk"]
+[ext_resource type="Script" uid="uid://cr36gmk66snrc" path="res://scripts/core/resources/formation/cd_marching_order.gd" id="16_6oqxc"]
 [ext_resource type="PackedScene" uid="uid://caatm0w6gg3b1" path="res://scenes/game components/trapdoors/grid_trapdoor.tscn" id="16_jd2sg"]
-[ext_resource type="Script" uid="uid://bnrmcpa7s0qvi" path="res://scripts/core/resources/spawners/cd_grid_row.gd" id="17_o17xb"]
-[ext_resource type="Resource" uid="uid://c7yai6wu3v2f0" path="res://scripts/core/resources/spawners/grid rows/woops all bugs.tres" id="18_bu0qt"]
-[ext_resource type="Script" uid="uid://0latvushbloy" path="res://scripts/core/resources/spawners/cd_grid_layout.gd" id="19_tgn32"]
+[ext_resource type="Script" uid="uid://di72xxfkrnsjj" path="res://scripts/core/resources/formation/marching_order_step.gd" id="17_kybkw"]
+[ext_resource type="Script" uid="uid://odf21vxxstxx" path="res://scripts/core/resources/formation/marching_order_repeat.gd" id="18_o17xb"]
+[ext_resource type="Script" uid="uid://pfjv46gi1ii" path="res://scripts/core/resources/behavior/cd_group_count_scaler.gd" id="19_kybkw"]
 [ext_resource type="Script" uid="uid://dcu4ocnin0htu" path="res://scripts/core/resources/spawners/cd_spawn_context.gd" id="21_bu0qt"]
+[ext_resource type="PackedScene" path="res://scenes/game components/directors/shooting_director.tscn" id="22_6gcr2"]
+[ext_resource type="Script" uid="uid://dm2djsydyr0u1" path="res://scripts/core/resources/triggers/cd_timer_trigger.gd" id="23_0luh7"]
+[ext_resource type="PackedScene" uid="uid://b1e365cvr1e8p" path="res://scenes/game components/trapdoors/point_trapdoor.tscn" id="23_exd75"]
+[ext_resource type="Script" uid="uid://b3xaxo1yp2dn1" path="res://scripts/core/resources/selectors/cd_select_nearest_n_to_group.gd" id="24_0luh7"]
+[ext_resource type="PackedScene" uid="uid://cytjg8wb58tpp" path="res://entities/player/bug_blaster_2_player.tscn" id="24_ppfmm"]
+[ext_resource type="PackedScene" uid="uid://dqsat1yshg31w" path="res://scenes/game components/goals/score_threshold_goal.tscn" id="25_5vaer"]
+[ext_resource type="PackedScene" uid="uid://b4uqwn5l54hms" path="res://scenes/game components/goals/group_count_goal.tscn" id="26_dxniv"]
+[ext_resource type="PackedScene" uid="uid://mxejpxipdbii" path="res://scenes/game components/cards/wave_card.tscn" id="27_upv1a"]
+[ext_resource type="PackedScene" uid="uid://cbuw38k0wvnia" path="res://scenes/game components/cards/lives_card.tscn" id="28_rwe8y"]
+[ext_resource type="PackedScene" uid="uid://c4upbp1v4vll8" path="res://scenes/game components/cards/score_card.tscn" id="29_6jvxs"]
+[ext_resource type="PackedScene" uid="uid://5mmhkhj5u3tg" path="res://scenes/game components/speakers/sound_speaker.tscn" id="31_d0pvi"]
+[ext_resource type="Script" uid="uid://ci2yaa2b1swsj" path="res://scripts/core/resources/audio/cd_note.gd" id="32_6cc3d"]
+[ext_resource type="Script" uid="uid://d3l2c838cqwsm" path="res://scripts/core/resources/audio/cd_sound_def.gd" id="33_q8ki1"]
 
 [sub_resource type="Resource" id="Resource_q4h5u"]
 script = ExtResource("6_beg6j")
@@ -41,65 +52,146 @@ script = ExtResource("6_beg6j")
 group_name = &"player_bullets"
 collides_with = Array[StringName]([&"enemies"])
 
-[sub_resource type="Resource" id="Resource_beg6j"]
-script = ExtResource("11_k1pfx")
-columns = 11
-metadata/_custom_type_script = "uid://b3scrmy1vwk2j"
+[sub_resource type="Resource" id="Resource_vpbwb"]
+script = ExtResource("21_bu0qt")
+rotation = -1.571
 
 [sub_resource type="Resource" id="Resource_k1pfx"]
-script = ExtResource("13_6oqxc")
-offset = Vector2(128, 0)
-duration = 4.0
-metadata/_custom_type_script = "uid://di72xxfkrnsjj"
-
-[sub_resource type="Resource" id="Resource_jd2sg"]
-script = ExtResource("13_6oqxc")
-offset = Vector2(0, 20)
-duration = 0.0
-metadata/_custom_type_script = "uid://di72xxfkrnsjj"
-
-[sub_resource type="Resource" id="Resource_6oqxc"]
-script = ExtResource("13_6oqxc")
-offset = Vector2(-256, 0)
-duration = 8.0
-metadata/_custom_type_script = "uid://di72xxfkrnsjj"
-
-[sub_resource type="Resource" id="Resource_kybkw"]
-script = ExtResource("13_6oqxc")
-offset = Vector2(0, 20)
-duration = 0.0
-metadata/_custom_type_script = "uid://di72xxfkrnsjj"
-
-[sub_resource type="Resource" id="Resource_o17xb"]
-script = ExtResource("13_6oqxc")
-offset = Vector2(128, 0)
-duration = 4.0
-metadata/_custom_type_script = "uid://di72xxfkrnsjj"
-
-[sub_resource type="Resource" id="Resource_bu0qt"]
-script = ExtResource("14_np6gk")
-orders = Array[ExtResource("12_jd2sg")]([SubResource("Resource_k1pfx"), SubResource("Resource_jd2sg"), SubResource("Resource_6oqxc"), SubResource("Resource_kybkw"), SubResource("Resource_o17xb")])
-metadata/_custom_type_script = "uid://odf21vxxstxx"
-
-[sub_resource type="Resource" id="Resource_tgn32"]
-script = ExtResource("12_km13u")
-group_name = &"enemies"
-minimum = 1.0
-maximum = 8.0
-metadata/_custom_type_script = "uid://pfjv46gi1ii"
-
-[sub_resource type="Resource" id="Resource_6gcr2"]
-script = ExtResource("19_tgn32")
-rows = Array[ExtResource("17_o17xb")]([ExtResource("18_bu0qt"), ExtResource("18_bu0qt"), ExtResource("18_bu0qt"), ExtResource("18_bu0qt"), ExtResource("18_bu0qt")])
-metadata/_custom_type_script = "uid://0latvushbloy"
+script = ExtResource("13_np6gk")
+columns = 11
+rows = 5
+metadata/_custom_type_script = "uid://cv08kmn638bch"
 
 [sub_resource type="Resource" id="Resource_0luh7"]
 script = ExtResource("21_bu0qt")
 additional_groups = Array[StringName]([&"enemies"])
 metadata/_custom_type_script = "uid://dcu4ocnin0htu"
 
+[sub_resource type="Resource" id="Resource_bu0qt"]
+script = ExtResource("17_kybkw")
+offset = Vector2(120, 0)
+duration = 12.0
+metadata/_custom_type_script = "uid://di72xxfkrnsjj"
+
+[sub_resource type="Resource" id="Resource_tgn32"]
+script = ExtResource("17_kybkw")
+offset = Vector2(0, 20)
+metadata/_custom_type_script = "uid://di72xxfkrnsjj"
+
+[sub_resource type="Resource" id="Resource_6gcr2"]
+script = ExtResource("17_kybkw")
+offset = Vector2(-240, 0)
+duration = 24.0
+metadata/_custom_type_script = "uid://di72xxfkrnsjj"
+
+[sub_resource type="Resource" id="Resource_exd75"]
+script = ExtResource("17_kybkw")
+offset = Vector2(0, 20)
+metadata/_custom_type_script = "uid://di72xxfkrnsjj"
+
+[sub_resource type="Resource" id="Resource_ppfmm"]
+script = ExtResource("17_kybkw")
+offset = Vector2(120, 0)
+duration = 12.0
+metadata/_custom_type_script = "uid://di72xxfkrnsjj"
+
+[sub_resource type="Resource" id="Resource_i3fwb"]
+script = ExtResource("18_o17xb")
+duration = 0.0
+orders = Array[ExtResource("16_6oqxc")]([SubResource("Resource_bu0qt"), SubResource("Resource_tgn32"), SubResource("Resource_6gcr2"), SubResource("Resource_exd75"), SubResource("Resource_ppfmm")])
+metadata/_custom_type_script = "uid://odf21vxxstxx"
+
+[sub_resource type="Resource" id="Resource_o17xb"]
+script = ExtResource("19_kybkw")
+group_name = &"enemies"
+minimum = 1.0
+metadata/_custom_type_script = "uid://pfjv46gi1ii"
+
+[sub_resource type="Resource" id="Resource_k11ct"]
+script = ExtResource("19_kybkw")
+group_name = &"enemies"
+minimum = 1.0
+metadata/_custom_type_script = "uid://pfjv46gi1ii"
+
+[sub_resource type="Resource" id="Resource_jxqgh"]
+script = ExtResource("23_0luh7")
+interval = 10.0
+scaler = SubResource("Resource_k11ct")
+random_variance = 1.0
+metadata/_custom_type_script = "uid://dm2djsydyr0u1"
+
+[sub_resource type="Resource" id="Resource_kcgbt"]
+script = ExtResource("24_0luh7")
+metadata/_custom_type_script = "uid://b3xaxo1yp2dn1"
+
+[sub_resource type="Resource" id="Resource_skele"]
+script = ExtResource("32_6cc3d")
+note = 45
+duration = 0.3
+glide = true
+
+[sub_resource type="Resource" id="Resource_8l2ml"]
+script = ExtResource("32_6cc3d")
+note = 45
+duration = 0.3
+glide = true
+
+[sub_resource type="Resource" id="Resource_8shry"]
+script = ExtResource("32_6cc3d")
+note = 45
+duration = 0.6
+glide = true
+
+[sub_resource type="Resource" id="Resource_kedvo"]
+script = ExtResource("32_6cc3d")
+note = 45
+duration = 0.9
+glide = true
+
+[sub_resource type="Resource" id="Resource_pm6y3"]
+script = ExtResource("33_q8ki1")
+wave_shape = 3
+effect = 5
+volume = 0.4
+notes = Array[ExtResource("32_6cc3d")]([SubResource("Resource_skele"), SubResource("Resource_8l2ml"), SubResource("Resource_8shry"), SubResource("Resource_kedvo")])
+
+[sub_resource type="Resource" id="GameOver_Note_2"]
+script = ExtResource("32_6cc3d")
+note = 55
+duration = 0.8
+
+[sub_resource type="Resource" id="GameOver_Note_3"]
+script = ExtResource("32_6cc3d")
+note = 48
+duration = 0.8
+
+[sub_resource type="Resource" id="GameOver_Note_4"]
+script = ExtResource("32_6cc3d")
+note = 43
+duration = 0.3
+glide = true
+
+[sub_resource type="Resource" id="GameOver_Note_5"]
+script = ExtResource("32_6cc3d")
+note = 36
+duration = 0.3
+glide = true
+
+[sub_resource type="Resource" id="Resource_y21tw"]
+script = ExtResource("32_6cc3d")
+note = 36
+duration = 2.0
+glide = true
+metadata/_custom_type_script = "uid://ci2yaa2b1swsj"
+
+[sub_resource type="Resource" id="Resource_mch1x"]
+script = ExtResource("33_q8ki1")
+effect = 7
+notes = Array[ExtResource("32_6cc3d")]([SubResource("GameOver_Note_2"), SubResource("GameOver_Note_3"), SubResource("GameOver_Note_4"), SubResource("GameOver_Note_5"), SubResource("Resource_y21tw")])
+
 [node name="BugBlaster" type="Node2D"]
 script = ExtResource("1_bu0qt")
+game_bounds = Rect2(0, 0, 640, 360)
 
 [node name="Infrastructure" parent="." instance=ExtResource("1_rqens")]
 
@@ -119,19 +211,100 @@ collision_groups = Array[ExtResource("6_beg6j")]([SubResource("Resource_q4h5u"),
 
 [node name="CDUpdater" parent="Infrastructure" instance=ExtResource("9_jd2sg")]
 
-[node name="FormationDirector" parent="." instance=ExtResource("10_np6gk")]
-position = Vector2(320, 96)
-formation_groups = Array[StringName]([&"enemies"])
-formations = Array[ExtResource("11_k1pfx")]([SubResource("Resource_beg6j")])
-marching_orders = Array[ExtResource("12_jd2sg")]([SubResource("Resource_bu0qt")])
-speed_scaler = SubResource("Resource_tgn32")
-preview_color = Color(1, 0.64705884, 0, 1)
+[node name="Player Stuff" parent="." instance=ExtResource("1_rqens")]
+
+[node name="PlayerSpawner" parent="Player Stuff" instance=ExtResource("23_exd75")]
+position = Vector2(320, 340)
+spawn_scene = ExtResource("24_ppfmm")
+spawn_count_equation = "1"
+offset_range = Vector2(0, 0)
+stagger_delay = 0.0
+spawn_context = SubResource("Resource_vpbwb")
+trigger_delay = 3.0
+trigger_signals = Array[StringName]([&"life_lost"])
+
+[node name="PlayerSpawnerGameStart" parent="Player Stuff" instance=ExtResource("23_exd75")]
+position = Vector2(320, 340)
+spawn_scene = ExtResource("24_ppfmm")
+spawn_count_equation = "1"
+offset_range = Vector2(0, 0)
+stagger_delay = 0.0
+spawn_context = SubResource("Resource_vpbwb")
+trigger_signals = Array[StringName]([&"game_play"])
+
+[node name="AI Stuff" parent="." instance=ExtResource("1_rqens")]
+
+[node name="GridTrapdoor" parent="AI Stuff" instance=ExtResource("16_jd2sg")]
+position = Vector2(320, 60)
+spawn_scene = ExtResource("12_o17xb")
+equation = SubResource("Resource_k1pfx")
+cell_size = Vector2(16, 16)
+cell_spacing = Vector2(4, 4)
+stagger_delay = 0.0
+spawn_context = SubResource("Resource_0luh7")
+trigger_delay = 2.0
+telefrag = false
+telefrag_targets = Array[StringName]([&"enemies"])
+trigger_signals = Array[StringName]([&"game_play", &"wave_start"])
+safe_signals = Array[StringName]([&"zone_safe"])
+unsafe_signals = Array[StringName]([&"zone_unsafe"])
+on_spawning_complete = Array[StringName]([&"spawning_complete"])
 component_category = 10
 
-[node name="GridTrapdoor" parent="." instance=ExtResource("16_jd2sg")]
-position = Vector2(320, 96)
-layout = SubResource("Resource_6gcr2")
-cell_size = Vector2(16, 16)
-cell_spacing = Vector2(4, 0)
-spawn_context = SubResource("Resource_0luh7")
-trigger_signals = Array[StringName]([&"game_play"])
+[node name="MarchingOrderDirector" parent="AI Stuff" instance=ExtResource("15_np6gk")]
+marching_orders = Array[ExtResource("16_6oqxc")]([SubResource("Resource_i3fwb")])
+speed_scaler = SubResource("Resource_o17xb")
+reset_signal = &"spawning_complete"
+component_category = 10
+
+[node name="ShootingDirector" parent="AI Stuff" instance=ExtResource("22_6gcr2")]
+trigger = SubResource("Resource_jxqgh")
+selector = SubResource("Resource_kcgbt")
+component_category = 10
+
+[node name="Game State" parent="." instance=ExtResource("1_rqens")]
+
+[node name="GameOverGoal" parent="Game State" instance=ExtResource("25_5vaer")]
+threshold = 0
+comparison = 0
+score_key = &"current_lives"
+game_result = 1
+on_score_changed = Array[StringName]([&"life_lost"])
+on_condition_met = Array[StringName]([&"game_over"])
+
+[node name="WaveClearedGoal" parent="Game State" instance=ExtResource("26_dxniv")]
+comparison = 3
+result_key = &""
+on_condition_met = Array[StringName]([&"wave_cleared"])
+
+[node name="LivesCounter" parent="Game State" instance=ExtResource("26_dxniv")]
+target_groups = Array[StringName]([&"players"])
+on_condition_met = Array[StringName]([&"life_lost"])
+
+[node name="WaveCard" parent="Game State" instance=ExtResource("27_upv1a")]
+offset_left = 16.0
+offset_top = 16.0
+offset_right = 16.0
+offset_bottom = 16.0
+
+[node name="LivesCard" parent="Game State" instance=ExtResource("28_rwe8y")]
+offset_left = 16.0
+offset_top = 16.0
+offset_right = 16.0
+offset_bottom = 16.0
+
+[node name="ScoreCard" parent="Game State" instance=ExtResource("29_6jvxs")]
+offset_left = 32.0
+offset_top = 328.0
+offset_right = 32.0
+offset_bottom = 328.0
+is_interface = true
+
+[node name="WaveStartSound" parent="Game State" instance=ExtResource("31_d0pvi")]
+sound = SubResource("Resource_pm6y3")
+trigger_signal = &"wave_start"
+gameplay_only = true
+
+[node name="GameOverSpeaker" parent="Game State" instance=ExtResource("31_d0pvi")]
+sound = SubResource("Resource_mch1x")
+trigger_signal = &"game_over"
