@@ -33,7 +33,6 @@ class_name MarchingOrderDirector extends CDGameComponent
 
 ## --- marching state ---
 var _marching_index: int = -1
-var _marching_timer: float = 0.0
 var _scaled_marching_timer: float = 0.0
 var _accumulated_offset: Vector2 = Vector2.ZERO
 var _total_marching_offset: Vector2 = Vector2.ZERO
@@ -71,7 +70,6 @@ func _physics_process(delta: float) -> void:
 ## reset state machine for marching
 func _reset_marching_state() -> void:
 	_marching_index = 0
-	_marching_timer = 0.0
 	_scaled_marching_timer = 0.0
 	_accumulated_offset = Vector2.ZERO
 	_total_marching_offset = Vector2.ZERO
@@ -96,19 +94,19 @@ func _advance_marching(delta: float) -> void:
 		if evaluated > 0.0:
 			multiplier = evaluated
 			
-	## Scale the total duration inversely by speed
-	var effective_duration := base_duration / multiplier
+	## Scale the time slice for the current frame only.
+	## This prevents retroactive time jumps when the multiplier changes mid-step.
+	var scaled_delta := delta * multiplier
+	_scaled_marching_timer += scaled_delta
 	
-	_marching_timer += delta
-	_scaled_marching_timer = _marching_timer * multiplier
-	
-	## Evaluate offset using the scaled time
+	## Evaluate offset using the smoothly accumulated scaled time
 	_total_marching_offset = _accumulated_offset + order.get_offset_at_time(_scaled_marching_timer)
 	
-	## advance to next order when raw timer exceeds effective duration
-	if _marching_timer >= effective_duration:
-		_marching_timer = 0.0
-		_scaled_marching_timer = 0.0
+	## advance to next order when scaled timer exceeds base duration
+	if _scaled_marching_timer >= base_duration:
+		## carry over excess scaled time to prevent micro-stutters between steps
+		var excess_time := _scaled_marching_timer - base_duration
+		_scaled_marching_timer = excess_time
 		
 		## commit the final offset to accumulator
 		_accumulated_offset += order.get_accumulated_offset()
