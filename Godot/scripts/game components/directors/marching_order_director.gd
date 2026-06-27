@@ -31,6 +31,10 @@ class_name MarchingOrderDirector extends CDGameComponent
 ## key for writing movement magnitude (speed) to entity blackboard (float)
 @export var distance_key: StringName = &"move_distance"
 
+@export_group("Listen Signals")
+## when heard on the game bus, resets the marching sequence to the very beginning
+@export var reset_signal: StringName = &"reset_orders"
+
 ## --- marching state ---
 var _marching_index: int = -1
 var _scaled_marching_timer: float = 0.0
@@ -49,6 +53,10 @@ func _on_initialize() -> void:
 		speed_scaler.initialize(game)
 	if not marching_orders.is_empty():
 		_reset_marching_state()
+		
+	# Connect listen signals
+	if reset_signal != &"":
+		game.bus_connect(reset_signal, _on_reset_orders)
 
 ## --- processing ---
 
@@ -115,6 +123,12 @@ func _advance_marching(delta: float) -> void:
 		if _marching_index >= marching_orders.size():
 			_marching_index = 0  ## loop marching orders
 			_accumulated_offset = Vector2.ZERO 
+
+## --- signal handlers ---
+
+## resets the marching sequence back to the first order
+func _on_reset_orders() -> void:
+	_reset_marching_state()
 
 ## --- command execution ---
 
