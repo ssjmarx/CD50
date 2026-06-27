@@ -1,0 +1,26 @@
+[gd_scene load_steps=7 format=3 uid="uid://dggiy5f83yaej"]
+
+[ext_resource type="Script" uid="uid://dfbv2tw3cl4pe" path="res://scripts/core/infrastructure/cd_entity.gd" id="1_gj5e0"]
+[ext_resource type="PackedScene" uid="uid://bxcu3ebyva6rn" path="res://scenes/entity components/faces/polygon_face.tscn" id="1_kyvks"]
+[ext_resource type="Script" uid="uid://brwnooso7th47" path="res://scripts/core/resources/behavior/cd_shape.gd" id="2_4u0jt"]
+[ext_resource type="PackedScene" uid="uid://btr1f3svl7y3m" path="res://scenes/entity components/guts/healthpool_guts.tscn" id="3_4u0jt"]
+[ext_resource type="PackedScene" uid="uid://bfxtjii32duju" path="res://scenes/entity components/guts/die_at_zero_health_guts.tscn" id="5_20ia0"]
+
+[sub_resource type="Resource" id="Resource_s70do"]
+script = ExtResource("2_4u0jt")
+points = PackedVector2Array(-2.1, -2.1, -2.1, 2.1, 2.1, 2.1, 2.1, -2.1)
+metadata/_custom_type_script = "uid://brwnooso7th47"
+
+[node name="SquareBlock" type="CharacterBody2D"]
+script = ExtResource("1_gj5e0")
+groups = Array[StringName]([&"blocks"])
+collision_radius = 2.0
+
+[node name="PolygonFace" parent="." instance=ExtResource("1_kyvks")]
+shapes = Array[ExtResource("2_4u0jt")]([SubResource("Resource_s70do")])
+shape_key = &"shape_points"
+
+[node name="HealthpoolGuts" parent="." instance=ExtResource("3_4u0jt")]
+max_health = 1
+
+[node name="DieAtZeroHealthGuts" parent="." instance=ExtResource("5_20ia0")]

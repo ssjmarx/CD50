@@ -19,8 +19,8 @@ scale = Vector2(1, 1)
 frames = Array[Texture2D]([SubResource("AnimatedTexture_haubq")])
 
 [node name="GridMovementLeg" parent="." index="6" instance=ExtResource("2_rtcwv")]
-cell_size = Vector2(20, 20)
-hop_delay = 1.0
+cell_size = Vector2(10, 10)
+check_collision = false
 
 [node name="GridAlignmentLeg" parent="." index="7" instance=ExtResource("3_ixcvx")]
-cell_size = Vector2(20, 20)
+cell_size = Vector2(10, 10)

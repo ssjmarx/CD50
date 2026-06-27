@@ -1,4 +1,4 @@
-[gd_scene load_steps=61 format=3 uid="uid://l7axebdmvaep"]
+[gd_scene load_steps=72 format=3 uid="uid://l7axebdmvaep"]
 
 [ext_resource type="Script" uid="uid://dm0uehngpvbh7" path="res://scripts/core/infrastructure/cd_game.gd" id="1_bu0qt"]
 [ext_resource type="PackedScene" path="res://scenes/core/infrastructure/cd_stage.tscn" id="1_rqens"]
@@ -23,15 +23,20 @@
 [ext_resource type="Script" uid="uid://dm2djsydyr0u1" path="res://scripts/core/resources/triggers/cd_timer_trigger.gd" id="23_0luh7"]
 [ext_resource type="PackedScene" uid="uid://b1e365cvr1e8p" path="res://scenes/game components/trapdoors/point_trapdoor.tscn" id="23_exd75"]
 [ext_resource type="Script" uid="uid://b3xaxo1yp2dn1" path="res://scripts/core/resources/selectors/cd_select_nearest_n_to_group.gd" id="24_0luh7"]
+[ext_resource type="Script" uid="uid://bd5apwoshu3n6" path="res://scripts/core/resources/behavior/cd_wave_scaler.gd" id="24_exd75"]
 [ext_resource type="PackedScene" uid="uid://cytjg8wb58tpp" path="res://entities/player/bug_blaster_2_player.tscn" id="24_ppfmm"]
 [ext_resource type="PackedScene" uid="uid://dqsat1yshg31w" path="res://scenes/game components/goals/score_threshold_goal.tscn" id="25_5vaer"]
 [ext_resource type="PackedScene" uid="uid://b4uqwn5l54hms" path="res://scenes/game components/goals/group_count_goal.tscn" id="26_dxniv"]
+[ext_resource type="PackedScene" uid="uid://d4b42pvesykqo" path="res://scenes/game components/marks/cd_mark.tscn" id="26_upv1a"]
 [ext_resource type="PackedScene" uid="uid://mxejpxipdbii" path="res://scenes/game components/cards/wave_card.tscn" id="27_upv1a"]
+[ext_resource type="PackedScene" path="res://scenes/game components/goals/signal_goal.tscn" id="28_6jvxs"]
 [ext_resource type="PackedScene" uid="uid://cbuw38k0wvnia" path="res://scenes/game components/cards/lives_card.tscn" id="28_rwe8y"]
 [ext_resource type="PackedScene" uid="uid://c4upbp1v4vll8" path="res://scenes/game components/cards/score_card.tscn" id="29_6jvxs"]
 [ext_resource type="PackedScene" uid="uid://5mmhkhj5u3tg" path="res://scenes/game components/speakers/sound_speaker.tscn" id="31_d0pvi"]
 [ext_resource type="Script" uid="uid://ci2yaa2b1swsj" path="res://scripts/core/resources/audio/cd_note.gd" id="32_6cc3d"]
 [ext_resource type="Script" uid="uid://d3l2c838cqwsm" path="res://scripts/core/resources/audio/cd_sound_def.gd" id="33_q8ki1"]
+[ext_resource type="PackedScene" uid="uid://dy5mrsukcw2vx" path="res://entities/generic/bunker.tscn" id="34_dxniv"]
+[ext_resource type="PackedScene" path="res://scenes/effects/twinkling_stars_effect.tscn" id="37_6jvxs"]
 
 [sub_resource type="Resource" id="Resource_q4h5u"]
 script = ExtResource("6_beg6j")
@@ -45,12 +50,23 @@ group_name = &"enemies"
 [sub_resource type="Resource" id="Resource_dg5ky"]
 script = ExtResource("6_beg6j")
 group_name = &"enemy_bullets"
-collides_with = Array[StringName]([&"players"])
+collides_with = Array[StringName]([&"players", &"blocks"])
 
 [sub_resource type="Resource" id="Resource_7ar12"]
 script = ExtResource("6_beg6j")
 group_name = &"player_bullets"
+collides_with = Array[StringName]([&"enemies", &"blocks"])
+
+[sub_resource type="Resource" id="Resource_6jvxs"]
+script = ExtResource("6_beg6j")
+group_name = &"blocks"
+metadata/_custom_type_script = "uid://b2ibop6r2cryj"
+
+[sub_resource type="Resource" id="Resource_uf102"]
+script = ExtResource("6_beg6j")
+group_name = &"game_over_zone"
 collides_with = Array[StringName]([&"enemies"])
+metadata/_custom_type_script = "uid://b2ibop6r2cryj"
 
 [sub_resource type="Resource" id="Resource_vpbwb"]
 script = ExtResource("21_bu0qt")
@@ -69,8 +85,8 @@ metadata/_custom_type_script = "uid://dcu4ocnin0htu"
 
 [sub_resource type="Resource" id="Resource_bu0qt"]
 script = ExtResource("17_kybkw")
-offset = Vector2(120, 0)
-duration = 12.0
+offset = Vector2(160, 0)
+duration = 16.0
 metadata/_custom_type_script = "uid://di72xxfkrnsjj"
 
 [sub_resource type="Resource" id="Resource_tgn32"]
@@ -80,8 +96,8 @@ metadata/_custom_type_script = "uid://di72xxfkrnsjj"
 
 [sub_resource type="Resource" id="Resource_6gcr2"]
 script = ExtResource("17_kybkw")
-offset = Vector2(-240, 0)
-duration = 24.0
+offset = Vector2(-320, 0)
+duration = 32.0
 metadata/_custom_type_script = "uid://di72xxfkrnsjj"
 
 [sub_resource type="Resource" id="Resource_exd75"]
@@ -91,8 +107,8 @@ metadata/_custom_type_script = "uid://di72xxfkrnsjj"
 
 [sub_resource type="Resource" id="Resource_ppfmm"]
 script = ExtResource("17_kybkw")
-offset = Vector2(120, 0)
-duration = 12.0
+offset = Vector2(160, 0)
+duration = 16.0
 metadata/_custom_type_script = "uid://di72xxfkrnsjj"
 
 [sub_resource type="Resource" id="Resource_i3fwb"]
@@ -105,24 +121,29 @@ metadata/_custom_type_script = "uid://odf21vxxstxx"
 script = ExtResource("19_kybkw")
 group_name = &"enemies"
 minimum = 1.0
+maximum = 25.0
 metadata/_custom_type_script = "uid://pfjv46gi1ii"
 
-[sub_resource type="Resource" id="Resource_k11ct"]
-script = ExtResource("19_kybkw")
-group_name = &"enemies"
+[sub_resource type="Resource" id="Resource_rwe8y"]
+script = ExtResource("24_exd75")
+per_wave = -1.0
 minimum = 1.0
-metadata/_custom_type_script = "uid://pfjv46gi1ii"
+maximum = 6.0
+metadata/_custom_type_script = "uid://bd5apwoshu3n6"
 
 [sub_resource type="Resource" id="Resource_jxqgh"]
 script = ExtResource("23_0luh7")
-interval = 10.0
-scaler = SubResource("Resource_k11ct")
+interval = 6.0
+scaler = SubResource("Resource_rwe8y")
 random_variance = 1.0
 metadata/_custom_type_script = "uid://dm2djsydyr0u1"
 
 [sub_resource type="Resource" id="Resource_kcgbt"]
 script = ExtResource("24_0luh7")
 metadata/_custom_type_script = "uid://b3xaxo1yp2dn1"
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_rwe8y"]
+size = Vector2(640, 70)
 
 [sub_resource type="Resource" id="Resource_skele"]
 script = ExtResource("32_6cc3d")
@@ -144,12 +165,28 @@ script = ExtResource("32_6cc3d")
 note = 65
 duration = 0.1
 
+[sub_resource type="Resource" id="Resource_5vaer"]
+script = ExtResource("32_6cc3d")
+note = 64
+duration = 0.2
+metadata/_custom_type_script = "uid://ci2yaa2b1swsj"
+
+[sub_resource type="Resource" id="Resource_dxniv"]
+script = ExtResource("32_6cc3d")
+note = 65
+duration = 0.2
+metadata/_custom_type_script = "uid://ci2yaa2b1swsj"
+
+[sub_resource type="Resource" id="Resource_upv1a"]
+script = ExtResource("32_6cc3d")
+note = 72
+duration = 0.4
+metadata/_custom_type_script = "uid://ci2yaa2b1swsj"
+
 [sub_resource type="Resource" id="Resource_pm6y3"]
 script = ExtResource("33_q8ki1")
-wave_shape = 1
-effect = 0
 volume = 0.4
-notes = Array[ExtResource("32_6cc3d")]([SubResource("Resource_skele"), SubResource("Resource_8l2ml"), SubResource("Resource_8shry"), SubResource("Resource_kedvo")])
+notes = Array[ExtResource("32_6cc3d")]([SubResource("Resource_skele"), SubResource("Resource_8l2ml"), SubResource("Resource_8shry"), SubResource("Resource_kedvo"), SubResource("Resource_5vaer"), SubResource("Resource_dxniv"), SubResource("Resource_upv1a")])
 
 [sub_resource type="Resource" id="GameOver_Note_2"]
 script = ExtResource("32_6cc3d")
@@ -199,7 +236,7 @@ max_channels = 4
 [node name="CDCollisionBuffer" parent="Infrastructure" instance=ExtResource("4_km13u")]
 
 [node name="CDCollisionMatrix" parent="Infrastructure" instance=ExtResource("5_mpy0c")]
-collision_groups = Array[ExtResource("6_beg6j")]([SubResource("Resource_q4h5u"), SubResource("Resource_qh32t"), SubResource("Resource_dg5ky"), SubResource("Resource_7ar12")])
+collision_groups = Array[ExtResource("6_beg6j")]([SubResource("Resource_q4h5u"), SubResource("Resource_qh32t"), SubResource("Resource_dg5ky"), SubResource("Resource_7ar12"), SubResource("Resource_6jvxs"), SubResource("Resource_uf102")])
 
 [node name="CDGroupRegistry" parent="Infrastructure" instance=ExtResource("7_np6gk")]
 
@@ -218,6 +255,7 @@ stagger_delay = 0.0
 spawn_context = SubResource("Resource_vpbwb")
 trigger_delay = 3.0
 trigger_signals = Array[StringName]([&"life_lost"])
+on_spawning_complete = Array[StringName]([])
 
 [node name="PlayerSpawnerGameStart" parent="Player Stuff" instance=ExtResource("23_exd75")]
 position = Vector2(320, 340)
@@ -227,6 +265,7 @@ offset_range = Vector2(0, 0)
 stagger_delay = 0.0
 spawn_context = SubResource("Resource_vpbwb")
 trigger_signals = Array[StringName]([&"game_play"])
+on_spawning_complete = Array[StringName]([])
 
 [node name="AI Stuff" parent="." instance=ExtResource("1_rqens")]
 
@@ -258,6 +297,15 @@ trigger = SubResource("Resource_jxqgh")
 selector = SubResource("Resource_kcgbt")
 component_category = 10
 
+[node name="GameOverMark" parent="AI Stuff" instance=ExtResource("26_upv1a")]
+groups = Array[StringName]([&"game_over_zone"])
+filter_groups = Array[StringName]([&"enemies"])
+on_entered = Array[StringName]([&"enemies_in_zone"])
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="AI Stuff/GameOverMark"]
+position = Vector2(320, 325)
+shape = SubResource("RectangleShape2D_rwe8y")
+
 [node name="Game State" parent="." instance=ExtResource("1_rqens")]
 
 [node name="GameOverGoal" parent="Game State" instance=ExtResource("25_5vaer")]
@@ -267,6 +315,9 @@ score_key = &"current_lives"
 game_result = 1
 on_score_changed = Array[StringName]([&"life_lost"])
 on_condition_met = Array[StringName]([&"game_over"])
+
+[node name="GameOverGoal2" parent="Game State" instance=ExtResource("28_6jvxs")]
+trigger_signals = Array[StringName]([&"enemies_in_zone"])
 
 [node name="WaveClearedGoal" parent="Game State" instance=ExtResource("26_dxniv")]
 comparison = 3
@@ -304,3 +355,20 @@ gameplay_only = true
 [node name="GameOverSpeaker" parent="Game State" instance=ExtResource("31_d0pvi")]
 sound = SubResource("Resource_mch1x")
 trigger_signal = &"game_over"
+
+[node name="Bunkers" parent="." instance=ExtResource("1_rqens")]
+
+[node name="TwinklingStarsEffect" parent="Bunkers" instance=ExtResource("37_6jvxs")]
+star_count = 25
+
+[node name="Bunker" parent="Bunkers" instance=ExtResource("34_dxniv")]
+position = Vector2(128, 280)
+
+[node name="Bunker3" parent="Bunkers" instance=ExtResource("34_dxniv")]
+position = Vector2(256, 280)
+
+[node name="Bunker4" parent="Bunkers" instance=ExtResource("34_dxniv")]
+position = Vector2(384, 280)
+
+[node name="Bunker6" parent="Bunkers" instance=ExtResource("34_dxniv")]
+position = Vector2(512, 280)

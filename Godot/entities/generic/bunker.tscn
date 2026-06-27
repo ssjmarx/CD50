@@ -1,0 +1,118 @@
+[gd_scene load_steps=2 format=3 uid="uid://dy5mrsukcw2vx"]
+
+[ext_resource type="PackedScene" uid="uid://dggiy5f83yaej" path="res://entities/generic/square_block.tscn" id="1_1ug7a"]
+
+[node name="Bunker" type="Node2D"]
+
+[node name="SquareBlock" parent="." instance=ExtResource("1_1ug7a")]
+
+[node name="SquareBlock2" parent="." instance=ExtResource("1_1ug7a")]
+position = Vector2(4, 0)
+
+[node name="SquareBlock3" parent="." instance=ExtResource("1_1ug7a")]
+position = Vector2(-4, 0)
+
+[node name="SquareBlock4" parent="." instance=ExtResource("1_1ug7a")]
+position = Vector2(-12, 0)
+
+[node name="SquareBlock5" parent="." instance=ExtResource("1_1ug7a")]
+position = Vector2(-8, 0)
+
+[node name="SquareBlock6" parent="." instance=ExtResource("1_1ug7a")]
+position = Vector2(-16, 0)
+
+[node name="SquareBlock7" parent="." instance=ExtResource("1_1ug7a")]
+position = Vector2(12, 0)
+
+[node name="SquareBlock8" parent="." instance=ExtResource("1_1ug7a")]
+position = Vector2(16, 0)
+
+[node name="SquareBlock9" parent="." instance=ExtResource("1_1ug7a")]
+position = Vector2(8, 0)
+
+[node name="SquareBlock10" parent="." instance=ExtResource("1_1ug7a")]
+position = Vector2(0, -4)
+
+[node name="SquareBlock11" parent="." instance=ExtResource("1_1ug7a")]
+position = Vector2(4, -4)
+
+[node name="SquareBlock12" parent="." instance=ExtResource("1_1ug7a")]
+position = Vector2(-4, -4)
+
+[node name="SquareBlock13" parent="." instance=ExtResource("1_1ug7a")]
+position = Vector2(-12, -4)
+
+[node name="SquareBlock14" parent="." instance=ExtResource("1_1ug7a")]
+position = Vector2(-8, -4)
+
+[node name="SquareBlock15" parent="." instance=ExtResource("1_1ug7a")]
+position = Vector2(-16, -4)
+
+[node name="SquareBlock16" parent="." instance=ExtResource("1_1ug7a")]
+position = Vector2(12, -4)
+
+[node name="SquareBlock17" parent="." instance=ExtResource("1_1ug7a")]
+position = Vector2(16, -4)
+
+[node name="SquareBlock18" parent="." instance=ExtResource("1_1ug7a")]
+position = Vector2(8, -4)
+
+[node name="SquareBlock19" parent="." instance=ExtResource("1_1ug7a")]
+position = Vector2(0, 4)
+
+[node name="SquareBlock20" parent="." instance=ExtResource("1_1ug7a")]
+position = Vector2(4, 4)
+
+[node name="SquareBlock21" parent="." instance=ExtResource("1_1ug7a")]
+position = Vector2(-4, 4)
+
+[node name="SquareBlock22" parent="." instance=ExtResource("1_1ug7a")]
+position = Vector2(-12, 4)
+
+[node name="SquareBlock23" parent="." instance=ExtResource("1_1ug7a")]
+position = Vector2(-8, 4)
+
+[node name="SquareBlock24" parent="." instance=ExtResource("1_1ug7a")]
+position = Vector2(-16, 4)
+
+[node name="SquareBlock25" parent="." instance=ExtResource("1_1ug7a")]
+position = Vector2(12, 4)
+
+[node name="SquareBlock26" parent="." instance=ExtResource("1_1ug7a")]
+position = Vector2(16, 4)
+
+[node name="SquareBlock27" parent="." instance=ExtResource("1_1ug7a")]
+position = Vector2(8, 4)
+
+[node name="SquareBlock28" parent="." instance=ExtResource("1_1ug7a")]
+position = Vector2(0, -8)
+
+[node name="SquareBlock29" parent="." instance=ExtResource("1_1ug7a")]
+position = Vector2(4, -8)
+
+[node name="SquareBlock30" parent="." instance=ExtResource("1_1ug7a")]
+position = Vector2(-4, -8)
+
+[node name="SquareBlock31" parent="." instance=ExtResource("1_1ug7a")]
+position = Vector2(-12, -8)
+
+[node name="SquareBlock32" parent="." instance=ExtResource("1_1ug7a")]
+position = Vector2(-8, -8)
+
+[node name="SquareBlock33" parent="." instance=ExtResource("1_1ug7a")]
+position = Vector2(12, -8)
+
+[node name="SquareBlock34" parent="." instance=ExtResource("1_1ug7a")]
+position = Vector2(8, -8)
+
+[node name="SquareBlock35" parent="." instance=ExtResource("1_1ug7a")]
+position = Vector2(-12, 8)
+
+[node name="SquareBlock36" parent="." instance=ExtResource("1_1ug7a")]
+position = Vector2(-16, 8)
+
+[node name="SquareBlock37" parent="." instance=ExtResource("1_1ug7a")]
+position = Vector2(16, 8)
+
+[node name="SquareBlock38" parent="." instance=ExtResource("1_1ug7a")]
+position = Vector2(12, 8)
