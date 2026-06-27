@@ -1,4 +1,4 @@
-[gd_scene load_steps=72 format=3 uid="uid://l7axebdmvaep"]
+[gd_scene load_steps=74 format=3 uid="uid://l7axebdmvaep"]
 
 [ext_resource type="Script" uid="uid://dm0uehngpvbh7" path="res://scripts/core/infrastructure/cd_game.gd" id="1_bu0qt"]
 [ext_resource type="PackedScene" path="res://scenes/core/infrastructure/cd_stage.tscn" id="1_rqens"]
@@ -37,6 +37,8 @@
 [ext_resource type="Script" uid="uid://d3l2c838cqwsm" path="res://scripts/core/resources/audio/cd_sound_def.gd" id="33_q8ki1"]
 [ext_resource type="PackedScene" uid="uid://dy5mrsukcw2vx" path="res://entities/generic/bunker.tscn" id="34_dxniv"]
 [ext_resource type="PackedScene" path="res://scenes/effects/twinkling_stars_effect.tscn" id="37_6jvxs"]
+[ext_resource type="PackedScene" uid="uid://bs6bk8vnu652o" path="res://scenes/game components/cards/timer_card.tscn" id="37_d0pvi"]
+[ext_resource type="PackedScene" uid="uid://bc2u6bby28yx7" path="res://entities/nonplayer/mystery_ship.tscn" id="38_uf102"]
 
 [sub_resource type="Resource" id="Resource_q4h5u"]
 script = ExtResource("6_beg6j")
@@ -306,6 +308,14 @@ on_entered = Array[StringName]([&"enemies_in_zone"])
 position = Vector2(320, 325)
 shape = SubResource("RectangleShape2D_rwe8y")
 
+[node name="PointTrapdoor" parent="AI Stuff" instance=ExtResource("23_exd75")]
+position = Vector2(-8, 8)
+spawn_scene = ExtResource("38_uf102")
+spawn_count_equation = "1"
+offset_range = Vector2(0, 0)
+trigger_signals = Array[StringName]([&"ufo_timer"])
+on_spawning_complete = Array[StringName]([])
+
 [node name="Game State" parent="." instance=ExtResource("1_rqens")]
 
 [node name="GameOverGoal" parent="Game State" instance=ExtResource("25_5vaer")]
@@ -355,6 +365,12 @@ gameplay_only = true
 [node name="GameOverSpeaker" parent="Game State" instance=ExtResource("31_d0pvi")]
 sound = SubResource("Resource_mch1x")
 trigger_signal = &"game_over"
+
+[node name="TimerCard" parent="Game State" instance=ExtResource("37_d0pvi")]
+starting_time = 12.0
+on_timer_reset = Array[StringName]([&"ufo_timer"])
+on_timer_tick = Array[StringName]([])
+on_timer_expired = Array[StringName]([&"ufo_timer"])
 
 [node name="Bunkers" parent="." instance=ExtResource("1_rqens")]
 

@@ -1,0 +1,41 @@
+[gd_scene load_steps=7 format=3 uid="uid://bc2u6bby28yx7"]
+
+[ext_resource type="PackedScene" uid="uid://btakyw0x48rht" path="res://entities/generic/ufo_ship_small.tscn" id="1_3vf2m"]
+[ext_resource type="PackedScene" uid="uid://ctn77lu47nqk0" path="res://scenes/entity components/brains/ai_path_move_brain.tscn" id="2_m7sfc"]
+[ext_resource type="PackedScene" uid="uid://ruar6jbjbodk" path="res://scenes/entity components/guts/die_offscreen_guts.tscn" id="3_ropdq"]
+[ext_resource type="PackedScene" uid="uid://cj3hnjl0sj608" path="res://scenes/entity components/guts/points_guts.tscn" id="4_da3ef"]
+[ext_resource type="PackedScene" uid="uid://domsc1hbv4rsy" path="res://scenes/entity components/arms/score_on_death_arm.tscn" id="5_eycto"]
+
+[sub_resource type="Curve2D" id="Curve2D_ropdq"]
+_data = {
+"points": PackedVector2Array(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 660, 0)
+}
+point_count = 2
+
+[node name="UFOShip" instance=ExtResource("1_3vf2m")]
+groups = Array[StringName]([&"ships", &"ufos", &"enemies"])
+
+[node name="VectorFace" parent="." index="0"]
+color = Color(1, 0, 0, 1)
+
+[node name="VectorFace2" parent="." index="1"]
+color = Color(1, 0, 0, 1)
+
+[node name="VectorFace3" parent="." index="2"]
+color = Color(1, 0, 0, 1)
+
+[node name="DirectMovementLeg" parent="." index="3"]
+speed = 200.0
+
+[node name="AIPathMoveBrain" parent="." index="7" instance=ExtResource("2_m7sfc")]
+path_curve = SubResource("Curve2D_ropdq")
+patrol_mode = 2
+
+[node name="DieOffscreenGuts" parent="." index="8" instance=ExtResource("3_ropdq")]
+activation_delay = 0.0
+
+[node name="VisibleOnScreenNotifier2D2" type="VisibleOnScreenNotifier2D" parent="DieOffscreenGuts" index="1"]
+
+[node name="PointsGuts" parent="." index="9" instance=ExtResource("4_da3ef")]
+
+[node name="ScoreOnDeathArm" parent="." index="10" instance=ExtResource("5_eycto")]

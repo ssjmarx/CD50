@@ -1,0 +1,61 @@
+[gd_scene load_steps=12 format=3 uid="uid://drfjgg4wflvgm"]
+
+[ext_resource type="Script" uid="uid://dfbv2tw3cl4pe" path="res://scripts/core/infrastructure/cd_entity.gd" id="1_y6kpy"]
+[ext_resource type="PackedScene" uid="uid://bnh8758v4ajwd" path="res://scenes/entity components/faces/vector_face.tscn" id="2_7y2mr"]
+[ext_resource type="Script" uid="uid://brwnooso7th47" path="res://scripts/core/resources/behavior/cd_shape.gd" id="3_wwv01"]
+[ext_resource type="PackedScene" uid="uid://33byjn5h6ujc" path="res://scenes/entity components/legs/direct_movement_leg.tscn" id="4_wwv01"]
+[ext_resource type="PackedScene" uid="uid://1vgoj6bqs80e" path="res://scenes/entity components/arms/gun_arm.tscn" id="5_bs1id"]
+[ext_resource type="PackedScene" uid="uid://btr1f3svl7y3m" path="res://scenes/entity components/guts/healthpool_guts.tscn" id="6_macm8"]
+[ext_resource type="PackedScene" uid="uid://cb11x88j31om0" path="res://scenes/entity components/voices/continuous_voice.tscn" id="7_qt8g0"]
+[ext_resource type="PackedScene" uid="uid://bfxtjii32duju" path="res://scenes/entity components/guts/die_at_zero_health_guts.tscn" id="8_ek7yw"]
+
+[sub_resource type="Resource" id="Resource_bs1id"]
+script = ExtResource("3_wwv01")
+points = PackedVector2Array(-20, 2.5, -10, 10.5, 10, 10.5, 20, 2.5)
+closed = false
+metadata/_custom_type_script = "uid://brwnooso7th47"
+
+[sub_resource type="Resource" id="Resource_7y2mr"]
+script = ExtResource("3_wwv01")
+points = PackedVector2Array(-20, 2.5, -10, -5.5, 10, -5.5, 20, 2.5)
+closed = false
+metadata/_custom_type_script = "uid://brwnooso7th47"
+
+[sub_resource type="Resource" id="Resource_wwv01"]
+script = ExtResource("3_wwv01")
+points = PackedVector2Array(-10, -5.5, -3, -10.5, 4, -10.5, 10, -5.5)
+closed = false
+metadata/_custom_type_script = "uid://brwnooso7th47"
+
+[node name="UFOShip" type="CharacterBody2D"]
+script = ExtResource("1_y6kpy")
+groups = Array[StringName]([&"ships", &"ufos"])
+collision_radius = 16.0
+
+[node name="VectorFace" parent="." instance=ExtResource("2_7y2mr")]
+shapes = Array[ExtResource("3_wwv01")]([SubResource("Resource_bs1id")])
+shape_key = &"shape_points"
+
+[node name="VectorFace2" parent="." instance=ExtResource("2_7y2mr")]
+shapes = Array[ExtResource("3_wwv01")]([SubResource("Resource_7y2mr")])
+shape_key = &"shape_points"
+
+[node name="VectorFace3" parent="." instance=ExtResource("2_7y2mr")]
+shapes = Array[ExtResource("3_wwv01")]([SubResource("Resource_wwv01")])
+shape_key = &"shape_points"
+
+[node name="DirectMovementLeg" parent="." instance=ExtResource("4_wwv01")]
+
+[node name="GunArm" parent="." instance=ExtResource("5_bs1id")]
+inherit_rotation = false
+
+[node name="HealthpoolGuts" parent="." instance=ExtResource("6_macm8")]
+max_health = 1
+
+[node name="ContinuousVoice" parent="." instance=ExtResource("7_qt8g0")]
+effect = 1
+gameplay_only = true
+start_on_spawn = true
+preview_duration = 1.0
+
+[node name="DieAtZeroHealthGuts" parent="." instance=ExtResource("8_ek7yw")]

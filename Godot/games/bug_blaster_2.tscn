@@ -1,4 +1,4 @@
-[gd_scene load_steps=188 format=3 uid="uid://c0q0c0v84x80"]
+[gd_scene load_steps=186 format=3 uid="uid://c0q0c0v84x80"]
 
 [ext_resource type="Script" uid="uid://dm0uehngpvbh7" path="res://scripts/core/infrastructure/cd_game.gd" id="1_62wb8"]
 [ext_resource type="PackedScene" uid="uid://cmbx6xnct372t" path="res://scenes/core/infrastructure/cd_collision_buffer.tscn" id="2_7y1r2"]
@@ -153,15 +153,9 @@ selector = SubResource("Resource_xatni")
 [sub_resource type="Resource" id="Resource_8klk8"]
 script = ExtResource("27_1nsuk")
 
-[sub_resource type="Resource" id="Resource_0na4m"]
-script = ExtResource("25_hc4eh")
-per_wave = -1.0
-minimum = 5.0
-
 [sub_resource type="Resource" id="Resource_45xdf"]
 script = ExtResource("24_gc4j8")
 interval = 10.0
-wave_scaler = SubResource("Resource_0na4m")
 random_variance = 2.0
 
 [sub_resource type="Resource" id="Resource_huovk"]
@@ -239,16 +233,9 @@ trigger = SubResource("Resource_rtas7")
 selector = SubResource("Resource_5ysjq")
 metadata/_custom_type_script = "uid://2krdfmhel0jp"
 
-[sub_resource type="Resource" id="Resource_20wdp"]
-script = ExtResource("25_hc4eh")
-per_wave = -1.1875
-base = 5.0
-minimum = 0.25
-
 [sub_resource type="Resource" id="Resource_blp8l"]
 script = ExtResource("24_gc4j8")
 interval = 6.0
-wave_scaler = SubResource("Resource_20wdp")
 random_variance = 1.0
 
 [sub_resource type="Resource" id="Resource_hc4eh"]

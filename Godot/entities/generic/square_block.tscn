@@ -8,7 +8,7 @@
 
 [sub_resource type="Resource" id="Resource_s70do"]
 script = ExtResource("2_4u0jt")
-points = PackedVector2Array(-2.1, -2.1, -2.1, 2.1, 2.1, 2.1, 2.1, -2.1)
+points = PackedVector2Array(-2, -2, -2, 2, 2, 2, 2, -2)
 metadata/_custom_type_script = "uid://brwnooso7th47"
 
 [node name="SquareBlock" type="CharacterBody2D"]
