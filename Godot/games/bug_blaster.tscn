@@ -126,32 +126,28 @@ metadata/_custom_type_script = "uid://b3xaxo1yp2dn1"
 
 [sub_resource type="Resource" id="Resource_skele"]
 script = ExtResource("32_6cc3d")
-note = 45
-duration = 0.3
-glide = true
+note = 64
+duration = 0.1
 
 [sub_resource type="Resource" id="Resource_8l2ml"]
 script = ExtResource("32_6cc3d")
-note = 45
-duration = 0.3
-glide = true
+note = 65
+duration = 0.1
 
 [sub_resource type="Resource" id="Resource_8shry"]
 script = ExtResource("32_6cc3d")
-note = 45
-duration = 0.6
-glide = true
+note = 64
+duration = 0.1
 
 [sub_resource type="Resource" id="Resource_kedvo"]
 script = ExtResource("32_6cc3d")
-note = 45
-duration = 0.9
-glide = true
+note = 65
+duration = 0.1
 
 [sub_resource type="Resource" id="Resource_pm6y3"]
 script = ExtResource("33_q8ki1")
-wave_shape = 3
-effect = 5
+wave_shape = 1
+effect = 0
 volume = 0.4
 notes = Array[ExtResource("32_6cc3d")]([SubResource("Resource_skele"), SubResource("Resource_8l2ml"), SubResource("Resource_8shry"), SubResource("Resource_kedvo")])
 
