@@ -1,22 +1,14 @@
 ## CDGroupCountScaler
 ## Scales a float value based on the current count of entities in a group
-## RATIO mode: base * (count / peak) — classic Space Invaders / Galaga speed ramp
-## LINEAR mode: base + per_unit * count — additive scaling per entity
+## Returns MIN when the group is at peak capacity, MAX when the group is empty.
+## The peak capacity dynamically adjusts upward if the group size ever exceeds it.
 
 class_name CDGroupCountScaler extends CDScaler
-
-enum Mode { RATIO, LINEAR }
 
 ## --- exports ---
 
 ## group to count entities from
 @export var group_name: StringName = &""
-
-## scaling mode — RATIO for proportional, LINEAR for additive
-@export var mode: Mode = Mode.RATIO
-
-## amount added per entity in LINEAR mode
-@export var per_unit: float = 0.0
 
 ## --- state ---
 
@@ -37,7 +29,7 @@ func initialize(game: CDGame) -> void:
 ## return the scaled value based on current group count
 func evaluate() -> float:
 	if _game == null or group_name == &"":
-		return base
+		return minimum
 
 	var count: int = _game.group_registry.get_group(group_name).size()
 
@@ -46,20 +38,18 @@ func evaluate() -> float:
 		_peak_count = 0
 	_was_empty = (count == 0)
 
-	# track peak
+	# track peak dynamically (raises expected maximum if exceeded)
 	_peak_count = maxi(_peak_count, count)
 
-	var result: float
-	match mode:
-		Mode.RATIO:
-			if _peak_count == 0 or count == 0:
-				result = base
-			else:
-				result = base * (float(count) / float(_peak_count))
-		Mode.LINEAR:
-			result = base + per_unit * count
+	# If no entities exist or peak is 0, return maximum value
+	if _peak_count == 0 or count == 0:
+		return maximum
 
-	return clampf(result, minimum, maximum)
+	# Calculate ratio of eliminated entities (0.0 = full group, 1.0 = empty group)
+	var ratio := 1.0 - (float(count) / float(_peak_count))
+
+	# Interpolate smoothly between minimum and maximum based on the ratio
+	return lerpf(minimum, maximum, ratio)
 
 ## --- reset ---
 
