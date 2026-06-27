@@ -29,6 +29,8 @@ class_name GridMovementLeg extends CDEntityComponent
 @export_group("Emit Signals")
 ## emitted when a step is blocked by collision (zero-arg)
 @export var step_blocked_signals: Array[StringName] = [&"step_blocked"]
+## emitted when a step is successfully taken (zero-arg)
+@export var step_taken_signals: Array[StringName] = [&"step_taken"]
 
 ## --- state ---
 
@@ -137,6 +139,10 @@ func _try_step(step: Vector2i) -> bool:
 	entity.request_position_add(displacement)
 	
 	entity.blackboard[step_direction_key] = Vector2(step)
+	
+	for sig in step_taken_signals:
+		entity.bus_emit(sig)
+		
 	return true
 
 ## --- helpers ---
