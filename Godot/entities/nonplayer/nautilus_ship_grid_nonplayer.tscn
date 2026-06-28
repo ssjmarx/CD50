@@ -1,0 +1,26 @@
+[gd_scene load_steps=7 format=3 uid="uid://cyds33bk5uahl"]
+
+[ext_resource type="PackedScene" uid="uid://dbqhc5tlm4x6o" path="res://entities/generic/nautilus_ship_grid.tscn" id="1_7og0t"]
+[ext_resource type="PackedScene" uid="uid://by11ic4lo4df8" path="res://entities/nonplayer/onscreen_bullet_nonplayer.tscn" id="2_7v3uo"]
+[ext_resource type="Script" uid="uid://dcu4ocnin0htu" path="res://scripts/core/resources/spawners/cd_spawn_context.gd" id="3_2ql4w"]
+[ext_resource type="PackedScene" uid="uid://cj3hnjl0sj608" path="res://scenes/entity components/guts/points_guts.tscn" id="4_syf8l"]
+[ext_resource type="PackedScene" uid="uid://domsc1hbv4rsy" path="res://scenes/entity components/arms/score_on_death_arm.tscn" id="5_oaxvw"]
+
+[sub_resource type="Resource" id="Resource_a4iey"]
+script = ExtResource("3_2ql4w")
+velocity = Vector2(0, 300)
+rotation = -1.571
+metadata/_custom_type_script = "uid://dcu4ocnin0htu"
+
+[node name="NautilusShip" instance=ExtResource("1_7og0t")]
+groups = Array[StringName]([&"nautilus_ships", &"ships", &"enemies"])
+
+[node name="GunArm" parent="." index="1"]
+bullet_scene = ExtResource("2_7v3uo")
+spawn_context = SubResource("Resource_a4iey")
+inherit_rotation = false
+
+[node name="PointsGuts" parent="." index="8" instance=ExtResource("4_syf8l")]
+points = 2
+
+[node name="ScoreOnDeathArm" parent="." index="9" instance=ExtResource("5_oaxvw")]

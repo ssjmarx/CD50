@@ -5,10 +5,19 @@
 
 class_name CDGroupCountScaler extends CDScaler
 
+enum EasingType {
+	LINEAR,
+	EASE_IN,    # Slow start, fast end (Compounding - last steps have most change)
+	EASE_OUT    # Fast start, slow end (Diminishing Returns - first steps are larger)
+}
+
 ## --- exports ---
 
 ## group to count entities from
 @export var group_name: StringName = &""
+
+## easing function for the interpolation curve
+@export var easing: EasingType = EasingType.LINEAR
 
 ## --- state ---
 
@@ -48,8 +57,20 @@ func evaluate() -> float:
 	# Calculate ratio of eliminated entities (0.0 = full group, 1.0 = empty group)
 	var ratio := 1.0 - (float(count) / float(_peak_count))
 
-	# Interpolate smoothly between minimum and maximum based on the ratio
-	return lerpf(minimum, maximum, ratio)
+	# Apply easing curve
+	var eased_ratio := ratio
+	match easing:
+		EasingType.LINEAR:
+			pass # ratio is unchanged
+		EasingType.EASE_IN:
+			# High curve value (>1) creates strong acceleration at the end
+			eased_ratio = ease(ratio, 4.0)
+		EasingType.EASE_OUT:
+			# Low curve value (<1) creates strong deceleration at the end
+			eased_ratio = ease(ratio, 0.25)
+
+	# Interpolate smoothly between minimum and maximum based on the eased ratio
+	return lerpf(minimum, maximum, eased_ratio)
 
 ## --- reset ---
 

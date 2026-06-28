@@ -25,7 +25,7 @@ color = Color(1, 0, 0, 1)
 color = Color(1, 0, 0, 1)
 
 [node name="DirectMovementLeg" parent="." index="3"]
-speed = 200.0
+speed = 150.0
 
 [node name="AIPathMoveBrain" parent="." index="7" instance=ExtResource("2_m7sfc")]
 path_curve = SubResource("Curve2D_ropdq")
@@ -37,5 +37,9 @@ activation_delay = 0.0
 [node name="VisibleOnScreenNotifier2D2" type="VisibleOnScreenNotifier2D" parent="DieOffscreenGuts" index="1"]
 
 [node name="PointsGuts" parent="." index="9" instance=ExtResource("4_da3ef")]
+points = 30
 
 [node name="ScoreOnDeathArm" parent="." index="10" instance=ExtResource("5_eycto")]
+
+[node name="DeathEffectFace" parent="." index="12"]
+colors = Array[Color]([Color(1, 0, 0, 1)])

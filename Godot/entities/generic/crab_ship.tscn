@@ -1,0 +1,67 @@
+[gd_scene load_steps=19 format=3 uid="uid://bi50nds0x8y5t"]
+
+[ext_resource type="Script" uid="uid://dfbv2tw3cl4pe" path="res://scripts/core/infrastructure/cd_entity.gd" id="1_spktk"]
+[ext_resource type="PackedScene" uid="uid://dlgrii32eggbo" path="res://scenes/entity components/faces/sprite_face.tscn" id="2_hpbgv"]
+[ext_resource type="Texture2D" uid="uid://dv6yvl8tomyhq" path="res://assets/seafood/crab_1.png" id="3_hpbgv"]
+[ext_resource type="Texture2D" uid="uid://b50rfv8r5yb4i" path="res://assets/seafood/crab_2.png" id="4_f2td5"]
+[ext_resource type="PackedScene" uid="uid://1vgoj6bqs80e" path="res://scenes/entity components/arms/gun_arm.tscn" id="4_jgh3i"]
+[ext_resource type="Script" uid="uid://dcu4ocnin0htu" path="res://scripts/core/resources/spawners/cd_spawn_context.gd" id="5_7bi7v"]
+[ext_resource type="PackedScene" uid="uid://btr1f3svl7y3m" path="res://scenes/entity components/guts/healthpool_guts.tscn" id="6_omava"]
+[ext_resource type="PackedScene" uid="uid://bfxtjii32duju" path="res://scenes/entity components/guts/die_at_zero_health_guts.tscn" id="7_1euf2"]
+[ext_resource type="PackedScene" uid="uid://bisjhhp8r5a4p" path="res://scenes/entity components/faces/death_effect_face.tscn" id="8_r7exj"]
+[ext_resource type="PackedScene" uid="uid://dnt5g5mntk0nk" path="res://scenes/effects/death_particle_effect.tscn" id="9_2i7ti"]
+[ext_resource type="PackedScene" uid="uid://c4jinp88xtitl" path="res://scenes/entity components/voices/sound_voice.tscn" id="10_rmmqc"]
+[ext_resource type="Script" uid="uid://ci2yaa2b1swsj" path="res://scripts/core/resources/audio/cd_note.gd" id="11_oas1v"]
+[ext_resource type="Script" uid="uid://d3l2c838cqwsm" path="res://scripts/core/resources/audio/cd_sound_def.gd" id="12_akn26"]
+
+[sub_resource type="AnimatedTexture" id="AnimatedTexture_jgh3i"]
+frames = 2
+frame_0/texture = ExtResource("3_hpbgv")
+frame_1/texture = ExtResource("4_f2td5")
+frame_1/duration = 1.0
+
+[sub_resource type="Resource" id="Resource_xrbuo"]
+script = ExtResource("5_7bi7v")
+velocity = Vector2(0, 400)
+metadata/_custom_type_script = "uid://dcu4ocnin0htu"
+
+[sub_resource type="Resource" id="Resource_l5rrj"]
+script = ExtResource("11_oas1v")
+note = 57
+metadata/_custom_type_script = "uid://ci2yaa2b1swsj"
+
+[sub_resource type="Resource" id="Resource_upt83"]
+script = ExtResource("11_oas1v")
+note = 57
+metadata/_custom_type_script = "uid://ci2yaa2b1swsj"
+
+[sub_resource type="Resource" id="Resource_5bvmf"]
+script = ExtResource("12_akn26")
+effect = 3
+notes = Array[ExtResource("11_oas1v")]([SubResource("Resource_l5rrj"), SubResource("Resource_upt83")])
+metadata/_custom_type_script = "uid://d3l2c838cqwsm"
+
+[node name="CrabShip" type="CharacterBody2D"]
+script = ExtResource("1_spktk")
+groups = Array[StringName]([&"crab_ships", &"ships"])
+
+[node name="SpriteFace" parent="." instance=ExtResource("2_hpbgv")]
+frames = Array[Texture2D]([SubResource("AnimatedTexture_jgh3i")])
+
+[node name="GunArm" parent="." instance=ExtResource("4_jgh3i")]
+position = Vector2(0, 6)
+cooldown = 0.0
+spawn_context = SubResource("Resource_xrbuo")
+max_bullets = 1
+
+[node name="HealthpoolGuts" parent="." instance=ExtResource("6_omava")]
+max_health = 1
+
+[node name="DieAtZeroHealthGuts" parent="." instance=ExtResource("7_1euf2")]
+
+[node name="DeathEffectFace" parent="." instance=ExtResource("8_r7exj")]
+effect_scenes = Array[PackedScene]([ExtResource("9_2i7ti")])
+
+[node name="SoundVoice" parent="." instance=ExtResource("10_rmmqc")]
+sound = SubResource("Resource_5bvmf")
+trigger_signal = &"request_deactivate"

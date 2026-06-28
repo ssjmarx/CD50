@@ -1,4 +1,4 @@
-[gd_scene load_steps=74 format=3 uid="uid://l7axebdmvaep"]
+[gd_scene load_steps=81 format=3 uid="uid://l7axebdmvaep"]
 
 [ext_resource type="Script" uid="uid://dm0uehngpvbh7" path="res://scripts/core/infrastructure/cd_game.gd" id="1_bu0qt"]
 [ext_resource type="PackedScene" path="res://scenes/core/infrastructure/cd_stage.tscn" id="1_rqens"]
@@ -10,12 +10,15 @@
 [ext_resource type="PackedScene" uid="uid://25g1ygl8nuv6" path="res://scenes/core/infrastructure/cd_group_registry.tscn" id="7_np6gk"]
 [ext_resource type="PackedScene" uid="uid://c6mp0pt27mfal" path="res://scenes/core/infrastructure/cd_input_router.tscn" id="8_k1pfx"]
 [ext_resource type="PackedScene" uid="uid://csgdjkq3gf26a" path="res://scenes/core/infrastructure/cd_updater.tscn" id="9_jd2sg"]
-[ext_resource type="PackedScene" uid="uid://yb62w7afhy0l" path="res://entities/nonplayer/bug_ship_grid_nonplayer.tscn" id="12_o17xb"]
-[ext_resource type="Script" uid="uid://cv08kmn638bch" path="res://scripts/core/resources/spawners/cd_grid_equation.gd" id="13_np6gk"]
+[ext_resource type="Script" uid="uid://bnrmcpa7s0qvi" path="res://scripts/core/resources/spawners/cd_grid_row.gd" id="15_6cc3d"]
+[ext_resource type="PackedScene" uid="uid://dy1f5v6qy3iwx" path="res://entities/nonplayer/crab_ship_grid_nonplayer.tscn" id="15_d0pvi"]
 [ext_resource type="PackedScene" path="res://scenes/game components/directors/marching_order_director.tscn" id="15_np6gk"]
+[ext_resource type="PackedScene" uid="uid://cmkvpv60yu450" path="res://entities/nonplayer/squid_ship_grid_nonplayer.tscn" id="16_6cc3d"]
 [ext_resource type="Script" uid="uid://cr36gmk66snrc" path="res://scripts/core/resources/formation/cd_marching_order.gd" id="16_6oqxc"]
 [ext_resource type="PackedScene" uid="uid://caatm0w6gg3b1" path="res://scenes/game components/trapdoors/grid_trapdoor.tscn" id="16_jd2sg"]
+[ext_resource type="Script" uid="uid://0latvushbloy" path="res://scripts/core/resources/spawners/cd_grid_layout.gd" id="16_q8ki1"]
 [ext_resource type="Script" uid="uid://di72xxfkrnsjj" path="res://scripts/core/resources/formation/marching_order_step.gd" id="17_kybkw"]
+[ext_resource type="PackedScene" uid="uid://cyds33bk5uahl" path="res://entities/nonplayer/nautilus_ship_grid_nonplayer.tscn" id="17_q8ki1"]
 [ext_resource type="Script" uid="uid://odf21vxxstxx" path="res://scripts/core/resources/formation/marching_order_repeat.gd" id="18_o17xb"]
 [ext_resource type="Script" uid="uid://pfjv46gi1ii" path="res://scripts/core/resources/behavior/cd_group_count_scaler.gd" id="19_kybkw"]
 [ext_resource type="Script" uid="uid://dcu4ocnin0htu" path="res://scripts/core/resources/spawners/cd_spawn_context.gd" id="21_bu0qt"]
@@ -29,7 +32,7 @@
 [ext_resource type="PackedScene" uid="uid://b4uqwn5l54hms" path="res://scenes/game components/goals/group_count_goal.tscn" id="26_dxniv"]
 [ext_resource type="PackedScene" uid="uid://d4b42pvesykqo" path="res://scenes/game components/marks/cd_mark.tscn" id="26_upv1a"]
 [ext_resource type="PackedScene" uid="uid://mxejpxipdbii" path="res://scenes/game components/cards/wave_card.tscn" id="27_upv1a"]
-[ext_resource type="PackedScene" path="res://scenes/game components/goals/signal_goal.tscn" id="28_6jvxs"]
+[ext_resource type="PackedScene" uid="uid://p4ou2g1sh4vs" path="res://scenes/game components/goals/signal_goal.tscn" id="28_6jvxs"]
 [ext_resource type="PackedScene" uid="uid://cbuw38k0wvnia" path="res://scenes/game components/cards/lives_card.tscn" id="28_rwe8y"]
 [ext_resource type="PackedScene" uid="uid://c4upbp1v4vll8" path="res://scenes/game components/cards/score_card.tscn" id="29_6jvxs"]
 [ext_resource type="PackedScene" uid="uid://5mmhkhj5u3tg" path="res://scenes/game components/speakers/sound_speaker.tscn" id="31_d0pvi"]
@@ -37,7 +40,6 @@
 [ext_resource type="Script" uid="uid://d3l2c838cqwsm" path="res://scripts/core/resources/audio/cd_sound_def.gd" id="33_q8ki1"]
 [ext_resource type="PackedScene" uid="uid://dy5mrsukcw2vx" path="res://entities/generic/bunker.tscn" id="34_dxniv"]
 [ext_resource type="PackedScene" path="res://scenes/effects/twinkling_stars_effect.tscn" id="37_6jvxs"]
-[ext_resource type="PackedScene" uid="uid://bs6bk8vnu652o" path="res://scenes/game components/cards/timer_card.tscn" id="37_d0pvi"]
 [ext_resource type="PackedScene" uid="uid://bc2u6bby28yx7" path="res://entities/nonplayer/mystery_ship.tscn" id="38_uf102"]
 
 [sub_resource type="Resource" id="Resource_q4h5u"]
@@ -74,11 +76,36 @@ metadata/_custom_type_script = "uid://b2ibop6r2cryj"
 script = ExtResource("21_bu0qt")
 rotation = -1.571
 
-[sub_resource type="Resource" id="Resource_k1pfx"]
-script = ExtResource("13_np6gk")
+[sub_resource type="Resource" id="Resource_q8ki1"]
+script = ExtResource("15_6cc3d")
+cells = Array[PackedScene]([ExtResource("16_6cc3d"), ExtResource("16_6cc3d"), ExtResource("16_6cc3d"), ExtResource("16_6cc3d"), ExtResource("16_6cc3d"), ExtResource("16_6cc3d"), ExtResource("16_6cc3d"), ExtResource("16_6cc3d"), ExtResource("16_6cc3d"), ExtResource("16_6cc3d"), ExtResource("16_6cc3d")])
+metadata/_custom_type_script = "uid://bnrmcpa7s0qvi"
+
+[sub_resource type="Resource" id="Resource_6cc3d"]
+script = ExtResource("15_6cc3d")
+cells = Array[PackedScene]([ExtResource("17_q8ki1"), ExtResource("17_q8ki1"), ExtResource("17_q8ki1"), ExtResource("17_q8ki1"), ExtResource("17_q8ki1"), ExtResource("17_q8ki1"), ExtResource("17_q8ki1"), ExtResource("17_q8ki1"), ExtResource("17_q8ki1"), ExtResource("17_q8ki1"), ExtResource("17_q8ki1")])
+metadata/_custom_type_script = "uid://bnrmcpa7s0qvi"
+
+[sub_resource type="Resource" id="Resource_ysgfn"]
+script = ExtResource("15_6cc3d")
+cells = Array[PackedScene]([ExtResource("17_q8ki1"), ExtResource("17_q8ki1"), ExtResource("17_q8ki1"), ExtResource("17_q8ki1"), ExtResource("17_q8ki1"), ExtResource("17_q8ki1"), ExtResource("17_q8ki1"), ExtResource("17_q8ki1"), ExtResource("17_q8ki1"), ExtResource("17_q8ki1"), ExtResource("17_q8ki1")])
+metadata/_custom_type_script = "uid://bnrmcpa7s0qvi"
+
+[sub_resource type="Resource" id="Resource_r6ih8"]
+script = ExtResource("15_6cc3d")
+cells = Array[PackedScene]([ExtResource("15_d0pvi"), ExtResource("15_d0pvi"), ExtResource("15_d0pvi"), ExtResource("15_d0pvi"), ExtResource("15_d0pvi"), ExtResource("15_d0pvi"), ExtResource("15_d0pvi"), ExtResource("15_d0pvi"), ExtResource("15_d0pvi"), ExtResource("15_d0pvi"), ExtResource("15_d0pvi")])
+metadata/_custom_type_script = "uid://bnrmcpa7s0qvi"
+
+[sub_resource type="Resource" id="Resource_xouws"]
+script = ExtResource("15_6cc3d")
+cells = Array[PackedScene]([ExtResource("15_d0pvi"), ExtResource("15_d0pvi"), ExtResource("15_d0pvi"), ExtResource("15_d0pvi"), ExtResource("15_d0pvi"), ExtResource("15_d0pvi"), ExtResource("15_d0pvi"), ExtResource("15_d0pvi"), ExtResource("15_d0pvi"), ExtResource("15_d0pvi"), ExtResource("15_d0pvi")])
+metadata/_custom_type_script = "uid://bnrmcpa7s0qvi"
+
+[sub_resource type="Resource" id="Resource_hik66"]
+script = ExtResource("16_q8ki1")
 columns = 11
-rows = 5
-metadata/_custom_type_script = "uid://cv08kmn638bch"
+rows = Array[ExtResource("15_6cc3d")]([SubResource("Resource_q8ki1"), SubResource("Resource_6cc3d"), SubResource("Resource_ysgfn"), SubResource("Resource_r6ih8"), SubResource("Resource_xouws")])
+metadata/_custom_type_script = "uid://0latvushbloy"
 
 [sub_resource type="Resource" id="Resource_0luh7"]
 script = ExtResource("21_bu0qt")
@@ -122,8 +149,9 @@ metadata/_custom_type_script = "uid://odf21vxxstxx"
 [sub_resource type="Resource" id="Resource_o17xb"]
 script = ExtResource("19_kybkw")
 group_name = &"enemies"
+easing = 1
 minimum = 1.0
-maximum = 25.0
+maximum = 30.0
 metadata/_custom_type_script = "uid://pfjv46gi1ii"
 
 [sub_resource type="Resource" id="Resource_rwe8y"]
@@ -273,8 +301,7 @@ on_spawning_complete = Array[StringName]([])
 
 [node name="GridTrapdoor" parent="AI Stuff" instance=ExtResource("16_jd2sg")]
 position = Vector2(320, 60)
-spawn_scene = ExtResource("12_o17xb")
-equation = SubResource("Resource_k1pfx")
+layout = SubResource("Resource_hik66")
 cell_size = Vector2(16, 16)
 cell_spacing = Vector2(4, 4)
 stagger_delay = 0.0
@@ -313,7 +340,8 @@ position = Vector2(-8, 8)
 spawn_scene = ExtResource("38_uf102")
 spawn_count_equation = "1"
 offset_range = Vector2(0, 0)
-trigger_signals = Array[StringName]([&"ufo_timer"])
+trigger_delay = 12.0
+trigger_signals = Array[StringName]([&"spawning_complete"])
 on_spawning_complete = Array[StringName]([])
 
 [node name="Game State" parent="." instance=ExtResource("1_rqens")]
@@ -366,25 +394,19 @@ gameplay_only = true
 sound = SubResource("Resource_mch1x")
 trigger_signal = &"game_over"
 
-[node name="TimerCard" parent="Game State" instance=ExtResource("37_d0pvi")]
-starting_time = 12.0
-on_timer_reset = Array[StringName]([&"ufo_timer"])
-on_timer_tick = Array[StringName]([])
-on_timer_expired = Array[StringName]([&"ufo_timer"])
+[node name="Board" parent="." instance=ExtResource("1_rqens")]
 
-[node name="Bunkers" parent="." instance=ExtResource("1_rqens")]
-
-[node name="TwinklingStarsEffect" parent="Bunkers" instance=ExtResource("37_6jvxs")]
+[node name="TwinklingStarsEffect" parent="Board" instance=ExtResource("37_6jvxs")]
 star_count = 25
 
-[node name="Bunker" parent="Bunkers" instance=ExtResource("34_dxniv")]
+[node name="Bunker" parent="Board" instance=ExtResource("34_dxniv")]
 position = Vector2(128, 280)
 
-[node name="Bunker3" parent="Bunkers" instance=ExtResource("34_dxniv")]
+[node name="Bunker3" parent="Board" instance=ExtResource("34_dxniv")]
 position = Vector2(256, 280)
 
-[node name="Bunker4" parent="Bunkers" instance=ExtResource("34_dxniv")]
+[node name="Bunker4" parent="Board" instance=ExtResource("34_dxniv")]
 position = Vector2(384, 280)
 
-[node name="Bunker6" parent="Bunkers" instance=ExtResource("34_dxniv")]
+[node name="Bunker6" parent="Board" instance=ExtResource("34_dxniv")]
 position = Vector2(512, 280)

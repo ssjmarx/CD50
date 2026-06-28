@@ -6,7 +6,7 @@
 scale = Vector2(0.5, 0.5)
 
 [node name="DirectMovementLeg" parent="." index="3"]
-speed = 400.0
+speed = 300.0
 
 [node name="ContinuousVoice" parent="." index="6"]
 note = 72

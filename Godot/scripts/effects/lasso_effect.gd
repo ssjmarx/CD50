@@ -18,18 +18,20 @@ enum RopeState { LOOSE, TAUT }
 @export_group("Visuals")
 @export var wave_amplitude: float = 8.0
 @export var wave_length: float = 40.0 # Length in pixels of one full sine wave cycle
-@export var rope_color: Color = Color.WHITE
 @export var rope_width: float = 2.0
 
 var _state: RopeState = RopeState.LOOSE
 var _source_entity: CDEntity = null
 var _captor: Node2D = null
 var _target: Node2D = null
+var _rope_color: Color
 
 @onready var game = CDGame.find_ancestor(self)
 
 func _ready() -> void:
 	super._ready() # Initialize CDEffect timer/fallback
+	
+	_rope_color = get_random_color()
 	
 	var parent = get_parent()
 	if parent is CDEntity:
@@ -72,7 +74,7 @@ func _draw() -> void:
 	if _state == RopeState.LOOSE:
 		_draw_sine_wave(p1, p2)
 	else:
-		draw_line(p1, p2, rope_color, rope_width)
+		draw_line(p1, p2, _rope_color, rope_width)
 		
 func _draw_sine_wave(p1: Vector2, p2: Vector2) -> void:
 	var dist = p1.distance_to(p2)
@@ -103,7 +105,7 @@ func _draw_sine_wave(p1: Vector2, p2: Vector2) -> void:
 		
 	if points.size() > 1:
 		# true enables anti-aliasing for smooth, non-jagged edges
-		draw_polyline(points, rope_color, rope_width, true) 
+		draw_polyline(points, _rope_color, rope_width, true) 
 		
 func _on_player_captured() -> void:
 	if game and game_captured_key in game.blackboard:

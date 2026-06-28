@@ -32,8 +32,10 @@ func _on_initialize() -> void:
 func _on_input_move(pid: int, direction: Vector2) -> void:
 	if pid != player_id:
 		return
+	# Only switch to keyboard mode if there is actual intent
 	if direction != Vector2.ZERO:
 		_mode = _InputMode.KEYBOARD
+	# Always update direction so we know when keys are released
 	_kb_direction = direction
 
 ## physics process

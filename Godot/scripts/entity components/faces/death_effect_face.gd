@@ -10,6 +10,9 @@ class_name DeathEffectFace extends CDEntityComponent
 ## copy entity's global_position to each spawned effect
 @export var inherit_position: bool = true
 
+## optional colors to override the effect's default color palette
+@export var colors: Array[Color] = []
+
 @export_group("Listen Signals")
 @export var death_signals: Array[StringName] = [&"zero_health"]
 
@@ -28,7 +31,12 @@ func _on_death() -> void:
 	for scene in effect_scenes:
 		if scene == null:
 			continue
-		var effect: Node2D = scene.instantiate()
+		var effect: CDEffect = scene.instantiate()
+		
+		# Override colors if configured on the Face component
+		if not colors.is_empty():
+			effect.colors = colors
+			
 		if inherit_position:
 			effect.global_position = entity.global_position
 		game.add_child(effect)

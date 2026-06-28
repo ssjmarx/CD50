@@ -1,0 +1,14 @@
+[gd_scene load_steps=4 format=3 uid="uid://dbqhc5tlm4x6o"]
+
+[ext_resource type="PackedScene" uid="uid://4w2yn8xf5lrv" path="res://entities/generic/nautilus_ship.tscn" id="1_a16dk"]
+[ext_resource type="PackedScene" uid="uid://depq50k1fa0v6" path="res://scenes/entity components/legs/grid_movement_leg.tscn" id="2_dxb7r"]
+[ext_resource type="PackedScene" uid="uid://c6frknsc6yg83" path="res://scenes/entity components/legs/grid_alignment_leg.tscn" id="3_q6c4a"]
+
+[node name="NautilusShip" instance=ExtResource("1_a16dk")]
+
+[node name="GridMovementLeg" parent="." index="6" instance=ExtResource("2_dxb7r")]
+cell_size = Vector2(10, 10)
+check_collision = false
+
+[node name="GridAlignmentLeg" parent="." index="7" instance=ExtResource("3_q6c4a")]
+cell_size = Vector2(10, 10)

@@ -34,7 +34,7 @@ effect = 5
 notes = Array[ExtResource("12_kmp1y")]([SubResource("Resource_l5rrj"), SubResource("Resource_upt83")])
 metadata/_custom_type_script = "uid://d3l2c838cqwsm"
 
-[node name="BugShip" type="CharacterBody2D"]
+[node name="BugShip2" type="CharacterBody2D"]
 script = ExtResource("1_u2iwu")
 groups = Array[StringName]([&"bug_ships", &"ships"])
 

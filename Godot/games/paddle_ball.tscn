@@ -1,0 +1,68 @@
+[gd_scene load_steps=18 format=3 uid="uid://b1p2wk4pepc53"]
+
+[ext_resource type="Script" uid="uid://dm0uehngpvbh7" path="res://scripts/core/infrastructure/cd_game.gd" id="1_g3say"]
+[ext_resource type="PackedScene" path="res://scenes/core/infrastructure/cd_stage.tscn" id="1_h58hb"]
+[ext_resource type="PackedScene" uid="uid://c160d1kuwsrav" path="res://scenes/game components/projectors/crt_projector.tscn" id="2_g3say"]
+[ext_resource type="PackedScene" uid="uid://dp5wrnwomehwo" path="res://scenes/core/infrastructure/cd_sound_bank.tscn" id="3_o2cdy"]
+[ext_resource type="PackedScene" uid="uid://cmbx6xnct372t" path="res://scenes/core/infrastructure/cd_collision_buffer.tscn" id="4_m4tg4"]
+[ext_resource type="PackedScene" uid="uid://bcwv07gabsxif" path="res://scenes/core/infrastructure/cd_collision_matrix.tscn" id="5_aydlw"]
+[ext_resource type="Script" uid="uid://b2ibop6r2cryj" path="res://scripts/core/resources/infrastructure/cd_collision_group.gd" id="6_1sbg1"]
+[ext_resource type="PackedScene" uid="uid://25g1ygl8nuv6" path="res://scenes/core/infrastructure/cd_group_registry.tscn" id="7_i1yaf"]
+[ext_resource type="PackedScene" uid="uid://c6mp0pt27mfal" path="res://scenes/core/infrastructure/cd_input_router.tscn" id="8_04mnm"]
+[ext_resource type="PackedScene" uid="uid://csgdjkq3gf26a" path="res://scenes/core/infrastructure/cd_updater.tscn" id="9_40g2u"]
+[ext_resource type="PackedScene" uid="uid://ows1gmiy0l6d" path="res://entities/player/paddle_player.tscn" id="10_pukhu"]
+
+[sub_resource type="Resource" id="Resource_q4h5u"]
+script = ExtResource("6_1sbg1")
+group_name = &"players"
+collides_with = Array[StringName]([&"players"])
+
+[sub_resource type="Resource" id="Resource_qh32t"]
+script = ExtResource("6_1sbg1")
+group_name = &"enemies"
+
+[sub_resource type="Resource" id="Resource_dg5ky"]
+script = ExtResource("6_1sbg1")
+group_name = &"enemy_bullets"
+collides_with = Array[StringName]([&"players", &"blocks"])
+
+[sub_resource type="Resource" id="Resource_7ar12"]
+script = ExtResource("6_1sbg1")
+group_name = &"player_bullets"
+collides_with = Array[StringName]([&"enemies", &"blocks"])
+
+[sub_resource type="Resource" id="Resource_6jvxs"]
+script = ExtResource("6_1sbg1")
+group_name = &"blocks"
+metadata/_custom_type_script = "uid://b2ibop6r2cryj"
+
+[sub_resource type="Resource" id="Resource_uf102"]
+script = ExtResource("6_1sbg1")
+group_name = &"game_over_zone"
+collides_with = Array[StringName]([&"enemies"])
+metadata/_custom_type_script = "uid://b2ibop6r2cryj"
+
+[node name="PaddleBall" type="Node2D"]
+script = ExtResource("1_g3say")
+
+[node name="Infrastructure" parent="." instance=ExtResource("1_h58hb")]
+
+[node name="CRTProjector" parent="Infrastructure" instance=ExtResource("2_g3say")]
+
+[node name="CDSoundBank" parent="Infrastructure" instance=ExtResource("3_o2cdy")]
+max_channels = 4
+
+[node name="CDCollisionBuffer" parent="Infrastructure" instance=ExtResource("4_m4tg4")]
+
+[node name="CDCollisionMatrix" parent="Infrastructure" instance=ExtResource("5_aydlw")]
+collision_groups = Array[ExtResource("6_1sbg1")]([SubResource("Resource_q4h5u"), SubResource("Resource_qh32t"), SubResource("Resource_dg5ky"), SubResource("Resource_7ar12"), SubResource("Resource_6jvxs"), SubResource("Resource_uf102")])
+
+[node name="CDGroupRegistry" parent="Infrastructure" instance=ExtResource("7_i1yaf")]
+
+[node name="CDInputRouter" parent="Infrastructure" instance=ExtResource("8_04mnm")]
+tracked_actions = Array[StringName]([&"fire", &"move"])
+
+[node name="CDUpdater" parent="Infrastructure" instance=ExtResource("9_40g2u")]
+
+[node name="Paddle" parent="." instance=ExtResource("10_pukhu")]
+position = Vector2(104, 198)

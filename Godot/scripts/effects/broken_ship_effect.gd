@@ -16,20 +16,18 @@ class_name BrokenShipEffect extends CDEffect
 ## maximum rotation speed per fragment
 @export var spin_speed: float = 1.0
 
-## color of the line fragments
-@export var fragment_color: Color = Color.WHITE
-
 ## per-fragment state arrays
 var _positions: Array[Vector2] = []
 var _rotations: Array[float] = []
 var _rotation_speeds: Array[float] = []
 var _velocities: Array[Vector2] = []
 var _lifetimes: Array[float] = []
+var _fragment_colors: Array[Color] = []
 
 ## total elapsed time for lifetime checks
 var _elapsed: float = 0.0
 
-## initialize fragment arrays with random directions and speeds
+## initialize fragment arrays with random directions, speeds, and colors
 func _ready() -> void:
 	super._ready()
 
@@ -45,6 +43,8 @@ func _ready() -> void:
 		_lifetimes.append(randf_range(0.5 * lifetime, lifetime))
 
 		_positions[i] += _velocities[i]
+		
+		_fragment_colors.append(get_random_color())
 
 ## update fragment positions, rotations, and trigger redraw
 func _physics_process(delta: float) -> void:
@@ -64,4 +64,4 @@ func _draw() -> void:
 		var half := fragment_length / 2.0
 		var start := _positions[i] + Vector2(-half, 0).rotated(_rotations[i])
 		var end := _positions[i] + Vector2(half, 0).rotated(_rotations[i])
-		draw_line(start, end, fragment_color)
+		draw_line(start, end, _fragment_colors[i])

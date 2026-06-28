@@ -19,15 +19,13 @@ class_name TractorConeEffect
 ## how fast stars get sucked into the origin
 @export var vacuum_speed: float = 250.0
 
-## color of the stars and the faint cone background
-@export var star_color: Color = Color.WHITE
-
 ## size of the drawn stars in pixels
 @export var star_size: float = 1.0
 
 var _is_vacuuming: bool = false
 var _stars_pos: Array[Vector2] = []
 var _stars_vel: Array[Vector2] = []
+var _star_colors: Array[Color] = []
 
 func _ready() -> void:
 	super._ready()
@@ -53,6 +51,7 @@ func _spawn_star() -> void:
 	
 	_stars_pos.append(spawn_pos)                                          
 	_stars_vel.append(dir * speed)
+	_star_colors.append(get_random_color())
 
 func _process(delta: float) -> void:
 	if _is_vacuuming:
@@ -67,6 +66,7 @@ func _process(delta: float) -> void:
 		if _stars_pos[i].x <= 0.0 or _stars_pos[i].length() < 5.0:
 			_stars_pos.remove_at(i)
 			_stars_vel.remove_at(i)
+			_star_colors.remove_at(i)
 		else:
 			i += 1
 			
@@ -74,5 +74,5 @@ func _process(delta: float) -> void:
 
 func _draw() -> void:
 	var half_size := star_size / 2.0
-	for pos in _stars_pos:
-		draw_rect(Rect2(pos.x - half_size, pos.y - half_size, star_size, star_size), star_color)
+	for i in _stars_pos.size():
+		draw_rect(Rect2(_stars_pos[i].x - half_size, _stars_pos[i].y - half_size, star_size, star_size), _star_colors[i])

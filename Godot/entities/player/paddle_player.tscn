@@ -1,0 +1,11 @@
+[gd_scene load_steps=3 format=3 uid="uid://ows1gmiy0l6d"]
+
+[ext_resource type="PackedScene" uid="uid://chwl7osnlywyd" path="res://entities/generic/paddle.tscn" id="1_nws4h"]
+[ext_resource type="PackedScene" uid="uid://b6ppea72ukeug" path="res://scenes/entity components/brains/player_kbm_move_brain.tscn" id="2_wepwk"]
+
+[node name="Paddle" instance=ExtResource("1_nws4h")]
+
+[node name="DirectMovementLeg" parent="." index="1"]
+distance_key = &""
+
+[node name="PlayerKBMMoveBrain" parent="." index="3" instance=ExtResource("2_wepwk")]

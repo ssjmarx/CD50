@@ -1,4 +1,4 @@
-[gd_scene load_steps=12 format=3 uid="uid://drfjgg4wflvgm"]
+[gd_scene load_steps=15 format=3 uid="uid://drfjgg4wflvgm"]
 
 [ext_resource type="Script" uid="uid://dfbv2tw3cl4pe" path="res://scripts/core/infrastructure/cd_entity.gd" id="1_y6kpy"]
 [ext_resource type="PackedScene" uid="uid://bnh8758v4ajwd" path="res://scenes/entity components/faces/vector_face.tscn" id="2_7y2mr"]
@@ -8,6 +8,9 @@
 [ext_resource type="PackedScene" uid="uid://btr1f3svl7y3m" path="res://scenes/entity components/guts/healthpool_guts.tscn" id="6_macm8"]
 [ext_resource type="PackedScene" uid="uid://cb11x88j31om0" path="res://scenes/entity components/voices/continuous_voice.tscn" id="7_qt8g0"]
 [ext_resource type="PackedScene" uid="uid://bfxtjii32duju" path="res://scenes/entity components/guts/die_at_zero_health_guts.tscn" id="8_ek7yw"]
+[ext_resource type="PackedScene" uid="uid://bisjhhp8r5a4p" path="res://scenes/entity components/faces/death_effect_face.tscn" id="9_0fghb"]
+[ext_resource type="PackedScene" uid="uid://dnt5g5mntk0nk" path="res://scenes/effects/death_particle_effect.tscn" id="10_ui3if"]
+[ext_resource type="PackedScene" uid="uid://dtobcb3r7eydx" path="res://scenes/effects/broken_ship_effect.tscn" id="11_ui3if"]
 
 [sub_resource type="Resource" id="Resource_bs1id"]
 script = ExtResource("3_wwv01")
@@ -59,3 +62,6 @@ start_on_spawn = true
 preview_duration = 1.0
 
 [node name="DieAtZeroHealthGuts" parent="." instance=ExtResource("8_ek7yw")]
+
+[node name="DeathEffectFace" parent="." instance=ExtResource("9_0fghb")]
+effect_scenes = Array[PackedScene]([ExtResource("10_ui3if"), ExtResource("11_ui3if")])

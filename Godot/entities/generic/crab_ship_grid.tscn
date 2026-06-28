@@ -1,0 +1,17 @@
+[gd_scene load_steps=4 format=3 uid="uid://lvkthtfdvl4i"]
+
+[ext_resource type="PackedScene" uid="uid://bi50nds0x8y5t" path="res://entities/generic/crab_ship.tscn" id="1_r10ff"]
+[ext_resource type="PackedScene" uid="uid://depq50k1fa0v6" path="res://scenes/entity components/legs/grid_movement_leg.tscn" id="2_n1npn"]
+[ext_resource type="PackedScene" uid="uid://c6frknsc6yg83" path="res://scenes/entity components/legs/grid_alignment_leg.tscn" id="3_swk5c"]
+
+[node name="CrabShip" instance=ExtResource("1_r10ff")]
+
+[node name="SpriteFace" parent="." index="0"]
+scale = Vector2(1, 1)
+
+[node name="GridMovementLeg" parent="." index="6" instance=ExtResource("2_n1npn")]
+cell_size = Vector2(10, 10)
+check_collision = false
+
+[node name="GridAlignmentLeg" parent="." index="7" instance=ExtResource("3_swk5c")]
+cell_size = Vector2(10, 10)

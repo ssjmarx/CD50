@@ -1,0 +1,23 @@
+[gd_scene load_steps=7 format=3 uid="uid://chwl7osnlywyd"]
+
+[ext_resource type="Script" uid="uid://dfbv2tw3cl4pe" path="res://scripts/core/infrastructure/cd_entity.gd" id="1_vm1yc"]
+[ext_resource type="PackedScene" uid="uid://bxcu3ebyva6rn" path="res://scenes/entity components/faces/polygon_face.tscn" id="2_7kpch"]
+[ext_resource type="Script" uid="uid://brwnooso7th47" path="res://scripts/core/resources/behavior/cd_shape.gd" id="3_dtd2y"]
+[ext_resource type="Resource" uid="uid://bcyyyvrokeogt" path="res://resources/shapes/paddle.tres" id="4_b0hma"]
+[ext_resource type="PackedScene" uid="uid://33byjn5h6ujc" path="res://scenes/entity components/legs/direct_movement_leg.tscn" id="4_dtd2y"]
+[ext_resource type="PackedScene" uid="uid://cv6x2h4pd763u" path="res://scenes/entity components/guts/shape_collider_guts.tscn" id="5_42ipe"]
+
+[node name="Paddle" type="CharacterBody2D"]
+script = ExtResource("1_vm1yc")
+groups = Array[StringName]([&"paddle"])
+collision_radius = 0.0
+
+[node name="PolygonFace" parent="." instance=ExtResource("2_7kpch")]
+shapes = Array[ExtResource("3_dtd2y")]([ExtResource("4_b0hma")])
+shape_key = &"shape_points"
+
+[node name="DirectMovementLeg" parent="." instance=ExtResource("4_dtd2y")]
+speed = 300.0
+
+[node name="ShapeColliderGuts" parent="." instance=ExtResource("5_42ipe")]
+shape_resource = ExtResource("4_b0hma")

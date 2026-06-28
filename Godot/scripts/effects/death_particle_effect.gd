@@ -10,14 +10,12 @@ class_name DeathParticleEffect extends CDEffect
 ## maximum outward speed per particle
 @export var spread_speed: float = 200.0
 
-## color of the particles
-@export var particle_color: Color = Color.WHITE
-
 ## per-particle state arrays
 var _positions: Array[Vector2] = []
 var _velocities: Array[Vector2] = []
+var _particle_colors: Array[Color] = []
 
-## initialize particle arrays with random outward velocities
+## initialize particle arrays with random outward velocities and colors
 func _ready() -> void:
 	super._ready()
 
@@ -27,6 +25,8 @@ func _ready() -> void:
 		var angle := randf_range(0.0, TAU)
 		var speed := randf_range(spread_speed * 0.3, spread_speed)
 		_velocities.append(Vector2.from_angle(angle) * speed)
+		
+		_particle_colors.append(get_random_color())
 
 ## update particle positions and trigger redraw
 func _physics_process(delta: float) -> void:
@@ -36,5 +36,6 @@ func _physics_process(delta: float) -> void:
 
 ## draw each particle as a single-pixel rectangle
 func _draw() -> void:
-	for pos in _positions:
-		draw_rect(Rect2(pos.x - 0.5, pos.y - 0.5, 1, 1), particle_color)
+	for i in _positions.size():
+		var pos = _positions[i]
+		draw_rect(Rect2(pos.x - 0.5, pos.y - 0.5, 1, 1), _particle_colors[i])

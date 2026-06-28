@@ -1,13 +1,14 @@
 ## ShapeColliderGuts
 ## Overrides CDEntity's collision shape on setup and updates it on signal
-## Reads polygon points from entity blackboard when triggered Supports static polygon points or dynamic shape updates from other components
+## Reads polygon points from entity blackboard when triggered.
+## Supports dynamic shape updates or a CDShape resource.
 
 class_name ShapeColliderGuts extends CDEntityComponent
 
 ## --- exports ---
 
-## static polygon points for the collision shape (set at init if non-empty)
-@export var static_points: PackedVector2Array
+## a CDShape resource to use for the collision shape
+@export var shape_resource: CDShape
 
 @export_group("Blackboard Keys")
 ## key to read polygon points from (PackedVector2Array)
@@ -29,8 +30,9 @@ func _on_initialize() -> void:
 	for sig in shape_signals:
 		self.bus_connect(sig, _on_shape_changed)
 	
-	if static_points.size() > 0:
-		entity.set_collision_polygon(static_points)
+	# Apply shape from resource if available
+	if shape_resource and shape_resource.points.size() > 0:
+		entity.set_collision_polygon(shape_resource.points)
 
 ## --- signal handlers ---
 

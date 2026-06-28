@@ -1,0 +1,8 @@
+[gd_resource type="Resource" script_class="CDShape" load_steps=2 format=3 uid="uid://bcyyyvrokeogt"]
+
+[ext_resource type="Script" uid="uid://brwnooso7th47" path="res://scripts/core/resources/behavior/cd_shape.gd" id="1_0bpr1"]
+
+[resource]
+script = ExtResource("1_0bpr1")
+points = PackedVector2Array(-2, 16, 2, 16, 2, -16, -2, -16)
+metadata/_custom_type_script = "uid://brwnooso7th47"
