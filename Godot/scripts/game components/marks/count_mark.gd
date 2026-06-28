@@ -35,8 +35,7 @@ var _tracked_bodies: Array[Node2D] = []
 ## track unique bodies, write to blackboard, emit zero-arg signals
 func _handle_body_entered(body: Node2D) -> void:
 	## base enter behavior: write entered body key + emit enter signals
-	game.blackboard[entered_body_key] = body
-	_emit_enter(body)
+	super._handle_body_entered(body)
 
 	if body not in _tracked_bodies:
 		_tracked_bodies.append(body)
@@ -54,5 +53,4 @@ func _handle_body_entered(body: Node2D) -> void:
 
 ## relay base exit behavior (does not decrement count)
 func _handle_body_exited(body: Node2D) -> void:
-	game.blackboard[exited_body_key] = body
-	_emit_exit(body)
+	super._handle_body_exited(body)

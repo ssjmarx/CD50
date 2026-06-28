@@ -31,7 +31,7 @@ class_name <Name> extends CDGameComponent
 
 ### Lifecycle hooks used
 
-- `_on_initialize()` — locate dependencies (e.g. `game.find_child("CDSoundBank")`) and `bus_connect` to the trigger signals. Connections made via `bus_connect` are **tracked** and torn down automatically by the base `_exit_tree()`.
+- `_on_initialize()` — locate dependencies (e.g. read the typed `game.sound_bank` ref) and `bus_connect` to the trigger signals. Connections made via `bus_connect` are **tracked** and torn down automatically by the base `_exit_tree()`.
 - `_exit_tree()` — only used when the subclass has its own resources to release. `ContinuousSpeaker` overrides it to `_deregister()` from the sound bank and then calls `super._exit_tree()` so the base still auto-disconnects the tracked bus signals. `MusicSpeaker` and `SoundSpeaker` have no `_exit_tree` override — the base handles signal cleanup, and they own no bank slot to deregister.
 
 ### Triggering audio
@@ -65,7 +65,7 @@ A sustained synthesized tone driven by `CDSoundBank`. Designed for drones, hums,
 
 ### State
 
-- `_bank: CDSoundBank` — the central sound bank, located via `game.find_child("CDSoundBank")`.
+- `_bank: CDSoundBank` — the central sound bank, read from the typed `game.sound_bank` property (resolved once by `CDGame`).
 - `_signature: String` — `"{wave}_{effect}_{note}"`, the key used for bank registration.
 - `_is_registered: bool` — tracks whether this speaker currently holds a bank slot.
 - `_preview_player: AudioStreamPlayer` — editor-only preview voice.
@@ -156,7 +156,7 @@ Fires a one-shot (or jingle) synthesized sound through `CDSoundBank` in response
 
 ### State
 
-- `_bank: CDSoundBank` — located via `game.find_child("CDSoundBank")`.
+- `_bank: CDSoundBank` — read from the typed `game.sound_bank` property (resolved once by `CDGame`).
 - `_preview_player: AudioStreamPlayer` — editor-only preview voice.
 
 ### Behavior
@@ -189,9 +189,9 @@ Mirror the conventions above. Concretely:
    class_name <Name>Speaker extends CDGameComponent
    ```
    Add `@tool` only if you intend to ship an editor preview.
-2. **Locate the bank** (if you need synthesized audio) the same way the others do:
+2. **Read the bank** (if you need synthesized audio) from the typed game ref:
    ```gdscript
-   _bank = game.find_child("CDSoundBank") as CDSoundBank
+   _bank = game.sound_bank
    ```
 3. **Expose trigger signals as `StringName` exports** (like all three speakers here — `MusicSpeaker` now exposes configurable `start_signal`/`stop_signal` too), and connect them in `_on_initialize()` via the tracked `bus_connect(...)`.
 4. **Play through `CDSoundBank`** for one-shots and continuous tones — do not spawn raw `AudioStreamPlayer`s for synthesized game audio. `MusicSpeaker` is the documented exception because it plays streamed `CDMusicTrack` assets.

@@ -50,7 +50,7 @@ var _preview_player: AudioStreamPlayer
 
 ## find sound bank, build signature, connect start/stop signals
 func _on_initialize() -> void:
-	_bank = game.find_child("CDSoundBank") as CDSoundBank
+	_bank = game.sound_bank
 	_signature = "%d_%d_%d" % [wave_shape, effect, note]
 	
 	## start/stop connections are tracked by bus_connect for auto-disconnect on _exit_tree

@@ -16,13 +16,22 @@ There are three files, each with a distinct role:
 
 A plain `class_name CDEnums` (no `extends`) used purely as a namespace for enumerations. It holds no state and no instance methods — code references the enums as `CDEnums.SomeEnum.SOME_VALUE`.
 
-It also exposes one static helper:
+It also exposes two static helpers:
 
 ```gdscript
 static func category_to_priority(category: ComponentCategory) -> int
 ```
 
 This converts a `ComponentCategory` into its numeric processing-priority value (the values documented inline on each enum member). Any unrecognized value returns `95`.
+
+```gdscript
+static func compare(observed: float, target: float, op: CountComparison) -> bool
+```
+
+Evaluates an `observed` value against a `target` using a `CountComparison` operator (`LESS_THAN`,
+`EQUAL_TO`, `GREATER_THAN`, `LESS_OR_EQUAL`, `GREATER_OR_EQUAL`). It exists so the operator
+vocabulary is defined once — goals (e.g. `GroupCountGoal`, `ScoreThresholdGoal`) and other
+threshold-comparing components delegate here instead of re-implementing the `match` block.
 
 ### Enums defined here
 
@@ -43,7 +52,7 @@ This converts a `ComponentCategory` into its numeric processing-priority value (
 
 **Logic & comparison**
 
-- `CountComparison` — comparison operators used by goals such as `GroupCountGoal`, `PointsGoal`: `LESS_THAN`, `EQUAL_TO`, `GREATER_THAN`, `LESS_OR_EQUAL`, `GREATER_OR_EQUAL`.
+- `CountComparison` — comparison operators used by goals (e.g. `GroupCountGoal`, `ScoreThresholdGoal`): `LESS_THAN`, `EQUAL_TO`, `GREATER_THAN`, `LESS_OR_EQUAL`, `GREATER_OR_EQUAL`. Evaluated via the `compare(observed, target, op)` static helper above.
 - `InputAction` — `CDInputRouter` action types: `MOVE`, `AIM`, `ACTION_PRESSED`, `ACTION_RELEASED`.
 - `PatrolMode` — patrol patterns for "patrol" AI brains: `LOOP`, `RETRACE`, `ONCE`.
 - `EntityCompare` — comparison modes for entity comparisons (e.g. `OnJoust` arms): `VELOCITY`, `Y_POSITION`, `CUSTOM` (define any attribute located on a component).
@@ -144,7 +153,7 @@ These three files establish the conventions you should follow when adding new in
 
 - Add the enum inside `CDEnums` in `cd_enums.gd`.
 - Document it with a `##` comment above the declaration, and use inline `#` comments for each member if the meaning isn't obvious from the name.
-- If the enum has an associated numeric mapping (like `ComponentCategory`), add a branch to `category_to_priority` or a sibling static helper rather than scattering `match` statements across the codebase.
+- If the enum has an associated numeric mapping (like `ComponentCategory`), add a branch to `category_to_priority` or a sibling static helper (like `compare` for `CountComparison`) rather than scattering `match` statements across the codebase.
 
 ### Adding a new pure utility function
 

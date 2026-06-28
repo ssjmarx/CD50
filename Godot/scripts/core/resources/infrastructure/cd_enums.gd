@@ -84,7 +84,7 @@ enum Edge {
 
 ## --- Logic & Comparison ---
 
-## comparison operators, used by GroupCountGoal, PointsGoal, others
+## comparison operators, used by goals (e.g. GroupCountGoal, ScoreThresholdGoal)
 enum CountComparison {
 	LESS_THAN,
 	EQUAL_TO,
@@ -92,6 +92,18 @@ enum CountComparison {
 	LESS_OR_EQUAL,
 	GREATER_OR_EQUAL,
 }
+
+## evaluate an observed value against a target using a CountComparison operator.
+## shared by all goals/components that need threshold comparison, so the match
+## logic is defined once instead of duplicated per goal.
+static func compare(observed: float, target: float, op: CountComparison) -> bool:
+	match op:
+		CountComparison.LESS_THAN: return observed < target
+		CountComparison.EQUAL_TO: return observed == target
+		CountComparison.GREATER_THAN: return observed > target
+		CountComparison.LESS_OR_EQUAL: return observed <= target
+		CountComparison.GREATER_OR_EQUAL: return observed >= target
+	return false
 
 ## CDInputRouter input action types
 enum InputAction {

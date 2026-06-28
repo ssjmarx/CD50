@@ -28,7 +28,10 @@ class_name ScoreThresholdGoal extends CDGameComponent
 ## game bus signals emitted when the threshold is crossed
 ## add "game_over" to this array in the inspector to trigger the end of the game
 @export_group("Emit Signals")
+## informational signals — emitted on success but do not end the game
 @export var on_condition_met: Array[StringName] = [&"goal_reached"]
+## terminator signals — emitted on success to end the game (e.g. game_over)
+@export var end_game_signals: Array[StringName] = []
 
 ## --- lifecycle ---
 
@@ -54,15 +57,11 @@ func _on_score_updated() -> void:
 		game.blackboard[result_key] = game_result
 		for sig in on_condition_met:
 			game.bus_emit(sig)
+		for sig in end_game_signals:
+			game.bus_emit(sig)
 
 ## --- condition checking ---
 
-## compare an observed score against threshold using the configured operator
+## compare an observed score against threshold using the shared CDEnums helper
 func _compare(observed: int) -> bool:
-	match comparison:
-		CDEnums.CountComparison.LESS_THAN: return observed < threshold
-		CDEnums.CountComparison.EQUAL_TO: return observed == threshold
-		CDEnums.CountComparison.GREATER_THAN: return observed > threshold
-		CDEnums.CountComparison.LESS_OR_EQUAL: return observed <= threshold
-		CDEnums.CountComparison.GREATER_OR_EQUAL: return observed >= threshold
-	return false
+	return CDEnums.compare(observed, threshold, comparison)

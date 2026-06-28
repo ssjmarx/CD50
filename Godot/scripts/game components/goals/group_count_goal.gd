@@ -4,6 +4,13 @@
 
 class_name GroupCountGoal extends CDGameComponent
 
+## --- lifecycle ---
+
+## set component category (consistent with the rest of the codebase)
+func _ready() -> void:
+	component_category = CDEnums.ComponentCategory.RULES
+	super._ready()
+
 ## --- exports ---
 
 ## groups whose entity counts are monitored
@@ -29,10 +36,11 @@ class_name GroupCountGoal extends CDGameComponent
 ## game bus signals emitted on condition match and count change
 ## add "game_over" to this array in the inspector to trigger the end of the game
 @export_group("Emit Signals")
+## informational signals — emitted on success but do not end the game
 @export var on_condition_met: Array[StringName] = [&"goal_reached"]
+## terminator signals — emitted on success to end the game (e.g. game_over)
+@export var end_game_signals: Array[StringName] = []
 @export var on_count_changed: Array[StringName] = [&"enemies_count_changed"]
-
-## --- lifecycle ---
 
 ## listen to group registry count changes
 func _on_initialize() -> void:
@@ -56,6 +64,8 @@ func _on_group_count_changed(group_name: StringName, count: int) -> void:
 		game.blackboard[result_key] = game_result
 		for sig in on_condition_met:
 			game.bus_emit(sig)
+		for sig in end_game_signals:
+			game.bus_emit(sig)
 
 ## --- condition checking ---
 
@@ -74,12 +84,6 @@ func _check_condition() -> bool:
 				return true
 		return false
 
-## compare an observed count against target_count using the configured operator
+## compare an observed count against target_count using the shared CDEnums helper
 func _compare(observed: int) -> bool:
-	match comparison:
-		CDEnums.CountComparison.LESS_THAN: return observed < target_count
-		CDEnums.CountComparison.EQUAL_TO: return observed == target_count
-		CDEnums.CountComparison.GREATER_THAN: return observed > target_count
-		CDEnums.CountComparison.LESS_OR_EQUAL: return observed <= target_count
-		CDEnums.CountComparison.GREATER_OR_EQUAL: return observed >= target_count
-	return false
+	return CDEnums.compare(observed, target_count, comparison)

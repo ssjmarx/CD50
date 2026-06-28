@@ -44,9 +44,9 @@ var _preview_player: AudioStreamPlayer
 
 ## --- lifecycle ---
 
-## find sound bank, connect trigger signal, optionally auto-play
+## use the game-level sound_bank ref (resolved by CDGame), connect trigger signal, auto-play
 func _on_initialize() -> void:
-	_bank = game.find_child("CDSoundBank") as CDSoundBank
+	_bank = game.sound_bank
 	
 	if trigger_signal != &"":
 		self.bus_connect(trigger_signal, _on_trigger)

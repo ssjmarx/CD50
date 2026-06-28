@@ -38,12 +38,13 @@ They override two lifecycle hooks:
 Both find the bank the same way inside `_on_initialize()`:
 
 ```gdscript
-_bank = game.find_child("CDSoundBank") as CDSoundBank
+_bank = game.sound_bank
 ```
 
-There is no autoload or direct reference; the component expects a node literally named
-`CDSoundBank` somewhere under `game`. If it is missing, `_bank` is `null` and playback calls
-silently no-op (both scripts null-guard before touching `_bank`).
+This reads the typed `game.sound_bank` property, which `CDGame` resolves once (by name) to a
+`CDSoundBank` node anywhere under the game. There is no autoload and the component does no lookup
+of its own. If no sound bank is present, `game.sound_bank` (and therefore `_bank`) is `null` and
+playback calls silently no-op (both scripts null-guard before touching `_bank`).
 
 ### Editor preview system
 Both expose an identical `Preview` inspector group:
@@ -252,7 +253,7 @@ Mirror the patterns already present in this folder. A minimal new voice should:
 2. **Find the bank in `_on_initialize()`.**
    ```gdscript
    func _on_initialize() -> void:
-       _bank = game.find_child("CDSoundBank") as CDSoundBank
+       _bank = game.sound_bank
    ```
 
 3. **Wire triggers the way the existing voices do** — pick the matching convention:

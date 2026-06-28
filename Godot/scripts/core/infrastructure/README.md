@@ -74,6 +74,8 @@ Anything that could break group/collision consistency mid-frame is queued and fl
 ### 5. Robust game initialization
 `CDGame._ensure_infrastructure()` resolves each required component by, in order: exact-name child lookup → script-type match anywhere under the game → auto-create with defaults (and `push_warning`). This means infrastructure nodes may be nested (e.g., inside a `CDStage`) and will still be found.
 
+> **Optional refs** — `sound_bank` is the one exception to the auto-create rule: it is resolved by `find_child("CDSoundBank", ...)` only and is **never auto-created**. A game that needs procedural audio adds a `CDSoundBank` node (often nested in a `CDStage`); a game that doesn't simply omits it, and `sound_bank` stays `null`.
+
 ### 6. Pools + activation lifecycle
 `CDEntity` carries a `pool` reference (null = not pooled). `CDObjectPool` pre-warms instances invisible and physics-disabled, then `CDEntity.activate()` / `deactivate()` (two-phase: mark → deferred `_complete_deactivation`) move entities in and out of the pool while re-registering groups and toggling collisions.
 
@@ -94,7 +96,7 @@ Root of every game scene. Owns the game bus, shared `blackboard`, the state mach
 |--------|------|---------|---------|
 | `game_bounds` | `Rect2` | — | Play area used by entities for clamping/spawning |
 
-**Infrastructure refs** (resolved in `_ready` via `_ensure_infrastructure`): `collision_buffer`, `group_registry`, `collision_matrix`, `input_router`, `update`.
+**Infrastructure refs** (resolved in `_ready`): `collision_buffer`, `group_registry`, `collision_matrix`, `input_router`, `update` (all via `_ensure_infrastructure` — find-or-create) plus the optional `sound_bank: CDSoundBank` (find-only via `find_child`, never auto-created; stays `null` if absent).
 
 **State machine** — `current_state` (`CDEnums.GameState`): `ATTRACT` → `PLAYING` → `GAME_OVER`, plus `PAUSED`. Setter emits `game_state_changed` on the bus. Observed transitions:
 - `start_game()` — `ATTRACT`→`PLAYING`, unpauses tree, clears blackboard, emits `game_play`.
@@ -364,6 +366,8 @@ Reverb delay lines (at `MIX_RATE`): `REVERB_DELAY_1=1102` (100ms), `REVERB_DELAY
 ### Minimum game scene
 A `CDGame` root with a configured `game_bounds`. `CDGame` will find-or-create `CDCollisionBuffer`, `CDGroupRegistry`, `CDCollisionMatrix`, `CDInputRouter`, and `CDUpdater` automatically (emitting a warning for each auto-created node). To customize any of them, add the node as a child (optionally nested in a `CDStage`) and configure it in the editor.
 
+`CDSoundBank` is **optional** and never auto-created — add one as a child (anywhere under the game, often nested in a `CDStage`) only if the scene needs procedural audio.
+
 ### Typical runtime flow per physics frame
 1. **Priority 5** — `CDGroupRegistry` refreshes dirty groups.
 2. **Components** — entity/game components read groups/input, call `request_velocity_*` etc. on entities, and emit on the entity/game buses.
@@ -391,5 +395,7 @@ If you need another always-present node discovered by `CDGame`:
 - `class_name` it and `extends Node` (or `Node2D` if it needs a transform).
 - Pick a `process_physics_priority` that places it correctly in the frame order above.
 - Add a typed reference variable + a `_find_or_create(YourClass, "YourClass")` line inside `CDGame._ensure_infrastructure()` so it is auto-resolved/created the same way as the others.
+
+> If the node is **optional** (not every scene needs it), resolve it with `find_child(...)` instead of `_find_or_create(...)` and skip the auto-create fallback, the way `sound_bank` is handled. Components that depend on it should degrade gracefully when it's absent.
 
 > Keep it grounded: only add fields/methods you can see analogues for in the existing files. Do not invent new bus mechanisms, pooling strategies, or collision handling beyond the patterns above.

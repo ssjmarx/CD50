@@ -17,10 +17,18 @@ class_name SignalGoal extends CDGameComponent
 @export var result_key: StringName = &"game_result"
 
 @export_group("Emit Signals")
-## game bus signals emitted on condition match
-@export var on_condition_met: Array[StringName] = [&"game_over"]
+## informational game bus signals emitted on condition match (do not end the game)
+@export var on_condition_met: Array[StringName] = [&"goal_reached"]
+## terminator game bus signals emitted on condition match (e.g. "game_over" ends the game)
+## separated from on_condition_met so informational vs terminator intent is explicit
+@export var end_game_signals: Array[StringName] = [&"game_over"]
 
 ## --- lifecycle ---
+
+## set component category (consistent with the rest of the codebase)
+func _ready() -> void:
+	component_category = CDEnums.ComponentCategory.RULES
+	super._ready()
 
 ## connect to all configured trigger signals on the game bus (tracked for auto-disconnect)
 func _on_initialize() -> void:
@@ -36,4 +44,6 @@ func _on_signal_received() -> void:
 	game.blackboard[result_key] = game_result
 	
 	for sig in on_condition_met:
+		game.bus_emit(sig)
+	for sig in end_game_signals:
 		game.bus_emit(sig)

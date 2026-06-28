@@ -77,10 +77,10 @@ The default `_handle_body_entered(body)` is where the base behavior lives:
 > 1. **Replace base behavior** — override `_handle_body_entered` without calling `super`, and
 >    don't call `_emit_enter`. Only your own signals fire (`OccupancyMark`, `SafeZoneMark`).
 > 2. **Reuse base behavior via `super`** — override `_handle_body_entered` and call
->    `super._handle_body_entered(body)` first, then add your own logic (`TimedMark`).
+>    `super._handle_body_entered(body)` first, then add your own logic (`CountMark`, `TimedMark`).
 > 3. **Reuse base behavior via the emit helper** — override `_handle_body_entered` without
 >    calling `super`, but do the blackboard write yourself and call `_emit_enter(body)` so the
->    base signals still fire (`CountMark`).
+>    base signals still fire (no current mark uses this; kept as a documented option).
 >
 > Because filtering is centralized in `_on_body_entered`, every override receives an
 > already-filtered body and does **not** need to call `_passes_filter` itself.
@@ -144,14 +144,13 @@ Useful for "collect N things" objectives.
 
 Inherits `CDMark`'s other exports (`filter_groups`, `on_entered`, `on_exited`, etc.).
 
-### Behavior (strategy 3 — reuse base via the emit helper)
-- `_handle_body_entered` **does not call `super`**. It manually writes
-  `entered_body_key` and calls `_emit_enter(body)`, so the base enter signals still fire. It
-  then dedups the body into `_tracked_bodies`, writes `count_key`, emits `on_count_changed`, and
-  when the count crosses `target_count` it writes `bodies_key` (a duplicate of the tracked array)
-  and emits `on_count_reached`.
-- `_handle_body_exited` likewise writes `exited_body_key` and calls `_emit_exit(body)` (base exit
-  signals fire) but **does not decrement the count** — once counted, a body stays counted.
+### Behavior (strategy 2 — reuse base via super)
+- `_handle_body_entered` **calls `super._handle_body_entered(body)`** first (so `entered_body_key`,
+  `on_entered`, and `on_entered_entity` all fire), then dedups the body into `_tracked_bodies`,
+  writes `count_key`, emits `on_count_changed`, and when the count crosses `target_count` it
+  writes `bodies_key` (a duplicate of the tracked array) and emits `on_count_reached`.
+- `_handle_body_exited` **calls `super._handle_body_exited(body)`** (base exit behavior fires)
+  but **does not decrement the count** — once counted, a body stays counted.
 
 ---
 
@@ -320,10 +319,10 @@ completion signal once a configurable `hold_duration` is reached per body.
 4. **Pick a base-reuse strategy deliberately** and document it in the header comment:
    - **Replace base** (`OccupancyMark`, `SafeZoneMark`) — override `_handle_body_entered` without
      `super` and without `_emit_enter`; only your own signals fire.
-   - **Reuse via `super`** (`TimedMark`) — call `super._handle_body_entered(body)` first; base
-     signals fire too.
-   - **Reuse via emit helper** (`CountMark`) — do your own blackboard write then call
-     `_emit_enter(body)`; base signals fire too.
+   - **Reuse via `super`** (`CountMark`, `TimedMark`) — call `super._handle_body_entered(body)`
+     first; base signals fire too.
+   - **Reuse via emit helper** — do your own blackboard write then call `_emit_enter(body)`;
+     base signals fire too. (No current mark uses this; it's a documented fallback.)
    - **Don't override detection** (`MobileMark`) — inherit the base behavior entirely.
 5. Do **not** override `_on_body_entered` / `_on_body_exited` — those own the filter step and
    dispatch to your `_handle_body_*` hooks. Overriding them bypasses group filtering.

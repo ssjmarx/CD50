@@ -15,6 +15,7 @@ var group_registry: CDGroupRegistry
 var collision_matrix: CDCollisionMatrix
 var input_router: CDInputRouter
 var update: CDUpdater
+var sound_bank: CDSoundBank
 
 ## blackboard for shared game state
 var blackboard: Dictionary = {}
@@ -92,6 +93,9 @@ func _ensure_infrastructure() -> void:
 	collision_matrix = _find_or_create(CDCollisionMatrix, "CDCollisionMatrix")
 	input_router = _find_or_create(CDInputRouter, "CDInputRouter")
 	update = _find_or_create(CDUpdater, "CDUpdater")
+	## sound_bank is optional (only present in games that use synthesized audio);
+	## find it if it exists but never auto-create a silent default.
+	sound_bank = find_child("CDSoundBank", true, false) as CDSoundBank
 
 ## Generic helper to find an existing node or create a new one.
 func _find_or_create(script_class: GDScript, default_name: StringName) -> Node:
