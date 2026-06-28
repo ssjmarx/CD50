@@ -1,4 +1,4 @@
-[gd_scene load_steps=18 format=3 uid="uid://b1p2wk4pepc53"]
+[gd_scene load_steps=22 format=3 uid="uid://b1p2wk4pepc53"]
 
 [ext_resource type="Script" uid="uid://dm0uehngpvbh7" path="res://scripts/core/infrastructure/cd_game.gd" id="1_g3say"]
 [ext_resource type="PackedScene" path="res://scenes/core/infrastructure/cd_stage.tscn" id="1_h58hb"]
@@ -11,39 +11,47 @@
 [ext_resource type="PackedScene" uid="uid://c6mp0pt27mfal" path="res://scenes/core/infrastructure/cd_input_router.tscn" id="8_04mnm"]
 [ext_resource type="PackedScene" uid="uid://csgdjkq3gf26a" path="res://scenes/core/infrastructure/cd_updater.tscn" id="9_40g2u"]
 [ext_resource type="PackedScene" uid="uid://ows1gmiy0l6d" path="res://entities/player/paddle_player.tscn" id="10_pukhu"]
+[ext_resource type="PackedScene" uid="uid://bmy2rp5mjhdpa" path="res://entities/nonplayer/paddle_nonplayer.tscn" id="12_o2cdy"]
+[ext_resource type="PackedScene" uid="uid://b1e365cvr1e8p" path="res://scenes/game components/trapdoors/point_trapdoor.tscn" id="13_m4tg4"]
+[ext_resource type="PackedScene" uid="uid://cym7piqe1eqjf" path="res://entities/generic/ball_deflecting_x.tscn" id="14_1sbg1"]
+[ext_resource type="Script" uid="uid://dcu4ocnin0htu" path="res://scripts/core/resources/spawners/cd_spawn_context.gd" id="14_aydlw"]
 
-[sub_resource type="Resource" id="Resource_q4h5u"]
+[sub_resource type="Resource" id="Resource_i1yaf"]
 script = ExtResource("6_1sbg1")
-group_name = &"players"
-collides_with = Array[StringName]([&"players"])
-
-[sub_resource type="Resource" id="Resource_qh32t"]
-script = ExtResource("6_1sbg1")
-group_name = &"enemies"
-
-[sub_resource type="Resource" id="Resource_dg5ky"]
-script = ExtResource("6_1sbg1")
-group_name = &"enemy_bullets"
-collides_with = Array[StringName]([&"players", &"blocks"])
-
-[sub_resource type="Resource" id="Resource_7ar12"]
-script = ExtResource("6_1sbg1")
-group_name = &"player_bullets"
-collides_with = Array[StringName]([&"enemies", &"blocks"])
-
-[sub_resource type="Resource" id="Resource_6jvxs"]
-script = ExtResource("6_1sbg1")
-group_name = &"blocks"
+group_name = &"paddles"
 metadata/_custom_type_script = "uid://b2ibop6r2cryj"
 
-[sub_resource type="Resource" id="Resource_uf102"]
+[sub_resource type="Resource" id="Resource_04mnm"]
 script = ExtResource("6_1sbg1")
-group_name = &"game_over_zone"
-collides_with = Array[StringName]([&"enemies"])
+group_name = &"walls"
 metadata/_custom_type_script = "uid://b2ibop6r2cryj"
+
+[sub_resource type="Resource" id="Resource_40g2u"]
+script = ExtResource("6_1sbg1")
+group_name = &"goals"
+metadata/_custom_type_script = "uid://b2ibop6r2cryj"
+
+[sub_resource type="Resource" id="Resource_pukhu"]
+script = ExtResource("6_1sbg1")
+group_name = &"balls"
+collides_with = Array[StringName]([&"paddles", &"walls", &"goals"])
+metadata/_custom_type_script = "uid://b2ibop6r2cryj"
+
+[sub_resource type="Resource" id="Resource_1sbg1"]
+script = ExtResource("14_aydlw")
+velocity = Vector2(200, 0)
+use_random_angle = true
+random_angle_min = 0.524
+random_angle_max = 5.76
+random_flip_h = true
+metadata/_custom_type_script = "uid://dcu4ocnin0htu"
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_1sbg1"]
+size = Vector2(635, 10)
 
 [node name="PaddleBall" type="Node2D"]
 script = ExtResource("1_g3say")
+game_bounds = Rect2(0, 0, 640, 360)
 
 [node name="Infrastructure" parent="." instance=ExtResource("1_h58hb")]
 
@@ -55,7 +63,7 @@ max_channels = 4
 [node name="CDCollisionBuffer" parent="Infrastructure" instance=ExtResource("4_m4tg4")]
 
 [node name="CDCollisionMatrix" parent="Infrastructure" instance=ExtResource("5_aydlw")]
-collision_groups = Array[ExtResource("6_1sbg1")]([SubResource("Resource_q4h5u"), SubResource("Resource_qh32t"), SubResource("Resource_dg5ky"), SubResource("Resource_7ar12"), SubResource("Resource_6jvxs"), SubResource("Resource_uf102")])
+collision_groups = Array[ExtResource("6_1sbg1")]([SubResource("Resource_i1yaf"), SubResource("Resource_04mnm"), SubResource("Resource_40g2u"), SubResource("Resource_pukhu")])
 
 [node name="CDGroupRegistry" parent="Infrastructure" instance=ExtResource("7_i1yaf")]
 
@@ -64,5 +72,30 @@ tracked_actions = Array[StringName]([&"fire", &"move"])
 
 [node name="CDUpdater" parent="Infrastructure" instance=ExtResource("9_40g2u")]
 
-[node name="Paddle" parent="." instance=ExtResource("10_pukhu")]
-position = Vector2(104, 198)
+[node name="PlayerPaddle" parent="." instance=ExtResource("10_pukhu")]
+position = Vector2(20, 180)
+lock_x = true
+
+[node name="AIPaddle" parent="." instance=ExtResource("12_o2cdy")]
+position = Vector2(620, 180)
+lock_x = true
+
+[node name="PointTrapdoor" parent="." instance=ExtResource("13_m4tg4")]
+position = Vector2(320, 180)
+spawn_scene = ExtResource("14_1sbg1")
+spawn_count_equation = "1"
+offset_range = Vector2(0, 0)
+stagger_delay = 0.0
+spawn_context = SubResource("Resource_1sbg1")
+trigger_delay = 2.0
+trigger_signals = Array[StringName]([&"game_play"])
+
+[node name="StaticBody2D" type="StaticBody2D" parent="." groups=["walls"]]
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="StaticBody2D"]
+position = Vector2(317.5, -5)
+shape = SubResource("RectangleShape2D_1sbg1")
+
+[node name="CollisionShape2D2" type="CollisionShape2D" parent="StaticBody2D"]
+position = Vector2(320, 365)
+shape = SubResource("RectangleShape2D_1sbg1")

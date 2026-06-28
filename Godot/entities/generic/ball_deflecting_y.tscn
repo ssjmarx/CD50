@@ -1,0 +1,10 @@
+[gd_scene load_steps=3 format=3 uid="uid://1tf81trgc5dc"]
+
+[ext_resource type="PackedScene" uid="uid://e6lvv7m0enkr" path="res://entities/generic/ball.tscn" id="1_qj7eu"]
+[ext_resource type="PackedScene" uid="uid://bx6yaotnsugw3" path="res://scenes/entity components/guts/deflector_bounce_guts.tscn" id="2_hhijn"]
+
+[node name="Ball" instance=ExtResource("1_qj7eu")]
+
+[node name="DeflectorBounceGuts" parent="." index="1" instance=ExtResource("2_hhijn")]
+target_groups = Array[StringName]([&"paddles"])
+deflection_bias = Vector2(1, 5)

@@ -4,6 +4,7 @@
 [ext_resource type="PackedScene" uid="uid://b6ppea72ukeug" path="res://scenes/entity components/brains/player_kbm_move_brain.tscn" id="2_wepwk"]
 
 [node name="Paddle" instance=ExtResource("1_nws4h")]
+groups = Array[StringName]([&"paddles", &"players"])
 
 [node name="DirectMovementLeg" parent="." index="1"]
 distance_key = &""

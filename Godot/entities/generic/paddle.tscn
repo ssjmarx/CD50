@@ -9,7 +9,7 @@
 
 [node name="Paddle" type="CharacterBody2D"]
 script = ExtResource("1_vm1yc")
-groups = Array[StringName]([&"paddle"])
+groups = Array[StringName]([&"paddles"])
 collision_radius = 0.0
 
 [node name="PolygonFace" parent="." instance=ExtResource("2_7kpch")]
