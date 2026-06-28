@@ -1,6 +1,6 @@
-[gd_scene load_steps=2 format=3]
+[gd_scene load_steps=2 format=3 uid="uid://bepti5yiff57w"]
 
-[ext_resource type="Script" path="res://Godot/scripts/game components/managers/score_manager.gd" id="1_score_manager"]
+[ext_resource type="Script" uid="uid://bg243togif74i" path="res://scripts/game components/managers/score_manager.gd" id="1_0aprk"]
 
 [node name="ScoreManager" type="Node2D"]
-script = ExtResource("1_score_manager")
+script = ExtResource("1_0aprk")
