@@ -36,7 +36,7 @@ func _physics_process(_delta: float) -> void:
 		return
 		
 	for rule in scoring_rules:
-		if rule and rule.trigger and rule.trigger.evaluate():
+		if rule and rule.trigger and rule.trigger.evaluate(game):
 			_apply_rule(rule)
 
 ## write the rule's deltas to the blackboard and emit the corresponding signal
