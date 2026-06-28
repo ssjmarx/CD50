@@ -1,4 +1,4 @@
-[gd_scene load_steps=22 format=3 uid="uid://b1p2wk4pepc53"]
+[gd_scene load_steps=25 format=3 uid="uid://b1p2wk4pepc53"]
 
 [ext_resource type="Script" uid="uid://dm0uehngpvbh7" path="res://scripts/core/infrastructure/cd_game.gd" id="1_g3say"]
 [ext_resource type="PackedScene" path="res://scenes/core/infrastructure/cd_stage.tscn" id="1_h58hb"]
@@ -15,6 +15,8 @@
 [ext_resource type="PackedScene" uid="uid://b1e365cvr1e8p" path="res://scenes/game components/trapdoors/point_trapdoor.tscn" id="13_m4tg4"]
 [ext_resource type="PackedScene" uid="uid://cym7piqe1eqjf" path="res://entities/generic/ball_deflecting_x.tscn" id="14_1sbg1"]
 [ext_resource type="Script" uid="uid://dcu4ocnin0htu" path="res://scripts/core/resources/spawners/cd_spawn_context.gd" id="14_aydlw"]
+[ext_resource type="PackedScene" uid="uid://d4b42pvesykqo" path="res://scenes/game components/marks/cd_mark.tscn" id="16_i1yaf"]
+[ext_resource type="PackedScene" uid="uid://c4upbp1v4vll8" path="res://scenes/game components/cards/score_card.tscn" id="17_04mnm"]
 
 [sub_resource type="Resource" id="Resource_i1yaf"]
 script = ExtResource("6_1sbg1")
@@ -47,7 +49,10 @@ random_flip_h = true
 metadata/_custom_type_script = "uid://dcu4ocnin0htu"
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_1sbg1"]
-size = Vector2(635, 10)
+size = Vector2(640, 10)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_04mnm"]
+size = Vector2(10, 380)
 
 [node name="PaddleBall" type="Node2D"]
 script = ExtResource("1_g3say")
@@ -93,9 +98,37 @@ trigger_signals = Array[StringName]([&"game_play"])
 [node name="StaticBody2D" type="StaticBody2D" parent="." groups=["walls"]]
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="StaticBody2D"]
-position = Vector2(317.5, -5)
+position = Vector2(320, -5)
 shape = SubResource("RectangleShape2D_1sbg1")
 
 [node name="CollisionShape2D2" type="CollisionShape2D" parent="StaticBody2D"]
 position = Vector2(320, 365)
 shape = SubResource("RectangleShape2D_1sbg1")
+
+[node name="PlayerMark" parent="." instance=ExtResource("16_i1yaf")]
+on_entered = Array[StringName]([&"ai_scored"])
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="PlayerMark"]
+position = Vector2(-5, 180)
+shape = SubResource("RectangleShape2D_04mnm")
+
+[node name="AIMark" parent="." instance=ExtResource("16_i1yaf")]
+on_entered = Array[StringName]([&"play_scored"])
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="AIMark"]
+position = Vector2(645, 180)
+shape = SubResource("RectangleShape2D_04mnm")
+
+[node name="PlayerScoreCard" parent="." instance=ExtResource("17_04mnm")]
+offset_left = 280.0
+offset_top = 50.0
+offset_right = 280.0
+offset_bottom = 50.0
+is_interface = true
+
+[node name="AIScoreCard" parent="." instance=ExtResource("17_04mnm")]
+offset_left = 340.0
+offset_top = 50.0
+offset_right = 340.0
+offset_bottom = 50.0
+is_interface = true
