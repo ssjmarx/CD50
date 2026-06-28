@@ -88,9 +88,10 @@ func _ready() -> void:
 func _enter_tree() -> void:
 	_connect_curve()
 
-## exit tree
+## exit tree — disconnect the curve, then let the base auto-disconnect tracked bus signals
 func _exit_tree() -> void:
 	_disconnect_curve()
+	super._exit_tree()
 
 ## --- curve resource management ---
 
@@ -113,8 +114,7 @@ func _request_redraw() -> void:
 
 ## on initialize
 func _on_initialize() -> void:
-	for sig in trigger_signals:
-		bus_connect(sig, _on_trigger)
+	connect_all(trigger_signals, _on_trigger)
 
 ## --- editor preview ---
 

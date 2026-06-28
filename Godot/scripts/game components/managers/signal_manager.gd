@@ -132,10 +132,21 @@ func _on_sync_signal() -> void:
 		if _delay_remaining <= 0.0:
 			_next_step()
 
+## --- sync signal handling helpers ---
+
+## disconnect the current step's sync listener if still connected (defensive cleanup)
+func _disconnect_sync_listener() -> void:
+	if _waiting_for_signal and _current_step >= 0 and _current_step < steps.size():
+		var sync_sig: StringName = steps[_current_step].wait_for_signal
+		if sync_sig != &"" and game.has_signal(sync_sig) and game.is_connected(sync_sig, _on_sync_signal):
+			game.bus_disconnect(sync_sig, _on_sync_signal)
+	_waiting_for_signal = false
+
 ## --- completion ---
 
-## emit completion signals and stop processing
+## defensively disconnect any lingering sync listener, emit completion signals, stop processing
 func _complete() -> void:
+	_disconnect_sync_listener()
 	_running = false
 	_current_step = -1
 	set_physics_process(false)
@@ -147,6 +158,7 @@ func _complete() -> void:
 
 ## reset sequence state for game restart
 func reset() -> void:
+	_disconnect_sync_listener()
 	_running = false
 	_current_step = -1
 	_delay_remaining = 0.0

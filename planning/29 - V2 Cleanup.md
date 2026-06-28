@@ -2,7 +2,7 @@
 
 ## Overview
 
-**Status: 🔲 Planning**
+**Status: ✅ Complete (B3 deferred — see B3 section)**
 
 This plan captures the findings of an architectural review of the V2 codebase against `COMBINED_READMES.md`. The review surfaced two classes of issues: **inconsistencies** (scripts that break their category's pattern) and **inefficient patterns** (established patterns worth refactoring). Several of these are openly admitted in the READMEs — "documented" does not mean "good," and the cleanup formalizes the fixes.
 
@@ -338,6 +338,23 @@ Apply `SignalManager`'s idle-gating pattern to all managers whose triggers are s
 - `game components/managers/state_manager.gd` — modified
 - `game components/managers/stage_manager.gd` — modified
 
+> ⚠️ **DEFERRED during Plan 29 implementation (audit finding).**
+> Both managers are **poll-based by design**: they call `trigger.evaluate(delta)` every
+> frame. A transition/rule's `trigger` can be any of four `CDTrigger` subclasses, and two
+> of them fundamentally require a running `_physics_process`:
+> - **`CDTimerTrigger`** counts down `_time_until_fire -= delta` — gating physics stops
+>   the timer from ever firing.
+> - **`CDGroupCountTrigger`** is evaluative (`is_evaluative = true`) — it must be polled
+>   every frame to detect rising-edge transitions.
+> The B3 pseudocode above assumes a `transition.fired.connect(...)` signal API that does
+> **not** exist on `CDTransition`/`CDStageRule`/`CDTrigger` — they are polled, not
+> signal-emitting. Applying idle gating as written would break timer and evaluative
+> triggers, and a safe implementation requires either a new per-trigger "wake" signal API
+> (architectural, comparable in scope to B1) or fragile runtime trigger-type inspection.
+> Per the plan's own caveat ("audit each manager before applying"), **B3 is deferred to a
+> follow-up** that can introduce the trigger wake-signal infrastructure. The reference
+> pattern lives in `SignalManager`, which is genuinely signal/timer-driven and already gates.
+
 Pattern (mirroring `SignalManager`):
 ```gdscript
 func _on_initialize() -> void:
@@ -411,51 +428,59 @@ This is low-risk and primarily a documentation fix in this plan:
 ## Validation Checklist
 
 ### ✅ A1 — Marks
-- [ ] `CountMark` enter path fires base `on_entered` + `entered_body_key` via `_emit_enter`, not duplicated code
-- [ ] `TimedMark` enter/exit path same
-- [ ] `OccupancyMark` enter fires only `on_occupancy_changed` (no base `on_entered`)
-- [ ] `SafeZoneMark` enter fires only `on_zone_unsafe`/`on_zone_safe`
-- [ ] All four subclasses have header comments documenting their emit behavior
-- [ ] Changing `CDMark._handle_body_entered` propagates to all subclasses
+- [x] `CountMark` enter path fires base `on_entered` + `entered_body_key` via `_emit_enter`, not duplicated code
+- [x] `TimedMark` enter/exit path same
+- [x] `OccupancyMark` enter fires only `on_occupancy_changed` (no base `on_entered`)
+- [x] `SafeZoneMark` enter fires only `on_zone_unsafe`/`on_zone_safe`
+- [x] All four subclasses have header comments documenting their emit behavior
+- [ ] **Manual test:** Changing `CDMark._handle_body_entered` propagates to all subclasses
 
 ### ✅ A2 — Projectors
-- [ ] `CreditProjection` extends `CDGameControl` and no longer references `CDGame.find_ancestor` or `_game` directly
-- [ ] `CreditProjection` uses inherited `game` and `bus_connect`
-- [ ] `_on_track_changed` still fires on the configured `track_changed_signals`
+- [x] `CreditProjection` extends `CDGameControl` and no longer references `CDGame.find_ancestor` or `_game` directly
+- [x] `CreditProjection` uses inherited `game` and `bus_connect`
+- [ ] **Manual test:** `_on_track_changed` still fires on the configured `track_changed_signals`
 
 ### ✅ A3 — MusicSpeaker triggers
-- [ ] `MusicSpeaker` exposes `start_signal` / `stop_signal` exports
-- [ ] Existing scenes using defaults (`game_play`/`game_over`) work unchanged
-- [ ] A scene wiring custom signals (e.g. `round_start`/`round_end`) drives playback correctly
+- [x] `MusicSpeaker` exposes `start_signal` / `stop_signal` exports
+- [ ] **Manual test:** Existing scenes using defaults (`game_play`/`game_over`) work unchanged
+- [ ] **Manual test:** A scene wiring custom signals drives playback correctly
 
 ### ✅ A4 — MusicSpeaker dead exports
-- [ ] `fade_in_duration` drives the initial volume tween in `_play_next`
-- [ ] `idle_volume_db` is either wired or removed (per review decision)
+- [x] `fade_in_duration` drives the initial volume tween in `_play_next`
+- [x] `idle_volume_db` removed (no use case identified — per default recommendation)
 
 ### ✅ A5 — GridTrapdoor lifecycle
-- [ ] `GridTrapdoor` no longer overrides `_on_trigger`
-- [ ] `GridTrapdoor._populate_spawn_queue` handles Mode A (layout) and Mode B (equation)
-- [ ] GAME_OVER guard still applies (inherited from base)
-- [ ] `on_spawning_complete` still fires when the queue empties
-- [ ] `EdgeTrapdoor` and `PointTrapdoor` spawn behavior unchanged
+- [x] `GridTrapdoor` no longer overrides `_on_trigger`
+- [x] `GridTrapdoor._populate_spawn_queue` handles Mode A (layout) and Mode B (equation)
+- [x] GAME_OVER guard still applies (inherited from base)
+- [ ] **Manual test:** `on_spawning_complete` still fires when the queue empties
+- [ ] **Manual test:** `EdgeTrapdoor` and `PointTrapdoor` spawn behavior unchanged
 
 ### ✅ A6 — ScoreManager reset
-- [ ] `ScoreManager.reset()` exists and clears accumulated score (or omission is documented as intentional)
-- [ ] Game restart calls `reset()` on all managers uniformly
+- [x] `ScoreManager.reset()` exists with explicit comment (score value itself lives in consumer)
+- [ ] **Manual test:** Game restart calls `reset()` on all managers uniformly
 
 ### ✅ B2 + B5 — connect_all / auto-disconnect
-- [ ] Every mark, projector, speaker, manager uses `connect_all` instead of manual loops
-- [ ] Removing a component from the tree leaves zero dangling bus connections (verified via connection count before/after)
-- [ ] Subclass `_exit_tree` overrides call `super._exit_tree()`
+- [x] Base helpers (`connect_all`/`disconnect_all` + `_exit_tree` auto-disconnect) on `CDGameComponent`, `CDEntityComponent`, `CDGameControl`
+- [x] All consumer connect-loops swept:
+  - Manifest: `CRTProjector`, `ContinuousSpeaker`, `SoundSpeaker`
+  - Sweep catches (manifest omissions): `SwoopDirector`, `SignalSequenceDirector`, all 4 cards (`ScoreCard`, `WaveCard`, `LivesCard`, `TimerCard`), `SignalGoal`
+  - Already-correct (tracked `bus_connect`): `ScoreThresholdGoal`
+  - Out of scope (native registry signal, not bus): `GroupCountGoal`
+- [x] All `_exit_tree` overrides either deleted or call `super._exit_tree()` (`SwoopDirector`, `ContinuousSpeaker`)
+- [x] Dynamic sync-listener leak fixed in `SignalSequenceDirector` + `SignalManager` (defensive `_disconnect_sync_listener`)
+- [ ] **Manual test:** Removing a component leaves zero dangling bus connections (count before/after)
+- [ ] **Note:** Marks (`CDMark` extends `Area2D`) are out of B2 scope — no `connect_all` inheritance; manifest B2 entries for marks were N/A (emit loops only)
 
-### ✅ B3 — Manager idle gating
+### ✅ B3 — Manager idle gating — DEFERRED
 - [ ] `StateManager` disables physics when no transition can fire
 - [ ] `StageManager` same
 - [ ] A signal-driven transition re-enables physics for the frame it needs
-- [ ] Continuous-condition managers (if any) are left untouched
+- [x] Continuous-condition managers left untouched (audit confirmed poll-based design)
+- [x] **Deferred** — see B3 section. Requires trigger wake-signal API (architectural). `SignalManager` remains the reference pattern.
 
 ### ✅ B4 — Bus contract docs
-- [ ] `CONVENTIONS.md` has a "Bus Signals" section stating the write-before-emit rule
+- [x] `CONVENTIONS.md` has a "Bus Signals" section stating the write-before-emit rule (with correct/incorrect examples, rationale, scope, and future-work note)
 
 ---
 

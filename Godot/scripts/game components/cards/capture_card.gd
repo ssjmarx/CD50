@@ -25,21 +25,20 @@ var _captured_entities: Array[CDEntity] = []
 ## ready
 func _ready() -> void:
 	super._ready()
-	
-	# Defer initialization to ensure game structure is ready
-	call_deferred("_on_initialize")
 
 ## on initialize
 func _on_initialize() -> void:
-	# Initialize the blackboard count
-	game.blackboard[count_key] = 0
+	super._on_initialize()
 	
-	# Connect to the game bus to listen for capture events
-	game.bus_connect(listen_signal, _on_capture_event)
+	# Initialize the blackboard count
+	_publish_tracked(count_key, 0)
+	
+	# Connect to the game bus to listen for capture events (tracked for auto-disconnect)
+	bus_connect(listen_signal, _on_capture_event)
 	
 	# Connect to the game bus to listen for rescue events
 	if not rescue_signal.is_empty():
-		game.bus_connect(rescue_signal, _on_rescue_event)
+		bus_connect(rescue_signal, _on_rescue_event)
 
 ## handle a capture event from the game bus
 func _on_capture_event() -> void:

@@ -1,6 +1,11 @@
 ## TimedMark
 ## Tracks how long bodies remain inside the zone with configurable hold duration
 ## Emits progress ticks during hold and completion when duration is met
+##
+## Emit behavior: REPLICATES base enter/exit. The base on_entered / on_exited game-bus
+## signals AND the entered_body_key / exited_body_key blackboard writes both fire (via
+## super._handle_body_entered/_handle_body_exited in the overrides below), in addition to
+## this mark's own on_occupy / on_progress / on_complete / on_vacate signals.
 
 class_name TimedMark extends CDMark
 
@@ -65,14 +70,9 @@ func _physics_process(delta: float) -> void:
 
 ## --- body detection ---
 
-## register body for timing, write to blackboard, emit zero-arg occupy
-func _on_body_entered(body: Node2D) -> void:
-	if not _passes_filter(body):
-		return
-
-	game.blackboard[entered_body_key] = body
-	for sig in on_entered:
-		game.bus_emit(sig)
+## register body for timing after running the base enter behavior
+func _handle_body_entered(body: Node2D) -> void:
+	super._handle_body_entered(body)
 
 	var was_empty := _occupants.is_empty()
 	_occupants[body] = 0.0
@@ -84,12 +84,9 @@ func _on_body_entered(body: Node2D) -> void:
 		for sig in on_occupy:
 			game.bus_emit(sig)
 
-## remove body from timing, emit zero-arg vacate when zone empties
-func _on_body_exited(body: Node2D) -> void:
-	if _passes_filter(body):
-		game.blackboard[exited_body_key] = body
-		for sig in on_exited:
-			game.bus_emit(sig)
+## run the base exit behavior, then remove body from timing
+func _handle_body_exited(body: Node2D) -> void:
+	super._handle_body_exited(body)
 
 	_occupants.erase(body)
 	_tick_accumulators.erase(body)

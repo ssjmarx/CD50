@@ -53,21 +53,17 @@ func _ready() -> void:
 	current_score = starting_score
 	current_multiplier = starting_multiplier
 	_update_label(str(current_score))
-	call_deferred("_on_initialize")
 
 ## connect all listen signals to the game bus
 func _on_initialize() -> void:
+	super._on_initialize()
 	_publish_tracked(score_key, current_score)
 	_publish_tracked(multiplier_key, current_multiplier)
 	
-	for sig in on_add_score:
-		game.bus_connect(sig, _on_add_score)
-	for sig in on_set_score:
-		game.bus_connect(sig, _on_set_score)
-	for sig in on_add_multiplier:
-		game.bus_connect(sig, _on_add_multiplier)
-	for sig in on_set_multiplier:
-		game.bus_connect(sig, _on_set_multiplier)
+	connect_all(on_add_score, _on_add_score)
+	connect_all(on_set_score, _on_set_score)
+	connect_all(on_add_multiplier, _on_add_multiplier)
+	connect_all(on_set_multiplier, _on_set_multiplier)
 
 ## --- score handlers ---
 

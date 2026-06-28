@@ -74,6 +74,22 @@ func bus_disconnect(signal_name: StringName, callable: Callable) -> void:
 		if _bus_connections[i]["signal_name"] == signal_name and _bus_connections[i]["callable"] == callable:
 			_bus_connections.remove_at(i)
 
+## Connect to every signal in the array; tracked for auto-disconnect on _exit_tree.
+func connect_all(signals: Array[StringName], callable: Callable) -> void:
+	for sig in signals:
+		bus_connect(sig, callable)
+
+## Disconnect from every signal in the array.
+func disconnect_all(signals: Array[StringName], callable: Callable) -> void:
+	for sig in signals:
+		bus_disconnect(sig, callable)
+
+## Auto-disconnect all tracked entity bus connections when leaving the tree.
+func _exit_tree() -> void:
+	if entity:
+		for entry in _bus_connections.duplicate():
+			entity.bus_disconnect(entry["signal_name"], entry["callable"])
+
 ## --- Sleep/Wake Virtual Methods (called by CDBody) ---
 
 ## Override to customize sleep behavior (clear timers, reset state, etc.)

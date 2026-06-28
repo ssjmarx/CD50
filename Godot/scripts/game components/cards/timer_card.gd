@@ -46,17 +46,14 @@ func _ready() -> void:
 	super._ready()
 	current_time = starting_time
 	_update_label(_format_time(current_time))
-	call_deferred("_on_initialize")
 
 ## connect control signals to the game bus
 func _on_initialize() -> void:
+	super._on_initialize()
 	_publish_tracked(time_key, current_time)
-	for sig in on_timer_pause:
-		game.bus_connect(sig, _on_timer_paused)
-	for sig in on_timer_resume:
-		game.bus_connect(sig, _on_timer_resumed)
-	for sig in on_timer_reset:
-		game.bus_connect(sig, _on_timer_reset)
+	connect_all(on_timer_pause, _on_timer_paused)
+	connect_all(on_timer_resume, _on_timer_resumed)
+	connect_all(on_timer_reset, _on_timer_reset)
 
 ## --- processing ---
 

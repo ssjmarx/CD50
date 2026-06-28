@@ -2,7 +2,7 @@
 ## Base class for all V2 UI display components
 ## Extends Control (not Node2D) — lives in UI layer, not physics world Provides shared blackboard helpers for reading pending deltas and publishing tracked values
 
-class_name CDCueCard extends Control
+class_name CDCueCard extends CDGameControl
 
 ## --- exports ---
 
@@ -11,18 +11,17 @@ class_name CDCueCard extends Control
 
 ## --- cached refs ---
 
-## cached reference to ancestor game, resolved at _ready
-@onready var game: CDGame = CDGame.find_ancestor(self)
+## game ref is inherited from CDGameControl (resolved in _on_initialize)
 
 ## programmatically created label (only if is_interface is true)
 var _label: Label
 
 ## --- lifecycle ---
 
-## fixed priority 70 (RULES) — cue cards process after all gameplay
+## base lifecycle (editor guard, priority 70, deferred _on_initialize), then label
 func _ready():
-	process_physics_priority = 70
-	if is_interface:
+	super._ready()
+	if is_interface and not Engine.is_editor_hint():
 		_create_label()
 
 ## --- label ---

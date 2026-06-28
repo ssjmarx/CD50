@@ -44,23 +44,22 @@ Most cards organize their exports into the following groups, which appear in the
 
 ### Lifecycle
 
-The cards follow this `_ready()` shape:
+`CDCueCard` extends `CDGameControl`, which runs a two-phase lifecycle in its own `_ready()`: editor guard, `process_physics_priority = 70`, and a deferred `_on_initialize()` (so the game structure is ready by the time it runs). A card's `_ready()` only seeds its starting value and paints the label once:
 
 ```gdscript
 func _ready() -> void:
     super._ready()
     current_value = starting_value
     _update_label(...)           # immediate first paint
-    call_deferred("_on_initialize")
 ```
 
-Initialization that touches the Game Bus / Blackboard is deferred to `_on_initialize()` so the game structure is ready by the time it runs. A typical `_on_initialize()`:
+The base defers and calls `_on_initialize()` itself — cards **do not** call `call_deferred("_on_initialize")`. A card's `_on_initialize()` calls `super._on_initialize()` (which resolves `game`) and uses the inherited `connect_all(...)` helper:
 
 ```gdscript
 func _on_initialize() -> void:
+    super._on_initialize()
     _publish_tracked(value_key, current_value)
-    for sig in listen_signals:
-        game.bus_connect(sig, _handler)
+    connect_all(listen_signals, _handler)
 ```
 
 ### Reacting to signals
@@ -246,8 +245,8 @@ Mirror the structure of the existing cards. Concretely:
 3. Declare a starting-value export and a current-value state variable.
 4. Add a **Blackboard Keys** export group with a `StringName` key for publishing.
 5. Add **Listen Signals** and **Emit Signals** groups as `Array[StringName]` arrays, defaulting to the signals you want to use (use `&"..."` literals; an empty array disables that direction).
-6. Implement `_ready()` to call `super._ready()`, seed `current_*` from the starting value, paint the label once, and `call_deferred("_on_initialize")`.
-7. Implement `_on_initialize()` to `_publish_tracked(key, value)` and loop over each listen array calling `game.bus_connect(sig, _handler)`.
+6. Implement `_ready()` to call `super._ready()`, seed `current_*` from the starting value, and paint the label once. **Do not** call `call_deferred("_on_initialize")` — `CDGameControl`'s `_ready()` already defers `_on_initialize()` for you.
+7. Implement `_on_initialize()` to call `super._on_initialize()` (resolves `game`), then `_publish_tracked(key, value)`, then `connect_all(listen_signals, _handler)` (inherited from `CDGameControl`; tracked and auto-disconnected on `_exit_tree`).
 8. Implement one handler per event. Inside each handler:
    - mutate `current_*`,
    - `_update_label(...)`,

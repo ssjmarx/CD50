@@ -1,6 +1,11 @@
 ## CountMark
 ## Tracks unique bodies entering the zone and emits when a target count is reached
 ## Deduplicates bodies — each body counted only once regardless of re-entry
+##
+## Emit behavior: REPLICATES base enter/exit. The base on_entered / on_exited game-bus
+## signals AND the entered_body_key / exited_body_key blackboard writes both fire (via
+## _emit_enter/_emit_exit in the overrides below), in addition to this mark's own
+## on_count_changed / on_count_reached signals.
 
 class_name CountMark extends CDMark
 
@@ -28,13 +33,10 @@ var _tracked_bodies: Array[Node2D] = []
 ## --- body detection ---
 
 ## track unique bodies, write to blackboard, emit zero-arg signals
-func _on_body_entered(body: Node2D) -> void:
-	if not _passes_filter(body):
-		return
-
+func _handle_body_entered(body: Node2D) -> void:
+	## base enter behavior: write entered body key + emit enter signals
 	game.blackboard[entered_body_key] = body
-	for sig in on_entered:
-		game.bus_emit(sig)
+	_emit_enter(body)
 
 	if body not in _tracked_bodies:
 		_tracked_bodies.append(body)
@@ -50,9 +52,7 @@ func _on_body_entered(body: Node2D) -> void:
 			for sig in on_count_reached:
 				game.bus_emit(sig)
 
-## relay base exited signal (does not decrement count)
-func _on_body_exited(body: Node2D) -> void:
-	if _passes_filter(body):
-		game.blackboard[exited_body_key] = body
-		for sig in on_exited:
-			game.bus_emit(sig)
+## relay base exit behavior (does not decrement count)
+func _handle_body_exited(body: Node2D) -> void:
+	game.blackboard[exited_body_key] = body
+	_emit_exit(body)

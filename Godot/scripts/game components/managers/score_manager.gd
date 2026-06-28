@@ -57,3 +57,15 @@ func _apply_rule(rule: CDScoringRule) -> void:
 		&"set_multiplier":
 			game.blackboard[pending_mult_set_key] = rule.multiplier_delta
 			game.bus_emit(&"set_multiplier")
+
+## --- Reset ---
+
+## reset all scoring rules (e.g. cooldown triggers) for game restart.
+## Note: ScoreManager holds no accumulated score itself — it only evaluates rules
+## and emits deltas. The running score lives in the consumer of these signals
+## (e.g. a projection/holder), which resets itself. This reset() clears any
+## per-rule trigger state so a new game starts with fresh cooldowns/timers.
+func reset() -> void:
+	for rule in scoring_rules:
+		if rule and rule.has_method(&"reset"):
+			rule.reset()

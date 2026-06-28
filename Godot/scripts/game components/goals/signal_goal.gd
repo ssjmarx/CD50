@@ -22,10 +22,9 @@ class_name SignalGoal extends CDGameComponent
 
 ## --- lifecycle ---
 
-## connect to all configured trigger signals on the game bus
+## connect to all configured trigger signals on the game bus (tracked for auto-disconnect)
 func _on_initialize() -> void:
-	for sig in trigger_signals:
-		game.bus_connect(sig, _on_signal_received)
+	connect_all(trigger_signals, _on_signal_received)
 
 ## --- signal handlers ---
 

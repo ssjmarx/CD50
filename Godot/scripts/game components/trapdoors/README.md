@@ -9,7 +9,7 @@ All trapdoors in this folder inherit the following from `CDStageTrapdoor`. Concr
 ### Lifecycle
 
 1. **Trigger** — A game-bus signal listed in `trigger_signals` (default `&"wave_start"`) fires. If `trigger_delay > 0`, the trapdoor waits that many seconds (`_on_delayed_trigger` → `_on_trigger`); otherwise `_on_trigger()` runs immediately.
-2. **Queue** — `_on_trigger()` reads the current wave number from the game blackboard (`wave_key`, default `&"wave_number"`) and fills `_spawn_queue` with `0 .. total-1`, where `total` comes from `_get_spawn_count(wave_number)`.
+2. **Queue** — `_on_trigger()` reads the current wave number from the game blackboard (`wave_key`, default `&"wave_number"`), then calls the virtual `_populate_spawn_queue(wave_number)`. The base implementation fills `_spawn_queue` with `0 .. total-1`, where `total` comes from `_get_spawn_count(wave_number)`. Subclasses that need custom queue logic (skipping slots, data-driven layouts) override `_populate_spawn_queue` instead of `_on_trigger`.
 3. **Stagger** — `_physics_process(delta)` drains the queue one index at a time, waiting `stagger_delay` seconds between spawns. Draining pauses while `_zone_is_safe` is false (see Safe zones below).
 4. **Spawn** — For each popped index, `_spawn_one(index)`:
    - Picks a scene: if the base class's `spawn_scenes` array is non-empty it cycles by `index % spawn_scenes.size()`; otherwise it calls `_get_spawn_scene(index, total)`.
@@ -46,12 +46,15 @@ All trapdoors in this folder inherit the following from `CDStageTrapdoor`. Concr
 ### Virtual methods (the only thing concrete trapdoors override)
 
 ```gdscript
-func _get_spawn_count(_wave_number: int) -> int          # how many to spawn
+func _get_spawn_count(_wave_number: int) -> int                # how many to spawn (used by default _populate_spawn_queue)
+func _populate_spawn_queue(wave_number: int) -> void           # how to fill _spawn_queue (default fills 0..count-1)
 func _get_spawn_position(_index: int, _total: int) -> Vector2  # where to spawn each
 func _get_spawn_scene(_index: int, _total: int) -> PackedScene # what scene to spawn
 ```
 
 `_get_spawn_scene()` is abstract in the base class (it `push_error`s and returns `null`). Every script below implements it. `_get_spawn_count()` and `_get_spawn_position()` fall back to `0` and `global_position` respectively.
+
+`_populate_spawn_queue(wave_number)` is the preferred override point when a trapdoor needs custom queue logic (e.g. skipping grid cells). The default implementation clears `_spawn_queue` and appends `0.._get_spawn_count(wave_number)-1`, so the common case still only needs `_get_spawn_count`. `_on_trigger()` itself is **no longer overridden** by any concrete trapdoor — it is left intact to own the GAME_OVER guard, wave read, timer reset, and physics-process toggle, and simply delegates queue-building to `_populate_spawn_queue`.
 
 ---
 
@@ -107,11 +110,11 @@ The `layout`, `equation`, `cell_size`, `cell_spacing`, `preview_color`, and `pre
 
 **How it works**
 
-- `_on_trigger()` is **overridden entirely** (it does not call `super()`). After the GAME_OVER guard it reads `wave_number` from the blackboard, clears `_spawn_queue`, and dispatches:
+- `_populate_spawn_queue(_wave_number)` is **overridden** (it replaces the default `0..count-1` fill). It clears `_spawn_queue` and dispatches:
   - If `layout != null` → `_populate_queue_mode_a()`. If Mode B is also configured, a warning is pushed. Mode A appends every flat index whose `layout.get_cell(i)` is non-null and records `_grid_columns` / `_grid_rows` from the layout.
   - Else if `spawn_scene != null and equation != null` → `_populate_queue_mode_b()`. Builds a `_skip_set`: each cell is skipped with probability `equation.skip_chance`, then a second pass enforces `equation.min_skips_per_row` by randomly adding skips per row until the minimum is met. Non-skipped indices are appended to the queue.
   - Else → `push_error` and return.
-  - Finally resets `_spawn_timer` and enables physics processing so the base stagger loop can take over.
+  - Because it only overrides the queue-builder, the base `_on_trigger()` still owns the GAME_OVER guard, the wave-number read, the `_spawn_timer` reset, and the `set_physics_process(true)` that starts the stagger loop. There is no need to replicate any of that here.
 - `_get_spawn_position(index, _total)` converts the flat index to `(col, row)`, computes `step = cell_size + cell_spacing`, centers the grid on `global_position`, and returns the world cell center. The centering math matches the editor preview and the comment notes it mirrors `FormationDirector`.
 - `_get_spawn_scene(index, _total)` returns `layout.get_cell(index)` in Mode A, otherwise `spawn_scene`.
 - `_draw()` is editor-only (`Engine.is_editor_hint()`). It recomputes grid dimensions from whichever resource is set and draws a `preview_color` circle of `preview_radius` at each cell center, using the same centering math as runtime.
@@ -175,7 +178,7 @@ The simplest trapdoor. Spawns all entities at its own `global_position` with an 
        # Return the scene for this slot, or null to skip.
        return spawn_scene
    ```
-5. If your trapdoor needs custom queue logic (like `GridTrapdoor`'s two modes), override `_on_trigger()` **entirely** — but replicate the essentials: guard against `CDEnums.GameState.GAME_OVER`, read the wave number from the blackboard, populate `_spawn_queue` with indices, reset `_spawn_timer`, and call `set_physics_process(true)` so the base stagger loop runs. Do not forget to emit `on_spawning_complete` is handled by the base `_physics_process`, so leave it intact.
+5. If your trapdoor needs custom queue logic (like `GridTrapdoor`'s two modes), override **`_populate_spawn_queue(wave_number)`** rather than `_on_trigger()`. Just clear `_spawn_queue` and append the indices you want; the base `_on_trigger()` still runs the GAME_OVER guard, reads the wave number, resets the timer, and starts the stagger loop. (Override `_on_trigger()` only if you must change *when/whether* spawning starts — none of the current trapdoors do.) The `on_spawning_complete` emission lives in the base `_physics_process`, so leave it intact.
 6. For editor previews, override `_draw()` and gate it on `Engine.is_editor_hint()`, and call `queue_redraw()` from your `@export` setters when `is_node_ready()` is true (see `grid_trapdoor.gd`).
 7. Configure base-class behavior (triggers, stagger, pool, telefrag, safe zones) via the inherited exports — do not reimplement them.
 

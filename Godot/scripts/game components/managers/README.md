@@ -30,9 +30,10 @@ of a "manager" component in this codebase:
 3. **`_physics_process(delta)`** — the work loop. Each frame it evaluates the
    triggers on its configured resources and acts on the ones that fire. Details
    differ per manager (see below).
-4. **`reset()`** (present on `SignalManager`, `StageManager`, `StateManager`, but
-   **not** on `ScoreManager`) — clears runtime state and calls `reset()` on each
-   data resource so the manager can be reused on game restart.
+4. **`reset()`** (present on all four managers) — clears runtime state and calls
+   `reset()` on each data resource so the manager can be reused on game restart.
+   `ScoreManager`'s `reset()` only calls `reset()` on each rule's trigger (it
+   holds no accumulated score itself).
 
 Managers interact with the rest of the game through the shared `game` handle,
 specifically: `game.blackboard`, `game.bus_emit()` / `game.bus_disconnect()`,
@@ -79,7 +80,10 @@ data.
   - `&"add_multiplier"` → writes `pending_mult_add_key`, emits `add_multiplier`
   - `&"set_multiplier"` → writes `pending_mult_set_key`, emits `set_multiplier`
 
-`ScoreManager` has **no `reset()` method**.
+`reset()` iterates `scoring_rules` and calls `reset()` on any rule that has the
+method, clearing per-rule trigger state (cooldowns/timers) for a fresh game.
+`ScoreManager` itself holds no accumulated score — the running total lives in the
+consumer of its signals (e.g. a `ScoreCard`), which resets itself.
 
 ---
 
@@ -135,8 +139,11 @@ times before advancing. When the whole sequence finishes it emits the
 - `_complete()` stops running, resets `_current_step` to `-1`, disables physics
   processing, and emits every signal in `on_sequence_complete`.
 
-`reset()` clears all sequence state and calls `trigger.reset()` so the manager is
-ready for a game restart.
+`reset()` defensively disconnects any lingering sync listener, clears all
+sequence state, and calls `trigger.reset()` so the manager is ready for a game
+restart. `_complete()` likewise calls the same `_disconnect_sync_listener()`
+first, so a still-pending sync wait is torn down even if the sequence ends
+mid-step.
 
 ---
 
@@ -258,9 +265,10 @@ actually use:
    `game.blackboard`, call `game.bus_emit(...)`, query `game.group_registry`, find
    sibling nodes with `game.find_children(...)`, or queue deferred work via
    `game.update`.
-6. **Add a `reset()` method** if your manager accumulates runtime state that must be
-   cleared on game restart (all managers here except `ScoreManager` do this). Call
-   `reset()` on each data resource too.
+6. **Add a `reset()` method** that clears runtime state and calls `reset()` on each
+   data resource for game restart. Every manager here has one — even ones like
+   `ScoreManager` that hold no own accumulator (it still resets per-rule trigger
+   state like cooldowns/timers).
 7. **Disable processing when idle** if the manager only runs in bursts (see
    `SignalManager` toggling `set_physics_process`), to avoid unnecessary per-frame
    work.

@@ -105,23 +105,15 @@ func _on_initialize() -> void:
 	_material = _color_rect.material as ShaderMaterial
 	_persistence_mat = _persistence_rect.material as ShaderMaterial
 	
-	## connect visibility toggle signals
-	for sig in on_crt_on:
-		bus_connect(sig, _on_crt_on)
-	for sig in on_crt_off:
-		bus_connect(sig, _on_crt_off)
+	## connect visibility toggle signals (tracked for auto-disconnect on _exit_tree)
+	connect_all(on_crt_on, _on_crt_on)
+	connect_all(on_crt_off, _on_crt_off)
 		
 	if _params_dirty:
 		_push_params()
 		_params_dirty = false
 
-## disconnect bus signals on removal
-func _exit_tree() -> void:
-	if game:
-		for sig in on_crt_on:
-			game.bus_disconnect(sig, _on_crt_on)
-		for sig in on_crt_off:
-			game.bus_disconnect(sig, _on_crt_off)
+## cleanup of tracked bus connections is handled by CDGameComponent._exit_tree
 
 ## --- visibility ---
 

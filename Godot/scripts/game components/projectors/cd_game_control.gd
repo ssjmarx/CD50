@@ -1,46 +1,36 @@
-## CDGameComponent
-## Base class for all V2 game-attached components
-## Provides two-phase lifecycle, cached game ref, and bus tracking
+## CDGameControl
+## Base class for V2 game-attached Control-rooted nodes
+## Mirrors the CDGameComponent contract: cached game ref, two-phase lifecycle, bus tracking
+## Use for UI overlays/projections that must extend Control instead of Node2D
 
-class_name CDGameComponent extends Node2D
-
-@export var component_category: CDEnums.ComponentCategory
+class_name CDGameControl extends Control
 
 ## cached reference to ancestor game node
 var game: CDGame
 
-## tracked bus connections for CDStage sleep/wake support
+## tracked bus connections for auto-disconnect on _exit_tree
 var _bus_connections: Array[Dictionary] = []  # [{"signal_name": StringName, "callable": Callable}]
 
 ## --- Two-Phase Lifecycle ---
 
-## Phase 1: resolve game ref, defer phase 2 (priority set in _initialize after subclass _ready)
+## Phase 1: resolve game ref, defer phase 2
 func _ready() -> void:
 	if Engine.is_editor_hint():
 		return
-
-	## walk tree to find ancestor game
-	game = CDGame.find_ancestor(self)
-	if game == null:
-		push_error("CDGameComponent '%s': no CDGame ancestor found." % name)
-		return
-
-	call_deferred("_initialize")
-
-## Phase 2: set priority from category (subclass _ready has already run), call virtual init
-func _initialize() -> void:
-	process_physics_priority = CDEnums.category_to_priority(component_category)
-	_on_initialize()
+	process_physics_priority = 70
+	call_deferred("_on_initialize")
 
 ## --- Virtual Methods ---
 
 ## Override to connect game bus signals and set up game-level logic
 func _on_initialize() -> void:
-	pass
+	game = CDGame.find_ancestor(self)
+	if not game:
+		push_warning("CDGameControl '%s' has no CDGame ancestor." % name)
 
-## --- Bus Connection Tracking (for CDStage sleep/wake) ---
+## --- Bus Connection Tracking ---
 
-## Connect to game bus and track the connection for CDStage sleep/wake
+## Connect to game bus and track the connection for auto-disconnect
 func bus_connect(signal_name: StringName, callable: Callable) -> void:
 	if not game.has_signal(signal_name):
 		game.add_user_signal(signal_name)
@@ -71,13 +61,3 @@ func _exit_tree() -> void:
 	if game:
 		for entry in _bus_connections.duplicate():
 			game.bus_disconnect(entry["signal_name"], entry["callable"])
-
-## --- Sleep/Wake Virtual Methods (called by CDStage) ---
-
-## Override to customize sleep behavior (clear timers, reset state, etc.)
-func _on_sleep() -> void:
-	set_physics_process(false)
-
-## Override to customize wake behavior (restart timers, re-query state, etc.)
-func _on_wake() -> void:
-	set_physics_process(true)

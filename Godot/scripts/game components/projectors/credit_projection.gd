@@ -1,8 +1,9 @@
 ## CreditProjection
 ## Floating credit overlay showing track title and artist when music changes
-## Fades in, holds, then fades out using a Tween sequence Reads track info from game blackboard on zero-arg track_changed signal
+## Fades in, holds, then fades out using a Tween sequence
+## Reads track info from game blackboard on zero-arg track_changed signal
 
-class_name CreditProjection extends Control
+class_name CreditProjection extends CDGameControl
 
 ## --- exports ---
 
@@ -21,8 +22,6 @@ class_name CreditProjection extends Control
 
 ## --- state ---
 
-## reference to the ancestor game controller
-var _game: CDGame
 ## dynamically created container holding the labels
 var _container: Control = null
 ## active tween driving the fade in/hold/fade out sequence
@@ -30,27 +29,19 @@ var _tween: Tween = null
 
 ## --- lifecycle ---
 
-## skip processing in editor, initialize after tree is ready
-func _ready() -> void:
-	if Engine.is_editor_hint():
-		return
-	process_physics_priority = 70
-	call_deferred("_on_initialize")
-
-## connect track change signals to the game bus
+## resolve game ref (via base), then connect track change signals
 func _on_initialize() -> void:
-	_game = CDGame.find_ancestor(self)
-	if not _game:
+	super._on_initialize()
+	if not game:
 		return
-	for sig in track_changed_signals:
-		_game.bus_connect(sig, _on_track_changed)
+	connect_all(track_changed_signals, _on_track_changed)
 
 ## --- signal handlers ---
 
 ## read track from blackboard and show credit if track has info (zero-arg)
 func _on_track_changed() -> void:
 	_clear_credit()
-	var track: CDMusicTrack = _game.blackboard.get(track_key, null)
+	var track: CDMusicTrack = game.blackboard.get(track_key, null)
 	if not track or (track.title == "" and track.artist == ""):
 		return
 	_show_credit(track)

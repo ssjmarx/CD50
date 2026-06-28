@@ -36,15 +36,13 @@ func _ready() -> void:
 	super._ready()
 	current_wave = starting_wave
 	_update_label("Wave %d" % current_wave)
-	call_deferred("_on_initialize")
 
 ## connect advance and reset signals to the game bus
 func _on_initialize() -> void:
+	super._on_initialize()
 	_publish_tracked(wave_key, current_wave)
-	for sig in on_advance_wave:
-		game.bus_connect(sig, _advance_wave)
-	for sig in on_reset_wave:
-		game.bus_connect(sig, _reset_wave)
+	connect_all(on_advance_wave, _advance_wave)
+	connect_all(on_reset_wave, _reset_wave)
 
 ## --- wave control ---
 

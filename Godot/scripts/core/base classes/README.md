@@ -6,6 +6,7 @@ This folder holds the foundational `class_name` base scripts that V2 gameplay sc
 > - `CDGame` — ancestor game node (provides `blackboard`, `current_state`, `bus_emit()`, and `find_ancestor()`).
 > - `CDEntity` — ancestor entity node (provides `entity_activated` / `entity_deactivating` signals, `activate()`, and `find_ancestor()`).
 > - `CDEnums` — provides `ComponentCategory`, `GameState`, and `category_to_priority()`.
+> - `CDGameControl` — a `Control`-rooted mirror of `CDGameComponent` (cached `game`, two-phase lifecycle, bus tracking). Defined in `Godot/scripts/game components/projectors/cd_game_control.gd`; `CDCueCard` extends it.
 > - `CDObjectPool` — pool used by the trapdoor (provides `acquire()`).
 > - `CDSpawnContext` — resource describing velocity/rotation applied at spawn.
 > - `CDUtilities` — provides `apply_spawn_context()`.
@@ -14,7 +15,7 @@ This folder holds the foundational `class_name` base scripts that V2 gameplay sc
 
 | File | Class | Extends | Role |
 |------|-------|---------|------|
-| `cd_cue_card.gd` | `CDCueCard` | `Control` | Base for V2 UI display components |
+| `cd_cue_card.gd` | `CDCueCard` | `CDGameControl` | Base for V2 UI display components |
 | `cd_entity_component.gd` | `CDEntityComponent` | `Node2D` | Base for components attached to an entity |
 | `cd_game_component.gd` | `CDGameComponent` | `Node2D` | Base for components attached to the game |
 | `cd_stage_trapdoor.gd` | `CDStageTrapdoor` | `CDGameComponent` | Abstract base for stage-level spawners |
@@ -23,19 +24,22 @@ This folder holds the foundational `class_name` base scripts that V2 gameplay sc
 
 ## CDCueCard (`cd_cue_card.gd`)
 
-Base class for UI display components. Unlike the other bases here it extends `Control` (lives in the UI layer, not the physics world). It resolves a cached `game` reference and gives subclasses two helpers for reading/writing the game blackboard.
+Base class for UI display components. Unlike the other bases here it extends `CDGameControl` (which itself extends `Control`), so it lives in the UI layer and inherits the cached `game` reference, two-phase lifecycle, and bus connection tracking. On top of that it adds two blackboard helpers and an optional auto-created label.
 
 ### Exports
 - `is_interface: bool = false` — when `true`, `_ready()` auto-creates a bare `Label` child for text output.
 
 ### Cached refs
-- `game: CDGame` — resolved at `_ready()` via `CDGame.find_ancestor(self)`.
+- `game: CDGame` — **inherited from `CDGameControl`** (resolved in its `_on_initialize()` phase via `CDGame.find_ancestor(self)`). `CDCueCard` itself no longer caches a `game` reference.
 
 ### Internal state
 - `_label: Label` — only created when `is_interface` is `true`.
 
 ### Lifecycle
-- `_ready()` sets `process_physics_priority = 70` (fixed; cue cards process after gameplay) and, if `is_interface`, calls `_create_label()`.
+- `_ready()` calls `super._ready()` (the `CDGameControl` base: editor guard, `process_physics_priority = 70`, deferred `_on_initialize()`), then — if `is_interface` and not in the editor — calls `_create_label()`. The deferred `_on_initialize()` from the base resolves `game`; `CDCueCard` does not override it.
+- `_exit_tree()` — inherited from `CDGameControl`, auto-disconnects every tracked bus connection.
+
+> See `CDGameControl` (in `game components/projectors/`) for the base lifecycle, `bus_connect`/`bus_disconnect`/`connect_all`/`disconnect_all`, and `_exit_tree` auto-disconnect. `CDCueCard` adds only the label + blackboard helpers on top.
 
 ### Label helpers
 - `_create_label()` — creates a bare `Label` and adds it as a child.
@@ -81,6 +85,9 @@ Base class for components attached to an entity. It walks the tree to cache both
 ### Bus connection tracking
 - `bus_connect(signal_name: StringName, callable: Callable)` — adds the user signal on `entity` if missing, connects `callable` if not already connected, and records the pair in `_bus_connections`.
 - `bus_disconnect(signal_name: StringName, callable: Callable)` — disconnects the callable on `entity` if present and removes the matching tracked entry (iterates backward).
+- `connect_all(signals: Array[StringName], callable: Callable)` — calls `bus_connect` for every signal in the array (tracked).
+- `disconnect_all(signals: Array[StringName], callable: Callable)` — calls `bus_disconnect` for every signal in the array.
+- `_exit_tree()` — auto-disconnects every tracked entity bus connection when the node leaves the tree. Subclasses that override `_exit_tree` should call `super._exit_tree()`.
 
 ### How to create a new entity component
 1. Create a script: `class_name CDMyComponent extends CDEntityComponent`.
@@ -118,6 +125,9 @@ Base class for components attached to the game itself (the entity-component anal
 ### Bus connection tracking
 - `bus_connect(signal_name: StringName, callable: Callable)` — adds the user signal on `game` if missing, connects `callable` if not already connected, and records the pair in `_bus_connections`.
 - `bus_disconnect(signal_name: StringName, callable: Callable)` — disconnects the callable on `game` if present and removes the matching tracked entry (iterates backward).
+- `connect_all(signals: Array[StringName], callable: Callable)` — calls `bus_connect` for every signal in the array (tracked).
+- `disconnect_all(signals: Array[StringName], callable: Callable)` — calls `bus_disconnect` for every signal in the array.
+- `_exit_tree()` — auto-disconnects every tracked game bus connection when the node leaves the tree. Subclasses that override `_exit_tree` should call `super._exit_tree()`.
 
 ### How to create a new game component
 1. Create a script: `class_name CDMyGameComponent extends CDGameComponent`.
@@ -177,7 +187,7 @@ Abstract base class for stage-level spawners. Extends `CDGameComponent`. It impl
   5. When the queue empties, write `game.blackboard["spawned_wave"] = _current_wave` and emit every `on_spawning_complete` signal via `game.bus_emit()`.
 
 ### Spawn flow details
-- `_on_trigger()` — early-returns on `GAME_OVER`; reads the wave from `blackboard[wave_key]`; asks `_get_spawn_count()`; fills `_spawn_queue` with `0..total-1`; resets `_spawn_timer`; enables processing.
+- `_on_trigger()` — early-returns on `GAME_OVER`; reads the wave from `blackboard[wave_key]`; delegates queue population to `_populate_spawn_queue()`; resets `_spawn_timer`; enables processing. The default `_populate_spawn_queue()` fills `_spawn_queue` with `0..total-1` (where `total` comes from `_get_spawn_count()`); trapdoors with custom queue logic override `_populate_spawn_queue()` instead of `_on_trigger()`.
 - `_on_delayed_trigger()` — early-returns on `GAME_OVER`; stores the wave in `_pending_wave`; arms `_delay_remaining`; enables processing (the actual queuing happens when the delay elapses via `_on_trigger()`).
 - `_spawn_one(index)`:
   - Picks the scene from `spawn_scenes[index % size]` if any, otherwise `_get_spawn_scene(index, total)`. Skips the slot if the scene is `null`.
@@ -198,6 +208,7 @@ Abstract base class for stage-level spawners. Extends `CDGameComponent`. It impl
 - `_get_spawn_count(_wave_number: int) -> int` — how many entities to spawn for the wave. Default: `0`.
 - `_get_spawn_position(_index: int, _total: int) -> Vector2` — world position for entity at `index`. Default: `global_position`.
 - `_get_spawn_scene(_index: int, _total: int) -> PackedScene` — scene for entity at `index`; return `null` to skip the slot. **Must override** — the base `push_error`s and returns `null`.
+- `_populate_spawn_queue(_wave_number: int) -> void` — fills `_spawn_queue` with the indices to spawn this wave. Default impl clears the queue and appends `0..total-1`. Override **instead of `_on_trigger()`** when you need custom queue logic (skipping slots, data-driven layouts, etc.) — the base `_on_trigger()` already handles the GAME_OVER guard, wave read, timer reset, and physics toggle.
 
 ### How to create a new trapdoor
 1. Create a script: `class_name CDMyTrapdoor extends CDStageTrapdoor`.

@@ -60,17 +60,13 @@ var _skip_set: Dictionary = {}
 var _grid_columns: int = 0
 var _grid_rows: int = 0
 
-## --- trigger override ---
+## --- queue population ---
 
-## dispatch to Mode A or Mode B based on configured resources
-func _on_trigger() -> void:
-	if game.current_state == CDEnums.GameState.GAME_OVER:
-		return
-
-	_current_wave = game.blackboard.get("wave_number", 0)
-
+## override the base queue builder: dispatch to Mode A or Mode B based on
+## configured resources. The base _on_trigger handles the GAME_OVER guard,
+## wave read, timer reset, and physics toggle — we only choose the queue.
+func _populate_spawn_queue(_wave_number: int) -> void:
 	_spawn_queue.clear()
-
 	## Mode A: data-driven layout takes priority
 	if layout != null:
 		if spawn_scene != null and equation != null:
@@ -82,11 +78,6 @@ func _on_trigger() -> void:
 	else:
 		push_error("GridTrapdoor '%s': no valid configuration. set layout (mode A) or spawn_scene + equation (mode B)." % name)
 		return
-
-	_spawn_timer = 0.0
-	set_physics_process(true)
-
-## --- queue population ---
 
 ## Mode A: queue all non-empty cells from the layout resource
 func _populate_queue_mode_a() -> void:

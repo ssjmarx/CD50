@@ -53,19 +53,16 @@ func _on_initialize() -> void:
 	_bank = game.find_child("CDSoundBank") as CDSoundBank
 	_signature = "%d_%d_%d" % [wave_shape, effect, note]
 	
+	## start/stop connections are tracked by bus_connect for auto-disconnect on _exit_tree
 	if start_signal != &"":
 		bus_connect(start_signal, _on_start)
 	if stop_signal != &"":
 		bus_connect(stop_signal, _on_stop)
 
-## deregister and disconnect on removal
+## deregister from the sound bank, then let the base class auto-disconnect bus signals
 func _exit_tree() -> void:
 	_deregister()
-	if game:
-		if start_signal != &"":
-			game.bus_disconnect(start_signal, _on_start)
-		if stop_signal != &"":
-			game.bus_disconnect(stop_signal, _on_stop)
+	super._exit_tree()
 
 ## --- signal handlers ---
 

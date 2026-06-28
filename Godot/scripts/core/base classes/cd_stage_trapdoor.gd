@@ -116,6 +116,16 @@ func _physics_process(delta: float) -> void:
 func _get_spawn_count(_wave_number: int) -> int:
 	return 0
 
+## override to populate _spawn_queue for a given wave.
+## Default impl fills 0.._get_spawn_count-1; subclasses (e.g. GridTrapdoor)
+## override this instead of _on_trigger when they need custom queue logic
+## (skipping slots, data-driven layouts, etc.).
+func _populate_spawn_queue(wave_number: int) -> void:
+	var total: int = _get_spawn_count(wave_number)
+	_spawn_queue.clear()
+	for i in total:
+		_spawn_queue.append(i)
+
 ## override to return world position for entity at index
 func _get_spawn_position(_index: int, _total: int) -> Vector2:
 	return global_position
@@ -127,17 +137,13 @@ func _get_spawn_scene(_index: int, _total: int) -> PackedScene:
 
 ## --- Trigger Handling ---
 
-## receive trigger signal, queue all spawn indices, start stagger loop
+## receive trigger signal, delegate queue population to the virtual, start stagger loop
 func _on_trigger() -> void:
 	if game.current_state == CDEnums.GameState.GAME_OVER:
 		return
 
 	_current_wave = game.blackboard.get(wave_key, 0)
-	var total: int = _get_spawn_count(_current_wave)
-
-	_spawn_queue.clear()
-	for i in total:
-		_spawn_queue.append(i)
+	_populate_spawn_queue(_current_wave)
 
 	_spawn_timer = 0.0
 	set_physics_process(true)

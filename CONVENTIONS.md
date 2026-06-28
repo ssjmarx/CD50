@@ -135,6 +135,29 @@ Both entity and game buses use **native Godot signals** (via `add_user_signal()`
 - **Auto-populated keys each frame:** `"position"`, `"rotation"`, `"velocity"`
 - `bus_emit()` auto-tracks the emitter in `_signal_emitters` for the current frame (enables signal-aware selectors)
 
+### Bus Signals — Write-Before-Emit Contract (HARD RULE)
+
+All dynamic bus signals are **zero-arg**. Event data flows through the blackboard, not the signal. This creates a temporal dependency between writer and listener:
+
+> **The writer MUST write to the blackboard BEFORE emitting the signal.**
+> **The listener MAY read from the blackboard inside the signal callback.**
+
+```gdscript
+# ✅ Correct — write data first, then signal
+game.blackboard["captured_entity"] = target
+game.bus_emit("player_captured")
+
+# ❌ Wrong — listener reading the blackboard in the callback gets stale/missing data
+game.bus_emit("player_captured")
+game.blackboard["captured_entity"] = target
+```
+
+**Rationale:** Because the signal carries no payload, the listener's only source of truth is the blackboard at the moment the callback fires. Emitting before writing is a silent, intermittent bug — the connection still succeeds, the callback still runs, but the data isn't there yet.
+
+**Scope:** This rule applies to every `bus_emit()` / `bus_emit_from()` call in the codebase — entity bus and game bus alike. It is the temporal equivalent of a data race and must be treated as a bug.
+
+**When this contract is painful:** Genuinely local event data (e.g. "a body entered this area, *this* body") that has no cross-system shared-state meaning currently still has to round-trip through the blackboard. Typed bus payloads (non-zero-arg signals) for these cases are filed as Future Work; until then, use a dedicated blackboard key and obey write-before-emit.
+
 ### Deterministic Priority Cascade
 ```
 REGISTRY(5) → INPUT(8) → BRAINS(10) → LEGS(20) → ENTITY(30) → COLLISION(35) → ARMS(40) → GUTS(50) → FACES(60) → VOICES(65) → STAGE(70) → MANAGER(75) → UPDATE(90)

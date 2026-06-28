@@ -138,8 +138,9 @@ These resource/object types are referenced by the directors (defined elsewhere i
   - `trigger_signals: Array[StringName]` (default `&"game_play"`) — start the sequence.
   - `on_sequence_complete: Array[StringName]` (default `&"sequence_complete"`).
 - **Behavior:** Physics processing is disabled by default and enabled only while running. On trigger, it executes step 0. Each step fires its signals, sets a `delay_after` countdown, and optionally waits for `wait_for_signal` to fire `wait_count` times. Advancing requires BOTH the delay to expire AND the sync count to be met (whichever finishes second gates the advance). Loops/advances through steps; on completion emits `on_sequence_complete` and disables physics processing.
-- **Signal usage:** `bus_connect` for triggers, `game.bus_emit` for step signals, `game.bus_disconnect` for sync listeners.
-- **`reset()`:** clears running state, timers, and wait counters; disables physics processing.
+- **Signal usage:** `connect_all(trigger_signals, _on_trigger)` (inherited helper) for triggers, `game.bus_emit` for step signals, `game.bus_disconnect` for sync listeners. The sync listener is connected with `bus_connect(...)` (tracked) in `_execute_step()` and disconnected in `_on_sync_signal()` when the count is met.
+- **Defensive cleanup:** `_complete()` and `reset()` both call `_disconnect_sync_listener()` first, so a still-pending sync wait is torn down even if the sequence is interrupted mid-step.
+- **`reset()`:** defensively disconnects any lingering sync listener, then clears running state, timers, and wait counters; disables physics processing.
 
 ### `stage_director.gd` — `StageDirector`
 **Purpose:** Listens for game-bus signals and performs entity **swaps** based on `CDDirectorRule` resources — deactivating the original and spawning a replacement at the same position.
@@ -179,7 +180,7 @@ These resource/object types are referenced by the directors (defined elsewhere i
   - On trigger, gathers entities, generates the curve, computes `_pixels_per_frame = swoop_speed / physics_fps` and `_entry_delay_frames`, determines a fixed perpendicular `_lane_axis` from the initial tangent, then releases the first lane group.
   - Entities are released `lane_count` at a time with an `_entry_delay_frames` gap; lane offset is `(index - (count-1)/2) * lane_spacing` along `_lane_axis`.
   - Each frame advances each entity's ghost offset by `_pixels_per_frame`, writes direction/distance to the ghost position, and marks entities complete when their offset reaches `_curve_length`. On completion it sets `game.blackboard[completed_entity_key] = entity` and emits each `on_swoop_complete` signal via `game.bus_emit_from(sig, entity)`.
-  - `_enter_tree`/`_exit_tree` connect/disconnect the curve resource's `changed` signal for live redraws.
+  - `_enter_tree`/`_exit_tree` connect/disconnect the curve resource's `changed` signal for live redraws. `_exit_tree` also calls `super._exit_tree()` so the inherited `CDGameComponent` auto-disconnects any tracked game-bus connections (the trigger signals connected via `connect_all`).
 - **`reset()`:** resets the curve resource and clears all ghost/lane/slot/pending state; disables physics processing.
 
 ---
@@ -233,10 +234,8 @@ func _ready() -> void:
     super._ready()
 
 func _on_initialize() -> void:
-    # connect trigger signals, initialize child resources, build lookup maps
-    for sig in trigger_signals:
-        if sig != &"":
-            bus_connect(sig, _on_trigger)
+    # connect trigger signals (tracked + auto-disconnected on _exit_tree), initialize child resources, build lookup maps
+    connect_all(trigger_signals, _on_trigger)
 
 ## --- processing ---
 
@@ -272,6 +271,7 @@ Checklist for a faithful new director (based on this folder's existing scripts):
 - [ ] Deduplicate gathered entities and filter to `is_instance_valid(entity) and entity.state == CDEnums.EntityState.ACTIVE`.
 - [ ] Choose your output channel(s): blackboard keys, game-bus signals, entity-bus signals, or queued transitions. Do **not** move entities directly.
 - [ ] Initialize any child resources in `_on_initialize()` (e.g. `trigger.initialize(game)`).
-- [ ] Connect listen-signals in `_on_initialize()`; use `bus_connect`/`game.bus_connect` consistently with the existing scripts.
+- [ ] Connect listen-signals in `_on_initialize()` via the inherited `connect_all(signals, callable)` (tracked and auto-disconnected by the base `_exit_tree()`). If you override `_exit_tree`, call `super._exit_tree()`.
+- [ ] If you connect a one-off/sync listener that must be torn down early, add a defensive `_disconnect_*` helper and call it from both `_complete()`/`reset()` and `_exit_tree()` (see `SignalSequenceDirector._disconnect_sync_listener`).
 - [ ] Add a `reset()` method that clears your state (omit only if the director is truly stateless, as `StageDirector` is).
 - [ ] If editor previews are useful, implement `_draw()` and have export setters call `queue_redraw()` when `is_node_ready()`.

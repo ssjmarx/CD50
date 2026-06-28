@@ -47,22 +47,43 @@ through this `game` reference:
 The chosen shape is stored in `_auto_shape` and can be swapped at runtime by listening for
 signals (see "Listen Signals" below).
 
-### The enter/exit flow
+### The enter/exit flow — filter, then dispatch to an overrideable hook
+
 `CDMark._ready()` connects Godot's `body_entered` / `body_exited` Area2D signals to
 `_on_body_entered` / `_on_body_exited`, then (deferred) calls `_on_initialize()`.
 
-The base enter handler:
-1. Checks `_passes_filter(body)` against `filter_groups` (empty list = allow all).
-2. Writes the body to `game.blackboard[entered_body_key]`.
-3. Emits every signal listed in `on_entered` on the game bus.
-4. If the body is a `CDEntity`, emits every signal in `on_entered_entity` directly on **that
-   entity's** bus (via `body.bus_emit(...)`).
+The base handlers `_on_body_entered` / `_on_body_exited` are **final** in practice: they run the
+group filter (`_passes_filter`) and then dispatch to the **overrideable** hooks
+`_handle_body_entered(body)` / `_handle_body_exited(body)`:
 
-The exit handler mirrors this with `exited_body_key`, `on_exited`, and `on_exited_entity`.
+```gdscript
+func _on_body_entered(body: Node2D) -> void:
+    if not _passes_filter(body):
+        return
+    _handle_body_entered(body)
+```
 
-> **Subclass override caveat:** Several subclasses override `_on_body_entered`/`_on_body_exited`
-> **without calling `super()`**. Whether the base blackboard writes / `on_entered` emissions
-> still happen depends on the subclass — see the per-class notes below.
+The default `_handle_body_entered(body)` is where the base behavior lives:
+1. Writes the body to `game.blackboard[entered_body_key]`.
+2. Calls `_emit_enter(body)`.
+
+`_emit_enter(body)` is an **emit-only helper** (no blackboard write) that fires every signal in
+`on_entered` on the game bus and, if the body is a `CDEntity`, every signal in
+`on_entered_entity` on **that entity's** bus. `_emit_exit(body)` mirrors it for the exit path.
+
+> **Subclasses override `_handle_body_*`, not `_on_body_*`.** This is the key convention. A
+> subclass picks one of three strategies:
+>
+> 1. **Replace base behavior** — override `_handle_body_entered` without calling `super`, and
+>    don't call `_emit_enter`. Only your own signals fire (`OccupancyMark`, `SafeZoneMark`).
+> 2. **Reuse base behavior via `super`** — override `_handle_body_entered` and call
+>    `super._handle_body_entered(body)` first, then add your own logic (`TimedMark`).
+> 3. **Reuse base behavior via the emit helper** — override `_handle_body_entered` without
+>    calling `super`, but do the blackboard write yourself and call `_emit_enter(body)` so the
+>    base signals still fire (`CountMark`).
+>
+> Because filtering is centralized in `_on_body_entered`, every override receives an
+> already-filtered body and does **not** need to call `_passes_filter` itself.
 
 ### Signal / blackboard conventions used everywhere
 - Every "emit" export is an `Array[StringName]`. Listing multiple signals fires all of them for
@@ -97,6 +118,13 @@ In `_on_initialize()`, each signal in `on_set_shape` is connected to `_on_change
 reads `game.blackboard[shape_key]` (expected to be a `Shape2D`) and assigns it to `_auto_shape`
 when non-null.
 
+### Helper functions subclasses use
+- `_passes_filter(body) -> bool` — true if `filter_groups` is empty or `body` is in one of them.
+- `_emit_enter(body)` / `_emit_exit(body)` — fire the game-bus and entity-bus signals only (no
+  blackboard writes). Call these from an override that does its own blackboard write.
+- `super._handle_body_entered(body)` / `super._handle_body_exited(body)` — run the full base
+  behavior (blackboard write + emit helper).
+
 ---
 
 ## `CountMark` (`count_mark.gd`)
@@ -116,20 +144,21 @@ Useful for "collect N things" objectives.
 
 Inherits `CDMark`'s other exports (`filter_groups`, `on_entered`, `on_exited`, etc.).
 
-### Behavior
-- `_on_body_entered` **does not call `super()`** but **replicates** the base enter behavior
-  (writes `entered_body_key`, emits `on_entered`). It then dedups the body into `_tracked_bodies`,
-  writes `count_key`, emits `on_count_changed`, and when the count crosses `target_count` it
-  writes `bodies_key` (a duplicate of the tracked array) and emits `on_count_reached`.
-- `_on_body_exited` also **replicates** the base exit behavior (writes `exited_body_key`, emits
-  `on_exited`) but **does not decrement the count** — once counted, a body stays counted.
+### Behavior (strategy 3 — reuse base via the emit helper)
+- `_handle_body_entered` **does not call `super`**. It manually writes
+  `entered_body_key` and calls `_emit_enter(body)`, so the base enter signals still fire. It
+  then dedups the body into `_tracked_bodies`, writes `count_key`, emits `on_count_changed`, and
+  when the count crosses `target_count` it writes `bodies_key` (a duplicate of the tracked array)
+  and emits `on_count_reached`.
+- `_handle_body_exited` likewise writes `exited_body_key` and calls `_emit_exit(body)` (base exit
+  signals fire) but **does not decrement the count** — once counted, a body stays counted.
 
 ---
 
 ## `MobileMark` (`mobile_mark.gd`)
 
-A mark that moves to follow a target entity each physics frame. It does **not** override
-`_on_body_entered`/`_on_body_exited`, so it inherits `CDMark`'s full enter/exit behavior.
+A mark that moves to follow a target entity each physics frame. It does **not** override the
+detection hooks, so it inherits `CDMark`'s full enter/exit behavior unchanged.
 
 ### Exports
 
@@ -164,9 +193,9 @@ this to answer "how many of each kind of thing are in this region?"
 | `changed_count_key` | `StringName` | `&"mark_changed_count"` | Blackboard Keys | New count for that group. |
 | `on_occupancy_changed` | `Array[StringName]` | `[&"occupancy_changed"]` | Emit Signals | Fired on any tracked group's enter/exit. |
 
-### Behavior
+### Behavior (strategy 1 — replace base behavior)
 - `_ready` calls `super._ready()` and pre-initializes `_counts[group] = 0` for every tracked group.
-- `_on_body_entered` / `_on_body_exited` **do not call `super()`** and **do not** replicate the
+- `_handle_body_entered` / `_handle_body_exited` **do not call `super`** and **do not** fire the
   base `entered_body_key` / `on_entered` behavior — they only update counters. For each tracked
   group the body belongs to they bump the count (enter) or clamp-decrement it (exit, never below
   0), write `changed_group_key` + `changed_count_key`, and emit `on_occupancy_changed`.
@@ -188,8 +217,8 @@ trapdoor-spawn clearance checks.
 | `on_zone_safe` | `Array[StringName]` | `[&"zone_safe"]` | Emit Signals | Fired on the unsafe → safe transition. |
 | `on_zone_unsafe` | `Array[StringName]` | `[&"zone_unsafe"]` | Emit Signals | Fired on the safe → unsafe transition. |
 
-### Behavior
-- `_on_body_entered` / `_on_body_exited` **do not call `super()`** and **do not** replicate base
+### Behavior (strategy 1 — replace base behavior)
+- `_handle_body_entered` / `_handle_body_exited` **do not call `super`** and **do not** fire base
   behavior. They only manage `_unsafe_count`.
 - On enter: for the first matching unsafe group it captures `was_safe` (`_unsafe_count == 0`),
   increments `_unsafe_count`, emits `on_zone_unsafe` if it just transitioned from safe, and
@@ -217,18 +246,18 @@ completion signal once a configurable `hold_duration` is reached per body.
 | `on_complete` | `Array[StringName]` | `[&"mark_complete"]` | Emit Signals | Fired when a body's elapsed time reaches `hold_duration`. |
 | `on_vacate` | `Array[StringName]` | `[&"mark_vacated"]` | Emit Signals | Fired when the last body leaves. |
 
-### Behavior
+### Behavior (strategy 2 — reuse base via super)
 - State is two dictionaries keyed by body: `_occupants` (elapsed time) and `_tick_accumulators`.
 - `_physics_process` advances each occupant's timer by `delta`:
   - Every `tick_interval` (when `tick_interval > 0`) it writes `active_body_key` and
     `progress_fraction_key` and emits `on_progress`.
   - When `elapsed >= hold_duration` it writes `active_body_key`, emits `on_complete`, and removes
     the body from tracking (so completion fires once per entry).
-- `_on_body_entered` **does not call `super()`** but **replicates** base enter behavior (writes
-  `entered_body_key`, emits `on_entered`), then registers the body. If the zone was empty, it
-  also writes `active_body_key` and emits `on_occupy`.
-- `_on_body_exited` **replicates** base exit behavior (writes `exited_body_key`, emits
-  `on_exited`), removes the body from tracking, and emits `on_vacate` if the zone is now empty.
+- `_handle_body_entered` **calls `super._handle_body_entered(body)`** (so `entered_body_key`,
+  `on_entered`, and `on_entered_entity` all fire), then registers the body. If the zone was
+  empty, it also writes `active_body_key` and emits `on_occupy`.
+- `_handle_body_exited` **calls `super._handle_body_exited(body)`** (base exit behavior fires),
+  removes the body from tracking, and emits `on_vacate` if the zone is now empty.
 
 ---
 
@@ -251,7 +280,7 @@ completion signal once a configurable `hold_duration` is reached per body.
 ## How to create a new mark
 
 1. Create `your_mark.gd` in this folder.
-2. Start from this skeleton:
+2. Start from this skeleton, overriding the **`_handle_body_*` hooks** (not `_on_body_*`):
 
    ```gdscript
    ## YourMark
@@ -266,11 +295,16 @@ completion signal once a configurable `hold_duration` is reached per body.
 
    ## --- body detection ---
 
-   ## (describe what your override does)
-   func _on_body_entered(body: Node2D) -> void:
-       if not _passes_filter(body):
-           return
-       # your logic, then emit on the game bus:
+   ## (describe what your override does and which base-reuse strategy you picked)
+   func _handle_body_entered(body: Node2D) -> void:
+       # Option A — replace base: do NOT call super, do NOT call _emit_enter.
+       # Option B — reuse base via super:
+       super._handle_body_entered(body)
+       # Option C — reuse base via emit helper (call after your own blackboard write):
+       # game.blackboard[entered_body_key] = body
+       # _emit_enter(body)
+
+       # your own logic, then emit on the game bus:
        for sig in on_your_event:
            game.bus_emit(sig)
    ```
@@ -281,17 +315,19 @@ completion signal once a configurable `hold_duration` is reached per body.
    - Make every emitted bus signal **zero-arg**; deliver payloads through the blackboard, writing
      immediately before emitting.
    - Use `Array[StringName]` for every "signals to emit" export so one event can fire multiple.
-   - Reuse `CDMark` helpers: `_passes_filter(body)`, `_auto_shape`, `game.blackboard`,
-     `game.bus_emit(...)`.
-4. **Decide deliberately** whether your override calls `super._on_body_entered(body)` / replicates
-   the base behavior. The existing marks are inconsistent on purpose — each chose what it needs:
-   - `CountMark` and `TimedMark` replicate base enter/exit behavior but add their own logic.
-   - `OccupancyMark` and `SafeZoneMark` replace the behavior entirely and emit only their own
-     signals.
-   - `MobileMark` does not override detection at all.
-   Whichever you choose, document it in the header comment so the next reader isn't surprised by
-   whether `on_entered` / `entered_body_key` fire.
-5. If you need per-frame logic, override `_physics_process(delta)` (see `MobileMark`,
+   - Reuse `CDMark` helpers: `_emit_enter(body)` / `_emit_exit(body)`, `_passes_filter(body)` is
+     already applied for you, `_auto_shape`, `game.blackboard`, `game.bus_emit(...)`.
+4. **Pick a base-reuse strategy deliberately** and document it in the header comment:
+   - **Replace base** (`OccupancyMark`, `SafeZoneMark`) — override `_handle_body_entered` without
+     `super` and without `_emit_enter`; only your own signals fire.
+   - **Reuse via `super`** (`TimedMark`) — call `super._handle_body_entered(body)` first; base
+     signals fire too.
+   - **Reuse via emit helper** (`CountMark`) — do your own blackboard write then call
+     `_emit_enter(body)`; base signals fire too.
+   - **Don't override detection** (`MobileMark`) — inherit the base behavior entirely.
+5. Do **not** override `_on_body_entered` / `_on_body_exited` — those own the filter step and
+   dispatch to your `_handle_body_*` hooks. Overriding them bypasses group filtering.
+6. If you need per-frame logic, override `_physics_process(delta)` (see `MobileMark`,
    `TimedMark`); if you need deferred one-time setup, override `_on_initialize()` and call
    `super._on_initialize()` first (see `MobileMark`).
-6. Register the class with `class_name` so it appears in the Add Node dialog.
+7. Register the class with `class_name` so it appears in the Add Node dialog.

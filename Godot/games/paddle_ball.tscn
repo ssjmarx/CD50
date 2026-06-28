@@ -80,10 +80,14 @@ tracked_actions = Array[StringName]([&"fire", &"move"])
 [node name="PlayerPaddle" parent="." instance=ExtResource("10_pukhu")]
 position = Vector2(20, 180)
 lock_x = true
+clamp_to_bounds = true
+bounds_margin = 16.0
 
 [node name="AIPaddle" parent="." instance=ExtResource("12_o2cdy")]
 position = Vector2(620, 180)
 lock_x = true
+clamp_to_bounds = true
+bounds_margin = 16.0
 
 [node name="PointTrapdoor" parent="." instance=ExtResource("13_m4tg4")]
 position = Vector2(320, 180)
@@ -124,6 +128,20 @@ offset_left = 280.0
 offset_top = 50.0
 offset_right = 280.0
 offset_bottom = 50.0
+starting_score = null
+starting_multiplier = null
+pending_add_key = null
+pending_set_key = null
+score_key = null
+pending_mult_add_key = null
+pending_mult_set_key = null
+multiplier_key = null
+on_add_score = null
+on_set_score = null
+on_add_multiplier = null
+on_set_multiplier = null
+on_score_changed = null
+on_multiplier_changed = null
 is_interface = true
 
 [node name="AIScoreCard" parent="." instance=ExtResource("17_04mnm")]
@@ -131,4 +149,18 @@ offset_left = 340.0
 offset_top = 50.0
 offset_right = 340.0
 offset_bottom = 50.0
+starting_score = null
+starting_multiplier = null
+pending_add_key = null
+pending_set_key = null
+score_key = null
+pending_mult_add_key = null
+pending_mult_set_key = null
+multiplier_key = null
+on_add_score = null
+on_set_score = null
+on_add_multiplier = null
+on_set_multiplier = null
+on_score_changed = null
+on_multiplier_changed = null
 is_interface = true

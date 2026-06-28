@@ -40,13 +40,11 @@ var _preview_player: AudioStreamPlayer
 func _on_initialize() -> void:
 	_bank = game.find_child("CDSoundBank") as CDSoundBank
 	
+	## trigger connection is tracked by bus_connect for auto-disconnect on _exit_tree
 	if trigger_signal != &"":
 		bus_connect(trigger_signal, _on_trigger)
 
-## disconnect trigger signal on removal
-func _exit_tree() -> void:
-	if trigger_signal != &"" and game:
-		game.bus_disconnect(trigger_signal, _on_trigger)
+## cleanup of the tracked trigger connection is handled by CDGameComponent._exit_tree
 
 ## --- signal handlers ---
 

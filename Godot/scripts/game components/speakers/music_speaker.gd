@@ -12,14 +12,18 @@ class_name MusicSpeaker extends CDGameComponent
 @export var loop: bool = false
 ## target volume during playback (dB)
 @export var volume_db: float = -6.0
-## idle/ambient volume (dB)
-@export var idle_volume_db: float = -20.0
 ## fade-in duration when starting playback (seconds)
 @export var fade_in_duration: float = 1.0
 ## fade-out duration when stopping (seconds)
 @export var fade_out_duration: float = 0.5
 ## crossfade duration between tracks (seconds)
 @export var crossfade_duration: float = 1.0
+
+@export_group("Trigger Signals")
+## game bus signal that starts the playlist (zero-arg)
+@export var start_signal: StringName = &"game_play"
+## game bus signal that stops the playlist (zero-arg)
+@export var stop_signal: StringName = &"game_over"
 
 @export_group("Blackboard Keys")
 ## key for writing current track to game blackboard (CDMusicTrack)
@@ -68,8 +72,8 @@ func _on_initialize() -> void:
 	
 	_active_player = _player_a
 	
-	bus_connect("game_play", _on_game_play)
-	bus_connect("game_over", _on_game_over)
+	bus_connect(start_signal, _on_game_play)
+	bus_connect(stop_signal, _on_game_over)
 
 ## --- signal handlers ---
 
@@ -116,9 +120,9 @@ func _play_next() -> void:
 	_active_player.pitch_scale = _pitch_scale
 	_active_player.play()
 	
-	## parallel crossfade: new player in, old player out
+	## parallel crossfade: new player fades in (fade_in_duration), old player fades out (crossfade_duration)
 	var tween := create_tween()
-	tween.tween_property(_active_player, "volume_db", volume_db, crossfade_duration)
+	tween.tween_property(_active_player, "volume_db", volume_db, fade_in_duration)
 	tween.parallel().tween_property(fade_out_player, "volume_db", -60.0, crossfade_duration)
 	tween.tween_callback(fade_out_player.stop)
 	

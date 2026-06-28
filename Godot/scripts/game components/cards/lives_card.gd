@@ -36,15 +36,13 @@ func _ready() -> void:
 	super._ready()
 	current_lives = starting_lives
 	_update_label(str(current_lives))
-	call_deferred("_on_initialize")
 
 ## connect listen signals to the game bus
 func _on_initialize() -> void:
+	super._on_initialize()
 	_publish_tracked(lives_key, current_lives)
-	for sig in on_life_lost:
-		game.bus_connect(sig, _on_life_lost)
-	for sig in on_life_gained:
-		game.bus_connect(sig, _on_life_gained)
+	connect_all(on_life_lost, _on_life_lost)
+	connect_all(on_life_gained, _on_life_gained)
 
 ## --- signal handlers ---
 

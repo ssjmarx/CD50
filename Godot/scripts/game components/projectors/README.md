@@ -6,31 +6,78 @@ Visual overlay components that render content on top of the running game. A "pro
 
 | File | Class | Base | Purpose |
 |------|-------|------|---------|
-| `credit_projection.gd` | `CreditProjection` | `Control` | Floating "now playing" credit overlay showing track title/artist |
+| `cd_game_control.gd` | `CDGameControl` | `Control` | Base class for game-attached `Control`-rooted nodes — the `Control`-side twin of `CDGameComponent` (cached `game`, two-phase lifecycle, tracked bus connections) |
+| `credit_projection.gd` | `CreditProjection` | `CDGameControl` | Floating "now playing" credit overlay showing track title/artist |
 | `crt_projector.gd` | `CRTProjector` | `CDGameComponent` | Full-screen CRT post-processing pipeline (phosphor persistence, warp, scanlines, noise) |
 
 ---
 
 ## Shared patterns
 
-These two scripts demonstrate the projector contract used in this folder. They differ in their base class, so read carefully — they are **not** identical in how they wire up.
+All three scripts share a common contract for game-attached nodes, even though one extends `Control` and the other two reach it through different bases (`CDGameControl` extends `Control`; `CDGameComponent` extends `Node2D`). The contract comes from their base classes.
 
-### Both scripts
+### The common lifecycle (from the bases)
 
-- Listen for **zero-arg game bus signals** via `bus_connect(...)` and react by showing/hiding/updating their visuals.
+Both `CDGameControl` and `CDGameComponent` provide the same shape:
+
+1. **`_ready()`** — guard against the editor (`if Engine.is_editor_hint(): return`), set `process_physics_priority = 70`, and `call_deferred("_on_initialize")`.
+2. **`_on_initialize()`** — the base resolves `game = CDGame.find_ancestor(self)` (and `push_warning` on `CDGameControl` if absent). Subclasses override this, call `super._on_initialize()` first, then do their setup.
+3. **`_exit_tree()`** — the base **auto-disconnects every tracked bus connection** so subclasses don't need their own `_exit_tree` for bus cleanup.
+
+### The common bus API (from the bases)
+
+Both bases expose identical signal-tracking helpers:
+
+- `bus_connect(signal_name, callable)` — connect to `game` and track it for auto-disconnect.
+- `bus_disconnect(signal_name, callable)` — disconnect and untrack.
+- `connect_all(signals: Array[StringName], callable)` — connect to every signal in the array (tracked).
+- `disconnect_all(signals, callable)` — disconnect every signal in the array.
+
+Because cleanup is centralized, **neither projector implements `_exit_tree`** for signal teardown — the base handles it. (`CRTProjector` explicitly notes this in a comment.)
+
+### What projectors do on top of that
+
+- **Listen for zero-arg game bus signals** via `connect_all(...)` and react by showing/hiding/updating their visuals.
 - **Build their content dynamically** at runtime rather than from a pre-authored scene tree (`_show_credit` creates `Label` nodes; `_build_nodes` creates `BackBufferCopy`, `SubViewport`, `ColorRect`, and `TextureRect` nodes).
-- Provide an `_on_initialize()` method used as the setup hook.
-- Clean up after themselves — killing tweens / freeing containers, and disconnecting bus signals on exit.
+- **Clean up their own nodes/tweens** (kill tweens, `queue_free()` containers) — but bus cleanup is left to the base.
 
-### Where they differ
+### Where the two projectors differ
 
 | Concern | `CreditProjection` | `CRTProjector` |
 |--------|--------------------|----------------|
-| Base class | `extends Control` | `extends CDGameComponent` |
-| Game access | Calls `CDGame.find_ancestor(self)` and stores it in `_game` | Uses the inherited `game` property from `CDGameComponent` |
-| Bus wiring | `_game.bus_connect(sig, callable)` | Bare `bus_connect(sig, callable)` (inherited) |
-| Init trigger | `_ready()` → `call_deferred("_on_initialize")`, guarded by `Engine.is_editor_hint()` | `_on_initialize()` (invoked by the base class lifecycle) |
-| Edit-time behavior | Explicitly skips processing in editor | Uses `PROCESS_MODE_ALWAYS`; sets `z_index` at init |
+| Base class | `extends CDGameControl` (→ `Control`) | `extends CDGameComponent` (→ `Node2D`) |
+| `game` ref | Inherited from `CDGameControl` | Inherited from `CDGameComponent` |
+| Bus wiring | Inherited `connect_all(track_changed_signals, _on_track_changed)` | Inherited `connect_all(on_crt_on, _on_crt_on)` / `connect_all(on_crt_off, _on_crt_off)` |
+| `_exit_tree` | None needed (base auto-disconnects) | None needed (base auto-disconnects; noted in a comment) |
+| Extra lifecycle | `_on_initialize` connects signals only | `_on_initialize` builds nodes, caches materials, connects signals, pushes params |
+
+---
+
+## `cd_game_control.gd` — `CDGameControl`
+
+Base class for V2 game-attached nodes that **must extend `Control`** (UI overlays, projections). It mirrors the `CDGameComponent` contract — cached `game` reference, two-phase lifecycle, and tracked bus connections with auto-disconnect — so `Control`-rooted nodes get the same ergonomics as `Node2D`-rooted components.
+
+```gdscript
+class_name CDGameControl
+extends Control
+```
+
+### Members
+
+| Member | Type | Purpose |
+|--------|------|---------|
+| `game` | `CDGame` | Cached ancestor game node, resolved in `_on_initialize()`. |
+| `_bus_connections` | `Array[Dictionary]` | Tracked connections (`{"signal_name", "callable"}`) for auto-disconnect. |
+
+### Methods
+
+- `_ready()` — editor guard, sets `process_physics_priority = 70`, defers `_on_initialize()`.
+- `_on_initialize()` — resolves `game` via `CDGame.find_ancestor(self)`; `push_warning` if missing. **Override and call `super._on_initialize()` first.**
+- `bus_connect(signal_name, callable)` — connect to `game` (adding the user signal if absent) and track it.
+- `bus_disconnect(signal_name, callable)` — disconnect and untrack.
+- `connect_all(signals, callable)` — connect every signal in an array (tracked).
+- `disconnect_all(signals, callable)` — disconnect every signal in an array.
+- `_exit_tree()` — iterates `_bus_connections` and disconnects each via `game.bus_disconnect(...)`.
 
 ---
 
@@ -42,7 +89,7 @@ Floating overlay that shows the currently-playing music track's title and artist
 
 ```gdscript
 class_name CreditProjection
-extends Control
+extends CDGameControl
 ```
 
 ### Exports
@@ -59,12 +106,11 @@ extends Control
 
 ### Lifecycle
 
-1. `_ready()` — bails out under `Engine.is_editor_hint()`; sets `process_physics_priority = 70`; defers `_on_initialize()`.
-2. `_on_initialize()` — resolves the ancestor game via `CDGame.find_ancestor(self)`; if found, connects each signal in `track_changed_signals` to `_on_track_changed` using `_game.bus_connect(...)`.
+- `_on_initialize()` — calls `super._on_initialize()` (which resolves `game`), early-outs if `game` is missing, then `connect_all(track_changed_signals, _on_track_changed)`. No `_ready()` or `_exit_tree()` override is needed — both come from `CDGameControl`.
 
 ### Behavior
 
-- `_on_track_changed()` — clears any existing credit, reads `_game.blackboard.get(track_key, null)` as a `CDMusicTrack`, and if the track has a title or artist, calls `_show_credit(track)`.
+- `_on_track_changed()` — clears any existing credit, reads `game.blackboard.get(track_key, null)` as a `CDMusicTrack`, and if the track has a title or artist, calls `_show_credit(track)`.
 - `_show_credit(track)` — builds a `Control` container, optionally adds a `TitleLabel` and `ArtistLabel` (each with a generated `LabelSettings` using the exported font, size 24, white text, black outline), and runs a Tween sequence:
   1. fade in (`modulate:a` → 1.0, 0.8s, `EASE_IN`)
   2. hold for `display_time`
@@ -134,8 +180,8 @@ All visual-effect exports use property setters that set `var _params_dirty: bool
 
 ### Lifecycle
 
-1. `_on_initialize()` — sets `process_mode = PROCESS_MODE_ALWAYS`, `z_index = OVERLAY_Z` (relative off), calls `_build_nodes()`, caches the materials, connects `on_crt_on` → `_on_crt_on` and `on_crt_off` → `_on_crt_off` via inherited `bus_connect(...)`, and pushes params if dirty.
-2. `_exit_tree()` — if `game` exists, disconnects every `on_crt_on` / `on_crt_off` signal via `game.bus_disconnect(...)`.
+1. `_on_initialize()` — sets `process_mode = PROCESS_MODE_ALWAYS`, `z_index = OVERLAY_Z` (`z_as_relative = false`), calls `_build_nodes()`, caches the materials, connects visibility signals via `connect_all(on_crt_on, _on_crt_on)` and `connect_all(on_crt_off, _on_crt_off)` (tracked for auto-disconnect), and pushes params if dirty.
+2. **No `_exit_tree()` override.** Tracked bus connections are auto-disconnected by `CDGameComponent._exit_tree` (the script carries a comment stating this).
 3. `_process(delta)` — if `_material` is missing, returns; otherwise pushes params if dirty; advances the `roll_y` shader parameter by `roll_speed * delta` (wrapped with `fmod`); and scrolls the noise overlay (x by `delta * 30`, y by `delta * 15`, both wrapped at 64).
 
 ### Runtime node hierarchy
@@ -159,29 +205,29 @@ Overlays are produced by `_create_overlay(...)`, which returns a fullscreen `Tex
 
 ## How to add a new projector
 
-A projector is any component that listens for game bus signals and renders dynamic overlay content. Two valid shapes exist in this folder — pick the one that fits.
+A projector is any component that listens for game bus signals and renders dynamic overlay content. Pick the base that matches your node type:
 
-### Option A — extend `CDGameComponent` (like `CRTProjector`)
+- **`CDGameComponent`** (`Node2D`-rooted) — for world-space overlays like `CRTProjector`.
+- **`CDGameControl`** (`Control`-rooted) — for UI-space overlays like `CreditProjection`. Use this when you need `Control` layout anchors/offsets or the node must be a UI child.
 
-Use this when your projector is a managed game component and you want the inherited `game` reference, `bus_connect` / `bus_disconnect`, and the base `_on_initialize()` hook.
+Both bases give you the same lifecycle (`_on_initialize()` override + deferred init) and the same tracked bus API (`connect_all` / `bus_connect` with auto-disconnect on `_exit_tree`).
+
+### Skeleton (`CDGameControl` version)
 
 ```gdscript
 class_name MyProjector
-extends CDGameComponent
+extends CDGameControl
 
 @export_group("Listen Signals")
 @export var on_show: Array[StringName] = [&"my_projector_show"]
 
 func _on_initialize() -> void:
-    z_index = OVERLAY_Z
+    super._on_initialize()
+    # game is now resolved by the base
+    # build any nodes you need:
     _build_nodes()
-    for sig in on_show:
-        bus_connect(sig, _on_show)
-
-func _exit_tree() -> void:
-    if game:
-        for sig in on_show:
-            game.bus_disconnect(sig, _on_show)
+    # connect signals (tracked — no _exit_tree needed for cleanup):
+    connect_all(on_show, _on_show)
 
 func _on_show() -> void:
     visible = true
@@ -191,44 +237,14 @@ func _build_nodes() -> void:
     pass
 ```
 
-### Option B — extend `Control` directly (like `CreditProjection`)
-
-Use this when you want a standalone `Control` that resolves its own game reference and defers initialization itself.
-
-```gdscript
-class_name MyProjector
-extends Control
-
-@export_group("Listen Signals")
-@export var trigger_signals: Array[StringName] = [&"my_projector_trigger"]
-
-var _game: CDGame
-
-func _ready() -> void:
-    if Engine.is_editor_hint():
-        return
-    process_physics_priority = 70
-    call_deferred("_on_initialize")
-
-func _on_initialize() -> void:
-    _game = CDGame.find_ancestor(self)
-    if not _game:
-        return
-    for sig in trigger_signals:
-        _game.bus_connect(sig, _on_triggered)
-
-func _on_triggered() -> void:
-    # read from _game.blackboard, build content, animate, etc.
-    pass
-```
+> If you instead extend `CDGameComponent`, the only difference is the base class line — the lifecycle and bus API are identical. (`CDGameComponent` also provides the category/lifecycle hooks used elsewhere in the project; see its README.)
 
 ### Checklist for a new projector
 
-1. **Pick a base class.** `CDGameComponent` for managed components; `Control` for standalone.
-2. **Declare a `class_name`.** Every projector here exposes one (`CreditProjection`, `CRTProjector`).
-3. **Expose signals you react to** under an `@export_group("Listen Signals")` as `Array[StringName]`, and loop over them in `_on_initialize()` to connect.
+1. **Pick a base class.** `CDGameControl` for `Control`-rooted overlays; `CDGameComponent` for `Node2D`-rooted overlays. Both give you `_on_initialize()`, `game`, and tracked `connect_all`/`bus_connect`.
+2. **Declare a `class_name`.** Every projector here exposes one (`CDGameControl`, `CreditProjection`, `CRTProjector`).
+3. **Override `_on_initialize()` and call `super._on_initialize()` first**, then `connect_all(signals, handler)` to wire inputs. Do **not** write your own `_ready()` or `_exit_tree()` for bus teardown — the base handles both.
 4. **Build content dynamically.** Create child nodes in a `_build_nodes()` / `_show_*()` style method rather than relying on a pre-authored tree.
 5. **Use property setters + a `_params_dirty` flag** if you have many tunable visual parameters that must be pushed to a shader (see `CRTProjector`).
-6. **Clean up.** Kill tweens / `queue_free()` runtime nodes, and `bus_disconnect(...)` anything you connected in `_exit_tree()` (or equivalent).
+6. **Clean up your own nodes/tweens** (kill tweens, `queue_free()` runtime containers). Bus disconnection is handled by the base `_exit_tree()`.
 7. **Document each export** with a leading `##` comment, matching the style used in these files.
-8. **Edit-time safety.** If extending `Control` directly, guard `_ready()` with `Engine.is_editor_hint()`.

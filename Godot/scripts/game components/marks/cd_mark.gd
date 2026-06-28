@@ -80,33 +80,50 @@ func _ensure_collision_shape() -> void:
 
 ## --- body detection ---
 
-## write body to blackboard, emit game bus signals, and emit entity bus signals
+## Shared enter handling: filter, then dispatch to the overrideable hook.
+## Subclasses should override _handle_body_entered (without calling super) to
+## replace base behavior, or call _emit_enter(body) from their override to reuse it.
 func _on_body_entered(body: Node2D) -> void:
-	#print("body entered")
-	if _passes_filter(body):
-		#print("body being counted")
-		game.blackboard[entered_body_key] = body
-		for sig in on_entered:
-			game.bus_emit(sig)
-		
-		# Emit on the entering entity's bus if it is a CDEntity
-		if body is CDEntity:
-			#print("entity detected")
-			for sig in on_entered_entity:
-				body.bus_emit(sig)
-				#print("emitted on entity")
+	if not _passes_filter(body):
+		return
+	_handle_body_entered(body)
 
-## write body to blackboard, emit game bus signals, and emit entity bus signals
+## Override point for subclasses. Default writes the body to the blackboard and
+## fires the configured game-bus + entity-bus enter signals via _emit_enter.
+func _handle_body_entered(body: Node2D) -> void:
+	game.blackboard[entered_body_key] = body
+	_emit_enter(body)
+
+## Shared exit handling: filter, then dispatch to the overrideable hook.
 func _on_body_exited(body: Node2D) -> void:
-	if _passes_filter(body):
-		game.blackboard[exited_body_key] = body
-		for sig in on_exited:
-			game.bus_emit(sig)
-			
-		# Emit on the exiting entity's bus if it is a CDEntity
-		if body is CDEntity:
-			for sig in on_exited_entity:
-				body.bus_emit(sig)
+	if not _passes_filter(body):
+		return
+	_handle_body_exited(body)
+
+## Override point for subclasses. Default writes the body to the blackboard and
+## fires the configured game-bus + entity-bus exit signals via _emit_exit.
+func _handle_body_exited(body: Node2D) -> void:
+	game.blackboard[exited_body_key] = body
+	_emit_exit(body)
+
+## Emit-only helper for the enter path — callable from subclass overrides so
+## subclasses declare intent rather than duplicating the blackboard write + loop.
+func _emit_enter(body: Node2D) -> void:
+	for sig in on_entered:
+		game.bus_emit(sig)
+	# Emit on the entering entity's bus if it is a CDEntity
+	if body is CDEntity:
+		for sig in on_entered_entity:
+			body.bus_emit(sig)
+
+## Emit-only helper for the exit path — callable from subclass overrides.
+func _emit_exit(body: Node2D) -> void:
+	for sig in on_exited:
+		game.bus_emit(sig)
+	# Emit on the exiting entity's bus if it is a CDEntity
+	if body is CDEntity:
+		for sig in on_exited_entity:
+			body.bus_emit(sig)
 
 ## --- runtime shape swap ---
 

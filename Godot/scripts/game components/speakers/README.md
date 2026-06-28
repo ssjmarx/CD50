@@ -24,13 +24,15 @@ class_name <Name> extends CDGameComponent
 
 `CDGameComponent` provides:
 - a `game` reference to the owning game node,
-- a `bus_connect(signal_name, callable)` helper (and `game.bus_disconnect` / `game.bus_emit` for manual use),
-- an `_on_initialize()` virtual that runs once the `game` reference is ready.
+- a `bus_connect(signal_name, callable)` helper that **tracks** the connection for auto-disconnect, plus `connect_all(signals, callable)` for arrays,
+- `game.bus_disconnect` / `game.bus_emit` for manual use,
+- an `_on_initialize()` virtual that runs once the `game` reference is ready,
+- an `_exit_tree()` that **auto-disconnects every tracked bus connection**, so subclasses only need to clean up their own resources (deregister, free nodes, etc.).
 
 ### Lifecycle hooks used
 
-- `_on_initialize()` — locate dependencies (e.g. `game.find_child("CDSoundBank")`) and `bus_connect` to the trigger signals.
-- `_exit_tree()` — disconnect signals and deregister from the bank so no dangling handlers remain.
+- `_on_initialize()` — locate dependencies (e.g. `game.find_child("CDSoundBank")`) and `bus_connect` to the trigger signals. Connections made via `bus_connect` are **tracked** and torn down automatically by the base `_exit_tree()`.
+- `_exit_tree()` — only used when the subclass has its own resources to release. `ContinuousSpeaker` overrides it to `_deregister()` from the sound bank and then calls `super._exit_tree()` so the base still auto-disconnects the tracked bus signals. `MusicSpeaker` and `SoundSpeaker` have no `_exit_tree` override — the base handles signal cleanup, and they own no bank slot to deregister.
 
 ### Triggering audio
 
@@ -70,10 +72,10 @@ A sustained synthesized tone driven by `CDSoundBank`. Designed for drones, hums,
 
 ### Behavior
 
-1. On `_on_initialize()`: finds the bank, builds `_signature`, and connects `start_signal` → `_on_start` and `stop_signal` → `_on_stop`.
+1. On `_on_initialize()`: finds the bank, builds `_signature`, and connects `start_signal` → `_on_start` and `stop_signal` → `_on_stop` (both tracked for auto-disconnect).
 2. `_on_start()` computes a sound position (center of `game.game_bounds`, or `Vector2.ZERO` if it has no area) and calls `_bank.start_continuous(...)`, tagged with `game.get_instance_id()`.
 3. `_on_stop()` → `_deregister()` calls `_bank.stop_continuous(_signature, owner_id)`.
-4. `_exit_tree()` deregisters and disconnects both signals if `game` still exists.
+4. `_exit_tree()` calls `_deregister()` to release the bank slot, then `super._exit_tree()` so the base auto-disconnects the tracked `start_signal`/`stop_signal` connections.
 
 The editor preview generates `preview_duration` seconds of samples using `CDUtilities.freq_from_note`, `apply_freq_effect`, `wave_sample`, and `apply_amp_effect`, pushing stereo frames into an `AudioStreamGeneratorPlayback`.
 
@@ -89,16 +91,17 @@ A dual-player playlist system with shuffled ordering, crossfades, and loop-point
 
 ### Exports
 
-| Property | Type | Default | Notes |
-| --- | --- | --- | --- |
-| `playlist` | `Array[CDMusicTrack]` | `[]` | Ordered list of tracks |
-| `loop` | `bool` | `false` | Re-shuffle and continue after the last track |
-| `volume_db` | `float` | `-6.0` | Target playback volume (dB) |
-| `idle_volume_db` | `float` | `-20.0` | Declared but not driven by the script body |
-| `fade_in_duration` | `float` | `1.0` | Declared but not driven by the script body |
-| `fade_out_duration` | `float` | `0.5` | Used by `_fade_out_and_stop` |
-| `crossfade_duration` | `float` | `1.0` | Parallel in/out transition between tracks |
-| `track_key` | `StringName` | `&"current_track"` | Blackboard key for the current `CDMusicTrack` |
+| Property | Type | Default | Group | Notes |
+| --- | --- | --- | --- | --- |
+| `playlist` | `Array[CDMusicTrack]` | `[]` | — | Ordered list of tracks |
+| `loop` | `bool` | `false` | — | Re-shuffle and continue after the last track |
+| `volume_db` | `float` | `-6.0` | — | Target playback volume (dB) |
+| `fade_in_duration` | `float` | `1.0` | — | Used to tween the new player up to `volume_db` |
+| `fade_out_duration` | `float` | `0.5` | — | Used by `_fade_out_and_stop` |
+| `crossfade_duration` | `float` | `1.0` | — | Fade-out duration for the outgoing player during a crossfade |
+| `start_signal` | `StringName` | `&"game_play"` | Trigger Signals | Bus signal that starts the playlist |
+| `stop_signal` | `StringName` | `&"game_over"` | Trigger Signals | Bus signal that stops the playlist |
+| `track_key` | `StringName` | `&"current_track"` | Blackboard Keys | Blackboard key for the current `CDMusicTrack` |
 
 ### State
 
@@ -108,16 +111,16 @@ A dual-player playlist system with shuffled ordering, crossfades, and loop-point
 - `_is_playing: bool` — master gate; every async path re-checks it.
 - `_pitch_scale: float` — exposed via the `pitch_scale` property which applies to both players live.
 
-### Hardcoded signal wiring
+### Signal wiring
 
-Unlike the other two speakers, `MusicSpeaker` hardcodes its triggers in `_on_initialize()`:
+`MusicSpeaker` connects its configurable `start_signal` / `stop_signal` in `_on_initialize()` (tracked for auto-disconnect):
 
 ```gdscript
-bus_connect("game_play", _on_game_play)
-bus_connect("game_over", _on_game_over)
+bus_connect(start_signal, _on_game_play)
+bus_connect(stop_signal, _on_game_over)
 ```
 
-It does not expose configurable signal names.
+It has no `_exit_tree` override — the base auto-disconnects both.
 
 ### Behavior
 
@@ -125,7 +128,7 @@ It does not expose configurable signal names.
 - `_play_next()`:
   - reshuffles (if `loop`) or stops (`_is_playing = false`) when the queue empties,
   - pops the next index, swaps `_active_player` to the other voice,
-  - starts the new stream at `-60.0` dB and tweens it to `volume_db` while the previous player tweens to `-60.0` and then `stop`s,
+  - starts the new stream at `-60.0` dB and tweens it to `volume_db` over `fade_in_duration` while the previous player tweens to `-60.0` over `crossfade_duration` and then `stop`s,
   - writes `game.blackboard[track_key] = track` and emits `track_changed`,
   - if `track.loop_end > 0.0` calls `_schedule_loop_crossfade(track)`, otherwise `_schedule_next_on_finish()`.
 - `_schedule_loop_crossfade(track)` `await`s a timer for `loop_end - loopfade_duration`, then jumps the active player to `loop_start` and reschedules itself recursively. Re-checks `_is_playing` after each await.
@@ -158,9 +161,9 @@ Fires a one-shot (or jingle) synthesized sound through `CDSoundBank` in response
 
 ### Behavior
 
-1. `_on_initialize()` finds the bank and connects `trigger_signal` → `_on_trigger` (skipped if the name is empty).
+1. `_on_initialize()` finds the bank and connects `trigger_signal` → `_on_trigger` via `bus_connect(...)` (tracked for auto-disconnect; skipped if the name is empty).
 2. `_on_trigger()` bails if `sound` or `_bank` is null, or if `gameplay_only` and the state isn't `PLAYING`. Otherwise it computes a center position and calls `_bank.play_one_shot(sound, position, false, false, owner_id)`.
-3. `_exit_tree()` disconnects the trigger signal if `game` still exists.
+3. No `_exit_tree()` override — the base auto-disconnects the tracked `trigger_signal` connection. `SoundSpeaker` holds no bank slot to deregister.
 
 ### Editor preview
 
@@ -190,9 +193,9 @@ Mirror the conventions above. Concretely:
    ```gdscript
    _bank = game.find_child("CDSoundBank") as CDSoundBank
    ```
-3. **Expose trigger signals as `StringName` exports** (like `ContinuousSpeaker` and `SoundSpeaker`), and connect them in `_on_initialize()` via `bus_connect(...)`. If the speaker is intrinsically tied to the play/over lifecycle (like `MusicSpeaker`) it is acceptable to hardcode those two signals instead.
+3. **Expose trigger signals as `StringName` exports** (like all three speakers here — `MusicSpeaker` now exposes configurable `start_signal`/`stop_signal` too), and connect them in `_on_initialize()` via the tracked `bus_connect(...)`.
 4. **Play through `CDSoundBank`** for one-shots and continuous tones — do not spawn raw `AudioStreamPlayer`s for synthesized game audio. `MusicSpeaker` is the documented exception because it plays streamed `CDMusicTrack` assets.
 5. **Guard async work** behind `_is_playing` (or an equivalent flag) so timers and awaits no-op after the game ends.
-6. **Clean up in `_exit_tree()`**: disconnect every signal you connected and deregister from the bank. Always re-check `if game:` before touching `game` here, because the game may already be gone.
+6. **Only override `_exit_tree()` when you have your own resources to release** (e.g. deregistering from the bank). Signal disconnection is handled automatically by the base `_exit_tree()`. If you do override it, call `super._exit_tree()` after your own cleanup so the base still auto-disconnects tracked connections (see `ContinuousSpeaker`).
 7. **If you add an editor preview**, copy the `Preview` export group pattern: a self-resetting `preview_action` enum, an `_ensure_preview_player()` that creates/reuses an `AudioStreamGenerator`-backed `AudioStreamPlayer` on the `Master` bus, and a deferred `_preview_fill()` that pushes stereo frames. Gate every preview path with `Engine.is_editor_hint()`.
 8. **Document every `@export`** with a `##` comment above it, matching the style used in these files.

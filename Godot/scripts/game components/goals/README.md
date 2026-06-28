@@ -156,8 +156,9 @@ numeric condition. Use it as a direct signal → result bridge.
 
 ### Behavior
 
-- `_on_initialize()` connects every signal in `trigger_signals` (via
-  `game.bus_connect`) to `_on_signal_received`.
+- `_on_initialize()` connects every signal in `trigger_signals` via the
+  inherited `connect_all(trigger_signals, _on_signal_received)` (tracked for
+  auto-disconnect on `_exit_tree`).
 - `_on_signal_received()` early-outs on `GAME_OVER`, then runs the standard
   goal contract (write `game_result`, emit `on_condition_met`). There is **no**
   `_compare` / threshold logic.
@@ -194,9 +195,10 @@ the new goal integrates with the bus/blackboard the same way.
 4. **Add the exports your goal specifically needs** to describe its trigger
    condition (a threshold, a set of signals, a list of groups, etc.).
 5. **Override `_on_initialize()`** to connect whatever your trigger source is:
-   - For game-bus signals, use `bus_connect(sig, handler)` /
-     `game.bus_connect(sig, handler)` (see `ScoreThresholdGoal`,
-     `SignalGoal`).
+   - For an array of game-bus signals, prefer the inherited
+     `connect_all(signals, handler)` (tracked for auto-disconnect) — see
+     `SignalGoal`. For a single signal or non-array source, `bus_connect(...)` /
+     `game.bus_connect(...)` still work.
    - For registry/typed signals, connect directly
      (see `GroupCountGoal` → `game.group_registry.group_count_changed`).
 6. **In your handler, run the standard contract:**
