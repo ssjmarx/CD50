@@ -45,6 +45,22 @@ So a goal is configured by four shared exports:
   > `[&"goal_reached"]` (informational) — the same field meant different
   > things per goal. The split makes both intents first-class.
 
+  > **Defaults shape — pick the one that matches your intent.** The three
+  > goals ship with **two** default "shapes", and this is intentional but
+  > asymmetric, so be aware which you are copying:
+  >
+  > | Shape | `game_result` | `end_game_signals` | Used by | Intent |
+  > | --- | --- | --- | --- | --- |
+  > | **Victory / opt-in terminator** | `VICTORY` | `[]` | `GroupCountGoal`, `ScoreThresholdGoal` | "the player achieved something" — does *not* end the game unless a designer adds `&"game_over"` |
+  > | **Defeat / always-terminator** | `DEFEAT` | `[&"game_over"]` | `SignalGoal` | "a trigger means the player lost and the game ends now" |
+  >
+  > When adding a new goal, choose the shape that matches the *default* intent.
+  > Rule of thumb: failure triggers (player died, enemies reached the bottom)
+  > → the `DEFEAT` / `[&"game_over"]` shape; success triggers (score reached,
+  > area cleared) → the `VICTORY` / `[]` shape and let the scene opt into
+  > termination. Both are only defaults — every field is overridable in the
+  > inspector.
+
 All three override `_on_initialize()` (a base-class lifecycle hook) to wire up
 their inputs: connecting to a registry, the game bus, or a blackboard signal.
 All three also override `_ready()` to set

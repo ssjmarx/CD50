@@ -130,17 +130,7 @@ func _write_cached(shooters: Array[CDEntity]) -> void:
 
 ## gather entities from all shooter groups (deduplicated, valid, active)
 func _gather_shooters() -> Array[CDEntity]:
-	var seen: Dictionary = {}
-	var result: Array[CDEntity] = []
-	
-	for group_name in shooter_groups:
-		for entity in game.group_registry.get_group(group_name):
-			if not seen.has(entity):
-				seen[entity] = true
-				if is_instance_valid(entity) and entity.state == CDEnums.EntityState.ACTIVE:
-					result.append(entity)
-	
-	return result
+	return game.group_registry.get_groups_union(shooter_groups, true)
 
 ## --- reset ---
 

@@ -1,5 +1,5 @@
 ## CDSequenceStep
-## A single step in a SignalSequenceDirector's timed signal sequence
+## A single step in a SignalManager's timed signal sequence
 ## Fires one or more game bus signals simultaneously, then waits before advancing
 
 class_name CDSequenceStep extends Resource

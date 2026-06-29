@@ -40,7 +40,7 @@ Selects the first N candidates in iteration order. Simple and deterministic — 
 
 ### `CDSelectNearestN` (`cd_select_nearest_n.gd`)
 
-Selects N candidates nearest to the StateDirector's position. Sorts by distance to `source_position` and returns the closest N.
+Selects N candidates nearest to a caller-provided position (e.g. `StateManager`'s `global_position`, the surviving consumer of this selector). Sorts by distance to `source_position` and returns the closest N.
 
 - `@export var count: int = 1` — maximum number of entities to select.
 - Returns `[]` if `candidates` is empty. Otherwise copies the candidate list, sorts it ascending by `global_position.distance_squared_to(source_position)`, and returns the first N.

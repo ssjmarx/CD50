@@ -24,8 +24,13 @@ func _ready() -> void:
 	super._ready()
 
 ## initialize triggers if they require game bus references
+## (no super._on_initialize(): CDGameComponent's base _on_initialize is a no-op —
+## game is resolved in _ready, not _on_initialize — so the super call would be
+## redundant here. NOTE: this differs from CDGameControl subclasses like the cue
+## cards, whose base resolves game INSIDE _on_initialize and therefore MUST call
+## super. Do not "standardize" the two contracts into one without unifying the
+## base classes first.)
 func _on_initialize() -> void:
-	super._on_initialize()
 	for rule in scoring_rules:
 		if rule and rule.trigger:
 			rule.trigger.initialize(game)

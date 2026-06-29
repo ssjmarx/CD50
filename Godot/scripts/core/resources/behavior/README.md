@@ -2,7 +2,7 @@
 
 Data-only `Resource` scripts that describe **rules, transitions, scaling curves, and shape/kick tables** consumed by the game's directors and managers. Nothing in this folder is a `Node` or runs on its own — each file is a `Resource` subclass (filename `cd_*.gd`, `class_name CD*`) that other systems read at runtime.
 
-This README documents **only what the `.gd` files in this folder actually contain**. References to external systems (e.g. `StageDirector`, `StageManager`, `ScoreManager`, `SignalSequenceDirector`, `Faces`, `WaveCard`) are quoted from each script's own docstring and are defined elsewhere.
+This README documents **only what the `.gd` files in this folder actually contain**. References to external systems (e.g. `StageDirector`, `StageManager`, `StateManager`, `ScoreManager`, `SignalManager`, `Faces`, `WaveCard`) are quoted from each script's own docstring and are defined elsewhere. (Former `StateDirector` / `SignalSequenceDirector` references have been updated to the canonical `StateManager` / `SignalManager` after the duplicate-pair cleanup.)
 
 ---
 
@@ -163,7 +163,7 @@ Pure data — no methods.
 
 ### `CDSequenceStep` — `cd_sequence_step.gd`
 
-> A single step in a `SignalSequenceDirector`'s timed signal sequence. Fires one or more game bus signals simultaneously, then waits before advancing.
+> A single step in a `SignalManager`'s timed signal sequence. Fires one or more game bus signals simultaneously, then waits before advancing. (The resource was formerly consumed by `SignalSequenceDirector`, removed as a duplicate of `SignalManager`.)
 
 **Exports**
 - `signals: Array[StringName] = []` — game bus signals fired simultaneously when the step activates.

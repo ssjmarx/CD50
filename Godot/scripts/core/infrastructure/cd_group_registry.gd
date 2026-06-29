@@ -44,6 +44,22 @@ func get_group(group_name: StringName) -> Array[CDEntity]:
 func get_count(group_name: StringName) -> int:
 	return get_group(group_name).size()
 
+## union of entities across multiple groups, deduplicated.
+## if active_only is true, only valid entities in the ACTIVE state are returned.
+## (replaces the per-director _gather_* dedup loops.)
+func get_groups_union(group_names: Array[StringName], active_only := false) -> Array[CDEntity]:
+	var seen: Dictionary = {}
+	var result: Array[CDEntity] = []
+	for group_name in group_names:
+		for entity in get_group(group_name):
+			if seen.has(entity):
+				continue
+			if active_only and not (is_instance_valid(entity) and entity.state == CDEnums.EntityState.ACTIVE):
+				continue
+			seen[entity] = true
+			result.append(entity)
+	return result
+
 ## find closest entity in a group to a world position
 func get_nearest(group_name: StringName, to_pos: Vector2) -> CDEntity:
 	var group = get_group(group_name)

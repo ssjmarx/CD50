@@ -305,16 +305,10 @@ func _is_entity_in_any_slot(entity: CDEntity) -> bool:
 			return true
 	return false
 
-## gather entities from all formation groups (deduplicated)
+## gather entities from all formation groups (deduplicated; active filtering
+## happens later in _auto_assign_slots)
 func _gather_formation_entities() -> Array[CDEntity]:
-	var seen: Dictionary = {}
-	var result: Array[CDEntity] = []
-	for group_name in formation_groups:
-		for entity in game.group_registry.get_group(group_name):
-			if not seen.has(entity):
-				seen[entity] = true
-				result.append(entity)
-	return result
+	return game.group_registry.get_groups_union(formation_groups, false)
 
 ## check if entity is a member of the formation groups (per require_all mode)
 func _is_in_formation_groups(entity: CDEntity) -> bool:

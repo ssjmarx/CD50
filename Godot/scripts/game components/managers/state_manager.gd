@@ -84,21 +84,15 @@ func _process_trigger(t: CDTransition) -> void:
 		_update.queue_transition(entity, t.remove_groups, t.add_groups, t.entity_signals, t.game_signals)
 		t.start_cooldown()
 
-## gather candidates from all target groups (deduplicated)
+## gather candidates from all target groups (deduplicated; unfiltered — the
+## valid/active guard happens in _process_trigger). when no target groups are
+## configured, fall back to the first remove_group so the transition still fires.
 func _gather_from_groups(t: CDTransition) -> Array[CDEntity]:
 	if t.target_groups.is_empty():
 		if t.remove_groups.is_empty():
 			return []
 		return game.group_registry.get_group(t.remove_groups[0])
-	
-	var seen: Dictionary = {}
-	var result: Array[CDEntity] = []
-	for group_name in t.target_groups:
-		for entity in game.group_registry.get_group(group_name):
-			if not seen.has(entity):
-				seen[entity] = true
-				result.append(entity)
-	return result
+	return game.group_registry.get_groups_union(t.target_groups, false)
 
 ## check if entity is a member of all specified groups
 func _is_in_all_groups(entity: CDEntity, groups: Array[StringName]) -> bool:

@@ -1,6 +1,0 @@
-[gd_scene load_steps=2 format=3 uid="uid://bf43dpgnegd46"]
-
-[ext_resource type="Script" uid="uid://dbd6gdbypnruh" path="res://scripts/game components/directors/state_director.gd" id="1_mjqla"]
-
-[node name="StateDirector" type="Node2D"]
-script = ExtResource("1_mjqla")

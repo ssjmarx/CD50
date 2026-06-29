@@ -48,7 +48,6 @@ func _ready() -> void:
 	super._ready()
 
 func _on_initialize() -> void:
-	super._on_initialize()
 	if speed_scaler:
 		speed_scaler.initialize(game)
 	if not marching_orders.is_empty():
@@ -130,6 +129,15 @@ func _advance_marching(delta: float) -> void:
 func _on_reset_orders() -> void:
 	_reset_marching_state()
 
+## --- reset ---
+
+## reset marching accumulators and scaler for game restart, mirroring
+## FormationDirector.reset (the standard channel other directors use)
+func reset() -> void:
+	if speed_scaler:
+		speed_scaler.reset()
+	_reset_marching_state()
+
 ## --- command execution ---
 
 ## translate the delta vector into a continuous blackboard write
@@ -154,16 +162,10 @@ func _write_move_data(delta_offset: Vector2) -> void:
 
 ## --- helpers ---
 
-## gather entities from all target groups (deduplicated)
+## gather entities from all target groups (deduplicated; active filtering
+## happens later in _write_move_data). guards against missing game/group_registry
+## so this stays safe in the @tool editor path.
 func _gather_target_entities() -> Array[CDEntity]:
-	var seen: Dictionary = {}
-	var result: Array[CDEntity] = []
 	if not is_instance_valid(game) or not is_instance_valid(game.group_registry):
-		return result
-		
-	for group_name in target_groups:
-		for entity in game.group_registry.get_group(group_name):
-			if not seen.has(entity):
-				seen[entity] = true
-				result.append(entity)
-	return result
+		return []
+	return game.group_registry.get_groups_union(target_groups, false)

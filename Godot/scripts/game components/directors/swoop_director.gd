@@ -213,10 +213,11 @@ func _apply_lane_offset(offset: float, lane: float) -> Vector2:
 ## --- entity gathering ---
 
 ## gather entities
+## (require_all mode intersects groups manually; the ANY branch delegates to
+## the registry's dedup helper. active filtering happens later in _on_trigger.)
 func _gather_entities() -> Array[CDEntity]:
-	var entities: Array[CDEntity] = []
-	
 	if require_all and swooping_groups.size() > 1:
+		var entities: Array[CDEntity] = []
 		var first_group: StringName = swooping_groups[0]
 		for entity in game.group_registry.get_group(first_group):
 			if not is_instance_valid(entity):
@@ -228,15 +229,8 @@ func _gather_entities() -> Array[CDEntity]:
 					break
 			if in_all:
 				entities.append(entity)
-	else:
-		var seen: Dictionary = {}
-		for group_name in swooping_groups:
-			for entity in game.group_registry.get_group(group_name):
-				if not seen.has(entity):
-					seen[entity] = true
-					entities.append(entity)
-	
-	return entities
+		return entities
+	return game.group_registry.get_groups_union(swooping_groups, false)
 
 ## --- processing ---
 

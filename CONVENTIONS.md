@@ -174,7 +174,9 @@ Reserved for infrastructure (never set by components): REGISTRATION, INPUT, ENTI
 | **Faces** (VISUAL) | 60 | Visual representation — drawing code only |
 | **Voices** (AUDIO) | 65 | Entity-level audio |
 | **Stage** (RULES) | 70 | Game-level components — cards, goals, marks, directors, trapdoors, speakers, projectors |
-| **Managers** | 75 | Stage lifecycle — StageManager, StateManager, SignalManager |
+| **Managers** | 75 | Stage lifecycle & cross-frame state — StageManager, StateManager, SignalManager, ScoreManager |
+
+> **Manager vs Director boundary (post-cleanup):** Both sit in `game components/`, but their roles differ. **Directors** (`RULES`/70) *orchestrate across groups each frame* — they gather entities, evaluate data-driven rules, and push intent onto blackboards/signals (aiming, formation, marching order, shooting, swoop) or perform one-shot swaps (stage). **Managers** (`MANAGER`/75) *own lifecycle and accumulated state* — staging entities in/out (StageManager), transitioning entities between groups as state (StateManager), running timed signal sequences (SignalManager), or evaluating scoring rules (ScoreManager). Formerly this boundary was muddied by duplicate director/manager pairs (state, signal); those were collapsed — the manager is canonical in each case.
 
 ### Directory Structure (V2 — actual)
 ```
@@ -200,10 +202,10 @@ Godot/scripts/
 │   ├── faces/               — 7 visual components
 │   └── voices/              — 2 audio components
 ├── game components/
-│   ├── cards/               — 4 cue cards (score, lives, timer, wave)
-│   ├── directors/           — 7 stage controllers
-│   ├── managers/            — 3 stage managers (StageManager, StateManager, SignalManager)
-│   ├── goals/               — 2 win/lose conditions
+│   ├── cards/               — 5 cue cards (score, lives, timer, wave, capture)
+│   ├── directors/           — 6 stage controllers (aiming, formation, marching_order, shooting, stage, swoop)
+│   ├── managers/            — 4 stage managers (Stage, State, Signal, Score)
+│   ├── goals/               — 3 win/lose conditions (group_count, score_threshold, signal)
 │   ├── marks/               — 6 spatial triggers
 │   ├── projectors/          — 2 visual post-processing
 │   ├── speakers/            — 3 audio components

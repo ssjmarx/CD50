@@ -1,5 +1,5 @@
 ## CDSelectNearestN
-## Selects N candidates nearest to the StateDirector's position
+## Selects N candidates nearest to the caller's (e.g. StateManager's) position
 ## Sorts by distance to source_position, returns the closest N
 
 class_name CDSelectNearestN extends CDSelector
