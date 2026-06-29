@@ -1,91 +1,167 @@
-# CD50 — Aider Conventions & Rules
+# CD50 — Editing Conventions & Rules
 
-> **This file is the single source of truth for AI behavior in this repo.**
-> Aider auto-reads `CONVENTIONS.md` when present. If it does not, run:
-> `aider --read CONVENTIONS.md`
+> **The AI editing quick-reference for this repo.** Rules to follow when editing code + the code-comment standard.
+> For the *why* behind these rules, see **`USAGE.md`**. For the catalogue of what exists, see **`memory-bank/PROJECT_STATUS.md`**.
 
 **Companion docs:** `USAGE.md` (architecture deep-dive) · `memory-bank/PROJECT_STATUS.md` (catalogue) · `memory-bank/CURRENT_TASK.md` (active work)
 
----
-
-## ⛔ THE MOST IMPORTANT RULE
-
-**THE AI ASSISTANT IS NOT ALLOWED TO WRITE FUNCTIONAL CODE OR ALTER SCENE FILES.**
-
-This means:
-1. Do **NOT** write, modify, or generate `.gd` scripts that contain game logic, component behavior, or functional code.
-2. Do **NOT** create, modify, or restructure `.tscn` scene files.
-3. Do **NOT** modify `project.godot` or any configuration that affects runtime behavior.
-4. Do **NOT** write code on the user's behalf — the user writes all functional code themselves.
-
-**The ONLY exception:** Writing or updating **code comments** (lines beginning with `#`) inside existing `.gd` files, and only when explicitly asked.
-
-### ⚠️ Enforcement in Aider
-Because Aider's default mode edits files, you must observe these guardrails:
-- Use `/ask` mode (read-only reasoning) as the **default** for all discussions.
-- Only exit `/ask` mode if the user explicitly says "please edit" AND the edit is to documentation, `memory-bank/`, or code comments.
-- Never use `/add` on `.gd` or `.tscn` files for the purpose of editing them. You may `/add` them for reading/review only.
-- If asked to implement a feature, refuse politely and instead explain the pattern, offer 2–3 approaches, and let the user write it.
+**Tooling:** Aider auto-reads this file; if not, run `aider --read CONVENTIONS.md`.
 
 ---
 
-## 🤖 THE AI ASSISTANT'S ROLE
+## 1. What the AI may and may not edit
 
-1. **Bouncing Ideas** — Discuss architecture, design patterns, and trade-offs. Ask clarifying questions. Offer alternatives.
-2. **Organizing Planning & Brainstorming** — Create/update/reorganize files in `memory-bank/` and `planning/`. Structure brainstorming into actionable plans.
-3. **Writing Code Comments** — See §4 below for the comment convention. Comments describe existing code only — never hide functional code inside comments.
-4. **Organizing the Project** — Suggest file organization and naming. Identify code that could be refactored into components. Flag deviations from the architecture.
-5. **Tutoring & Coaching** — Explain Godot/GDScript concepts and guide toward solutions rather than providing them directly.
-
----
-
-## 📋 MANDATORY CONTEXT CHECK
-
-Before answering substantive questions, verify:
-1. `memory-bank/PROJECT_STATUS.md` — codebase truth: architecture, component catalogue.
-2. `memory-bank/CURRENT_TASK.md` — active work + roadmap.
-3. If either file appears outdated or inaccurate, **flag this to the user first** before proceeding.
-
-For deep architectural reference: `USAGE.md` and `planning/V2 Rules.md`.
+- **Functional code — `.gd` scripts containing game logic, `.tscn` scenes, `project.godot`, and any runtime config — requires explicit permission.** Ask first; never edit on assumption.
+- **Freely editable without permission:** documentation (`.md`), `memory-bank/`, `planning/`, and **code comments** inside existing `.gd` files.
+- Comments describe existing code only — never hide functional code inside comments, and never comment out dead code (delete it instead).
+- When asked to implement a feature the user hasn't approved, don't write the code — explain the pattern, offer 2–3 approaches, and let the user write it.
 
 ---
 
-## 📝 MEMORY BANK MAINTENANCE
+## 2. Mandatory context & reference checks
 
-The memory bank is **two files only**. Both are auto-loaded by Aider (see `.aider.conf.yml`). Keep them lean and accurate.
+Before answering substantive questions or editing:
 
-### `memory-bank/PROJECT_STATUS.md` — "What exists"
-**Update when:**
-- A script is **added, removed, or renamed** → update the catalogue + count.
-- A new **pattern or anti-pattern** emerges.
-- The **architecture** changes (new base class, priority shift, signal system change).
-
-**Do NOT update for:** uncommitted work-in-progress; opinion or discussion.
-
-### `memory-bank/CURRENT_TASK.md` — "What we're doing"
-**Update when:**
-- The **active task** changes.
-- A **milestone completes** (check the roadmap, mark it ✅).
-- The **ship status** changes (demo shipped, new blocker, etc.).
-- The **roadmap** is revised.
-
-**Do NOT update for:** every minor sub-task; completed work that belongs in `PROJECT_STATUS.md`.
-
-**Rule of thumb:** *what the code IS* → `PROJECT_STATUS.md`. *what we're DOING* → `CURRENT_TASK.md`.
+1. Read `memory-bank/PROJECT_STATUS.md` (codebase truth + catalogue) and `memory-bank/CURRENT_TASK.md` (active work). If either looks outdated, **flag it to the user first.**
+2. **Before editing any component, read that component's category README in `COMBINED_READMES.md`** (exports, lifecycle hooks, exact signals). `COMBINED_READMES.md` is the per-component authoring reference; this file is only the cross-cutting rules.
 
 ---
 
-## 🏗️ V2 ARCHITECTURE — QUICK REFERENCE
+## 3. Code Comment Convention (mandatory for every `.gd` edit)
 
-> **Active architecture:** V2. The V1 codebase is archived under `Godot/v1/` and is **not** under active development. All new work targets V2.
+1. **All comments start with `##`.** (No `#` line comments, no block comments.)
+2. **Each file opens with exactly 3 lines:** the file/class name · what it produces · what it consumes.
+3. **Each function has exactly 1 editor description line** — a single `##` line describing its job.
+4. **In-function comments only when a block is ≥4 lines *and* not self-documenting.** If the code already reads clearly, don't comment.
+5. **File separators only for groups of 3+ related functions.** Don't litter singletons or pairs with dividers.
 
-### Core Principles
-1. **Composition over inheritance** — `CDEntity` is a blank physics shell. All behavior comes from components.
-2. **Signals, not calls** — Components never call methods on other components. They emit signals.
-3. **Single-purpose components** — Each component does one thing. Split if it does two.
-4. **Zero game-specific scripts** — Every game is assembled from reusable components in `.tscn` scenes.
+```gdscript
+## cd_example_component.gd
+## Produces: a move-intent request from player input.
+## Consumes: Godot input events; entity.blackboard["move"].
+extends CDEntityComponent
 
-### Base Classes
+class_name CDExampleComponent
+
+## Reads the move axis each frame and writes a velocity-request key.
+func _entity_process(delta: float) -> void:
+    ## four-or-more-line, non-obvious block may get one ## comment
+    ...
+```
+
+---
+
+## 4. Editing decision table
+
+When adding or editing a component, derive these from its kind:
+
+| Component kind | Base class | Category | Priority | Lifecycle hooks to override |
+|:---|:---|:---|:---|:---|
+| Brain / Leg / Arm / Gut / Face / Voice | `CDEntityComponent` | its category | 10 / 20 / 40 / 50 / 60 / 65 | `_entity_ready`, `_entity_exit`, `_entity_process` |
+| Card / Director / Goal / Mark / Speaker / Projector | `CDGameComponent` | `RULES` | 70 | `_game_ready`, `_game_exit`, `_game_process` |
+| Manager | `CDGameComponent` | `MANAGER` | 75 | `_game_ready`, `_game_exit`, `_game_process` |
+| Spawner | `CDStageTrapdoor` | `RULES` | 70 | override the virtuals only |
+| UI card | `CDCueCard` | `RULES` | 70 | `_update_label`, `_publish_tracked`, `_consume_pending` |
+
+**Bus connect / disconnect rules:**
+- Subscribe in the `_ready`-phase hook (`_entity_ready` / `_game_ready`); disconnect in the `_exit`-phase hook.
+- Use the tracked APIs only: `entity.bus_connect(sig, callable)` / `game.bus_connect(...)`; emit with `entity.bus_emit(sig)` / `game.bus_emit(sig)` / `bus_emit_from(...)`.
+- Never use Godot's raw `connect` / `emit` / `call` on these buses.
+
+**Write-before-emit (HARD RULE):** every `bus_emit` / `bus_emit_from` — entity bus *and* game bus — must come **after** the blackboard write the listener will read. Signals are zero-arg; the blackboard is the only payload channel.
+
+```gdscript
+## Correct — write data first, then signal
+game.blackboard["captured_entity"] = target
+game.bus_emit("player_captured")
+```
+
+Emitting before writing is a silent, intermittent bug: the connection succeeds and the callback runs, but the data is stale or missing.
+
+---
+
+## 5. Naming & layout
+
+- **Files:** `cd_` prefix, `snake_case` → `cd_example_component.gd`.
+- **Classes:** `CD` prefix, `PascalCase` → `CDExampleComponent`. File name matches class name.
+- **Placement:** entity behaviors → `Godot/scripts/entity components/<category>/`; game-level → `Godot/scripts/game components/<kind>/`; base classes + infrastructure → `Godot/scripts/core/`; resources → `Godot/scripts/core/resources/<kind>/`.
+- **Exports grouped logically** (configuration first, then internal state). Keep comments to the rules in §3 — don't add `# --- Section ---` dividers (they'd violate rule 1).
+
+```
+Godot/scripts/
+├── core/
+│   ├── base classes/         — CDCueCard, CDEntityComponent, CDGameComponent, CDStageTrapdoor
+│   ├── infrastructure/       — CDEntity, CDGame, CDBody, CDStage, collision buffer/matrix, group registry, input router, object pool, updater, sound bank
+│   └── resources/
+│       ├── audio/            — CDNote, CDSoundDef, CDMusicTrack
+│       ├── behavior/         — CDTransition, CDScaler, CDScoringRule, CDSequenceStep, CDStageRule
+│       ├── curves/           — CDCurve base + shape primitives
+│       ├── formation/        — CDFormation, CDMarchingOrder
+│       ├── infrastructure/   — CDCollisionGroup, CDEnums, CDUtilities
+│       ├── selectors/        — CDSelector base + selection strategies
+│       ├── spawners/         — CDSpawnContext, CDGridLayout, CDGridRow, CDGridEquation
+│       ├── triggers/         — CDTrigger base + trigger types
+│       └── visuals/          — CDFaceBinding
+├── entity components/
+│   ├── brains/               — player/ + ai action/ + ai movement/
+│   ├── legs/                 — directional setters/adders, positional setters/adders, other/
+│   ├── arms/                 — collision reactions/, death reactions/, triggered/, powerup/, other/
+│   ├── guts/                 — pools/, death/, physics/, detection/, input/, game logic/
+│   ├── faces/
+│   └── voices/
+├── game components/
+│   ├── cards/                — cue cards (score, lives, timer, wave, capture)
+│   ├── directors/            — aiming, formation, marching order, shooting, stage, swoop
+│   ├── managers/             — Stage, State, Signal, Score
+│   ├── goals/                — group count, score threshold, signal
+│   ├── marks/                — spatial triggers
+│   ├── projectors/           — visual post-processing
+│   ├── speakers/             — game audio
+│   └── trapdoors/            — spawners
+└── effects/                  — transient visual effects
+```
+
+**Full per-folder counts + the class list:** `memory-bank/PROJECT_STATUS.md` (the catalogue).
+
+---
+
+## 6. Bugs-if-broken rules
+
+These invariants cause silent or intermittent failures when violated. Verify each on every edit:
+
+1. **Write-before-emit** (see §4) — the blackboard write completes before any `bus_emit`.
+2. **No direct velocity mutation** — components submit velocity *requests*; the entity merges them. Never assign `entity.velocity = …` in a component.
+3. **No cross-component method calls** — emit a signal; let the recipient decide. (Includes poking sibling components via direct references.)
+4. **No hardcoded physics layers** — define collision groups via `CDCollisionGroup` resources + the `CDCollisionMatrix`.
+5. **`super` first on cleanup** — in `_exit` hooks, call the base cleanup **before** your own, so bus subscriptions and pool state tear down in the correct order.
+
+---
+
+## 7. Priority cascade (reference)
+
+```
+REGISTRY(5) → INPUT(8) → BRAINS(10) → LEGS(20) → ENTITY(30) → COLLISION(35) → ARMS(40) → GUTS(50) → FACES(60) → VOICES(65) → STAGE(70) → MANAGER(75) → UPDATE(90)
+```
+
+Reserved for infrastructure (never set by a component): **REGISTRY, INPUT, ENTITY, COLLISION, UPDATE.**
+
+| Category | Priority | Purpose |
+|:---|:---|:---|
+| Brains (INTENT) | 10 | Input / AI — pure intent generators, never touch velocity |
+| Legs (STEERING) | 20 | Movement executors — consume intent, submit velocity requests |
+| Arms (INTERACTION) | 40 | World-affecting — collision response, scoring, spawning |
+| Guts (STATE) | 50 | Internal state trackers — health, timers, resources, detection |
+| Faces (VISUAL) | 60 | Visual representation — drawing code only |
+| Voices (AUDIO) | 65 | Entity-level audio |
+| Stage (RULES) | 70 | Game-level — cards, goals, marks, directors, trapdoors, speakers, projectors |
+| Managers | 75 | Stage lifecycle & accumulated state |
+
+> **Director vs Manager boundary:** both live in `game components/`. **Directors** (`RULES`/70) orchestrate across groups *each frame* — they gather entities, evaluate data-driven rules, and push intent onto blackboards/signals (aiming, formation, marching order, shooting, swoop) or perform one-shot swaps (stage). **Managers** (`MANAGER`/75) own lifecycle & accumulated state — staging entities in/out (StageManager), transitioning entities between groups as state (StateManager), running timed signal sequences (SignalManager), evaluating scoring rules (ScoreManager). Rule of thumb: *if it pushes intent onto entities every frame, it's a director; if it reacts to triggers to change what's active or accumulated, it's a manager.*
+
+---
+
+## 8. Base classes (reference)
+
 | Class | Extends | Role |
 |:---|:---|:---|
 | `CDEntity` | `CharacterBody2D` | Blank physics shell — velocity accumulator, entity bus, blackboard, pool-aware lifecycle |
@@ -95,170 +171,10 @@ The memory bank is **two files only**. Both are auto-loaded by Aider (see `.aide
 | `CDBody` | `Node2D` | Behavior-set container inside an entity — sleeps/wakes on signals |
 | `CDStage` | `Node2D` | Scene container — sleeps/wakes on signals; holds trapdoors/directors |
 
-### Signal System — Hybrid Bus
-Both entity and game buses use **native Godot signals** (via `add_user_signal()` / `bus_connect()`). All dynamic signals are **zero-arg**; data flows through `entity.blackboard` and `game.blackboard` dictionaries.
-
-- **Emitter:** `entity.blackboard["key"] = value` → `entity.bus_emit("signal_name")`
-- **Listener:** reads `entity.blackboard["key"]` in callback
-- **Auto-populated keys each frame:** `"position"`, `"rotation"`, `"velocity"`
-- `bus_emit()` auto-tracks the emitter in `_signal_emitters` for the current frame (enables `CDSelectSignalEmitter`)
-
-### Bus Signals — Write-Before-Emit Contract (HARD RULE)
-
-All dynamic bus signals are **zero-arg**. Event data flows through the blackboard, not the signal. This creates a temporal dependency between writer and listener:
-
-> **The writer MUST write to the blackboard BEFORE emitting the signal.**
-> **The listener MAY read from the blackboard inside the signal callback.**
-
-```gdscript
-# ✅ Correct — write data first, then signal
-game.blackboard["captured_entity"] = target
-game.bus_emit("player_captured")
-
-# ❌ Wrong — listener reading the blackboard in the callback gets stale/missing data
-game.bus_emit("player_captured")
-game.blackboard["captured_entity"] = target
-```
-
-**Rationale:** Because the signal carries no payload, the listener's only source of truth is the blackboard at the moment the callback fires. Emitting before writing is a silent, intermittent bug — the connection still succeeds, the callback still runs, but the data isn't there yet.
-
-**Scope:** This rule applies to every `bus_emit()` / `bus_emit_from()` call in the codebase — entity bus and game bus alike. It is the temporal equivalent of a data race and must be treated as a bug.
-
-**When this contract is painful:** Genuinely local event data (e.g. "a body entered this area, *this* body") that has no cross-system shared-state meaning currently still has to round-trip through the blackboard. Typed bus payloads (non-zero-arg signals) for these cases are filed as Future Work; until then, use a dedicated blackboard key and obey write-before-emit.
-
-### Deterministic Priority Cascade
-```
-REGISTRY(5) → INPUT(8) → BRAINS(10) → LEGS(20) → ENTITY(30) → COLLISION(35) → ARMS(40) → GUTS(50) → FACES(60) → VOICES(65) → STAGE(70) → MANAGER(75) → UPDATE(90)
-```
-Reserved for infrastructure (never set by components): REGISTRATION, INPUT, ENTITY, COLLISION, UPDATE.
-
-### Component Categories
-| Category | Priority | Purpose |
-|:---|:---|:---|
-| **Brains** (INTENT) | 10 | Input / AI — pure intent generators, never touch velocity |
-| **Legs** (STEERING) | 20 | Movement executors — consume intent, submit velocity requests |
-| **Arms** (INTERACTION) | 40 | World-affecting — collision response, scoring, spawning |
-| **Guts** (STATE) | 50 | Internal state trackers — health, timers, resources, detection |
-| **Faces** (VISUAL) | 60 | Visual representation — drawing code only |
-| **Voices** (AUDIO) | 65 | Entity-level audio |
-| **Stage** (RULES) | 70 | Game-level components — cards, goals, marks, directors, trapdoors, speakers, projectors |
-| **Managers** | 75 | Stage lifecycle & cross-frame state — StageManager, StateManager, SignalManager, ScoreManager |
-
-> **Manager vs Director boundary:** Both sit in `game components/`, but their roles differ. **Directors** (`RULES`/70) *orchestrate across groups each frame* — they gather entities, evaluate data-driven rules, and push intent onto blackboards/signals (aiming, formation, marching order, shooting, swoop) or perform one-shot swaps (stage). **Managers** (`MANAGER`/75) *own lifecycle and accumulated state* — staging entities in/out (StageManager), transitioning entities between groups as state (StateManager), running timed signal sequences (SignalManager), or evaluating scoring rules (ScoreManager). Rule of thumb: *if it pushes intent onto entities every frame, it's a director; if it reacts to triggers to change what's active or accumulated, it's a manager.*
-
-### Directory Structure (V2 — actual)
-```
-Godot/scripts/
-├── core/
-│   ├── base classes/        — CDCueCard, CDEntityComponent, CDGameComponent, CDStageTrapdoor
-│   ├── infrastructure/      — CDEntity, CDGame, CDCollisionBuffer, CDGroupRegistry, CDObjectPool, CDUpdater, CDStage, CDBody, etc.
-│   └── resources/
-│       ├── audio/           — CDNote, CDSoundDef, CDMusicTrack
-│       ├── behavior/        — CDTransition, CDShape, CDScaler, CDSequenceStep, CDStageRule, etc.
-│       ├── curves/          — CDCurve base + 12 curve types (AI path generation)
-│       ├── formation/       — CDFormation, CDMarchingOrder
-│       ├── infrastructure/  — CDCollisionGroup, CDEnums, CDUtilities
-│       ├── selectors/       — CDSelector base + 6 selection strategies
-│       ├── spawners/        — CDSpawnContext, CDGridLayout, CDGridRow, CDGridEquation
-│       ├── triggers/        — CDTrigger base + 4 trigger types
-│       └── visuals/         — CDFaceBinding
-├── entity components/
-│   ├── brains/              — player/ + ai action/ + ai movement/
-│   ├── legs/                — directional setters/adders, positional setters/adders, other/
-│   ├── arms/                — collision reactions/, death reactions/, triggered/, powerup/, other/
-│   ├── guts/                — pools/, death/, physics/, detection/, input/, game logic/
-│   ├── faces/               — 7 visual components
-│   └── voices/              — 2 audio components
-├── game components/
-│   ├── cards/               — 5 cue cards (score, lives, timer, wave, capture)
-│   ├── directors/           — 6 stage controllers (aiming, formation, marching_order, shooting, stage, swoop)
-│   ├── managers/            — 4 stage managers (Stage, State, Signal, Score)
-│   ├── goals/               — 3 win/lose conditions (group_count, score_threshold, signal)
-│   ├── marks/               — 6 spatial triggers
-│   ├── projectors/          — 2 visual post-processing
-│   ├── speakers/            — 3 audio components
-│   └── trapdoors/           — 3 spawners
-└── effects/                 — 3 visual effects
-```
-
-**Full component catalogue (191 scripts):** `memory-bank/PROJECT_STATUS.md`
+Signal system: both buses use **native Godot signals** via `bus_connect()` / `bus_emit()`. All dynamic signals are **zero-arg**; data flows through `entity.blackboard` and `game.blackboard`. The buses auto-populate `"position"`, `"rotation"`, `"velocity"` each frame and track the current emitter in `_signal_emitters` (enables `CDSelectSignalEmitter`).
 
 ---
 
-## 💬 CODE COMMENT CONVENTION
+## 9. Memory-bank maintenance (condensed)
 
-When asked to write or revise code comments in `.gd` files, follow this structure for each component class. Keep comments accurate to the existing code — describe, don't prescribe.
-
-```gdscript
-## [Component Name]
-## [Category: Brains/Legs/Arms/Guts/Faces/Voices/Stage/Managers] · Priority: XX
-##
-## One- or two-sentence summary of what this component does and when it is active.
-##
-## Reads:           blackboard keys / resources this component reads
-## Writes:          blackboard keys this component writes
-## Emits:           signal_name (bus: entity/game)  — one per line
-## Listens for:     signal_name (bus: entity/game)  — one per line
-## Resources:       exported resource types (e.g. @export var curve: CDCurve)
-extends ...
-
-class_name ...
-
-# --- Configuration (exports) ---
-@export var example_property: float = 1.0  # units / meaning
-
-# --- Internal state ---
-var _internal_thing: int = 0
-
-# --- Lifecycle ---
-func _entity_ready() -> void:
-    # Two-phase lifecycle: called after the entity is ready. Subscribe to buses here.
-    ...
-
-func _entity_exit() -> void:
-    # Cleanup: disconnect bus subscriptions here.
-    ...
-
-# --- Processing ---
-func _entity_process(delta: float) -> void:
-    # Category priority is set on the node; this is the per-frame hook.
-    ...
-```
-
-Conventions:
-- **Header block** (the `##` lines) goes at the top of the file, immediately above `extends`. It is the contract: reads/writes/emits/listens/resources.
-- **`# --- Section ---` dividers** separate Configuration / Internal state / Lifecycle / Processing. Use them to keep the file scannable.
-- **Inline comments** (`#`) explain *why*, not *what*. "Submit as a request, don't set velocity" — good. "Set x to 5" — bad.
-- **Never** comment out functional code. If code is dead, delete it.
-- Keep comments tight — don't restate the GDScript in English.
-
----
-
-## 💡 WHEN DISCUSSING CODE
-
-- Reference actual file paths and line numbers when possible.
-- Use `memory-bank/PROJECT_STATUS.md` as ground truth for what exists.
-- When unsure how something works, say "I don't know" — don't hallucinate implementation details.
-- If the user asks "should I do X?", explain the trade-offs and let them decide.
-
----
-
-## 🤖 MODEL USAGE STRATEGY
-
-| Model | Quota | When to use |
-|:---|:---|:---|
-| `zai/glm-4.7` | 1× | Default — general questions, explanations, pattern suggestions, documentation |
-| `zai/glm-5.2` | 1× peak / 2× off-peak after Sept | Escalation — complex architecture, stuck on bugs, deep reasoning across systems |
-
-Switch per-session with: `aider --model zai/glm-5.2`
-
----
-
-## 🔄 AIDER WORKFLOW TIPS
-
-- **Start sessions with `/ask`** — keeps Aider read-only by default.
-- **Use `/clear`** between unrelated topics to reset context and save tokens.
-- **Use `/add`** to load specific files for review (not for editing `.gd`/`.tscn`).
-- **Use `/tokens`** to monitor context usage.
-- **Batch questions** — combine related questions into one prompt to save tokens.
-- **Use `/diff`** to review any proposed changes before accepting.
+Two files only. **`PROJECT_STATUS.md`** = *what the code IS* — update when a script is added/removed/renamed, a new pattern or anti-pattern emerges, or the architecture shifts (keep the catalogue + count current). **`CURRENT_TASK.md`** = *what we're DOING* — update when the active task, a milestone, ship status, or roadmap changes. Don't update either for uncommitted WIP or opinion/discussion. When unsure: *state* → `PROJECT_STATUS.md`, *activity* → `CURRENT_TASK.md`.

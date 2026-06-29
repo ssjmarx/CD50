@@ -7,12 +7,15 @@
 
 ---
 
-## 🔥 Active Task — Port the V1 Roster to V2, Then Delete V1
+## 🔥 Active Task — Port the V1 Roster to V2, Integrate the Remixes, Then Delete V1
 
-Bug Blaster 2 — the first complete V2 game — is **done**. It proves out the architecture end-to-end (see §"Bug Blaster 2 — Shipped" below). The focus now shifts to **porting the remaining V1 games to V2**, then **deleting `Godot/v1/`** once parity is reached.
+Bug Blaster 2 — the first complete V2 game — is **done**. It proves out the architecture end-to-end (see §"Bug Blaster 2 — Shipped" below). The focus now shifts to **porting the remaining V1 games to V2**, **integrating the remixes into the V2 `CDStage` paradigm**, and then **deleting `Godot/v1/`** once parity is reached.
 
 ### Why this task
 The itch.io demo shipped on V1 with 12 games. V2 is the future: zero game-specific scripts, full composability. Every V1 game needs a V2 remake so the demo (and the eventual Steam release) run on a single architecture. V1 is kept as reference during the port and deleted when no longer needed.
+
+### The remix-integration pattern
+The V1 remixes won't each live in a separate scene the way the remakes do. Each remix will live **on the base game** and be **woken by a signal rather than loaded into its own scene** — the same `CDStage` sleep/wake pattern Bug Blaster 2's `Level1Stage`…`Level5Stage` already demonstrates. One game root, multiple `CDStage` nodes (one per remix variant), only the active one running at a time. This keeps the remix layer as pure scene composition, with no per-remix scripts.
 
 ### V2 Port Backlog (V1 demo roster)
 The 12 demo games, by port status. Components listed are the **new V2 components** each port is expected to exercise/prove.
@@ -81,9 +84,6 @@ See `USAGE.md` §9 for the full end-to-end walkthrough.
 
 ### Completed (V1 demo)
 - ✅ 12 V1 games built and playable
-- ✅ Polybius character (narrator/face/voice — judges, mocks, demands score)
-- ✅ 5 Balatro-like modifiers (Shotgun, Overclocked, Feature Creep, Crunch Time, Scope Creep)
-- ✅ Mini progression system (score-gated unlocks, top-5 high scores, initials entry)
 - ✅ CRT shader (vector + raster modes, self-building controller)
 - ✅ Web build exported, tested at 60fps on T480 target
 - ✅ Butler deploy pipeline operational
@@ -98,41 +98,17 @@ See `USAGE.md` §9 for the full end-to-end walkthrough.
 
 ---
 
-## 🎯 Vision — "Balatro but Arcade Games"
-
-CD50 is **"Balatro but with classic arcade games instead of poker."**
-
-A collection of classic arcade games from the 70s and 80s — remade and remixed — bound together by a Balatro-inspired system of modifiers. The player plays "runs" of 20-60 second arcade rounds, losing a life (and instantly progressing) if they die, ending the run when all three lives are lost. The goal: chase ever-higher scores by breaking the games with modifier combinations. Every game is built entirely from reusable, composable components. Zero game-specific scripts.
-
-**Demo:** itch.io arcade cabinet with meta-orchestrator, fast rules, lives, cumulative scoring.
-**Full release:** Steam, targeting October 2026 Next Fest, expanding toward 50 games.
-
-### The Progression System (Full Release)
-- **Modifiers ("Illegal Modifications")** — passive rules rewriters, unlock by lifetime score. Target: 50 at launch (5 for demo).
-- **Playlists** — player-curated game sets (min 10 games), require collected "floppies".
-- **Drops** — in-game pickups (modifiers, floppies, lore) at score thresholds.
-- **Bosses** — longer multi-phase games every 9 levels during a run.
-- **Glitches** — difficulty modifiers every 8 games to pressure deep runs.
-- **Lore** — Polybius mystery meta-narrative pieced together from drops.
-
----
-
 ## 📅 Roadmap
 
 | Phase | Timeline | Status |
 |-------|----------|--------|
-| Steamworks setup + itch.io pipeline | May 6–11 | ✅ Complete |
-| Finalize arcade content (12 games) | May 12–31 | ✅ Complete |
-| Polybius + modifiers + progression | May 18–31 | ✅ Complete |
 | V2 architecture build (Plans 19–29) | June | ✅ Complete — 191 scripts |
 | Bug Blaster 2 (first V2 game) | June | ✅ Complete — shipped |
-| **Port V1 roster to V2 + delete V1** | **June–July** | **🔄 In progress** |
+| **Port V1 roster to V2 + integrate remixes + delete V1** | **June–July** | **🔄 In progress** |
 | Ship itch.io demo (V2) | July | 🔲 Pending port |
-| Vertical slice (expand modifiers + games) | July | Planned |
-| Steamworks integration (stats, leaderboards, achievements) | August 1–17 | Planned |
-| Next Fest registration + store page | August 18–31 | Planned |
-| Steam demo build + press preview | September | Planned |
-| **Demo live + Next Fest** | **October 19–26** | **🎯 Target** |
+| Steamworks integration (stats, leaderboards, achievements) | August | Planned |
+| Next Fest registration + store page | August | Planned |
+| **Demo live + Next Fest** | **October** | **🎯 Target** |
 
 ---
 
