@@ -1,203 +1,74 @@
-# Directors
+# Directors — Group Orchestration Components
 
-Directors are `CDGameComponent` nodes (category `CDEnums.ComponentCategory.RULES`) that orchestrate behavior across **groups of entities** rather than acting on a single entity. They read from the game's `group_registry`, evaluate data-driven resource rules, and push results onto entity `blackboard`s, game-bus `signals`, or queued state transitions.
+`Directors` are `CDGameComponent` nodes (category `RULES`) that orchestrate behavior across **groups of entities** rather than acting on a single entity. They read from `game.group_registry`, evaluate data-driven resource rules, and push results onto entity blackboards, game-bus signals, or queued state transitions.
 
-This folder contains six director scripts. They share a common shape but each solves a different orchestration problem.
+> **Removed:** `signal_sequence_director.gd` and `state_director.gd` were deleted as near-duplicates of `managers/signal_manager.gd` and `managers/state_manager.gd`. Those managers are the canonical implementations.
 
-> **Note:** This folder previously also held `signal_sequence_director.gd` and `state_director.gd`. Both were **removed** as near-duplicates of `managers/signal_manager.gd` and `managers/state_manager.gd` respectively (same resources, same state machines, identical core logic — the only difference was trigger wiring). The managers are the canonical implementations; see `managers/README.md`.
+## Files
+
+| File | Class | Output |
+|------|-------|--------|
+| `aiming_director.gd` | `AimingDirector` | Blackboard `aim_direction` (per-entity nearest-target aiming) |
+| `formation_director.gd` | `FormationDirector` | Blackboard `move_direction` / `move_distance` (slot grid + marching) |
+| `marching_order_director.gd` | `MarchingOrderDirector` | Blackboard `move_direction` / `move_distance` (continuous path delta) |
+| `shooting_director.gd` | `ShootingDirector` | Entity-bus shoot signal (trigger + selector driven) |
+| `stage_director.gd` | `StageDirector` | Entity swap (deactivate + spawn replacement) on game-bus signal |
+| `swoop_director.gd` | `SwoopDirector` | Blackboard `move_direction` / `move_distance` along a curve; emits `swoop_complete` |
 
 ---
 
-## Shared conventions (observed across these files)
+## Patterns
 
-These patterns appear in the actual code in this folder. They are not imposed by a base class — each script re-implements them.
+### 1. Rules category
+Every director extends `CDGameComponent` and sets `component_category = CDEnums.ComponentCategory.RULES` in `_ready()` before `super._ready()`.
 
-### Base class & category
-Every script extends `CDGameComponent` and sets its category in `_ready()`:
-
+### 2. `@tool` status
+Five of six are `@tool` (preview geometry, or harmless to evaluate in the editor). `StageDirector` is **not** `@tool` (it does runtime entity swaps). Every `@tool` script guards runtime loops with:
 ```gdscript
-func _ready() -> void:
-    component_category = CDEnums.ComponentCategory.RULES
-    super._ready()
+if Engine.is_editor_hint(): return
 ```
 
-### `@tool` status
-| Script | `@tool` | Editor preview (`_draw`) | Editor animation (`_process`) |
-| --- | --- | --- | --- |
-| `aiming_director.gd` | yes | no | no |
-| `formation_director.gd` | yes | yes | yes (marching) |
-| `marching_order_director.gd` | yes | no | no |
-| `shooting_director.gd` | yes | no | no |
-| `stage_director.gd` | **no** | no | no |
-| `swoop_director.gd` | yes | yes | no |
-
-> **`@tool` rationale:** the six remaining scripts are split 5 `@tool` / 1 non-`@tool`. `StageDirector` is not `@tool` because it performs entity swaps (instantiate + add_child) which only make sense at runtime; the five `@tool` scripts either preview geometry (`FormationDirector`, `SwoopDirector`) or are harmless to evaluate in the editor (`AimingDirector`, `MarchingOrderDirector`, `ShootingDirector`).
-
-Every `@tool` script guards its runtime logic with `if Engine.is_editor_hint(): return` inside `_physics_process` (and `_process`/`_draw` where they only draw in the editor).
-
-### Entity gathering
-Directors gather entities from named groups via the shared registry helper `game.group_registry.get_groups_union(group_names, active_only)`, which deduplicates across the listed groups into an `Array[CDEntity]`. Pass `active_only := true` to also filter to valid + `ACTIVE` entities in one call; pass `false` (then filter later) when the caller needs the raw membership (e.g. `FormationDirector`, which filters during slot assignment).
+### 3. Entity gathering
+Gather entities via the shared registry helper — do **not** re-implement the dedup loop:
 
 ```gdscript
-## union + dedup + active filter in one call
-return game.group_registry.get_groups_union(target_groups, true)
+return game.group_registry.get_groups_union(target_groups, true)  # dedup + active filter
 ```
 
-Several directors additionally support a `require_all` toggle (intersection mode): `true` = entity must be in ALL listed groups, `false` = entity must be in ANY group. Intersection mode is implemented inline (there is no matching registry helper yet); the ANY branch always delegates to `get_groups_union`.
+- `active_only := true` — common case (valid + `ACTIVE` in one call).
+- `active_only := false` — only when you filter later (e.g. during slot assignment).
+- `require_all` (intersection mode) is implemented inline; the ANY branch delegates to `get_groups_union`.
 
-> **History:** every director used to re-implement its own `seen`-dict dedup loop (`_gather_*`). That boilerplate was collapsed into the single registry method in a cleanup pass; new directors should call `get_groups_union` rather than copying the old loop.
+### 4. Output channels (never move entities directly)
+1. **Entity blackboard** — write `Vector2` directions / `float` distances under configurable keys (defaults: `move_direction`, `move_distance`, `aim_direction`).
+2. **Game-bus signals** — `game.bus_emit(sig)` / `game.bus_emit_from(sig, entity)`.
+3. **Entity-bus signals** — `entity.bus_emit(shoot_signal)`.
+4. **Queued transitions** — `game.update.queue_transition(...)` (used by managers, not by any remaining director).
 
-### Output channels
-Directors do **not** move entities directly. They push intent through these channels:
+### 5. Data-driven resources
+Directors are configured by attachable resources: `CDFormation`, `CDMarchingOrder`, `CDTrigger`, `CDSelector`, `CDDirectorRule`, `CDCurve`, `CDScaler`. Initialize child resources in `_on_initialize()` (e.g. `trigger.initialize(game)`).
 
-1. **Entity blackboard** — write `Vector2` directions / `float` distances under configurable `StringName` keys (default keys: `move_direction`, `move_distance`, `aim_direction`).
-2. **Game bus signals** — emit / connect `StringName` signals via `game.bus_emit(...)`, `game.bus_emit_from(sig, entity)`, `bus_connect(...)`, or `game.bus_connect(...)`.
-3. **Entity bus signals** — emit a signal on a single entity via `entity.bus_emit(shoot_signal)`.
-4. **Queued transitions** — `StateManager` (in `managers/`, formerly mirrored by the now-removed `state_director.gd`) defers group changes through `game.update.queue_transition(...)` (a `CDUpdater`). No director in this folder uses this channel.
+### 6. Listen signals via `connect_all`
+```gdscript
+connect_all(trigger_signals, _on_trigger)  # inherited; tracked + auto-disconnected on _exit_tree
+```
+If you override `_exit_tree`, call `super._exit_tree()` so tracked connections are torn down.
 
-### Lifecycle hooks used
-- `_ready()` — set category, call `super._ready()`.
-- `_on_initialize()` — connect listen-signals, initialize child resources (`trigger.initialize(game)`, `selector.initialize(game)`, `speed_scaler.initialize(game)`, `curve...`), build lookup maps.
-- `_physics_process(delta)` — runtime per-frame logic (guarded against editor when `@tool`).
-- `reset()` — clears state for game restart. Present on: `AimingDirector`, `FormationDirector`, `MarchingOrderDirector`, `ShootingDirector`, `SwoopDirector`. **Not** present on `StageDirector` (it is stateless — it only swaps entities on signal, holding no accumulated state). Every stateful director now has a `reset()`; `MarchingOrderDirector` was previously missing one and only had a private `_reset_marching_state` — it now also resets its `speed_scaler` and routes through the public `reset()` like the others.
-
-### Common dependency types
-These resource/object types are referenced by the directors (defined elsewhere in the project):
-- `CDEntity` — the entities being orchestrated.
-- `CDGameComponent` — base class.
-- `game.group_registry` — group lookups.
-- `game.update` (`CDUpdater`) — deferred transition queue.
-- Resources: `CDFormation`, `CDMarchingOrder`, `CDScaler`, `CDTrigger`, `CDSelector`, `CDSequenceStep`, `CDDirectorRule`, `CDTransition`, `CDCurve`.
-
----
-
-## Per-script reference
-
-### `aiming_director.gd` — `AimingDirector`
-**Purpose:** Per-entity nearest-target aiming. Each shooter independently finds its closest target across `target_groups` and writes a normalized direction to its blackboard.
-
-- `@tool`: yes
-- **Inputs (exports):**
-  - `shooter_groups: Array[StringName]` (default `&"enemies"`) — groups that should aim.
-  - `target_groups: Array[StringName]` (default `&"players"`) — groups searched for targets.
-  - Timing: `update_interval: float` (0 = every frame; >0 throttles recalculation and writes cached directions between updates).
-  - Precision: `targeting_noise: float` — random offset added to the target position.
-  - Blackboard key: `aim_key` (default `&"aim_direction"`), a normalized `Vector2`.
-  - Angle limits: `use_angle_limit`, `min_angle_offset`, `max_angle_offset` (degrees, 0 = East, clamped in absolute world space).
-- **Behavior:** In `_physics_process`, gathers shooters, optionally throttles, then for each shooter calls `_calculate_aim` which uses `game.group_registry.get_nearest(group, pos)` per target group, applies optional noise, and optional absolute-angle clamping.
-- **Blackboard writes:** `entity.blackboard[aim_key] = direction`.
-- **`reset()`:** clears update timer and cached directions.
-
-### `formation_director.gd` — `FormationDirector`
-**Purpose:** Manages tiered sub-formation grids (`CDFormation`) and animates them with data-driven marching orders. Auto-assigns group members to slots and writes per-entity move data.
-
-- `@tool`: yes (editor preview + marching animation).
-- **Inputs (exports):**
-  - `formation_groups`, `require_all` — which entities may occupy slots.
-  - `formations: Array[CDFormation]` — sub-formation definitions (each has its own grid, `preferred_group`, and offset). Setter re-inits slots and redraws.
-  - Marching: `marching_orders: Array[CDMarchingOrder]` — ordered Step/Pause/Breathe commands.
-  - `speed_scaler: CDScaler` — multiplies marching speed (effective duration is divided by the evaluated multiplier).
-  - Blackboard keys: `direction_key` (`move_direction`), `distance_key` (`move_distance`).
-  - Preview: `preview_color`, `preview_radius` (drawn as circles at slot positions).
-- **Behavior:**
-  - `_process` (editor only) advances marching for preview; `_draw` (editor only) renders slot positions including the current marching offset and breathing scales.
-  - `_physics_process` advances marching, auto-assigns untracked group members to slots (preferred group first, then un-preferred formations, then as last resort), cleans stale/invalid/out-of-group slots, and writes move data.
-  - Marching state tracks a raw timer and a scaled timer; looping resets `_accumulated_offset` to snap back to the start (a comment notes you can comment out that line to allow endless drifting).
-  - Breathing values (`spacing_scale`, `offset_scale`) come from the current marching order via `get_breathing_values`.
-- **Blackboard writes:** `move_direction` (direction to slot target) and `move_distance` (distance to slot target; 0 if already there).
-- **`reset()`:** resets scaler, re-inits slots, clears assignment map and marching state.
-
-### `marching_order_director.gd` — `MarchingOrderDirector`
-**Purpose:** A "blind conductor" that translates `CDMarchingOrder` resources into a **continuous** movement intent. Unlike `FormationDirector` it does not manage slots — it evaluates the path delta each frame and writes direction + magnitude to all target entities, leaving discrete stepping to the entities' Legs.
-
-- `@tool`: yes.
-- **Inputs (exports):**
-  - `target_groups`, `require_all`.
-  - Marching: `marching_orders: Array[CDMarchingOrder]`.
-  - `speed_scaler: CDScaler`.
-  - Blackboard keys: `direction_key` (`move_direction`), `distance_key` (`move_distance`).
-  - Listen signal: `reset_signal` (default `&"reset_orders"`) — resets the sequence to the start.
-- **Behavior:** `_physics_process` computes the previous frame's offset, advances marching, takes the delta, and writes the **normalized delta** as direction and the **delta length** as distance (snapped to zero below 0.001). Marching logic mirrors `FormationDirector` but accumulates scaled time per-frame (`scaled_delta = delta * multiplier`) and carries excess scaled time across step boundaries to prevent micro-stutters.
-- **Signal:** connects `reset_signal` via `game.bus_connect`.
-- **Blackboard writes:** `move_direction`, `move_distance`.
-- **`reset()`:** resets the `speed_scaler` and routes through `_reset_marching_state` (clearing the marching index/timers/offsets), matching the `reset()` contract the other stateful directors use for game restart. (`MarchingOrderDirector` previously lacked a public `reset()` and only had the private `_reset_marching_state` — this was a behavioral inconsistency with the other directors and has been corrected.)
-
-### `shooting_director.gd` — `ShootingDirector`
-**Purpose:** Data-driven shooting. A `CDTrigger` decides **when** to fire and a `CDSelector` decides **who** fires. Emits a shoot signal on each selected entity.
-
-- `@tool`: yes.
-- **Inputs (exports):**
-  - `target_groups: Array[StringName]` (default `&"enemies"`).
-  - `trigger: CDTrigger` — evaluated each frame; when true, a fire cycle occurs.
-  - `selector: CDSelector` — narrows candidates (if absent, all candidates fire).
-  - Signal: `shoot_signal` (default `&"shoot"`).
-- **Behavior:** `_physics_process` calls `trigger.evaluate(delta)`; on success it gathers candidates (valid + active, deduplicated), runs them through the selector, and calls `entity.bus_emit(shoot_signal)` on each. Gathering is done via `game.group_registry.get_groups_union(target_groups, true)`.
-- **`reset()`:** resets the trigger.
-
-### `stage_director.gd` — `StageDirector`
-**Purpose:** Listens for game-bus signals and performs entity **swaps** based on `CDDirectorRule` resources — deactivating the original and spawning a replacement at the same position.
-
-- `@tool`: **no**.
-- **Inputs (exports):**
-  - `rules: Array[CDDirectorRule]` — each defines trigger signals, `target_group`, `swap_scene`, optional `selector`, and `deactivate_original`.
-- **Behavior:** `_on_initialize` builds a reverse map (`_signal_to_rules`: signal → rules) and connects each trigger signal via `bus_connect(sig, _on_trigger.bind(sig))`. On trigger, it processes each matching rule: gathers the target group, narrows via `rule.selector.select(candidates)` (or all if no selector), optionally calls `entity.request_deactivate()`, instantiates `rule.swap_scene`, adds it to `game`, positions it at the original's global position, and activates it.
-- **Validation:** rules missing `swap_scene` or `target_group` are skipped with a `push_warning`.
-- **Note:** No `reset()` method (stateless — it only performs swaps on signal).
-
-> **Removed:** `state_director.gd` (`StateDirector`) previously lived here but was deleted as a near-duplicate of `managers/state_manager.gd`. The transition-queue feature is now implemented solely by `StateManager`; see `managers/README.md`. Likewise, `signal_sequence_director.gd` (`SignalSequenceDirector`) was removed in favor of `managers/signal_manager.gd`.
-
-### `swoop_director.gd` — `SwoopDirector`
-**Purpose:** Moves entities along a generated `Curve2D` using virtual "ghost" target points for deterministic spacing, with optional multi-lane formation. Emits `swoop_complete` per entity when it finishes.
-
-- `@tool`: yes (editor curve preview via `_draw`).
-- **Inputs (exports):**
-  - `swooping_groups`, `require_all`.
-  - `target: Vector2` — curve end point.
-  - `curve: CDCurve` — generates the `Curve2D` from director position to target.
-  - Movement: `swoop_speed`, `formation_offset` (spacing between successive entities).
-  - Lanes: `lane_count` (1 = single file, 2 = pairs, …), `lane_spacing`.
-  - Blackboard keys: `direction_key`, `distance_key`, `completed_entity_key` (default `&"swoop_completed_entity"`).
-  - Listen signals: `trigger_signals` (default `&"spawning_complete"`).
-  - Emit signals: `on_swoop_complete` (default `&"swoop_complete"`).
-  - Preview: `show_preview`, `preview_color`, `preview_width`.
-- **Behavior:**
-  - On trigger, gathers entities, generates the curve, computes `_pixels_per_frame = swoop_speed / physics_fps` and `_entry_delay_frames`, determines a fixed perpendicular `_lane_axis` from the initial tangent, then releases the first lane group.
-  - Entities are released `lane_count` at a time with an `_entry_delay_frames` gap; lane offset is `(index - (count-1)/2) * lane_spacing` along `_lane_axis`.
-  - Each frame advances each entity's ghost offset by `_pixels_per_frame`, writes direction/distance to the ghost position, and marks entities complete when their offset reaches `_curve_length`. On completion it sets `game.blackboard[completed_entity_key] = entity` and emits each `on_swoop_complete` signal via `game.bus_emit_from(sig, entity)`.
-  - `_enter_tree`/`_exit_tree` connect/disconnect the curve resource's `changed` signal for live redraws. `_exit_tree` also calls `super._exit_tree()` so the inherited `CDGameComponent` auto-disconnects any tracked game-bus connections (the trigger signals connected via `connect_all`).
-- **`reset()`:** resets the curve resource and clears all ghost/lane/slot/pending state; disables physics processing.
-
----
-
-## How to use a director
-
-1. Add the director node (e.g. `FormationDirector`) to a game scene as a child of the game node that provides `group_registry`, `update`, and the bus.
-2. Configure its exported groups so it gathers the right entities (and set `require_all` if needed).
-3. Attach any required resources (`CDFormation`, `CDMarchingOrder`, `CDTrigger`, `CDSelector`, `CDDirectorRule`, `CDCurve`, `CDScaler`). (`CDSequenceStep` and `CDTransition` are consumed by the **managers**, not by any remaining director.)
-4. Wire the output:
-   - For blackboard-writing directors, ensure target entities have a component (e.g. Legs) that reads the configured blackboard keys.
-   - For signal directors, ensure the emitted/connected signal names match listeners elsewhere.
-5. If the director listens for a trigger signal, make sure something emits that signal on the game bus.
-6. `@tool` directors will show previews/animation in the editor when configured; runtime logic runs only outside the editor.
+### 7. `reset()` for game restart
+Every stateful director has a public `reset()` that clears timers/caches and re-inits child resources. Omit it only for truly stateless directors (`StageDirector`).
 
 ---
 
 ## How to create a new director
 
-Follow the patterns already present in this folder. A minimal director that writes to entity blackboards looks like this skeleton (mirrors the actual code conventions above):
-
 ```gdscript
 @tool
+## MyNewDirector
+## <one-line purpose; which channel(s) it outputs to>
+
 class_name MyNewDirector extends CDGameComponent
 
-## MyNewDirector
-## One-line purpose. Describe what it orchestrates and which channel(s) it outputs to.
-
-## --- exports ---
-
-## groups containing entities this director acts on
 @export var target_groups: Array[StringName] = [&"enemies"]
-## true = entity must be in ALL groups; false = entity must be in ANY group
 @export var require_all: bool = false
 
 @export_group("Blackboard Keys")
@@ -207,49 +78,35 @@ class_name MyNewDirector extends CDGameComponent
 @export_group("Listen Signals")
 @export var trigger_signals: Array[StringName] = [&"game_play"]
 
-## --- state ---
-
-## per-frame caches / timers go here
-
-## --- lifecycle ---
-
 func _ready() -> void:
     component_category = CDEnums.ComponentCategory.RULES
     super._ready()
 
 func _on_initialize() -> void:
-    # connect trigger signals (tracked + auto-disconnected on _exit_tree), initialize child resources, build lookup maps
-    connect_all(trigger_signals, _on_trigger)
-
-## --- processing ---
+    connect_all(trigger_signals, _on_trigger)   # tracked + auto-disconnected
+    # initialize any child resources here
 
 func _physics_process(delta: float) -> void:
     if Engine.is_editor_hint():
         return
-    # gather, filter (valid + ACTIVE), compute intent, write outputs
+    var entities := _gather_target_entities()
+    # compute intent, write blackboard keys / emit signals
 
-## --- helpers ---
-
-## gather entities from all target groups (deduplicated; pass active_only=true
-## to also filter to valid + ACTIVE in one call, or false to filter later)
 func _gather_target_entities() -> Array[CDEntity]:
     return game.group_registry.get_groups_union(target_groups, true)
 
-## --- reset ---
-
 func reset() -> void:
-    pass
+    pass   # clear timers/caches, re-init child resources
 ```
 
-Checklist for a faithful new director (based on this folder's existing scripts):
+### Checklist
 
-- [ ] Extend `CDGameComponent` and set `component_category = CDEnums.ComponentCategory.RULES` in `_ready()`.
-- [ ] Decide `@tool` status. If `@tool`, guard runtime loops with `if Engine.is_editor_hint(): return` and (if you draw) gate `_draw`/`_process` to editor-only where appropriate.
-- [ ] Declare groups + `require_all` (match the existing spelling) if you gather entities.
-- [ ] Gather entities via `game.group_registry.get_groups_union(groups, active_only)` — do **not** re-implement the dedup loop. Use `active_only := true` for the common case, `false` only if you filter later (e.g. during slot assignment). For intersection (`require_all`) mode, intersect manually and delegate only the ANY branch to the helper.
-- [ ] Choose your output channel(s): blackboard keys, game-bus signals, entity-bus signals, or queued transitions. Do **not** move entities directly.
-- [ ] Initialize any child resources in `_on_initialize()` (e.g. `trigger.initialize(game)`).
-- [ ] Connect listen-signals in `_on_initialize()` via the inherited `connect_all(signals, callable)` (tracked and auto-disconnected by the base `_exit_tree()`). If you override `_exit_tree`, call `super._exit_tree()`.
-- [ ] If you connect a one-off/sync listener that must be torn down early, add a defensive `_disconnect_*` helper and call it from both `_complete()`/`reset()` and `_exit_tree()` (the pattern still lives in `managers/signal_manager.gd`'s `_disconnect_sync_listener`).
-- [ ] Add a `reset()` method that clears your state (omit only if the director is truly stateless, as `StageDirector` is).
+- [ ] Extend `CDGameComponent`; set `component_category = RULES` in `_ready()`.
+- [ ] Decide `@tool` status. If `@tool`, guard runtime loops with `if Engine.is_editor_hint(): return` and gate `_draw`/`_process` to editor-only where appropriate.
+- [ ] Declare `target_groups` + `require_all` if you gather entities.
+- [ ] Gather via `game.group_registry.get_groups_union(groups, active_only)` — never re-implement the dedup loop.
+- [ ] Pick output channel(s) (blackboard / game-bus / entity-bus / queued transitions); never move entities directly.
+- [ ] Initialize child resources in `_on_initialize()`.
+- [ ] Connect listen-signals via `connect_all(...)`; if you override `_exit_tree`, call `super._exit_tree()`.
+- [ ] Add a `reset()` (omit only if truly stateless).
 - [ ] If editor previews are useful, implement `_draw()` and have export setters call `queue_redraw()` when `is_node_ready()`.

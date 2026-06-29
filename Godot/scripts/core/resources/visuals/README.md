@@ -1,88 +1,47 @@
-# `resources/visuals/`
+# Visuals Resources
 
-Data-only `Resource` classes that describe **visual configuration** for entity components. These scripts contain no scene-tree logic — they are pure data containers meant to be authored in the inspector and consumed by components at runtime.
+Data-only `Resource` classes that describe **visual configuration** for entity components. No scene-tree logic — pure data containers authored in the inspector and consumed by components at runtime.
 
 ## Files
 
-### `cd_face_binding.gd` — `CDFaceBinding`
+| Class | Purpose | Consumed by |
+|-------|---------|-------------|
+| `CDFaceBinding` | Pairs an entity-bus signal with a sprite frame index, plus optional timed restore (`restore_after`); `0.0` = permanent switch | Face components' `bindings: Array[CDFaceBinding]` |
 
-A `Resource` that pairs an **entity-bus signal** with a **sprite frame index**, plus an optional timed restore. It is the unit used to build signal→frame lookup tables on face components.
+---
 
-```gdscript
-class_name CDFaceBinding extends Resource
-```
+## Patterns
 
-**Exported properties**
+### 1. Data-only
+Every visuals resource is a pure `Resource`: `class_name CD<Name> extends Resource`, `@export` fields with sensible defaults, no `_ready()` / `_process()` / node/scene-tree logic. Behavior lives in the consuming component.
 
-| Property        | Type         | Default | Purpose                                                                 |
-| --------------- | ------------ | ------- | ----------------------------------------------------------------------- |
-| `signal_name`   | `StringName` | `&""`   | Entity-bus signal that triggers the frame change.                       |
-| `frame_index`   | `int`        | `0`     | Sprite frame index to switch to when the signal is received.            |
-| `restore_after` | `float`      | `0.0`   | Seconds before reverting to the default frame. `0.0` = permanent switch.|
+### 2. Self-contained rule shape
+A resource in this folder typically reads as a single self-contained rule, e.g. `CDFaceBinding` = *"when this bus signal fires, show this frame, and (optionally) snap back to the default frame after N seconds."*
 
-## How it is used (observed in the codebase)
+### 3. Two-line `##` header
+Each file starts with `## ClassName` + a one-line description (the in-editor resource description).
 
-`CDFaceBinding` instances are stored as an exported array on the **face components** in `Godot/scripts/entity components/faces/`:
+### 4. Per-export `##` docs
+Every `@export` has a `##` comment, with units/defaults called out where relevant.
 
-- `SpriteFace` (`sprite_face.gd`)
-- `PolygonFace` (`polygon_face.gd`)
-- `VectorFace` (`vector_face.gd`)
+---
 
-Each of these declares:
+## How to create a new visuals resource
 
 ```gdscript
-@export var bindings: Array[CDFaceBinding] = []
+## CDMyVisualConfig
+## One-line description of the visual configuration
+
+class_name CDMyVisualConfig extends Resource
+
+## what this field controls (include units/defaults)
+@export var something: int = 0
 ```
 
-The consumption pattern (taken directly from `sprite_face.gd`) is:
+### Checklist
 
-1. **On initialize** — each binding's `signal_name` is connected on the entity bus, bound to the binding itself:
-   ```gdscript
-   func _on_initialize() -> void:
-       for binding in bindings:
-           self.bus_connect(binding.signal_name, _on_binding_signal.bind(binding))
-   ```
-2. **On signal** — the handler switches to the binding's frame and, if `restore_after > 0.0`, schedules a `SceneTreeTimer` that restores the component's `default_frame`:
-   ```gdscript
-   func _on_binding_signal(binding: CDFaceBinding = null):
-       if binding == null:
-           return
-       _show_frame(binding.frame_index)
-       if binding.restore_after > 0.0:
-           ...
-           _restore_timer = get_tree().create_timer(binding.restore_after)
-           _restore_timer.timeout.connect(_on_restore)
-   ```
-3. **On deactivate** — the same bindings are disconnected from the bus.
-
-So a `CDFaceBinding` is a self-contained rule: *"when this bus signal fires, show this frame, and (optionally) snap back to the default frame after N seconds."*
-
-## How to use `CDFaceBinding`
-
-1. Select a face component node (`SpriteFace`, `PolygonFace`, or `VectorFace`) in a scene.
-2. In the inspector, locate the **Bindings** array (`bindings`).
-3. Add a new element and create a **New CDFaceBinding**.
-4. Fill in:
-   - **Signal Name** — the exact `StringName` the entity bus emits (must match what some other component on the entity emits).
-   - **Frame Index** — which entry of the component's `frames`/shape array to display.
-   - **Restore After** — `0.0` for a permanent switch, or a positive number of seconds to auto-revert.
-
-Multiple bindings can be added; each maps its own signal to its own frame.
-
-## How to add a new `visuals` resource script
-
-This folder is for **data resources only**. To add a new one, follow the shape of `cd_face_binding.gd`:
-
-1. Create a new `.gd` file in this folder (`Godot/scripts/core/resources/visuals/`).
-2. Declare it as a `Resource` subclass with a `class_name`:
-   ```gdscript
-   class_name CDYourVisualThing extends Resource
-   ```
-3. Expose all configurable fields as `@export` vars with sensible defaults so they can be authored purely in the inspector:
-   ```gdscript
-   @export var something: int = 0
-   ```
-4. **Do not** add `_ready()`, `_process()`, or any node/scene-tree logic. These resources are pure data; behavior belongs in the component that consumes them.
-5. Keep the leading doc comment (the `##` lines at the top of the file) updated — it is the in-editor description of the resource.
-
-The contract for anything in this folder is: *data in, data out — no side effects, no scene access.*
+- [ ] New `.gd` file in this folder; `class_name CD<Name> extends Resource`.
+- [ ] Two-line `##` header (class name + one-line description).
+- [ ] Every configurable field is `@export` with a `##` comment and sensible default.
+- [ ] No `_ready()` / `_process()` / scene-tree logic — data in, data out, no side effects.
+- [ ] Behavior belongs in the consuming component, not here.
