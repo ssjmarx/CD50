@@ -4,6 +4,8 @@
 > Aider auto-reads `CONVENTIONS.md` when present. If it does not, run:
 > `aider --read CONVENTIONS.md`
 
+**Companion docs:** `USAGE.md` (architecture deep-dive) · `memory-bank/PROJECT_STATUS.md` (catalogue) · `memory-bank/CURRENT_TASK.md` (active work)
+
 ---
 
 ## ⛔ THE MOST IMPORTANT RULE
@@ -27,46 +29,21 @@ Because Aider's default mode edits files, you must observe these guardrails:
 
 ---
 
-## 🧠 THE AI ASSISTANT'S ROLE
+## 🤖 THE AI ASSISTANT'S ROLE
 
-### 1. Bouncing Ideas
-- Discuss architecture decisions, design patterns, and trade-offs.
-- Help evaluate different approaches to a problem.
-- Ask clarifying questions to sharpen the user's thinking.
-- Offer alternatives the user may not have considered.
-
-### 2. Organizing Planning Documents & Brainstorming
-- Create, update, and reorganize files in `memory-bank/` and `planning/`.
-- Structure brainstorming sessions into actionable plans.
-- Maintain accurate documentation of the project state.
-- Draft planning documents, proposals, and implementation outlines.
-
-### 3. Writing Code Comments
-- Help write clear, descriptive comments for existing code.
-- Suggest comment conventions (purpose, signals listened/emitted, etc.).
-- Document signal flows and component relationships.
-- Do NOT write functional code hidden inside comments — comments describe existing code only.
-
-### 4. Organizing the Project
-- Suggest file organization and naming conventions.
-- Help reorganize functions within scripts to follow Godot best practices.
-- Identify code that could be refactored into components.
-- Point out when project structure deviates from the component architecture.
-
-### 5. Tutoring & Coaching
-- Explain Godot concepts: nodes, signals, scenes, groups, physics layers.
-- Explain GDScript patterns and idioms.
-- Teach programming principles: composition over inheritance, signal-driven architecture, separation of concerns.
-- Guide the user toward solutions rather than providing them directly.
-- Answer "why does this pattern work?" and "what's the Godot way to do X?" questions.
+1. **Bouncing Ideas** — Discuss architecture, design patterns, and trade-offs. Ask clarifying questions. Offer alternatives.
+2. **Organizing Planning & Brainstorming** — Create/update/reorganize files in `memory-bank/` and `planning/`. Structure brainstorming into actionable plans.
+3. **Writing Code Comments** — See §4 below for the comment convention. Comments describe existing code only — never hide functional code inside comments.
+4. **Organizing the Project** — Suggest file organization and naming. Identify code that could be refactored into components. Flag deviations from the architecture.
+5. **Tutoring & Coaching** — Explain Godot/GDScript concepts and guide toward solutions rather than providing them directly.
 
 ---
 
 ## 📋 MANDATORY CONTEXT CHECK
 
 Before answering substantive questions, verify:
-1. `memory-bank/PROJECT_STATUS.md` — codebase truth: architecture, component catalogue, patterns.
-2. `memory-bank/CURRENT_TASK.md` — active work: what we're building now + roadmap.
+1. `memory-bank/PROJECT_STATUS.md` — codebase truth: architecture, component catalogue.
+2. `memory-bank/CURRENT_TASK.md` — active work + roadmap.
 3. If either file appears outdated or inaccurate, **flag this to the user first** before proceeding.
 
 For deep architectural reference: `USAGE.md` and `planning/V2 Rules.md`.
@@ -78,38 +55,27 @@ For deep architectural reference: `USAGE.md` and `planning/V2 Rules.md`.
 The memory bank is **two files only**. Both are auto-loaded by Aider (see `.aider.conf.yml`). Keep them lean and accurate.
 
 ### `memory-bank/PROJECT_STATUS.md` — "What exists"
-This is the **factual codebase reference**. Update it when the codebase changes.
-
 **Update when:**
-- A script is **added, removed, or renamed** → update the component catalogue + count summary.
-- A new **pattern or anti-pattern** emerges → add to the reference tables.
-- The **architecture** changes (new base class, priority shift, signal system change) → update the overview.
+- A script is **added, removed, or renamed** → update the catalogue + count.
+- A new **pattern or anti-pattern** emerges.
+- The **architecture** changes (new base class, priority shift, signal system change).
 
-**Do NOT update for:**
-- Work-in-progress that isn't committed yet.
-- Opinion or discussion — this file is facts only.
+**Do NOT update for:** uncommitted work-in-progress; opinion or discussion.
 
 ### `memory-bank/CURRENT_TASK.md` — "What we're doing"
-This is the **active work pointer**. Update it frequently as focus shifts.
-
 **Update when:**
-- The **active task** changes (e.g., finishing capture mechanics, moving to multi-wave).
+- The **active task** changes.
 - A **milestone completes** (check the roadmap, mark it ✅).
-- The **ship status** changes (demo shipped, new blocker found, etc.).
-- The **roadmap** is revised (dates move, phases reorder).
+- The **ship status** changes (demo shipped, new blocker, etc.).
+- The **roadmap** is revised.
 
-**Do NOT update for:**
-- Every minor sub-task — keep it at the milestone level.
-- Completed work that belongs in `PROJECT_STATUS.md` instead (e.g., "we added a new component" updates the catalogue, not the task).
+**Do NOT update for:** every minor sub-task; completed work that belongs in `PROJECT_STATUS.md`.
 
-### Rule of thumb
-If it's about **what the code IS** → `PROJECT_STATUS.md`.
-If it's about **what we're DOING** → `CURRENT_TASK.md`.
-If unsure, ask the user which file to update.
+**Rule of thumb:** *what the code IS* → `PROJECT_STATUS.md`. *what we're DOING* → `CURRENT_TASK.md`.
 
 ---
 
-## 🏗️ PROJECT CONTEXT — V2 COMPOSABLE ARCHITECTURE
+## 🏗️ V2 ARCHITECTURE — QUICK REFERENCE
 
 > **Active architecture:** V2. The V1 codebase is archived under `Godot/v1/` and is **not** under active development. All new work targets V2.
 
@@ -125,15 +91,17 @@ If unsure, ask the user which file to update.
 | `CDEntity` | `CharacterBody2D` | Blank physics shell — velocity accumulator, entity bus, blackboard, pool-aware lifecycle |
 | `CDGame` | `Node2D` | Game root — game bus + blackboard, state machine, no game logic |
 | `CDEntityComponent` | `Node2D` | Entity component base — two-phase lifecycle, category priority |
-| `CDGameComponent` | `Node2D` | Stage component base — same lifecycle, no entity ref |
+| `CDGameComponent` | `Node2D` | Game-level component base — same lifecycle, no entity ref, cached `game` |
+| `CDBody` | `Node2D` | Behavior-set container inside an entity — sleeps/wakes on signals |
+| `CDStage` | `Node2D` | Scene container — sleeps/wakes on signals; holds trapdoors/directors |
 
-### Signal System — Hybrid Bus (native signals + blackboard)
+### Signal System — Hybrid Bus
 Both entity and game buses use **native Godot signals** (via `add_user_signal()` / `bus_connect()`). All dynamic signals are **zero-arg**; data flows through `entity.blackboard` and `game.blackboard` dictionaries.
 
 - **Emitter:** `entity.blackboard["key"] = value` → `entity.bus_emit("signal_name")`
 - **Listener:** reads `entity.blackboard["key"]` in callback
 - **Auto-populated keys each frame:** `"position"`, `"rotation"`, `"velocity"`
-- `bus_emit()` auto-tracks the emitter in `_signal_emitters` for the current frame (enables signal-aware selectors)
+- `bus_emit()` auto-tracks the emitter in `_signal_emitters` for the current frame (enables `CDSelectSignalEmitter`)
 
 ### Bus Signals — Write-Before-Emit Contract (HARD RULE)
 
@@ -176,7 +144,7 @@ Reserved for infrastructure (never set by components): REGISTRATION, INPUT, ENTI
 | **Stage** (RULES) | 70 | Game-level components — cards, goals, marks, directors, trapdoors, speakers, projectors |
 | **Managers** | 75 | Stage lifecycle & cross-frame state — StageManager, StateManager, SignalManager, ScoreManager |
 
-> **Manager vs Director boundary (post-cleanup):** Both sit in `game components/`, but their roles differ. **Directors** (`RULES`/70) *orchestrate across groups each frame* — they gather entities, evaluate data-driven rules, and push intent onto blackboards/signals (aiming, formation, marching order, shooting, swoop) or perform one-shot swaps (stage). **Managers** (`MANAGER`/75) *own lifecycle and accumulated state* — staging entities in/out (StageManager), transitioning entities between groups as state (StateManager), running timed signal sequences (SignalManager), or evaluating scoring rules (ScoreManager). Formerly this boundary was muddied by duplicate director/manager pairs (state, signal); those were collapsed — the manager is canonical in each case.
+> **Manager vs Director boundary:** Both sit in `game components/`, but their roles differ. **Directors** (`RULES`/70) *orchestrate across groups each frame* — they gather entities, evaluate data-driven rules, and push intent onto blackboards/signals (aiming, formation, marching order, shooting, swoop) or perform one-shot swaps (stage). **Managers** (`MANAGER`/75) *own lifecycle and accumulated state* — staging entities in/out (StageManager), transitioning entities between groups as state (StateManager), running timed signal sequences (SignalManager), or evaluating scoring rules (ScoreManager). Rule of thumb: *if it pushes intent onto entities every frame, it's a director; if it reacts to triggers to change what's active or accumulated, it's a manager.*
 
 ### Directory Structure (V2 — actual)
 ```
@@ -213,7 +181,56 @@ Godot/scripts/
 └── effects/                 — 3 visual effects
 ```
 
-**Full component catalogue (172 scripts):** `memory-bank/PROJECT_STATUS.md`
+**Full component catalogue (191 scripts):** `memory-bank/PROJECT_STATUS.md`
+
+---
+
+## 💬 CODE COMMENT CONVENTION
+
+When asked to write or revise code comments in `.gd` files, follow this structure for each component class. Keep comments accurate to the existing code — describe, don't prescribe.
+
+```gdscript
+## [Component Name]
+## [Category: Brains/Legs/Arms/Guts/Faces/Voices/Stage/Managers] · Priority: XX
+##
+## One- or two-sentence summary of what this component does and when it is active.
+##
+## Reads:           blackboard keys / resources this component reads
+## Writes:          blackboard keys this component writes
+## Emits:           signal_name (bus: entity/game)  — one per line
+## Listens for:     signal_name (bus: entity/game)  — one per line
+## Resources:       exported resource types (e.g. @export var curve: CDCurve)
+extends ...
+
+class_name ...
+
+# --- Configuration (exports) ---
+@export var example_property: float = 1.0  # units / meaning
+
+# --- Internal state ---
+var _internal_thing: int = 0
+
+# --- Lifecycle ---
+func _entity_ready() -> void:
+    # Two-phase lifecycle: called after the entity is ready. Subscribe to buses here.
+    ...
+
+func _entity_exit() -> void:
+    # Cleanup: disconnect bus subscriptions here.
+    ...
+
+# --- Processing ---
+func _entity_process(delta: float) -> void:
+    # Category priority is set on the node; this is the per-frame hook.
+    ...
+```
+
+Conventions:
+- **Header block** (the `##` lines) goes at the top of the file, immediately above `extends`. It is the contract: reads/writes/emits/listens/resources.
+- **`# --- Section ---` dividers** separate Configuration / Internal state / Lifecycle / Processing. Use them to keep the file scannable.
+- **Inline comments** (`#`) explain *why*, not *what*. "Submit as a request, don't set velocity" — good. "Set x to 5" — bad.
+- **Never** comment out functional code. If code is dead, delete it.
+- Keep comments tight — don't restate the GDScript in English.
 
 ---
 

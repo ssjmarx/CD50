@@ -4,9 +4,23 @@
 
 CD50 is a modular arcade game collection built in [Godot 4.5](https://godotengine.org). It features classic arcade games from the 70s and 80s—remade, remixed, and inverted—bound together by a roguelite modifier system. 
 
-The true core of CD50 is its **V2 Composable Architecture**. Every game is assembled entirely from generic, reusable components. **Zero game-specific scripts exist anywhere in the project.**
+The true core of CD50 is its **V2 Composable Architecture**. Every game is assembled entirely from generic, reusable components. **Zero game-specific scripts exist anywhere in the project.** A library of **191 reusable components** makes every game possible.
 
-Currently, the project is migrating to the V2 architecture. **Bug Blaster 2** is the first game built entirely on the V2 component system, acting as the proving ground for the architecture's capabilities.
+The project has migrated to the V2 architecture. **Bug Blaster 2** is the first game built entirely on the V2 component system, acting as the proving ground for the architecture's capabilities.
+
+> **New to the project?** Read **[USAGE.md](USAGE.md)** — the deep-dive guide to how all component categories work together, with a full end-to-end walkthrough of Bug Blaster 2.
+
+---
+
+## Documentation Map
+
+| Document | What it's for |
+|:---|:---|
+| **[USAGE.md](USAGE.md)** | *Why & how* — the deep architecture guide (buses, priority cascade, component collaboration, worked example) |
+| **CONVENTIONS.md** | *Rules* — AI editing guardrails, the write-before-emit contract, code-comment convention |
+| **memory-bank/PROJECT_STATUS.md** | *Catalogue* — what exists right now (every component, grouped) |
+| **memory-bank/CURRENT_TASK.md** | *Now* — active work + roadmap |
+| **COMBINED_READMES.md** | *Reference* — per-component authoring detail |
 
 ---
 
@@ -56,7 +70,7 @@ Because of the strict priority pipeline and signal-driven design, creating compl
 *   Attach a `TractorBeamArm` (Priority 40) that activates an overlapping physics zone to capture the player.
 *   When the player is hit, the `TractorBeamArm` emits a `"player_captured"` signal across the buses. 
 
-The game logic emerges entirely from how these 172 reusable components are wired together in the Godot editor.
+The game logic emerges entirely from how these 191 reusable components are wired together in the Godot editor.
 
 > **Want to build your own games or components?**
 > Check out **[USAGE.md](USAGE.md)** for the complete, deep-dive guide into the hybrid signal bus, component lifecycle, object pooling, and anti-patterns.
