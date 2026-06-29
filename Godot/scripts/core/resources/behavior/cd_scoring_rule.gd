@@ -1,7 +1,6 @@
-## CDScoringRule
-## Defines a score or multiplier change attached to a CDTrigger
-## Used by ScoreManager to evaluate state changes and apply scoring deltas
-
+## cd_scoring_rule.gd
+## Produces: a score/multiplier change rule attached to a trigger.
+## Consumes: nothing — pure data resource consumed by ScoreManager.
 class_name CDScoringRule extends Resource
 
 ## The trigger that determines when this rule fires

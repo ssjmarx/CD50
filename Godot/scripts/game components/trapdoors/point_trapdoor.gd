@@ -1,7 +1,6 @@
 ## PointTrapdoor
-## Spawns entities at its own position with optional random offset range
-## Simplest trapdoor — uses equation-based count and single scene
-
+## Produces: spawns entities at its own position with optional random offset.
+## Consumes: a spawn scene + count equation.
 class_name PointTrapdoor extends CDStageTrapdoor
 
 ## --- exports ---

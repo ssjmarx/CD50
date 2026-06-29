@@ -1,7 +1,6 @@
-## AIFormationBrain
-## Emits move_to positions maintaining an offset from a leader entity
-## Auto-acquires leader from target groups if not set via NodePath
-
+## ai_formation_brain.gd
+## Produces: move direction and distance toward a leader's position plus a rotated offset (written to blackboard), auto-acquiring the leader from NodePath or target_groups.
+## Consumes: leader via target_entity_path or target_groups (group_registry); move_key/distance_key blackboard keys.
 class_name AIFormationBrain extends CDEntityComponent
 
 ## direct NodePath to leader (optional — falls back to group search)
@@ -20,7 +19,7 @@ class_name AIFormationBrain extends CDEntityComponent
 ## cached reference to the leader entity
 var _leader: CDEntity
 
-## ready
+## Set the intent category before the base _ready lifecycle hooks.
 func _ready() -> void:
 	component_category = CDEnums.ComponentCategory.INTENT
 	super._ready()
@@ -57,7 +56,7 @@ func _acquire_leader() -> void:
 			_leader = candidate
 			return
 
-## on entity deactivating
+## Clear the cached leader reference on deactivation.
 func _on_entity_deactivating() -> void:
 	super._on_entity_deactivating()
 	_leader = null

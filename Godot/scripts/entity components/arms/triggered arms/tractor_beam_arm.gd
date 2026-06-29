@@ -1,8 +1,6 @@
-## TractorBeamArm
-## Active-frames arm that captures entities in tractor beam zone
-## Uses PhysicsDirectSpaceState2D.intersect_shape() for immediate overlap queries ("fighting game pattern")
-## Writes directly to the target's bus and blackboard, as well as the game bus.
-
+## tractor_beam_arm.gd
+## Produces: a tractor-beam capture payload via an immediate physics overlap query (writes game/target blackboards, emits capture/miss/complete signals).
+## Consumes: fire_signals (fire_tractor_beam); beam_shape; target_groups filter (resolved to collision_mask).
 class_name TractorBeamArm extends CDEntityComponent
 
 ## frames to wait before capture attempt
@@ -46,12 +44,12 @@ var _frame_count: int = 0
 ## whether capture has already been attempted this activation
 var _capture_attempted: bool = false
 
-## ready
+## Set the interaction category before the base _ready arms lifecycle hooks.
 func _ready() -> void:
 	component_category = CDEnums.ComponentCategory.INTERACTION
 	super._ready()
 
-## connect fire signals and dynamically resolve collision mask
+## Connect each fire signal and dynamically resolve the collision mask from target groups.
 func _on_initialize() -> void:
 	## Dynamic mask resolution based on target groups
 	var mask := 0

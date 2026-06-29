@@ -1,6 +1,6 @@
-## HealthpoolGuts
-## Single source of truth for an entity's health value
-## Writes current value and delta to entity blackboard; emits zero-arg signals on events Supports damage, healing, invincibility, and zero-health detection
+## healthpool_guts.gd
+## Produces: health_changed/zero_health signals; writes value_key + delta_key (entity blackboard).
+## Consumes: delta_key for amounts; take_damage/heal/set_invincible signals.
 
 class_name HealthpoolGuts extends CDEntityComponent
 
@@ -37,12 +37,12 @@ var _current_health: int = 0
 
 ## --- lifecycle ---
 
-## ready
+## Set the state component category before the base _ready lifecycle.
 func _ready() -> void:
 	component_category = CDEnums.ComponentCategory.STATE
 	super._ready()
 
-## on initialize
+## Seed health to blackboard and connect damage/heal/invincibility listeners.
 func _on_initialize() -> void:
 	_current_health = starting_health if starting_health >= 0 else max_health
 	entity.blackboard[value_key] = _current_health
@@ -57,7 +57,7 @@ func _on_initialize() -> void:
 
 ## --- signal handlers ---
 
-## on take damage
+## Apply damage from the delta key, emit health_changed, and zero_health when empty.
 func _on_take_damage() -> void:
 	if invincible or _current_health <= 0:
 		return
@@ -73,7 +73,7 @@ func _on_take_damage() -> void:
 		for sig in zero_health_signals:
 			entity.bus_emit(sig)
 
-## on heal
+## Heal toward max_health from the delta key and emit health_changed.
 func _on_heal() -> void:
 	if _current_health <= 0:
 		return
@@ -86,13 +86,13 @@ func _on_heal() -> void:
 		for sig in health_changed_signals:
 			entity.bus_emit(sig)
 
-## on set invincible
+## Toggle the invincibility flag.
 func _on_set_invincible() -> void:
 	invincible = not invincible
 
 ## --- cleanup ---
 
-## on entity deactivating
+## Reset health and disconnect all listeners on deactivation.
 func _on_entity_deactivating() -> void:
 	super._on_entity_deactivating()
 	_current_health = starting_health if starting_health >= 0 else max_health

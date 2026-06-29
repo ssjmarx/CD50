@@ -1,7 +1,6 @@
 ## SoundSpeaker
-## Game-level one-shot or jingle synthesized sound triggered by game bus signal
-## Delegates playback to CDSoundBank with optional gameplay-state gating
-
+## Produces: one-shot/jingle synthesized sound playback via CDSoundBank.
+## Consumes: game bus trigger signals (optionally gameplay-state gated).
 @tool
 class_name SoundSpeaker extends CDGameComponent
 

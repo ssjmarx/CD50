@@ -1,7 +1,6 @@
-## PlayerKBMMoveBrain
-## Unified keyboard + mouse movement brain for KBM control schemes
-## Uses input mode state machine: NONE → KEYBOARD (on key press) → NONE (on release) → MOUSE (on mouse move)
-
+## player_kbm_move_brain.gd
+## Produces: move direction and distance (written to blackboard) via a keyboard/mouse input-mode state machine that switches between KEYBOARD and MOUSE modes.
+## Consumes: game.input_router input_move signal (filtered by player_id); move_key/distance_key blackboard keys; entity.get_global_mouse_position().
 class_name PlayerKBMMoveBrain extends CDEntityComponent
 
 @export var player_id: int = 1
@@ -19,26 +18,24 @@ var _mode: _InputMode = _InputMode.NONE
 var _kb_direction: Vector2 = Vector2.ZERO
 var _last_mouse_pos: Vector2 = Vector2.INF
 
-## ready
+## Set the intent category before the base _ready lifecycle hooks.
 func _ready() -> void:
 	component_category = CDEnums.ComponentCategory.INTENT
 	super._ready()
 
-## on initialize
+## Connect the input router's move signal during initialization.
 func _on_initialize() -> void:
 	game.input_router.input_move.connect(_on_input_move)
 
-## on input move
+## Switch to KEYBOARD mode on non-zero input and always cache the latest direction.
 func _on_input_move(pid: int, direction: Vector2) -> void:
 	if pid != player_id:
 		return
-	# Only switch to keyboard mode if there is actual intent
 	if direction != Vector2.ZERO:
 		_mode = _InputMode.KEYBOARD
-	# Always update direction so we know when keys are released
 	_kb_direction = direction
 
-## physics process
+## Write move direction/distance to the blackboard based on the current input mode.
 func _physics_process(_delta: float) -> void:
 	if Engine.is_editor_hint():
 		return
@@ -74,7 +71,7 @@ func _physics_process(_delta: float) -> void:
 				entity.blackboard[move_key] = to_target.normalized()
 				entity.blackboard[distance_key] = distance
 
-## on entity deactivating
+## Reset input mode state and disconnect the move signal on deactivation.
 func _on_entity_deactivating() -> void:
 	super._on_entity_deactivating()
 	_mode = _InputMode.NONE

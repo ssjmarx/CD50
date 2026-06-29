@@ -1,6 +1,6 @@
 ## EngineLeg
-## Adds forward velocity based on entity facing direction (Asteroids-style)
-## Listens for thrust/end_thrust signals on the entity bus
+## Produces: a forward acceleration velocity request along the entity's facing direction.
+## Consumes: entity bus thrust/end_thrust signals; entity rotation.
 
 class_name EngineLeg extends CDEntityComponent
 

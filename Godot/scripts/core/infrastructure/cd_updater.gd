@@ -1,7 +1,6 @@
-## CDUpdater
-## Defers group transitions and sleep/wake operations to end of frame
-## Prevents mid-frame group inconsistencies when entities change state
-
+## cd_updater.gd
+## Produces: end-of-frame flushes of queued transitions and sleep/wake operations.
+## Consumes: queued group transitions; CDStage/CDBody sleep/wake requests.
 class_name CDUpdater extends Node
 
 ## queued group transition operations
@@ -13,18 +12,16 @@ var _pending_wake: Array = []
 
 @onready var game = CDGame.find_ancestor(self)
 
-## runs at UPDATE priority — after all gameplay components finish
+## Set UPDATE priority so this runs after all gameplay components finish.
 func _ready() -> void:
 	process_physics_priority = CDEnums.category_to_priority(CDEnums.ComponentCategory.UPDATE)
 
-## flush all pending transitions each frame, then clear emitter registries
+## Flush all pending transitions each frame, then clear emitter registries.
 func _physics_process(_delta: float) -> void:
 	_flush()
 	game._signal_emitters.clear()
 
-## --- Public API ---
-
-## queue a group transition: remove from groups, add to groups, emit exit/enter signals
+## Queue a group transition: remove from groups, add to groups, emit exit/enter signals.
 func queue_transition(entity: CDEntity, remove_groups: Array[StringName], add_groups: Array[StringName], entity_signals: Array[StringName] = [], game_signals: Array[StringName] = []) -> void:
 	_pending.append({
 		"entity": entity,
@@ -34,19 +31,17 @@ func queue_transition(entity: CDEntity, remove_groups: Array[StringName], add_gr
 		"game_signals": game_signals,
 	})
 
-## queue a CDStage or CDBody to sleep at end of frame (processed before wake)
+## Queue a CDStage or CDBody to sleep at end of frame (processed before wake).
 func queue_sleep(container) -> void:
 	if container not in _pending_sleep:
 		_pending_sleep.append(container)
 
-## queue a CDStage or CDBody to wake at end of frame (processed after sleep)
+## Queue a CDStage or CDBody to wake at end of frame (processed after sleep).
 func queue_wake(container) -> void:
 	if container not in _pending_wake:
 		_pending_wake.append(container)
 
-## --- Internal ---
-
-## execute all pending transitions in FIFO order
+## Execute all pending transitions in FIFO order, then sleep (before wake).
 func _flush() -> void:
 	for op in _pending:
 		var entity: CDEntity = op["entity"]

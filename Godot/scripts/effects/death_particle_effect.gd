@@ -1,7 +1,6 @@
-## DeathParticleEffect
-## Burst of single-pixel particles that fly outward
-## Used for entity death explosions
-
+## death_particle_effect.gd
+## Produces: a burst of single-pixel particles flying outward (entity death explosion).
+## Consumes: nothing — self-contained drawing on a CDEffect Node2D.
 class_name DeathParticleEffect extends CDEffect
 
 ## number of particles in the burst

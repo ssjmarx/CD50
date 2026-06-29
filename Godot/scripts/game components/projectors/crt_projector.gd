@@ -1,7 +1,6 @@
 ## CRTProjector
-## Full-screen CRT post-processing pipeline with phosphor persistence, warp, and overlays
-## Builds a node hierarchy at runtime: BackBufferCopy → Persistence VP → CRT shader → scanlines → noise
-
+## Produces: a full-screen CRT post-processing pipeline (persistence, warp, overlays).
+## Consumes: the parent Control viewport.
 class_name CRTProjector extends CDGameComponent
 
 ## --- constants ---
@@ -93,8 +92,6 @@ var _persistence_mat: ShaderMaterial
 ## flag to push shader params on next frame
 var _params_dirty: bool = true
 
-## --- lifecycle ---
-
 ## build node hierarchy, cache materials, connect bus signals
 func _on_initialize() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
@@ -105,17 +102,12 @@ func _on_initialize() -> void:
 	_material = _color_rect.material as ShaderMaterial
 	_persistence_mat = _persistence_rect.material as ShaderMaterial
 	
-	## connect visibility toggle signals (tracked for auto-disconnect on _exit_tree)
 	connect_all(on_crt_on, _on_crt_on)
 	connect_all(on_crt_off, _on_crt_off)
 		
 	if _params_dirty:
 		_push_params()
 		_params_dirty = false
-
-## cleanup of tracked bus connections is handled by CDGameComponent._exit_tree
-
-## --- visibility ---
 
 ## show the CRT overlay
 func _on_crt_on() -> void:
@@ -124,8 +116,6 @@ func _on_crt_on() -> void:
 ## hide the CRT overlay
 func _on_crt_off() -> void:
 	visible = false
-
-## --- node construction ---
 
 ## build the full rendering pipeline as child nodes
 func _build_nodes() -> void:
@@ -201,8 +191,6 @@ func _create_overlay(overlay_name: String, texture_path: String, vp_size: Vector
 	rect.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 	return rect
 
-## --- processing ---
-
 ## push dirty params, animate hum bar and noise scroll
 func _process(delta: float) -> void:
 	if not _material:
@@ -218,8 +206,6 @@ func _process(delta: float) -> void:
 	if _noise_rect and _noise_rect.visible:
 		_noise_rect.position.x = fmod(_noise_rect.position.x + delta * 30.0, 64.0)
 		_noise_rect.position.y = fmod(_noise_rect.position.y + delta * 15.0, 64.0)
-
-## --- shader params ---
 
 ## push all shader parameters and overlay settings to GPU
 func _push_params() -> void:

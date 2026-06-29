@@ -1,6 +1,6 @@
 ## LinearFrictionLeg
-## Speed-proportional deceleration that scales linearly from 0 to max_speed
-## Friction force increases with speed, creating a natural terminal velocity
+## Produces: a speed-proportional deceleration velocity request (linear friction).
+## Consumes: entity current linear velocity.
 
 class_name LinearFrictionLeg extends CDEntityComponent
 
@@ -11,14 +11,10 @@ class_name LinearFrictionLeg extends CDEntityComponent
 ## speed at which friction reaches maximum
 @export var max_speed: float = 300.0
 
-## --- lifecycle ---
-
 ## set component category
 func _ready() -> void:
 	component_category = CDEnums.ComponentCategory.STEERING
 	super._ready()
-
-## --- processing ---
 
 ## apply friction proportional to current speed each frame
 func _physics_process(delta: float) -> void:

@@ -1,7 +1,6 @@
-## AIEscortBrain
-## Blackboard-target or group-target variant of AIFormationBrain.
-## Calculates vector toward a target entity (read from blackboard or nearest from group) + offset.
-
+## ai_escort_brain.gd
+## Produces: move direction and distance toward a target entity (blackboard ref or nearest-in-group) plus a spatial offset, writing to blackboard and emitting arrived signals when close.
+## Consumes: target entity from entity/game blackboard or target_groups via group_registry; move_direction_key/move_distance_key blackboard keys; arrived_signals on entity bus.
 class_name AIEscortBrain extends CDEntityComponent
 
 enum BlackboardSource {
@@ -34,12 +33,12 @@ enum BlackboardSource {
 
 var _target_entity: CDEntity
 
-## ready
+## Set the intent category before the base _ready lifecycle hooks.
 func _ready() -> void:
 	component_category = CDEnums.ComponentCategory.INTENT
 	super._ready()
 
-## physics process
+## Steer toward the target (or erase intent and emit arrived signals when close enough).
 func _physics_process(_delta: float) -> void:
 	_update_target()
 	if is_instance_valid(_target_entity):
@@ -62,7 +61,7 @@ func _physics_process(_delta: float) -> void:
 		entity.blackboard[move_direction_key] = Vector2.ZERO
 		entity.blackboard[move_distance_key] = 0.0
 
-## check blackboard or groups for target entity reference
+## Resolve the target entity from target_groups (nearest) or the configured blackboard.
 func _update_target() -> void:
 	var new_target: CDEntity = null
 	

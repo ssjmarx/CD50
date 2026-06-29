@@ -1,6 +1,6 @@
-## StunGuts
-## Temporarily disables Brains and Legs when a stun status is applied
-## Reads status name and duration from entity blackboard on signal trigger Disables all INTENT and STEERING category components for the stun duration
+## stun_guts.gd
+## Produces: status_began/status_ended signals; temporarily suspends INTENT/STEERING components.
+## Consumes: status_key, duration_key (entity blackboard); apply_status signal.
 
 class_name StunGuts extends CDEntityComponent
 
@@ -33,12 +33,12 @@ var _disabled_components: Array[CDEntityComponent] = []
 
 ## --- lifecycle ---
 
-## ready
+## Set the state component category before the base _ready lifecycle.
 func _ready() -> void:
 	component_category = CDEnums.ComponentCategory.STATE
 	super._ready()
 
-## on initialize
+## Connect the apply_status listener during initialization.
 func _on_initialize() -> void:
 	for sig in status_signals:
 		self.bus_connect(sig, _on_apply_status)
@@ -66,7 +66,7 @@ func _on_apply_status() -> void:
 
 ## --- processing ---
 
-## physics process
+## Tick the stun timer; emit status_ended when it expires.
 func _physics_process(delta: float) -> void:
 	if not _is_stunned:
 		return
@@ -77,7 +77,7 @@ func _physics_process(delta: float) -> void:
 
 ## --- helpers ---
 
-## disable brains and legs
+## Suspend physics processing on every sibling INTENT/STEERING component.
 func _disable_brains_and_legs() -> void:
 	for child in entity.get_children():
 		if child == self:
@@ -89,7 +89,7 @@ func _disable_brains_and_legs() -> void:
 				comp.set_physics_process(false)
 				_disabled_components.append(comp)
 
-## end stun
+## Re-enable suspended components and emit status_ended.
 func _end_stun() -> void:
 	_is_stunned = false
 	_stun_timer = 0.0
@@ -104,7 +104,7 @@ func _end_stun() -> void:
 
 ## --- cleanup ---
 
-## on entity deactivating
+## End any active stun and disconnect the listener on deactivation.
 func _on_entity_deactivating() -> void:
 	super._on_entity_deactivating()
 	if _is_stunned:
@@ -113,7 +113,7 @@ func _on_entity_deactivating() -> void:
 		self.bus_disconnect(sig, _on_apply_status)
 	set_physics_process(false)
 
-## on entity activated
+## Clear stun state and re-enable physics processing on activation.
 func _on_entity_activated() -> void:
 	super._on_entity_activated()
 	_is_stunned = false

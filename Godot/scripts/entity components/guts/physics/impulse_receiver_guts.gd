@@ -1,6 +1,6 @@
-## ImpulseReceiverGuts
-## Applies external impulse forces to the parent entity
-## Reads impulse vector from entity blackboard on signal trigger
+## impulse_receiver_guts.gd
+## Produces: external velocity add applied to the entity.
+## Consumes: impulse_key (entity blackboard); impulse signals.
 
 class_name ImpulseReceiverGuts extends CDEntityComponent
 
@@ -16,12 +16,12 @@ class_name ImpulseReceiverGuts extends CDEntityComponent
 
 ## --- lifecycle ---
 
-## ready
+## Set the state component category before the base _ready lifecycle.
 func _ready() -> void:
 	component_category = CDEnums.ComponentCategory.STATE
 	super._ready()
 
-## on initialize
+## Connect the impulse listener during initialization.
 func _on_initialize() -> void:
 	for sig in impulse_signals:
 		self.bus_connect(sig, _on_impulse)
@@ -36,7 +36,7 @@ func _on_impulse() -> void:
 
 ## --- cleanup ---
 
-## on entity deactivating
+## Disconnect the impulse listener on deactivation.
 func _on_entity_deactivating() -> void:
 	super._on_entity_deactivating()
 	for sig in impulse_signals:

@@ -1,7 +1,6 @@
-## StatusOnHitArm
-## Sends a status effect signal and duration to another entity on collision
-## Emits on the collider and writes pending status to blackboard
-
+## status_on_hit_arm.gd
+## Produces: a status effect on collision (writes status/duration keys, emits apply_status on the collider).
+## Consumes: collision signals; target_groups filter.
 class_name StatusEffectArm extends CDEntityComponent
 
 ## name of the status effect to apply (e.g. "stun", "slow")
@@ -23,7 +22,7 @@ class_name StatusEffectArm extends CDEntityComponent
 @export_group("Emit Signals")
 @export var status_signals: Array[StringName] = [&"apply_status"]
 
-## ready
+## Set the interaction category before the base _ready arms lifecycle hooks.
 func _ready() -> void:
 	component_category = CDEnums.ComponentCategory.INTERACTION
 	super._ready()

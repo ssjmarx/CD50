@@ -1,7 +1,6 @@
-## PlayerMoveToBrain
-## Writes the mouse global position to the blackboard
-## Uses direction + distance paradigm (eliminates need for conversion)
-
+## player_move_to_brain.gd
+## Produces: move direction and distance toward the global mouse position (written to blackboard), stopping within a dead zone.
+## Consumes: entity.get_global_mouse_position(); move_direction_key/move_distance_key blackboard keys.
 class_name PlayerMoveToBrain extends CDEntityComponent
 
 @export var dead_zone: float = 4.0
@@ -10,12 +9,12 @@ class_name PlayerMoveToBrain extends CDEntityComponent
 @export var move_direction_key: StringName = &"move_direction"
 @export var move_distance_key: StringName = &"move_distance"
 
-## ready
+## Set the intent category before the base _ready lifecycle hooks.
 func _ready() -> void:
 	component_category = CDEnums.ComponentCategory.INTENT
 	super._ready()
 
-## physics process
+## Write direction/distance toward the mouse to the blackboard (zero within dead zone).
 func _physics_process(_delta: float) -> void:
 	if Engine.is_editor_hint():
 		return
@@ -31,7 +30,7 @@ func _physics_process(_delta: float) -> void:
 	entity.blackboard[move_direction_key] = to_target.normalized()
 	entity.blackboard[move_distance_key] = distance
 
-## on entity deactivating
+## Disable physics processing on deactivation.
 func _on_entity_deactivating() -> void:
 	super._on_entity_deactivating()
 	set_physics_process(false)

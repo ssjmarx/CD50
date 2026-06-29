@@ -1,6 +1,6 @@
 ## DirectTargetLeg
-## Moves at constant speed in move_direction, consuming move_distance
-## Sets velocity directly (no momentum), stops when move_distance <= arrival_threshold
+## Produces: a constant-speed velocity request along move_direction.
+## Consumes: entity.blackboard move_direction + move_distance.
 
 class_name DirectTargetLeg extends CDEntityComponent
 

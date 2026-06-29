@@ -1,7 +1,6 @@
-## AIOrbitBrain
-## Emits move_to positions orbiting a leader entity at a fixed radius
-## Supports throttled updates and targeting noise for imprecise orbits
-
+## ai_orbit_brain.gd
+## Produces: move direction and distance toward a point orbiting a leader at a fixed radius (written to blackboard), with throttled updates and targeting noise.
+## Consumes: leader via target_entity_path or target_groups (group_registry); move_key/distance_key blackboard keys.
 class_name AIOrbitBrain extends CDEntityComponent
 
 ## distance from the leader to orbit at
@@ -38,7 +37,7 @@ var _update_timer: float = 0.0
 ## cached orbit target for throttled frames
 var _last_target_pos: Vector2 = Vector2.ZERO
 
-## ready
+## Set the intent category before the base _ready lifecycle hooks.
 func _ready() -> void:
 	component_category = CDEnums.ComponentCategory.INTENT
 	super._ready()
@@ -101,7 +100,7 @@ func _apply_noise(pos: Vector2) -> Vector2:
 		randf_range(-targeting_noise, targeting_noise)
 	)
 
-## on entity deactivating
+## Clear the leader reference and reset orbit/throttle state on deactivation.
 func _on_entity_deactivating() -> void:
 	super._on_entity_deactivating()
 	_leader = null

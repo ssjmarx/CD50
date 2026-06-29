@@ -1,6 +1,6 @@
 ## GroupCountGoal
-## Monitors group sizes and triggers when entity counts match a comparison
-## Supports AND (all groups) or OR (any group) logic across multiple target groups
+## Produces: a goal_met game bus signal when group counts match a comparison.
+## Consumes: target group entity counts; CDTrigger resources.
 
 class_name GroupCountGoal extends CDGameComponent
 

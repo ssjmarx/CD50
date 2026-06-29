@@ -1,8 +1,6 @@
 ## LeaderTeleportLeg
-## Connects to a signal on a leader entity (found via blackboard) 
-## and teleports the parent entity to the leader's position + offset 
-## when that signal fires. Used to keep captured entities attached 
-## to a leader that teleports (e.g., screen wrapping).
+## Produces: a teleport of the parent entity to a leader's position + offset.
+## Consumes: game.blackboard leader ref + entity bus teleport trigger signal.
 
 class_name LeaderTeleportLeg extends CDEntityComponent
 

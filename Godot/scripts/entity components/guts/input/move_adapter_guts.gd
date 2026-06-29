@@ -1,6 +1,6 @@
-## MoveAdapterGuts
-## Converts "move_to" target positions into "move" direction vectors
-## Pure signal translator — bridges Brains that emit targets to Legs that expect directions
+## move_adapter_guts.gd
+## Produces: move signal; writes move_direction_key (entity blackboard).
+## Consumes: move_to signal carrying a target position (Vector2).
 
 class_name MoveAdapterGuts extends CDEntityComponent
 
@@ -19,19 +19,19 @@ class_name MoveAdapterGuts extends CDEntityComponent
 
 ## --- lifecycle ---
 
-## set component category
+## Set the state component category before the base _ready lifecycle.
 func _ready() -> void:
 	component_category = CDEnums.ComponentCategory.STATE
 	super._ready()
 
-## connect target listener and ensure direction signal exists
+## Connect the target listener during initialization.
 func _on_initialize() -> void:
 	for sig in target_signals:
 		self.bus_connect(sig, _on_target)
 
 ## --- signal handlers ---
 
-## calculate direction from entity position to target and emit as move
+## Convert the target position into a direction vector and emit move.
 func _on_target(target: Vector2) -> void:
 	var direction := entity.global_position.direction_to(target)
 	
@@ -41,7 +41,7 @@ func _on_target(target: Vector2) -> void:
 
 ## --- cleanup ---
 
-## disconnect target listener for pool reuse
+## Disconnect the target listener on deactivation for pool reuse.
 func _on_entity_deactivating() -> void:
 	super._on_entity_deactivating()
 	for sig in target_signals:

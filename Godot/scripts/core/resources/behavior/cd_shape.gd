@@ -1,7 +1,6 @@
-## CDShape
-## A polygon shape defined by 2D points
-## Used by Faces to set entity collision polygons at init time
-
+## cd_shape.gd
+## Produces: a polygon shape (2D point array) for entity collision polygons.
+## Consumes: nothing — pure data resource consumed by Faces at init time.
 class_name CDShape extends Resource
 
 ## vertices of the polygon in local-space coordinates

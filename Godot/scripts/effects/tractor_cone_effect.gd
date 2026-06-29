@@ -1,8 +1,6 @@
-## TractorConeEffect
-## Visual effect for the tractor beam, draws a cone and vacuums stars inward.
-## Attach as a child of a Face component or Entity.
-## Note: Set lifetime to 0 in the inspector if spawned/despawned manually by a Face component.
-
+## tractor_cone_effect.gd
+## Produces: a vacuum-cone effect with stars sucked toward the origin (toggled by a parent).
+## Consumes: nothing — self-contained drawing on a CDEffect Node2D.
 extends CDEffect
 
 class_name TractorConeEffect
@@ -27,20 +25,21 @@ var _stars_pos: Array[Vector2] = []
 var _stars_vel: Array[Vector2] = []
 var _star_colors: Array[Color] = []
 
+## Arm the auto-free timer (disabled via lifetime=0) and idle until started.
 func _ready() -> void:
 	super._ready()
 	set_process(false)
 
-## start spawning and moving stars
+## Start spawning and moving stars.
 func start_vacuum() -> void:
 	_is_vacuuming = true
 	set_process(true)
 
-## stop spawning new stars (existing stars will finish their journey unless cleared)
+## Stop spawning new stars (existing stars finish their journey unless cleared).
 func stop_vacuum() -> void:
 	_is_vacuuming = false
 
-## spawn a star at the wide edge with velocity pointing exactly at (0,0)
+## Spawn a star at the wide edge with velocity pointing exactly at (0,0).
 func _spawn_star() -> void:   
 	var center := Vector2(cone_length, 0.0)                               
 	var radius := cone_width * 0.5                                        
@@ -53,6 +52,7 @@ func _spawn_star() -> void:
 	_stars_vel.append(dir * speed)
 	_star_colors.append(get_random_color())
 
+## Spawn stars while vacuuming, advance them, and cull any that reach the origin.
 func _process(delta: float) -> void:
 	if _is_vacuuming:
 		if _stars_pos.size() < star_count:
@@ -62,7 +62,7 @@ func _process(delta: float) -> void:
 	while i < _stars_pos.size():
 		_stars_pos[i] += _stars_vel[i] * delta
 		
-		# if the star reaches the origin, remove it
+		## remove the star once it reaches the origin
 		if _stars_pos[i].x <= 0.0 or _stars_pos[i].length() < 5.0:
 			_stars_pos.remove_at(i)
 			_stars_vel.remove_at(i)
@@ -72,6 +72,7 @@ func _process(delta: float) -> void:
 			
 	queue_redraw()
 
+## Draw each star as a small square.
 func _draw() -> void:
 	var half_size := star_size / 2.0
 	for i in _stars_pos.size():

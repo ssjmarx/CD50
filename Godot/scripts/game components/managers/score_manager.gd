@@ -1,7 +1,6 @@
 ## ScoreManager
-## Evaluates an array of CDScoringRule resources against the game state
-## Writes pending score/multiplier deltas to the game blackboard and emits apply signals
-## Allows complex scoring setups driven entirely by data
+## Produces: pending score/multiplier deltas on game.blackboard + apply game bus signals.
+## Consumes: CDScoringRule resources evaluated against game state.
 
 class_name ScoreManager extends CDGameComponent
 

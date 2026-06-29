@@ -1,7 +1,6 @@
-## AITimedStepBrain
-## Writes a directional value to the blackboard at a regular interval
-## Reads step_interval and step_direction from the blackboard each step (falls back to export defaults) Any component can modulate step behavior by writing to the configured blackboard keys
-
+## ai_timed_step_brain.gd
+## Produces: a move direction written to blackboard at a regular step interval, allowing any component to modulate step behavior by writing to the step_interval/step_direction keys.
+## Consumes: step_interval_key/step_direction_key blackboard keys (falling back to export defaults); move_key blackboard key; reset_signals on entity bus.
 class_name AITimedStepBrain extends CDEntityComponent
 
 ## default interval (used when blackboard key is not set)
@@ -21,12 +20,12 @@ class_name AITimedStepBrain extends CDEntityComponent
 ## time since last step
 var _timer: float = 0.0
 
-## ready
+## Set the intent category before the base _ready lifecycle hooks.
 func _ready() -> void:
 	component_category = CDEnums.ComponentCategory.INTENT
 	super._ready()
 
-## on initialize
+## Connect reset trigger signals during initialization.
 func _on_initialize() -> void:
 	for sig in reset_signals:
 		self.bus_connect(sig, _on_reset)
@@ -46,7 +45,7 @@ func _on_reset() -> void:
 	entity.blackboard.erase(step_interval_key)
 	entity.blackboard.erase(step_direction_key)
 
-## on entity deactivating
+## Reset the step timer and disconnect reset signals on deactivation.
 func _on_entity_deactivating() -> void:
 	super._on_entity_deactivating()
 	_timer = 0.0

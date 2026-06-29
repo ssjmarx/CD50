@@ -1,6 +1,6 @@
-## DeflectorBounceGuts
-## Collision handler that deflects off target groups with angled bounce physics
-## Owns its own deflection config — no arm component needed
+## deflector_bounce_guts.gd
+## Produces: deflected entity velocity (angled bounce) on collision with target groups.
+## Consumes: entity collision stream; own @export deflection config.
 
 class_name DeflectorBounceGuts extends CDEntityComponent
 
@@ -15,18 +15,18 @@ class_name DeflectorBounceGuts extends CDEntityComponent
 
 ## --- lifecycle ---
 
-## set component category
+## Set the state component category before the base _ready lifecycle.
 func _ready() -> void:
 	component_category = CDEnums.ComponentCategory.STATE
 	super._ready()
 
-## register as a collision handler on the entity
+## Register the deflection handler for the configured target groups.
 func _on_initialize() -> void:
 	entity.register_collision_handler(target_groups, _handle_collision)
 
 ## --- collision handling ---
 
-## compute deflected velocity based on offset from collider, apply bias and restitution
+## Deflect entity velocity off the collider using positional offset, bias, and restitution.
 func _handle_collision(collision: KinematicCollision2D) -> Vector2:
 	var collider = collision.get_collider()
 	var normal = collision.get_normal()
@@ -44,7 +44,7 @@ func _handle_collision(collision: KinematicCollision2D) -> Vector2:
 
 ## --- cleanup ---
 
-## unregister collision handler for pool reuse
+## Unregister the collision handler on deactivation for pool reuse.
 func _on_entity_deactivating() -> void:
 	super._on_entity_deactivating()
 	entity.unregister_collision_handler(_handle_collision)

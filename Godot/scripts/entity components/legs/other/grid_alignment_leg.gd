@@ -1,6 +1,6 @@
 ## GridAlignmentLeg
-## Ensures entity stays snapped to a pseudo-grid
-## Periodically checks for drift and corrects position, with configurable tolerance
+## Produces: a corrective position request that snaps the entity back to the grid.
+## Consumes: entity current position; configurable grid cell size.
 
 class_name GridAlignmentLeg extends CDEntityComponent
 
@@ -20,8 +20,6 @@ class_name GridAlignmentLeg extends CDEntityComponent
 ## accumulator for check interval
 var _check_timer: float = 0.0
 
-## --- lifecycle ---
-
 ## set component category
 func _ready() -> void:
 	component_category = CDEnums.ComponentCategory.STEERING
@@ -30,8 +28,6 @@ func _ready() -> void:
 ## snap to grid immediately on initialize
 func _on_initialize() -> void:
 	entity.request_position_set(_snap(entity.global_position))
-
-## --- processing ---
 
 ## periodically check and correct grid alignment
 func _physics_process(delta: float) -> void:
@@ -51,15 +47,11 @@ func _physics_process(delta: float) -> void:
 	if pos.distance_to(aligned) >= drift_threshold:
 		entity.request_position_set(aligned)
 
-## --- helpers ---
-
 ## snap a world position to the nearest grid cell
 func _snap(pos: Vector2) -> Vector2:
 	var relative := pos - grid_origin
 	var grid_pos := (relative / cell_size).round() * cell_size
 	return grid_origin + grid_pos
-
-## --- cleanup ---
 
 ## reset timer for pool reuse
 func _on_entity_deactivating() -> void:

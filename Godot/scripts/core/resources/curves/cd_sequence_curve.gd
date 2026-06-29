@@ -1,7 +1,6 @@
-## CDSequenceCurve
-## Composites multiple CDCurve resources into a cycling sequence.
-## Each call to generate_curve() delegates to the next child curve.
-
+## cd_sequence_curve.gd
+## Produces: a composite curve that cycles through child curves per call.
+## Consumes: CDCurve child resources; nothing on write.
 @tool
 class_name CDSequenceCurve extends CDCurve
 
@@ -33,42 +32,36 @@ enum SequenceMode {
 		preview_index = clampi(v, 0, maxi(0, curves.size() - 1))
 		emit_changed()
 
-## --- state ---
-
 var _current_index: int = 0
 var _ping_pong_direction: int = 1
 
-## --- lifecycle ---
-
-## enter tree
+## Enter tree.
 func _enter_tree() -> void:
 	_connect_children()
 
-## exit tree
+## Exit tree.
 func _exit_tree() -> void:
 	_disconnect_children()
 
-## --- child curve change forwarding ---
+## --- Child Curve Change Forwarding ---
 
-## connect children
+## Connect children.
 func _connect_children() -> void:
 	for child in curves:
 		if child and not child.changed.is_connected(_on_child_changed):
 			child.changed.connect(_on_child_changed)
 
-## disconnect children
+## Disconnect children.
 func _disconnect_children() -> void:
 	for child in curves:
 		if child and child.changed.is_connected(_on_child_changed):
 			child.changed.disconnect(_on_child_changed)
 
-## on child changed
+## On child changed.
 func _on_child_changed() -> void:
 	emit_changed()
 
-## --- abstract override ---
-
-## generate curve
+## Generate curve by delegating to the current child curve.
 func generate_curve(start: Vector2, end: Vector2) -> Curve2D:
 	if curves.is_empty():
 		return null
@@ -87,9 +80,7 @@ func generate_curve(start: Vector2, end: Vector2) -> Curve2D:
 
 	return _finalize(result)
 
-## --- index advancement ---
-
-## advance
+## Advance the child index according to the current mode.
 func _advance() -> void:
 	if curves.size() <= 1:
 		return
@@ -117,9 +108,7 @@ func _advance() -> void:
 			while _current_index == prev:
 				_current_index = randi() % curves.size()
 
-## --- reset ---
-
-## reset
+## Reset index and ping-pong direction for game restart.
 func reset() -> void:
 	_current_index = 0
 	_ping_pong_direction = 1

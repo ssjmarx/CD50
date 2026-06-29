@@ -1,7 +1,6 @@
-## CDEffect
-## Lightweight visual effect — plays once and auto-frees
-## Attach particles/sprites as children, set lifetime, done
-
+## cd_effect.gd
+## Produces: a one-shot visual effect that auto-frees after its lifetime.
+## Consumes: child particle/sprite nodes; @export lifetime and colors.
 class_name CDEffect extends Node2D
 
 ## seconds before this effect auto-destructs

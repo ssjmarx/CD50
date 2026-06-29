@@ -1,7 +1,6 @@
-## CDFaceBinding
-## Pairs a signal name and frame index for face components
-## Used to build signal→frame lookup tables in face components
-
+## cd_face_binding.gd
+## Produces: a signal→frame binding (signal name, frame index, optional restore timer).
+## Consumes: nothing — pure data collected by face components into lookup tables.
 class_name CDFaceBinding extends Resource
 
 ## entity bus signal that triggers the frame change

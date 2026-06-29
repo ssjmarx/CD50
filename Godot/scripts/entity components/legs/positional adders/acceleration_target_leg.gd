@@ -1,6 +1,6 @@
 ## AccelerationTargetLeg
-## Accelerates in move_direction, tapering force within slow_distance of target
-## Adds force each frame (momentum), reads move_direction + move_distance
+## Produces: a tapered acceleration velocity request toward a target position.
+## Consumes: entity.blackboard move_direction + move_distance + slow_distance.
 
 class_name AccelerationTargetLeg extends CDEntityComponent
 

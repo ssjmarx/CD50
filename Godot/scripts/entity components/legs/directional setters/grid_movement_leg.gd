@@ -1,7 +1,6 @@
 ## GridMovementLeg
-## Moves entity by a fixed grid step, one step per hop_delay interval
-## Uses edge detection on blackboard direction to capture discrete inputs into a queue
-## If continuous distance is provided, chops it into discrete steps automatically
+## Produces: discrete grid-step movement from polled or buffered direction input.
+## Consumes: entity.blackboard["move_direction"], ["move_distance"]; collision space state.
 
 class_name GridMovementLeg extends CDEntityComponent
 
@@ -43,14 +42,10 @@ var _hop_timer: float = 0.0
 ## continuous movement accumulator (chops continuous intent into discrete steps)
 var _accumulated_step_distance: float = 0.0
 
-## --- lifecycle ---
-
 ## ready
 func _ready() -> void:
 	component_category = CDEnums.ComponentCategory.STEERING
 	super._ready()
-
-## --- processing ---
 
 ## physics process
 func _physics_process(delta: float) -> void:
@@ -67,8 +62,6 @@ func _physics_process(delta: float) -> void:
 		
 	_prev_direction = direction
 
-## --- movement modes ---
-
 ## process continuous movement intent (e.g. MarchingOrderDirector), chopping it into discrete grid steps
 func _process_continuous_move(direction: Vector2, distance: float) -> void:
 	if direction == Vector2.ZERO or distance <= 0.0:
@@ -81,13 +74,13 @@ func _process_continuous_move(direction: Vector2, distance: float) -> void:
 	if absf(direction.y) > absf(direction.x):
 		step_size = cell_size.y
 		
-	# We might need to step multiple times if distance is huge (frame lag)
+	## frame lag can dump a large distance in one tick; drain it in multiple steps
 	while _accumulated_step_distance >= step_size:
 		_accumulated_step_distance -= step_size
 		var step := _direction_to_step(direction)
-		# We bypass the input queue for continuous movement to avoid desync/buffering
+		## bypass the input queue for continuous intent to avoid desync/buffering
 		if not _try_step(step):
-			# If blocked, reset accumulator to prevent spamming blocked signals or queueing up massive offsets
+			## on a blocked step, drop the remainder so we don't spam signals or queue a huge offset
 			_accumulated_step_distance = 0.0
 			break
 
@@ -114,16 +107,12 @@ func _process_discrete_move(direction: Vector2, delta: float) -> void:
 			_hop_timer = 0.0
 			_drain_queue()
 
-## --- queue ---
-
 ## execute the first valid step from the input queue
 func _drain_queue() -> void:
 	while not _input_queue.is_empty():
 		var step: Vector2i = _input_queue.pop_front()
 		if _try_step(step):
 			return
-
-## --- step execution ---
 
 ## attempt to move one cell in the given step direction, return true if successful
 func _try_step(step: Vector2i) -> bool:
@@ -145,8 +134,6 @@ func _try_step(step: Vector2i) -> bool:
 		
 	return true
 
-## --- helpers ---
-
 ## convert a continuous direction vector to a discrete grid step
 func _direction_to_step(dir: Vector2) -> Vector2i:
 	if allow_diagonal and absf(dir.x) > 0.5 and absf(dir.y) > 0.5:
@@ -165,8 +152,6 @@ func _is_occupied(pos: Vector2) -> bool:
 	query.exclude = [entity.get_rid()]
 	var results := space_state.intersect_point(query)
 	return results.size() > 0
-
-## --- cleanup ---
 
 ## on entity deactivating
 func _on_entity_deactivating() -> void:

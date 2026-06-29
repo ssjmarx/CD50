@@ -1,7 +1,6 @@
-## AIIdleWanderBrain
-## Picks random nearby points and meanders toward them with idle pauses
-## Centers wander area on the entity's spawn position
-
+## ai_idle_wander_brain.gd
+## Produces: move direction and distance toward randomly chosen wander targets around the spawn position (written to blackboard), with idle pauses and stuck-detection.
+## Consumes: move_key/distance_key blackboard keys; entity._spawn_position for the wander center.
 class_name AIIdleWanderBrain extends CDEntityComponent
 
 ## max distance from spawn center to pick wander targets
@@ -35,7 +34,7 @@ var _is_idle: bool = false
 ## timer to detect being stuck
 var _stuck_timer: float = 0.0
 
-## ready
+## Set the intent category before the base _ready lifecycle hooks.
 func _ready() -> void:
 	component_category = CDEnums.ComponentCategory.INTENT
 	super._ready()
@@ -79,7 +78,7 @@ func _pick_new_target() -> void:
 	var distance := randf() * wander_radius
 	_target = _center + Vector2(cos(angle), sin(angle)) * distance
 
-## on entity deactivating
+## Reset idle and target state on deactivation.
 func _on_entity_deactivating() -> void:
 	super._on_entity_deactivating()
 	_is_idle = false

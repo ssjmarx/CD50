@@ -1,7 +1,6 @@
-## PlayerAimBrain
-## Converts player aim input into a blackboard aim direction
-## Filters by player_id for multiplayer support
-
+## player_aim_brain.gd
+## Produces: an aim direction (from entity toward mouse position) written to blackboard each frame.
+## Consumes: viewport mouse position; aim_key blackboard key; entity.global_position.
 class_name PlayerAimBrain extends CDEntityComponent
 
 ## which player this brain listens to (matches input router player_id)
@@ -9,12 +8,12 @@ class_name PlayerAimBrain extends CDEntityComponent
 
 @export var aim_key: StringName = &"aim_direction"
 
-## ready
+## Set the intent category before the base _ready lifecycle hooks.
 func _ready() -> void:
 	component_category = CDEnums.ComponentCategory.INTENT
 	super._ready()
 
-## update mouse position on the entity blackboard
+## Write the aim direction (entity toward mouse) to the blackboard each frame.
 func _physics_process(_delta: float) -> void:
 	var mouse_pos = get_viewport().get_mouse_position()
 	if mouse_pos == Vector2.ZERO:
@@ -22,6 +21,6 @@ func _physics_process(_delta: float) -> void:
 	var direction = (mouse_pos - entity.global_position).normalized()
 	entity.blackboard[aim_key] = direction
 
-## disconnect from the input router
+## Base deactivation hook (no extra cleanup needed).
 func _on_entity_deactivating() -> void:
 	super._on_entity_deactivating()

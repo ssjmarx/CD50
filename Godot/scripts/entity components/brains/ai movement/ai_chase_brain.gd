@@ -1,7 +1,6 @@
-## AIChaseBrain
-## Emits move direction toward the nearest entity in target groups
-## Stops moving when within stop_distance of the target
-
+## ai_chase_brain.gd
+## Produces: move direction and distance toward the nearest target in target_groups (written to blackboard), stopping within stop_distance.
+## Consumes: target_groups via game.group_registry; move_key/distance_key blackboard keys.
 class_name AIChaseBrain extends CDEntityComponent
 
 ## groups to search for chase targets
@@ -27,7 +26,7 @@ var _last_direction: Vector2 = Vector2.ZERO
 ## cached distance for throttled frames
 var _last_distance: float = 0.0
 
-## ready
+## Set the intent category before the base _ready lifecycle hooks.
 func _ready() -> void:
 	component_category = CDEnums.ComponentCategory.INTENT
 	super._ready()
@@ -86,7 +85,7 @@ func _apply_noise(pos: Vector2) -> Vector2:
 		randf_range(-targeting_noise, targeting_noise)
 	)
 
-## on entity deactivating
+## Reset cached direction/distance and the throttle timer on deactivation.
 func _on_entity_deactivating() -> void:
 	super._on_entity_deactivating()
 	_update_timer = 0.0

@@ -1,7 +1,6 @@
-## ScoreOnDeathArm
-## Emits score_gained to the game bus when this entity dies
-## Reads point value from a sibling PointsGuts component
-
+## score_on_death_arm.gd
+## Produces: a score-add event on the game bus when the entity dies.
+## Consumes: death signals (zero_health); sibling PointsGuts points value.
 class_name ScoreOnDeathArm extends CDEntityComponent
 
 @export_group("Blackboard Keys")
@@ -16,7 +15,7 @@ class_name ScoreOnDeathArm extends CDEntityComponent
 ## cached reference to sibling PointsGuts
 var _points_guts: PointsGuts
 
-## ready
+## Set the interaction category before the base _ready arms lifecycle hooks.
 func _ready() -> void:
 	component_category = CDEnums.ComponentCategory.INTERACTION
 	super._ready()

@@ -1,10 +1,7 @@
-## CDStageRule
-## Defines a single stage control rule for StageManager
-## When the trigger fires, named CDStages are slept/woken and optional game signals emitted
-
+## cd_stage_rule.gd
+## Produces: a stage sleep/wake control rule (trigger → named stages + signals).
+## Consumes: nothing — pure data resource consumed by StageManager.
 class_name CDStageRule extends Resource
-
-## --- Exports ---
 
 ## what activates this rule (signal, timer, etc.)
 @export var trigger: CDTrigger
@@ -18,20 +15,16 @@ class_name CDStageRule extends Resource
 ## game bus signals to emit after execution
 @export var game_signals: Array[StringName] = []
 
-## --- Lifecycle ---
-
-## initialize trigger with game reference
+## Initialize trigger with game reference.
 func initialize(game: CDGame) -> void:
 	if trigger:
 		trigger.initialize(game)
 
-## full reset for game restart
+## Full reset for game restart.
 func reset() -> void:
 	if trigger:
 		trigger.reset()
 
-## --- Validation ---
-
-## at least one stage target or signal must be set
+## At least one stage target or signal must be set.
 func is_valid() -> bool:
 	return not sleep_stages.is_empty() or not wake_stages.is_empty() or not game_signals.is_empty()

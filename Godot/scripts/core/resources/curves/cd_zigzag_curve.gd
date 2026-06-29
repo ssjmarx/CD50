@@ -1,7 +1,6 @@
-## CDZigzagCurve
-## Zigzag curve — alternating sharp peaks on each side of the base path
-## Returns to start point (closed loop)
-
+## cd_zigzag_curve.gd
+## Produces: a closed zigzag curve (alternating sharp peaks around base path).
+## Consumes: nothing — pure data resource consumed by curve users (Legs).
 @tool
 class_name CDZigzagCurve extends CDCurve
 

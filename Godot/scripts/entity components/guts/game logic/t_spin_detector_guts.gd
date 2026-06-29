@@ -1,6 +1,6 @@
-## TSpinDetectorGuts
-## Uses the SRS 3-corner rule to detect T-spins when a T-shaped piece locks
-## Checks 4 diagonal corners after last rotation; 3+ occupied = T-spin
+## t_spin_detector_guts.gd
+## Produces: t_spin_detected signal on the game bus; is_t_spin_key/is_mini_key on game blackboard.
+## Consumes: piece_locked and rotated signals; entity global rotation/position.
 
 class_name TSpinDetectorGuts extends CDEntityComponent
 
@@ -32,7 +32,7 @@ var _rotation_state: int = 0
 
 ## --- lifecycle ---
 
-## set component category
+## Set the state component category before the base _ready lifecycle.
 func _ready() -> void:
 	component_category = CDEnums.ComponentCategory.STATE
 	super._ready()

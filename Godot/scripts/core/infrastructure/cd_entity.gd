@@ -1,10 +1,7 @@
-## CDEntity
-## Base class for all V2 physical entities
-## Accumulates movement requests, resolves physics, emits collision signals
-
+## cd_entity.gd
+## Produces: physics-resolved entity movement, collision signals, and pool lifecycle.
+## Consumes: component velocity/rotation/position requests; CDGame infrastructure.
 class_name CDEntity extends CharacterBody2D
-
-## --- Exports ---
 
 ## universal entity settings configured in editor
 @export var groups: Array[StringName] = []
@@ -21,8 +18,6 @@ class_name CDEntity extends CharacterBody2D
 @export var lock_y_on: Array[StringName] = []
 @export var unclamp_bounds_on: Array[StringName] = []
 @export var clamp_bounds_on: Array[StringName] = []
-
-## --- Internal State ---
 
 ## angular velocity for newtonian rotation
 var angular_velocity: float = 0.0
@@ -43,7 +38,7 @@ var _rotation_set_pending: Variant = null
 var _rotation_add_pending: Variant = null
 
 ## per-frame signal emitter tracking (populated by bus_emit, cleared by CDUpdater)
-var _signal_emitters: Dictionary = {}  # {StringName: Array}
+var _signal_emitters: Dictionary = {}
 
 ## collision buffer: detected in physics, flushed by CDCollisionBuffer at priority 35
 var _pending_collisions: Array = []
@@ -60,19 +55,16 @@ var game: CDGame
 var _spawn_position: Vector2
 
 ## collision handler registry — guts components register custom responses here
-var _collision_handlers: Array # [{layers: int, handler: Callable}] — 0 = catch-all
+var _collision_handlers: Array
 
 ## prevents infinite collision loops in corners
 const MAX_COLLISION_ITERATIONS: int = 4
 
-## --- Setup ---
-
-## fixed priority 30 (PHYSICS) — runs after components set velocity, before buffer flushes
+## Set fixed physics priority and register entity with groups/collision matrix.
 func _ready() -> void:
 	process_physics_priority = 30
 	_spawn_position = global_position
 
-	## define entity bus signals (typed, high-frequency)
 	add_user_signal("collision", 	[{"name": "collider", "type": TYPE_OBJECT},
 									{"name": "normal", "type": TYPE_VECTOR2}])
 	add_user_signal("collided_by",	[{"name": "source", "type": TYPE_OBJECT},
@@ -85,7 +77,6 @@ func _ready() -> void:
 
 	_create_default_collision_shape()
 
-	## walk tree to find ancestor game
 	game = CDGame.find_ancestor(self)
 	if game == null:
 		push_error("CDEntity '%s': no CDGame ancestor found." % name)
@@ -112,9 +103,7 @@ func _ready() -> void:
 	for sig in clamp_bounds_on:
 		bus_connect(sig, _clamp_bounds)
 
-## --- Physics Process ---
-
-## the main job: resolve all pending movement requests, run physics, detect collisions
+## Resolve all pending movement requests, run physics, detect collisions.
 func _physics_process(delta: float) -> void:
 	if state != CDEnums.EntityState.ACTIVE:
 		return
@@ -197,41 +186,39 @@ func _physics_process(delta: float) -> void:
 
 ## --- Velocity / Position / Rotation API ---
 
-## override velocity entirely (beats add)
+## Override velocity entirely (beats add).
 func request_velocity_set(vel: Vector2) -> void:
 	_velocity_set_pending = vel
 
-## add to velocity from a component (accumulates)
+## Add to velocity from a component (accumulates).
 func request_velocity_add(vel: Vector2) -> void:
 	_accumulated_velocity_add += vel
 
-## override angular velocity entirely
+## Override angular velocity entirely.
 func request_angular_set(ang: float) -> void:
 	_angular_set_pending = ang
 
-## add to angular velocity from a component
+## Add to angular velocity from a component.
 func request_angular_add(ang: float) -> void:
 	_accumulated_angular_add += ang
 
-## snap to a specific rotation (skips angular velocity)
+## Snap to a specific rotation (skips angular velocity).
 func request_rotation_set(rot: float) -> void:
 	_rotation_set_pending = rot
 
-## instant fixed rotation delta
+## Apply an instant fixed rotation delta.
 func request_rotation_add(rot_delta: float) -> void:
 	_rotation_add_pending = rot_delta
 
-## teleport to a position (skips physics)
+## Teleport to a position (skips physics).
 func request_position_set(pos: Vector2) -> void:
 	_position_set_pending = pos
 
-## teleport by an offset
+## Teleport by an offset.
 func request_position_add(offset: Vector2) -> void:
 	_position_add_pending = offset
 
-## --- Collision Flushing ---
-
-## emit all queued collision + collided_by signals (called by CDCollisionBuffer at priority 35)
+## Emit all queued collision + collided_by signals (called by CDCollisionBuffer at priority 35).
 func flush_collisions() -> void:
 	for col in _pending_collisions:
 		var collider = col.collider
@@ -241,13 +228,11 @@ func flush_collisions() -> void:
 			collider.emit_signal("collided_by", self, -normal)
 	_pending_collisions.clear()
 
-## --- Lifecycle ---
-
-## signal handler for request_deactivate
+## Signal handler for request_deactivate.
 func _on_request_deactivate() -> void:
 	deactivate()
 
-## phase 1: immediate mark — entity stays functional until end of frame
+## Phase 1: immediate mark — entity stays functional until end of frame.
 func deactivate() -> void:
 	if state != CDEnums.EntityState.ACTIVE:
 		return
@@ -256,7 +241,7 @@ func deactivate() -> void:
 	blackboard.clear()
 	call_deferred("_complete_deactivation")
 
-## phase 2: deferred cleanup — runs at end of frame after all components finish
+## Phase 2: deferred cleanup — runs at end of frame after all components finish.
 func _complete_deactivation() -> void:
 	set_subtree_collisions(self, false)
 	emit_signal("entity_deactivating")
@@ -276,12 +261,12 @@ func _complete_deactivation() -> void:
 		state = CDEnums.EntityState.INACTIVE
 		queue_free()
 
-## wake an entity from the pool (re-enable physics, collisions, groups)
+## Wake an entity from the pool (re-enable physics, collisions, groups).
 func activate() -> void:
 	if state != CDEnums.EntityState.INACTIVE:
 		return
 	state = CDEnums.EntityState.ACTIVE
-	
+
 	blackboard.clear()
 
 	set_subtree_collisions(self, true)
@@ -299,7 +284,7 @@ func activate() -> void:
 
 ## --- Collision Shapes ---
 
-## override collision shape with a circle (called by Faces at init)
+## Override collision shape with a circle (called by Faces at init).
 func set_collision_circle(radius: float) -> void:
 	_clear_collision_shapes()
 	var shape = CircleShape2D.new()
@@ -308,14 +293,14 @@ func set_collision_circle(radius: float) -> void:
 	node.shape = shape
 	add_child(node)
 
-## override collision shape with a polygon (for vector-style entities)
+## Override collision shape with a polygon (for vector-style entities).
 func set_collision_polygon(points: PackedVector2Array) -> void:
 	_clear_collision_shapes()
 	var node = CollisionPolygon2D.new()
 	node.polygon = points
 	add_child(node)
 
-## override collision shape with a rectangle (for paddles, bricks)
+## Override collision shape with a rectangle (for paddles, bricks).
 func set_collision_rect(width: float, height: float) -> void:
 	_clear_collision_shapes()
 	var shape = RectangleShape2D.new()
@@ -326,19 +311,19 @@ func set_collision_rect(width: float, height: float) -> void:
 
 ## --- Universal Bus API ---
 
-## bus connect — idempotent: guards against double-connection, creates signal if missing
+## Bus connect — idempotent: guards double-connection, creates signal if missing.
 func bus_connect(signal_name: StringName, callable: Callable) -> void:
 	if not has_signal(signal_name):
 		add_user_signal(signal_name)
 	if not is_connected(signal_name, callable):
 		connect(signal_name, callable)
 
-## bus disconnect
+## Bus disconnect.
 func bus_disconnect(signal_name: StringName, callable: Callable) -> void:
 	if has_signal(signal_name) and is_connected(signal_name, callable):
 		disconnect(signal_name, callable)
 
-## bus emit — zero-arg signal, automatically tracks self as emitter
+## Bus emit — zero-arg signal, automatically tracks self as emitter.
 func bus_emit(signal_name: StringName) -> void:
 	if has_signal(signal_name):
 		emit_signal(signal_name)
@@ -347,9 +332,7 @@ func bus_emit(signal_name: StringName) -> void:
 			_signal_emitters[signal_name] = []
 		_signal_emitters[signal_name].append(self)
 
-## --- Collision Shape Helper ---
-
-## Enable or disable all collision shapes in a node's direct children
+## Enable or disable all collision shapes in a node's direct children.
 static func set_subtree_collisions(node: Node, enabled: bool) -> void:
 	for child in node.get_children():
 		if child is CollisionShape2D:
@@ -357,9 +340,7 @@ static func set_subtree_collisions(node: Node, enabled: bool) -> void:
 		elif child is CollisionPolygon2D:
 			child.set_deferred("disabled", not enabled)
 
-## --- Utility ---
-
-## walk up the tree to find the nearest CDEntity ancestor
+## Walk up the tree to find the nearest CDEntity ancestor.
 static func find_ancestor(node: Node) -> CDEntity:
 	var current = node.get_parent()
 	while current:
@@ -368,9 +349,7 @@ static func find_ancestor(node: Node) -> CDEntity:
 		current = current.get_parent()
 	return null
 
-## --- Internal ---
-
-## create default circle collision shape from export
+## Create default circle collision shape from export.
 func _create_default_collision_shape() -> void:
 	var shape = CircleShape2D.new()
 	shape.radius = collision_radius
@@ -378,7 +357,7 @@ func _create_default_collision_shape() -> void:
 	node.shape = shape
 	add_child(node)
 
-## remove all existing collision shapes (before replacing)
+## Remove all existing collision shapes (before replacing).
 func _clear_collision_shapes() -> void:
 	for child in get_children():
 		if child is CollisionShape2D or child is CollisionPolygon2D:
@@ -386,8 +365,7 @@ func _clear_collision_shapes() -> void:
 
 ## --- Collision Handler Registry ---
 
-## register a custom collision handler for specific collider groups
-## empty target_groups = catch-all (matches everything)
+## Register a custom collision handler for specific collider groups (empty = catch-all).
 func register_collision_handler(target_groups: Array[StringName], handler: Callable) -> void:
 	var layers: int = 0
 	if target_groups.size() > 0 and game and game.collision_matrix:
@@ -395,13 +373,13 @@ func register_collision_handler(target_groups: Array[StringName], handler: Calla
 			layers |= game.collision_matrix.get_layer_for_group(group_name)
 	_collision_handlers.append({"layers": layers, "handler": handler})
 
-## unregister a collision handler (called during component cleanup)
+## Unregister a collision handler (called during component cleanup).
 func unregister_collision_handler(handler: Callable) -> void:
 	for i in range(_collision_handlers.size() - 1, -1, -1):
 		if _collision_handlers[i]["handler"] == handler:
 			_collision_handlers.remove_at(i)
 
-## default collision response: SLIDE, BOUNCE, or STOP based on export
+## Default collision response: SLIDE, BOUNCE, or STOP based on export.
 func _default_collision_response(collision: KinematicCollision2D) -> Vector2:
 	var normal = collision.get_normal()
 	match collision_response:
@@ -416,7 +394,7 @@ func _default_collision_response(collision: KinematicCollision2D) -> Vector2:
 			return Vector2.ZERO
 	return Vector2.ZERO
 
-## find matching handler for a collider: specific layers first, then catch-all
+## Find matching handler for a collider: specific layers first, then catch-all.
 func _find_collision_handler(collider) -> Callable:
 	if collider == null or not is_instance_valid(collider):
 		return Callable()
@@ -436,8 +414,6 @@ func _find_collision_handler(collider) -> Callable:
 			return entry["handler"]
 
 	return Callable()
-
-## --- Physics Overrides ---
 
 func _unlock_y() -> void:
 	lock_y = false

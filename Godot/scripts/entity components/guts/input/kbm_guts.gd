@@ -1,6 +1,6 @@
-## KBMGuts
-## Merges keyboard "move" and mouse "move_to" inputs into a single "steer" signal
-## Keyboard takes priority; mouse aims toward target when no keys are held
+## kbm_guts.gd
+## Produces: steer signal; writes steer_direction_key (entity blackboard).
+## Consumes: move/move_to signals (keyboard Vector2, mouse target Vector2).
 
 class_name KBMGuts extends CDEntityComponent
 
@@ -28,12 +28,12 @@ var _mouse_target: Vector2 = Vector2.ZERO
 
 ## --- lifecycle ---
 
-## set component category
+## Set the state component category before the base _ready lifecycle.
 func _ready() -> void:
 	component_category = CDEnums.ComponentCategory.STATE
 	super._ready()
 
-## connect move and move_to listeners, ensure steer signal exists
+## Connect move/move_to listeners and ensure the steer signal exists on the entity.
 func _on_initialize() -> void:
 	for sig in move_signals:
 		entity.ensure_signal(sig)
@@ -46,17 +46,17 @@ func _on_initialize() -> void:
 
 ## --- signal handlers ---
 
-## store keyboard direction
+## Cache the latest keyboard direction vector.
 func _on_move(direction: Vector2) -> void:
 	_kb_direction = direction
 
-## store mouse target position
+## Cache the latest mouse target position.
 func _on_move_to(target: Vector2) -> void:
 	_mouse_target = target
 
 ## --- processing ---
 
-## emit steer signal: keyboard direction if held, otherwise aim toward mouse target
+## Emit steer using the held keyboard direction, otherwise aim toward the mouse target.
 func _physics_process(_delta: float) -> void:
 	## keyboard takes priority
 	if _kb_direction != Vector2.ZERO:
@@ -78,7 +78,7 @@ func _physics_process(_delta: float) -> void:
 
 ## --- cleanup ---
 
-## disconnect all listeners for pool reuse
+## Disconnect move/move_to listeners on deactivation for pool reuse.
 func _on_entity_deactivating() -> void:
 	super._on_entity_deactivating()
 	for sig in move_signals:

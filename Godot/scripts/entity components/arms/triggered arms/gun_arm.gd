@@ -1,7 +1,6 @@
-## GunArm
-## Spawns a projectile on a fire signal with cooldown and optional max bullet limit
-## Supports object pooling and rotation inheritance
-
+## gun_arm.gd
+## Produces: a spawned projectile on a fire signal (scene-or-pool) with cooldown and max-bullet limiting.
+## Consumes: fire_signals (shoot); bullet_scene/spawn_context; cooldown timing.
 class_name GunArm extends CDEntityComponent
 
 ## projectile scene to spawn
@@ -31,12 +30,12 @@ var _last_fire_time: float = -999.0
 ## currently live projectiles for max_bullets tracking
 var _live_bullets: Array[CDEntity] = []
 
-## ready
+## Set the interaction category before the base _ready arms lifecycle hooks.
 func _ready() -> void:
 	component_category = CDEnums.ComponentCategory.INTERACTION
 	super._ready()
 
-## connect fire signals
+## Connect each fire signal to the projectile-spawn handler during initialization.
 func _on_initialize() -> void:
 	for sig in fire_signals:
 		self.bus_connect(sig, _on_fire)

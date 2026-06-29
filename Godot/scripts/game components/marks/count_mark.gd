@@ -1,11 +1,6 @@
 ## CountMark
-## Tracks unique bodies entering the zone and emits when a target count is reached
-## Deduplicates bodies — each body counted only once regardless of re-entry
-##
-## Emit behavior: REPLICATES base enter/exit. The base on_entered / on_exited game-bus
-## signals AND the entered_body_key / exited_body_key blackboard writes both fire (via
-## _emit_enter/_emit_exit in the overrides below), in addition to this mark's own
-## on_count_changed / on_count_reached signals.
+## Produces: a count_reached game bus signal when N unique bodies enter the zone.
+## Consumes: bodies entering/exiting the zone Area2D.
 
 class_name CountMark extends CDMark
 
@@ -29,8 +24,6 @@ class_name CountMark extends CDMark
 
 ## deduplicated list of bodies that have entered
 var _tracked_bodies: Array[Node2D] = []
-
-## --- body detection ---
 
 ## track unique bodies, write to blackboard, emit zero-arg signals
 func _handle_body_entered(body: Node2D) -> void:

@@ -1,9 +1,8 @@
+## menacing_vector_face.gd
+## Produces: CRT menace visual effects (glitch, static, glow, scan, corrupt) overlaid on VectorFace.
+## Consumes: trigger_glitch/trigger_corrupt/trigger_static entity bus signals.
+
 @tool
-
-## MenacingVectorFace
-## Extends VectorFace with CRT menace effects: glitch, static, glow, scan, corrupt
-## Each effect is independently toggleable and can be triggered by entity signals
-
 class_name MenacingVectorFace extends VectorFace
 
 ## --- glitch exports ---
@@ -83,11 +82,11 @@ class_name MenacingVectorFace extends VectorFace
 ## glitch: horizontal band displacement
 var _glitch_active: bool = false
 var _glitch_timer: float = 0.0
-var _glitch_slices: Array = []          # [{y_start, y_end, x_offset}]
+var _glitch_slices: Array = []          ## [{y_start, y_end, x_offset}]
 
 ## static: random bright pixel noise
 var _static_active: bool = false
-var _static_particles: Array = []       # [{x, y}]
+var _static_particles: Array = []       ## [{x, y}]
 
 ## scan: horizontal sweep line
 var _scan_active: bool = false
@@ -100,8 +99,6 @@ var _corrupt_seed: int = 0
 
 ## elapsed time for glow pulse
 var _elapsed: float = 0.0
-
-## --- lifecycle ---
 
 ## connect signal-triggered effect handlers
 func _on_initialize() -> void:
@@ -125,7 +122,7 @@ func _process(delta: float) -> void:
 	_update_menace(delta)
 	queue_redraw()
 
-### signal handlers force an immediate effect flash
+## --- signal handlers ---
 
 ## force an immediate glitch burst with random duration
 func _force_glitch() -> void:
@@ -144,7 +141,7 @@ func _force_static() -> void:
 	_static_active = true
 	_generate_static_particles()
 
-### general menace, updates per frame
+## --- general menace ---
 
 ## update all enabled menace effects with random activation/deactivation
 func _update_menace(delta: float) -> void:
@@ -237,7 +234,7 @@ func _get_glitch_offset(y: float) -> float:
 			return slice.x_offset
 	return 0.0
 
-## on entity deactivating
+## Disconnect all menace-trigger signal handlers on deactivation.
 func _on_entity_deactivating() -> void:
 	for sig in trigger_glitch:
 		self.bus_disconnect(sig, _force_glitch)
@@ -263,8 +260,6 @@ func _seeded_rand(s: int, index: int) -> float:
 	v = v * 0x45d9f3b
 	v = (v >> 16) ^ v
 	return (float(v & 0x7FFFFFFF) / float(0x7FFFFFFF)) * 2.0 - 1.0
-
-### drawing
 
 ## draw the base shape with menace modifications: glitch offset, corrupt displacement, glow, static, scan
 func _draw() -> void:

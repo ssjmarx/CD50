@@ -1,6 +1,6 @@
 ## GridRotationLeg
-## Tetris-style rotation with SRS wall-kick offset tables
-## Uses edge detection on blackboard rotation_spin — only acts when spin changes to non-zero
+## Produces: a discrete rotation step using SRS wall-kick offset tables.
+## Consumes: entity.blackboard["rotation_spin"] (edge-detected).
 
 class_name GridRotationLeg extends CDEntityComponent
 
@@ -26,8 +26,6 @@ var _prev_spin: float = 0.0
 ## sibling TetrominoGuts for cell offset data (loosely typed to avoid hard dep)
 var _tetromino_guts
 
-## --- lifecycle ---
-
 ## ready
 func _ready() -> void:
 	component_category = CDEnums.ComponentCategory.STEERING
@@ -38,8 +36,6 @@ func _on_initialize() -> void:
 	for sig in rotation_blocked_signals:
 		entity.ensure_signal(sig)
 	_tetromino_guts = _find_tetromino_guts()
-
-## --- processing ---
 
 ## physics process
 func _physics_process(_delta: float) -> void:
@@ -53,16 +49,12 @@ func _physics_process(_delta: float) -> void:
 	
 	_prev_spin = spin
 
-## --- helpers ---
-
 ## find TetrominoGuts sibling by script class name
 func _find_tetromino_guts():
 	for child in entity.get_children():
 		if child.get_script() and child.get_script().get_global_name() == &"TetrominoGuts":
 			return child
 	return null
-
-## --- rotation ---
 
 ## attempt rotation with wall kicks, fall back to simple rotation without guts
 func _on_rotate(spin: float) -> void:
@@ -94,8 +86,6 @@ func _on_rotate(spin: float) -> void:
 	for sig in rotation_blocked_signals:
 		entity.bus_emit(sig)
 
-## --- validation ---
-
 ## check if all cells at given offsets + kick are unoccupied
 func _validate_cells(offsets: Array, kick: Vector2i, cell_size: Vector2) -> bool:
 	for offset in offsets:
@@ -113,8 +103,6 @@ func _is_occupied(pos: Vector2) -> bool:
 	var results := space_state.intersect_point(query)
 	return results.size() > 0
 
-## --- application ---
-
 ## apply the rotation index and optional kick offset to the entity
 func _apply_rotation(target_index: int, kick: Vector2i) -> void:
 	_tetromino_guts.set_rotation(target_index)
@@ -128,8 +116,6 @@ func _get_cell_size() -> Vector2:
 		if child.get_script() and child.get_script().get_global_name() == &"GridMovementLeg":
 			return child.cell_size
 	return Vector2(16, 16)
-
-## --- cleanup ---
 
 ## on entity deactivating
 func _on_entity_deactivating() -> void:

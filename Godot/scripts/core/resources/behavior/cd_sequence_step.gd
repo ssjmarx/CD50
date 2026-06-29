@@ -1,10 +1,7 @@
-## CDSequenceStep
-## A single step in a SignalManager's timed signal sequence
-## Fires one or more game bus signals simultaneously, then waits before advancing
-
+## cd_sequence_step.gd
+## Produces: a single timed step in a signal sequence (signals + wait).
+## Consumes: nothing — pure data resource consumed by SignalManager.
 class_name CDSequenceStep extends Resource
-
-## --- exports ---
 
 ## game bus signals to fire simultaneously when this step activates
 @export var signals: Array[StringName] = []

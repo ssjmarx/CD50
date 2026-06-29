@@ -1,6 +1,6 @@
 ## ScoreThresholdGoal
-## Monitors score via game blackboard and triggers when it crosses a threshold
-## Uses CDEnums.CountComparison for flexible comparison operators
+## Produces: a goal_met game bus signal when score crosses a threshold.
+## Consumes: game.blackboard score key; CDTrigger resources.
 
 class_name ScoreThresholdGoal extends CDGameComponent
 

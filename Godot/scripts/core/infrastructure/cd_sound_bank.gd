@@ -1,10 +1,7 @@
-## CDSoundBank
-## Centralized procedural audio engine for V2
-## Generates all sound effects at runtime via AudioStreamGenerator — no audio files needed
-
+## cd_sound_bank.gd
+## Produces: procedural one-shot and continuous audio voices from CDSoundDef resources.
+## Consumes: CDSoundDef / CDNote resources; AudioStreamGenerator playback buffers.
 class_name CDSoundBank extends CDGameComponent
-
-## --- Constants ---
 
 const MIX_RATE: int = 11025
 const MAX_CONTINUOUS: int = 4
@@ -13,27 +10,21 @@ const MAX_INITIAL_FILL: int = 128
 const POSITIONAL_DISTANCE: float = 2000.0
 const GLOBAL_DISTANCE: float = 2000000.0
 
-## --- Exports ---
-
 ## max simultaneous one-shot voices (set lower for arcade authenticity, e.g. 3 for Galaga)
 @export var max_channels: int = 8
-
-## --- Voice Pools ---
 
 ## one-shot voice pool (pew, boom, bounce)
 var _voices: Array = []
 ## continuous voice pool (engine hum, alarm)
 var _continuous_pool: Array = []
 ## active one-shot voices keyed by CDSoundDef instance id (sound dedup)
-var _sound_registry: Dictionary = {}  # sound_def_id : Voice
+var _sound_registry: Dictionary = {}  ## sound_def_id : Voice
 ## active continuous voices keyed by signature string
-var _continuous_registry: Dictionary = {}  # signature : Voice
+var _continuous_registry: Dictionary = {}  ## signature : Voice
 ## tracks whether any voice is active (controls process flag)
 var _has_active: bool = false
 
-## --- Setup ---
-
-## create voice pools with AudioStreamPlayer2D nodes
+## Create voice pools with AudioStreamPlayer2D nodes.
 func _on_initialize() -> void:
 	set_process(false)
 
@@ -64,9 +55,7 @@ func _on_initialize() -> void:
 		voice.gen = gen
 		_continuous_pool.append(voice)
 
-## --- Fill Loop ---
-
-## push audio frames to all active voices (runs only when _has_active is true)
+## Push audio frames to all active voices (runs only when _has_active is true).
 func _process(_delta: float) -> void:
 	var any_active := false
 
@@ -125,7 +114,7 @@ func _process(_delta: float) -> void:
 		_has_active = false
 		set_process(false)
 
-## lazily enable processing when first voice becomes active
+## Lazily enable processing when first voice becomes active.
 func _ensure_process() -> void:
 	if not _has_active:
 		_has_active = true
@@ -133,7 +122,7 @@ func _ensure_process() -> void:
 
 ## --- One-Shot API ---
 
-## play a single sound effect at a position
+## Play a single sound effect at a position.
 func play_one_shot(def: CDSoundDef, sound_position: Vector2, positional: bool,
 		exclusive: bool, caller_id: int) -> bool:
 
@@ -142,7 +131,6 @@ func play_one_shot(def: CDSoundDef, sound_position: Vector2, positional: bool,
 
 	var sound_id: int = def.get_instance_id()
 
-	## --- Sound-level dedup ---
 	## if this exact CDSoundDef is already playing, apply arcade-authentic behavior
 	if _sound_registry.has(sound_id):
 		if exclusive:
@@ -156,7 +144,6 @@ func play_one_shot(def: CDSoundDef, sound_position: Vector2, positional: bool,
 			_restart_voice(existing, def, sound_position, positional)
 			return true
 
-	## --- Allocate a new voice ---
 	var voice: Voice = _find_idle_voice()
 	if voice == null:
 		return false
@@ -164,7 +151,6 @@ func play_one_shot(def: CDSoundDef, sound_position: Vector2, positional: bool,
 	## register in sound registry before configuring
 	_sound_registry[sound_id] = voice
 
-	## configure voice state from sound definition
 	voice.active = true
 	voice.sound_id = sound_id
 	voice.source_id = caller_id
@@ -174,14 +160,12 @@ func play_one_shot(def: CDSoundDef, sound_position: Vector2, positional: bool,
 	voice.phase = 0.0
 	voice.volume = def.volume
 
-	## initialize reverb buffer if needed
 	if def.effect == CDEnums.Effect.REVERB:
 		_init_reverb_buf(voice)
 	else:
 		voice.reverb_buf.clear()
 		voice.reverb_size = 0
 
-	## jingle sequencing: start at first note
 	voice.note_index = 0
 	voice.notes = def.notes
 	voice.note_frame_start = 0
@@ -189,7 +173,6 @@ func play_one_shot(def: CDSoundDef, sound_position: Vector2, positional: bool,
 	voice.shot_end = maxi(1, int(first_note.duration * MIX_RATE))
 	voice.cached_freq = CDUtilities.freq_from_note(first_note.note)
 
-	## configure player position and distance attenuation
 	voice.player.volume_db = linear_to_db(def.volume)
 	voice.player.global_position = sound_position
 	if positional:
@@ -207,10 +190,9 @@ func play_one_shot(def: CDSoundDef, sound_position: Vector2, positional: bool,
 	_ensure_process()
 	return true
 
-## restart a voice from the beginning (arcade-authentic overlap for non-exclusive sounds)
+## Restart a voice from the beginning (arcade-authentic overlap for non-exclusive sounds).
 func _restart_voice(voice: Voice, def: CDSoundDef, sound_position: Vector2,
 		positional: bool) -> void:
-	## reset playback state to beginning of jingle
 	voice.frame_pos = 0
 	voice.phase = 0.0
 	voice.note_index = 0
@@ -223,11 +205,9 @@ func _restart_voice(voice: Voice, def: CDSoundDef, sound_position: Vector2,
 	voice.shot_end = maxi(1, int(first_note.duration * MIX_RATE))
 	voice.cached_freq = CDUtilities.freq_from_note(first_note.note)
 
-	## re-initialize reverb buffer if needed
 	if def.effect == CDEnums.Effect.REVERB:
 		_init_reverb_buf(voice)
 
-	## update position
 	voice.player.global_position = sound_position
 	if positional:
 		voice.player.max_distance = POSITIONAL_DISTANCE
@@ -237,7 +217,7 @@ func _restart_voice(voice: Voice, def: CDSoundDef, sound_position: Vector2,
 	## fill from restart point
 	_fill_voice_initial(voice)
 
-## push initial audio frames to prevent gaps on new/restarted voices
+## Push initial audio frames to prevent gaps on new/restarted voices.
 func _fill_voice_initial(voice: Voice) -> void:
 	var available: int = voice.playback.get_frames_available()
 	var remaining: int = voice.shot_end - voice.frame_pos
@@ -248,13 +228,12 @@ func _fill_voice_initial(voice: Voice) -> void:
 		voice.playback.push_frame(Vector2(sample, sample))
 		voice.frame_pos += 1
 
-## advance to next note in a jingle sequence
+## Advance to next note in a jingle sequence.
 func _advance_jingle(voice: Voice) -> bool:
 	voice.note_index += 1
 	if voice.note_index >= voice.notes.size():
 		return false
 
-	## configure next note timing and frequency
 	var next_note: CDNote = voice.notes[voice.note_index]
 	voice.note_frame_start = voice.frame_pos
 	var note_frames: int = maxi(1, int(next_note.duration * MIX_RATE))
@@ -280,7 +259,7 @@ func _advance_jingle(voice: Voice) -> bool:
 
 ## --- Continuous API ---
 
-## start a looped sound (ref-counted for multiple sources sharing one voice)
+## Start a looped sound (ref-counted for multiple sources sharing one voice).
 func start_continuous(signature: String, wave_shape: int, effect: int,
 		note: int, volume: float, source_id: int,
 		sound_position: Vector2, positional: bool) -> bool:
@@ -299,7 +278,6 @@ func start_continuous(signature: String, wave_shape: int, effect: int,
 	if voice == null:
 		return false
 
-	## configure voice for continuous playback
 	voice.active = true
 	voice.ref_count = 1
 	voice.source_ids = {source_id: sound_position}
@@ -318,7 +296,7 @@ func start_continuous(signature: String, wave_shape: int, effect: int,
 	_ensure_process()
 	return true
 
-## stop a source's contribution to a continuous voice (decrements ref count)
+## Stop a source's contribution to a continuous voice (decrements ref count).
 func stop_continuous(signature: String, source_id: int) -> void:
 	if not _continuous_registry.has(signature):
 		return
@@ -340,7 +318,7 @@ func stop_continuous(signature: String, source_id: int) -> void:
 		voice.player.global_position = remaining_pos
 		voice.player.max_distance = POSITIONAL_DISTANCE
 
-## pause a source's continuous sound (voice pauses if all sources are paused)
+## Pause a source's continuous sound (voice pauses if all sources are paused).
 func pause_continuous(signature: String, source_id: int) -> void:
 	if not _continuous_registry.has(signature):
 		return
@@ -349,7 +327,7 @@ func pause_continuous(signature: String, source_id: int) -> void:
 	if voice.player.playing:
 		voice.player.stop()
 
-## resume a source's continuous sound (voice resumes if no sources are paused)
+## Resume a source's continuous sound (voice resumes if no sources are paused).
 func resume_continuous(signature: String, source_id: int) -> void:
 	if not _continuous_registry.has(signature):
 		return
@@ -359,7 +337,7 @@ func resume_continuous(signature: String, source_id: int) -> void:
 		voice.player.play()
 		voice.playback = voice.player.get_stream_playback()
 
-## update position for a source contributing to a continuous voice
+## Update position for a source contributing to a continuous voice.
 func update_continuous_position(signature: String, source_id: int, sound_position: Vector2) -> void:
 	if not _continuous_registry.has(signature):
 		return
@@ -370,7 +348,7 @@ func update_continuous_position(signature: String, source_id: int, sound_positio
 
 ## --- Helpers ---
 
-## release a voice — stop playback and clear all state
+## Release a voice — stop playback and clear all state.
 func _release_voice(voice: Voice) -> void:
 	voice.player.stop()
 	voice.active = false
@@ -381,7 +359,7 @@ func _release_voice(voice: Voice) -> void:
 	voice.notes = []
 	voice.note_index = 0
 
-## find an idle one-shot voice (will reclaim a draining voice if all are busy)
+## Find an idle one-shot voice (will reclaim a draining voice if all are busy).
 func _find_idle_voice() -> Voice:
 	for voice in _voices:
 		if not voice.active:
@@ -393,14 +371,14 @@ func _find_idle_voice() -> Voice:
 			return voice
 	return null
 
-## find an idle continuous voice
+## Find an idle continuous voice.
 func _find_idle_continuous_voice() -> Voice:
 	for voice in _continuous_pool:
 		if not voice.active:
 			return voice
 	return null
 
-## initialize the per-voice reverb delay buffer
+## Initialize the per-voice reverb delay buffer.
 func _init_reverb_buf(voice: Voice) -> void:
 	var size: int = REVERB_DELAY_3 + 1
 	if voice.reverb_size != size:
@@ -413,14 +391,14 @@ func _init_reverb_buf(voice: Voice) -> void:
 		voice.reverb_buf.fill(0.0)
 		voice.reverb_pos = 0
 
-## reverb delay lines in frames (at 11025 Hz mix rate)
+## Reverb delay lines in frames (at 11025 Hz mix rate).
 const REVERB_DELAY_1: int = 1102    ## 100ms
 const REVERB_DELAY_2: int = 1654    ## 150ms
 const REVERB_DELAY_3: int = 2205    ## 200ms
 const REVERB_FEEDBACK: float = 0.3
 const REVERB_MIX: float = 0.4
 
-## generate a single audio sample for a voice at time t
+## Generate a single audio sample for a voice at time t.
 func _get_sample(voice: Voice, t: float) -> float:
 	## glide: interpolate frequency from start to target over note duration
 	var base_freq: float = voice.cached_freq
@@ -460,9 +438,7 @@ func _get_sample(voice: Voice, t: float) -> float:
 
 	return sample
 
-## --- Voice Inner Class ---
-
-## holds per-voice state for an AudioStreamGenerator
+## Holds per-voice state for an AudioStreamGenerator.
 class Voice:
 	var player: Node
 	var gen: AudioStreamGenerator
@@ -501,5 +477,5 @@ class Voice:
 	## continuous voice state
 	var continuous: bool = false
 	var ref_count: int = 0
-	var source_ids: Dictionary = {}  # source_id : position
-	var paused_sources: Dictionary = {}  # source_id : true
+	var source_ids: Dictionary = {}  ## source_id : position
+	var paused_sources: Dictionary = {}  ## source_id : true

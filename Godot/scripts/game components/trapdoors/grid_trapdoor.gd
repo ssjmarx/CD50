@@ -1,9 +1,8 @@
+## GridTrapdoor
+## Produces: spawns entities in a centered 2D grid (CDGridLayout or CDGridEquation).
+## Consumes: CDGridLayout or CDGridEquation resources.
 @tool
 class_name GridTrapdoor extends CDStageTrapdoor
-
-## GridTrapdoor
-## Spawns entities in a centered 2D grid with two modes: data-driven or math-driven
-## Mode A uses CDGridLayout resources, Mode B uses CDGridEquation with random skip logic
 
 ## --- exports ---
 

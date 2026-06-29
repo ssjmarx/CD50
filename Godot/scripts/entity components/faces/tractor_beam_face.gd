@@ -1,6 +1,6 @@
-## TractorBeamFace
-## Visual component that spawns and despawns the TractorConeEffect
-## Listens to tractor beam signals to sync visuals with the arm.
+## tractor_beam_face.gd
+## Produces: the tractor-cone visual, spawned on windup and despawned on end.
+## Consumes: windup/miss/complete entity bus signals.
 
 class_name TractorBeamFace extends CDEntityComponent
 
@@ -17,12 +17,12 @@ class_name TractorBeamFace extends CDEntityComponent
 ## currently active effect instance
 var _active_effect: TractorConeEffect = null
 
-## ready
+## Set the visual component category before the base _ready lifecycle.
 func _ready() -> void:
 	component_category = CDEnums.ComponentCategory.VISUAL
 	super._ready()
 
-## connect to entity bus signals
+## Connect each windup/miss/complete signal to its handler.
 func _on_initialize() -> void:
 	for sig in windup_signals:
 		self.bus_connect(sig, _on_windup)

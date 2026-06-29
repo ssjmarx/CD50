@@ -1,11 +1,6 @@
 ## TimedMark
-## Tracks how long bodies remain inside the zone with configurable hold duration
-## Emits progress ticks during hold and completion when duration is met
-##
-## Emit behavior: REPLICATES base enter/exit. The base on_entered / on_exited game-bus
-## signals AND the entered_body_key / exited_body_key blackboard writes both fire (via
-## super._handle_body_entered/_handle_body_exited in the overrides below), in addition to
-## this mark's own on_occupy / on_progress / on_complete / on_vacate signals.
+## Produces: progress/complete game bus signals when bodies hold inside the zone.
+## Consumes: bodies entering/exiting the zone Area2D.
 
 class_name TimedMark extends CDMark
 
@@ -36,8 +31,6 @@ var _occupants: Dictionary = {}
 ## per-body tick accumulator {body: float}
 var _tick_accumulators: Dictionary = {}
 
-## --- processing ---
-
 ## advance timers, write to blackboard, emit zero-arg signals
 func _physics_process(delta: float) -> void:
 	var completed: Array[Node2D] = []
@@ -67,8 +60,6 @@ func _physics_process(delta: float) -> void:
 	for body in completed:
 		_occupants.erase(body)
 		_tick_accumulators.erase(body)
-
-## --- body detection ---
 
 ## register body for timing after running the base enter behavior
 func _handle_body_entered(body: Node2D) -> void:

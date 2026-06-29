@@ -1,7 +1,6 @@
-## CDSoundDef
-## A complete sound effect definition — wave shape, effects, volume, note sequence
-## Passed to CDSoundBank.play_one_shot() to trigger procedural audio
-
+## cd_sound_def.gd
+## Produces: a complete sound effect definition (wave, effect, volume, notes).
+## Consumes: nothing — pure data resource consumed by CDSoundBank.play_one_shot().
 class_name CDSoundDef extends Resource
 
 ## oscillator waveform for this sound

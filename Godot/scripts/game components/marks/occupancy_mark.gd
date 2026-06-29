@@ -1,11 +1,6 @@
 ## OccupancyMark
-## Tracks per-group body counts inside the zone and emits on every change
-## Useful for monitoring how many entities of each type occupy an area
-##
-## Emit behavior: REPLACES base enter/exit. The base on_entered / on_exited game-bus
-## signals and the entered_body_key / exited_body_key blackboard writes DO NOT fire —
-## the overrides below do not call super and do not use _emit_enter/_emit_exit. Only this
-## mark's own on_occupancy_changed signal fires.
+## Produces: an occupancy_changed game bus signal with per-group body counts.
+## Consumes: bodies entering/exiting the zone Area2D.
 
 class_name OccupancyMark extends CDMark
 
@@ -29,15 +24,11 @@ class_name OccupancyMark extends CDMark
 ## per-group body count {group_name: int}
 var _counts: Dictionary = {}
 
-## --- lifecycle ---
-
 ## initialize counters for all tracked groups
 func _ready() -> void:
 	super._ready()
 	for group in tracked_groups:
 		_counts[group] = 0
-
-## --- body detection ---
 
 ## increment group counters when matching bodies enter (replaces base enter)
 func _handle_body_entered(body: Node2D) -> void:
@@ -58,8 +49,6 @@ func _handle_body_exited(body: Node2D) -> void:
 			game.blackboard[changed_count_key] = _counts[group]
 			for sig in on_occupancy_changed:
 				game.bus_emit(sig)
-
-## --- query ---
 
 ## return the current occupancy count for a given group
 func get_count(group: StringName) -> int:

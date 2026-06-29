@@ -1,7 +1,6 @@
-## CDNote
-## A single note in a sound sequence — pitch + duration
-## Used inside CDSoundDef.notes arrays for one-shots and jingles
-
+## cd_note.gd
+## Produces: a single note (pitch + duration) for use in CDSoundDef note arrays.
+## Consumes: nothing — pure data resource consumed by CDSoundDef.notes.
 class_name CDNote extends Resource
 
 ## which semitone to play (CDEnums.Semitone enum: C2 through B6)

@@ -1,6 +1,6 @@
 ## CDScrollingStarsEffect
-## Creates randomized stars that scroll down
-## configurable size, speed, density, and shape
+## Produces: a field of randomized star sprites scrolling downward.
+## Consumes: nothing (autonomous effect driven by physics frame).
 
 class_name CDScrollingStarsEffect extends CDEffect
 
@@ -50,7 +50,7 @@ func _ready() -> void:
 		var color: Color = star_colors[randi() % star_colors.size()]
 		_colors.append(color)
 		
-		var type: int = randi() % 3 # CIRCLE, FOUR_POINT, or SIX_POINT
+		var type: int = randi() % 3 ## CIRCLE, FOUR_POINT, or SIX_POINT
 		_types.append(type)
 
 func _process(delta: float) -> void:

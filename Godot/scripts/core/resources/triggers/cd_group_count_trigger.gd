@@ -1,7 +1,6 @@
-## CDGroupCountTrigger
-## Evaluative trigger — compares group entity counts against a threshold
-## Supports multiple groups with require_all (AND) or any (OR) logic Fires on rising edge only (false→true transition)
-
+## cd_group_count_trigger.gd
+## Produces: an evaluative trigger comparing group counts to a threshold (fires on rising edge).
+## Consumes: game.group_registry counts for the configured group_names.
 class_name CDGroupCountTrigger extends CDTrigger
 
 ## groups to monitor via the group registry

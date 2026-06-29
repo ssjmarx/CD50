@@ -1,7 +1,6 @@
-## CDLissajousCurve
-## Lissajous figure curve — sin/cos oscillation with independent axes
-## Classic interference pattern with seed-based phase offset
-
+## cd_lissajous_curve.gd
+## Produces: a Lissajous figure curve with independent-axis sin/cos oscillation.
+## Consumes: nothing — pure data resource consumed by curve users (Legs).
 @tool
 class_name CDLissajousCurve extends CDCurve
 
@@ -23,7 +22,7 @@ class_name CDLissajousCurve extends CDCurve
 		loops = v
 		emit_changed()
 
-## generate a Lissajous figure along the base path
+## Generate a Lissajous figure along the base path.
 func generate_curve(start: Vector2, end: Vector2) -> Curve2D:
 	var curve := Curve2D.new()
 	var phase := _get_phase()

@@ -1,6 +1,6 @@
-## AnnouncerGuts
-## Listens for entity bus signals and rebroadcasts them on the game bus
-## Acts as a bridge between entity-level events and game-level reactions
+## announcer_guts.gd
+## Produces: game-bus rebroadcast of configured entity-bus signals.
+## Consumes: listen_signals (entity bus).
 
 class_name AnnouncerGuts extends CDEntityComponent
 
@@ -19,26 +19,26 @@ class_name AnnouncerGuts extends CDEntityComponent
 
 ## --- lifecycle ---
 
-## set component category
+## Set the state component category before the base _ready lifecycle.
 func _ready() -> void:
 	component_category = CDEnums.ComponentCategory.STATE
 	super._ready()
 
-## connect all listen signals to the unified handler
+## Connect every listen signal to the unified rebroadcast handler.
 func _on_initialize() -> void:
 	for sig_name: StringName in listen_signals:
 		self.bus_connect(sig_name, _on_any_input)
 
 ## --- signal handlers ---
 
-## called when any listen_signal fires; rebroadcasts on game bus if qualified
+## Rebroadcast the triggering event on the game bus with the entity as emitter.
 func _on_any_input() -> void:
 	for rebroadcast: StringName in rebroadcast_signals:
 		game.bus_emit_from(rebroadcast, entity)
 
 ## --- cleanup ---
 
-## disconnect all listen signals for pool reuse
+## Disconnect all listen signals on deactivation for pool reuse.
 func _on_entity_deactivating() -> void:
 	super._on_entity_deactivating()
 	for sig_name: StringName in listen_signals:

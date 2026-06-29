@@ -1,7 +1,6 @@
-## SpawnOnDeathArm
-## Spawns entities at the parent's position when it dies
-## Supports object pooling, spawn context, and position/velocity inheritance
-
+## spawn_on_death_arm.gd
+## Produces: spawned entities at the parent's position when it dies (scene-or-pool).
+## Consumes: death signals (entity_deactivating); entity.global_position/velocity.
 class_name SpawnOnDeathArm extends CDEntityComponent
 
 ## scene to spawn on death
@@ -25,7 +24,7 @@ class_name SpawnOnDeathArm extends CDEntityComponent
 @export_group("Listen Signals")
 @export var death_signals: Array[StringName] = [&"entity_deactivating"]
 
-## ready
+## Set the interaction category before the base _ready arms lifecycle hooks.
 func _ready() -> void:
 	component_category = CDEnums.ComponentCategory.INTERACTION
 	super._ready()

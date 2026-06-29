@@ -1,45 +1,35 @@
-## CDUtilities
-## Pure static utility functions used across V2
-## No state, no side effects — call directly via CDUtilities.func_name()
-
+## cd_utilities.gd
+## Produces: pure static utility helpers for spawning, expression eval, and audio waveforms.
+## Consumes: CDEntity, CDSpawnContext, CDEnums — all passed in as arguments.
 class_name CDUtilities
 
 ## sample rate for procedural sound generation
 const MIX_RATE: int = 11025
 
-## --- Spawn & Entity ---
-
-## apply a CDSpawnContext to an entity before it enters the tree
+## Apply a CDSpawnContext to an entity before it enters the tree.
 static func apply_spawn_context(entity: CDEntity, context: CDSpawnContext) -> void:
 	if context == null:
 		return
 
-	## set initial velocity from context
 	entity.velocity = context.velocity
 
-	## optionally randomize velocity direction within angle range
 	if context.use_random_angle:
 		var speed := entity.velocity.length()
 		var angle := Vector2.from_angle(randf_range(context.random_angle_min, context.random_angle_max))
 		entity.velocity = angle * speed
 
-	## optionally flip horizontal/vertical velocity components
 	if context.random_flip_h:
 		entity.velocity.x *= [-1, 1].pick_random()
 
 	if context.random_flip_v:
 		entity.velocity.y *= [-1, 1].pick_random()
 
-	## set initial rotation
 	entity.rotation = context.rotation
 
-	## add any extra groups the entity should belong to
 	for group in context.additional_groups:
 		entity.add_to_group(group)
 
-## --- Expression Evaluation ---
-
-## evaluate a string expression with named variables, returns result as int
+## Evaluate a string expression with named variables, returning the result as int.
 static func evaluate_int(equation: String, var_names: PackedStringArray, var_values: Array, context_name: String) -> int:
 	var expr := Expression.new()
 	var error := expr.parse(equation, var_names)
@@ -54,11 +44,11 @@ static func evaluate_int(equation: String, var_names: PackedStringArray, var_val
 
 ## --- Audio / Waveform ---
 
-## convert MIDI note number to frequency in Hz
+## Convert a MIDI note number to its frequency in Hz.
 static func freq_from_note(note: int) -> float:
 	return 440.0 * pow(2.0, (note - 69) / 12.0)
 
-## return modified frequency after applying a frequency effect
+## Return a modified frequency after applying a frequency effect.
 static func apply_freq_effect(freq: float, t: float, effect: int) -> float:
 	match effect:
 		CDEnums.Effect.WARBLE:
@@ -71,7 +61,7 @@ static func apply_freq_effect(freq: float, t: float, effect: int) -> float:
 			return freq + sin(TAU * 8.0 * t) * freq * 0.06
 	return freq
 
-## return raw waveform sample from phase position for a given wave shape
+## Return a raw waveform sample for a phase position and wave shape.
 static func wave_sample(phase: float, wave_shape: int) -> float:
 	match wave_shape:
 		CDEnums.WaveShape.SINE:
@@ -94,7 +84,7 @@ static func wave_sample(phase: float, wave_shape: int) -> float:
 			return randf() * 2.0 - 1.0
 	return 0.0
 
-## return modified sample after applying an amplitude effect
+## Return a modified sample after applying an amplitude effect.
 static func apply_amp_effect(sample: float, t: float, note_progress: float, effect: int) -> float:
 	match effect:
 		CDEnums.Effect.TREMOLO:

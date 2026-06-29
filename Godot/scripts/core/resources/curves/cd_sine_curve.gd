@@ -1,7 +1,6 @@
-## CDSineCurve
-## Sine wave curve — smooth sinusoidal oscillation along travel direction
-## Amplitude controls peak displacement, frequency controls wave count
-
+## cd_sine_curve.gd
+## Produces: a smooth sine wave curve perpendicular to travel direction.
+## Consumes: nothing — pure data resource consumed by curve users (Legs).
 @tool
 class_name CDSineCurve extends CDCurve
 

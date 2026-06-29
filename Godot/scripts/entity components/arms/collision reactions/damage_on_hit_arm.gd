@@ -1,7 +1,6 @@
-## DamageOnHitArm
-## Deals a flat amount of damage to whatever the entity collides with
-## Emits take_damage on the collider, filtered by optional target_groups
-
+## damage_on_hit_arm.gd
+## Produces: flat damage to colliders (writes damage/source keys, emits take_damage on the target).
+## Consumes: collision signals; target_groups filter.
 class_name DamageOnHitArm extends CDEntityComponent
 
 ## amount of damage to deal to the collider
@@ -20,7 +19,7 @@ class_name DamageOnHitArm extends CDEntityComponent
 @export_group("Emit Signals")
 @export var damage_signals: Array[StringName] = [&"take_damage"]
 
-## ready
+## Set the interaction category before the base _ready arms lifecycle hooks.
 func _ready() -> void:
 	component_category = CDEnums.ComponentCategory.INTERACTION
 	super._ready()

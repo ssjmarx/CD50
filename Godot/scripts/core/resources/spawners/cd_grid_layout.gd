@@ -1,7 +1,6 @@
-## CDGridLayout
-## Data-driven grid definition — hand-crafted formations
-## Each cell is a PackedScene (or null for gaps), organized into CDGridRow resources
-
+## cd_grid_layout.gd
+## Produces: a hand-crafted grid layout of PackedScene cells (null = gap), in rows.
+## Consumes: nothing — pure data read by grid_trapdoor Mode A.
 class_name CDGridLayout extends Resource
 
 ## grid width in cells (used for flat-index-to-row-col math)

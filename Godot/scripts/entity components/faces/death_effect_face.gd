@@ -1,6 +1,6 @@
-## DeathEffectFace
-## Spawns CDEffect scenes at the entity's position when it dies
-## Supports multiple effect scenes and optional position inheritance
+## death_effect_face.gd
+## Produces: death burst effects (CDEffect scenes) at the entity position.
+## Consumes: death_signals (entity bus); optional color/position overrides.
 
 class_name DeathEffectFace extends CDEntityComponent
 
@@ -16,24 +16,23 @@ class_name DeathEffectFace extends CDEntityComponent
 @export_group("Listen Signals")
 @export var death_signals: Array[StringName] = [&"zero_health"]
 
-## ready
+## Set the visual component category before the base _ready lifecycle.
 func _ready() -> void:
 	component_category = CDEnums.ComponentCategory.VISUAL
 	super._ready()
 
-## connect death signals
+## Connect each death signal to the spawn handler during initialization.
 func _on_initialize() -> void:
 	for sig in death_signals:
 		self.bus_connect(sig, _on_death)
 
-## instantiate all effect scenes at entity position
+## Spawn every configured effect scene at the entity's position on death.
 func _on_death() -> void:
 	for scene in effect_scenes:
 		if scene == null:
 			continue
 		var effect: CDEffect = scene.instantiate()
-		
-		# Override colors if configured on the Face component
+
 		if not colors.is_empty():
 			effect.colors = colors
 			
@@ -41,7 +40,7 @@ func _on_death() -> void:
 			effect.global_position = entity.global_position
 		game.add_child(effect)
 
-## disconnect all death signals
+## Disconnect all death signal handlers on deactivation.
 func _on_entity_deactivating() -> void:
 	super._on_entity_deactivating()
 	for sig in death_signals:

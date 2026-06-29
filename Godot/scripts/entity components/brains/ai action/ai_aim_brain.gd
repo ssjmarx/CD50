@@ -1,7 +1,6 @@
-## AIAimAtNearestBrain
-## Writes aim direction to the blackboard toward the nearest entity in target groups
-## Supports update_interval for throttled targeting and targeting_noise for imprecision
-
+## ai_aim_brain.gd
+## Produces: an aim direction on the entity blackboard pointing at the nearest target (throttled, with optional noise).
+## Consumes: target_groups via game.group_registry; update_interval/targeting_noise config.
 class_name AIAimAtNearestBrain extends CDEntityComponent
 
 ## groups to search for aim targets
@@ -22,7 +21,7 @@ var _update_timer: float = 0.0
 ## cached direction for throttled frames
 var _last_direction: Vector2 = Vector2.ZERO
 
-## ready
+## Set the intent category before the base _ready brain lifecycle hooks.
 func _ready() -> void:
 	component_category = CDEnums.ComponentCategory.INTENT
 	super._ready()
@@ -55,7 +54,7 @@ func _apply_noise(pos: Vector2) -> Vector2:
 		randf_range(-targeting_noise, targeting_noise)
 	)
 
-## on entity deactivating
+## Reset throttle timer and cached direction on entity deactivation.
 func _on_entity_deactivating() -> void:
 	super._on_entity_deactivating()
 	_update_timer = 0.0

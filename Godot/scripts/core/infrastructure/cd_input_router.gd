@@ -1,10 +1,7 @@
-## CDInputRouter
-## Pure signal-driven input handler — converts Godot Input actions into typed signals
-## Runs in ALWAYS process mode so system buttons work while paused
-
+## cd_input_router.gd
+## Produces: typed input signals (move/aim/action) and system button signals.
+## Consumes: Godot Input actions (polled each physics frame).
 class_name CDInputRouter extends Node
-
-## --- Signals ---
 
 ## directional movement (left analog stick / WASD)
 signal input_move(player_id: int, direction: Vector2)
@@ -22,21 +19,17 @@ signal restart_pressed
 signal quit_pressed
 signal pause_pressed
 
-## --- Exports ---
-
 ## number of players (1 = no prefix, 2+ = p1_/p2_ prefixes)
 @export var player_count: int = 1
 
 ## gameplay actions to track for pressed/released events
 @export var tracked_actions: Array[StringName] = [&"fire"]
 
-## always process — needed to detect start/restart while paused
+## Always process — needed to detect start/restart while paused.
 func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
 
-## --- Input Processing ---
-
-## poll system buttons every frame, gameplay input only when unpaused
+## Poll system buttons every frame, gameplay input only when unpaused.
 func _physics_process(_delta: float) -> void:
 	## system buttons — always active (needed to unpause!)
 	if Input.is_action_just_pressed("start"):

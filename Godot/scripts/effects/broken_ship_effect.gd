@@ -1,7 +1,6 @@
-## BrokenShipEffect
-## Spinning line fragments that drift outward and fade
-## Used for ship death effects
-
+## broken_ship_effect.gd
+## Produces: spinning line fragments that drift outward and fade (ship death effect).
+## Consumes: nothing — self-contained drawing on a CDEffect Node2D.
 class_name BrokenShipEffect extends CDEffect
 
 ## length of each line fragment

@@ -1,7 +1,6 @@
-## CDMusicTrack
-## A music track definition for MusicSpeaker playlists
-## Supports loop points and crossfade for seamless background music
-
+## cd_music_track.gd
+## Produces: a music track definition with loop points and crossfade.
+## Consumes: nothing — pure data resource consumed by MusicSpeaker playlists.
 class_name CDMusicTrack extends Resource
 
 ## the audio stream (OGG recommended for loop support)

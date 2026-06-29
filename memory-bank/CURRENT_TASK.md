@@ -126,3 +126,27 @@ The V2 architecture rebuild is **complete** — 191 scripts across Plans 19–29
 - Port the 11 remaining V1 demo games to V2
 - Delete `Godot/v1/` once parity is reached
 - Re-export the itch.io demo from V2
+
+---
+
+## ✅ Closed Maintenance — Comment-Convention Sweep (2026-06-28)
+
+A prior session reported `Godot/scripts/` comment-clean via `grep -rnE '^\s*#[^#]'`. That gate was **insufficient** — it only checks line-leading single-`#` and misses inline trailing `#` and header-order violations. A re-audit found and fixed **8 files**:
+
+- **6 inline-`#` files (22 comments → `##`):** `cd_enums.gd` (14), `swoop_director.gd` (3), `menacing_vector_face.gd` (2), `cd_game_control.gd` (1), `signal_manager.gd` (1), `scrolling_stars_effect.gd` (1).
+- **2 header-order files** (3-line header displaced below `@tool`): `grid_trapdoor.gd`, `marching_order_breathe.gd` — header moved above `@tool`.
+
+No functional code touched (CONVENTIONS §1). The full tree now passes all three gates below.
+
+**Stronger re-audit gate (use this, not the old one):**
+```bash
+## 1. line-leading single-#  2. inline trailing single-#  3. lone-# lines
+grep -rnE '^\s*#[^#]'     Godot/scripts/ --include='*.gd'   # exit 1 = clean
+grep -rnE '\S\s+#[^#]'    Godot/scripts/ --include='*.gd'   # exit 1 = clean
+grep -rnE '^\s*#\s*$'     Godot/scripts/ --include='*.gd'   # exit 1 = clean
+## header check: every .gd must open with "## " (no @tool before it)
+find Godot/scripts/ -name '*.gd' -print0 | while IFS= read -r -d '' f; do \
+  first=$(grep -m1 -vE '^\s*$' "$f"); case "$first" in '## '*) ;; *) echo "BAD: $f -> $first";; esac; done
+```
+
+> Rules 3/4/5 (editor-description lines, in-function comment thresholds, separator usage) remain judgment-call and are not grep-verifiable.

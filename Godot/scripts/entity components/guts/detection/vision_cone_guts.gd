@@ -1,6 +1,6 @@
-## VisionConeGuts
-## Defines a forward-facing vision cone that detects bodies
-## Creates a dynamic Area2D with CollisionPolygon2D Reads aim direction, cone length, and cone angle from entity blackboard Writes detected body to entity blackboard on enter/exit
+## vision_cone_guts.gd
+## Produces: body_entered/body_exited signals when a body crosses a forward-facing vision cone.
+## Consumes: aim_key, length_key, angle_key (entity blackboard); aim/set_vision_* signals.
 
 class_name VisionConeGuts extends CDEntityComponent
 
@@ -43,12 +43,12 @@ var _prev_angle: float = 0.0
 
 ## --- lifecycle ---
 
-## ready
+## Set the state component category before the base _ready lifecycle.
 func _ready() -> void:
 	component_category = CDEnums.ComponentCategory.STATE
 	super._ready()
 
-## on initialize
+## Connect aim and reconfigure listeners, then build the initial cone.
 func _on_initialize() -> void:
 	for sig in aim_signals:
 		self.bus_connect(sig, _on_aim)
@@ -63,7 +63,7 @@ func _on_initialize() -> void:
 
 ## --- cone construction ---
 
-## create cone
+## Construct the Area2D + CollisionPolygon2D and wire its body enter/exit callbacks.
 func _create_cone() -> void:
 	_detection_area = Area2D.new()
 	var polygon := CollisionPolygon2D.new()
@@ -73,7 +73,7 @@ func _create_cone() -> void:
 	_detection_area.body_entered.connect(_on_body_entered)
 	_detection_area.body_exited.connect(_on_body_exited)
 
-## build cone points
+## Sample the cone arc into a fan polygon rooted at the entity origin.
 func _build_cone_points() -> PackedVector2Array:
 	var points := PackedVector2Array()
 	var half_angle := deg_to_rad(cone_angle) / 2.0
@@ -137,7 +137,7 @@ func _on_body_exited(body: Node2D) -> void:
 
 ## --- cleanup ---
 
-## on entity deactivating
+## Clear the detected-body blackboard entry and disconnect listeners on deactivation.
 func _on_entity_deactivating() -> void:
 	super._on_entity_deactivating()
 	entity.blackboard.erase(target_key)

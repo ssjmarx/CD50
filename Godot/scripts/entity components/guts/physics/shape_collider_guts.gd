@@ -1,7 +1,6 @@
-## ShapeColliderGuts
-## Overrides CDEntity's collision shape on setup and updates it on signal
-## Reads polygon points from entity blackboard when triggered.
-## Supports dynamic shape updates or a CDShape resource.
+## shape_collider_guts.gd
+## Produces: collision-polygon updates driven by blackboard or a CDShape resource.
+## Consumes: shape_key (entity blackboard); shape_changed signal.
 
 class_name ShapeColliderGuts extends CDEntityComponent
 
@@ -20,17 +19,16 @@ class_name ShapeColliderGuts extends CDEntityComponent
 
 ## --- lifecycle ---
 
-## ready
+## Set the state component category before the base _ready lifecycle.
 func _ready() -> void:
 	component_category = CDEnums.ComponentCategory.STATE
 	super._ready()
 
-## on initialize
+## Connect the shape listener and apply the configured CDShape resource if present.
 func _on_initialize() -> void:
 	for sig in shape_signals:
 		self.bus_connect(sig, _on_shape_changed)
 	
-	# Apply shape from resource if available
 	if shape_resource and shape_resource.points.size() > 0:
 		entity.set_collision_polygon(shape_resource.points)
 
@@ -44,7 +42,7 @@ func _on_shape_changed() -> void:
 
 ## --- cleanup ---
 
-## on entity deactivating
+## Disconnect the shape listener on deactivation.
 func _on_entity_deactivating() -> void:
 	super._on_entity_deactivating()
 	for sig in shape_signals:

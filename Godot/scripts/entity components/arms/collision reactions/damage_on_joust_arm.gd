@@ -1,7 +1,6 @@
-## DamageOnJoustArm
-## Deals damage to the collider based on a comparative property check (velocity, Y position, or custom)
-## Emits take_damage on the collider, scaled by comparison difference
-
+## damage_on_joust_arm.gd
+## Produces: damage to a collider when this entity wins a comparative joust check (velocity/Y/custom).
+## Consumes: collision signals; entity comparison properties; target_groups filter.
 class_name DamageOnJoustArm extends CDEntityComponent
 
 ## which property to compare between self and collider
@@ -38,7 +37,7 @@ class_name DamageOnJoustArm extends CDEntityComponent
 @export_group("Emit Signals")
 @export var damage_signals: Array[StringName] = [&"take_damage"]
 
-## ready
+## Set the interaction category before the base _ready arms lifecycle hooks.
 func _ready() -> void:
 	component_category = CDEnums.ComponentCategory.INTERACTION
 	super._ready()

@@ -1,7 +1,6 @@
 ## ContinuousSpeaker
-## Game-level sustained synthesized tone (drone, hum, alarm) via CDSoundBank
-## Starts and stops on game bus signals with editor preview support
-
+## Produces: a sustained synthesized tone (drone/hum/alarm) via CDSoundBank.
+## Consumes: game bus start/stop signals.
 @tool
 class_name ContinuousSpeaker extends CDGameComponent
 

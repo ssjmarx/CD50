@@ -1,7 +1,6 @@
 ## CreditProjection
-## Floating credit overlay showing track title and artist when music changes
-## Fades in, holds, then fades out using a Tween sequence
-## Reads track info from game blackboard on zero-arg track_changed signal
+## Produces: a floating credit overlay that fades in/holds/fades out on music changes.
+## Consumes: game.blackboard track info on a track_changed signal.
 
 class_name CreditProjection extends CDGameControl
 
@@ -27,16 +26,12 @@ var _container: Control = null
 ## active tween driving the fade in/hold/fade out sequence
 var _tween: Tween = null
 
-## --- lifecycle ---
-
 ## resolve game ref (via base), then connect track change signals
 func _on_initialize() -> void:
 	super._on_initialize()
 	if not game:
 		return
 	connect_all(track_changed_signals, _on_track_changed)
-
-## --- signal handlers ---
 
 ## read track from blackboard and show credit if track has info (zero-arg)
 func _on_track_changed() -> void:
@@ -45,8 +40,6 @@ func _on_track_changed() -> void:
 	if not track or (track.title == "" and track.artist == ""):
 		return
 	_show_credit(track)
-
-## --- credit display ---
 
 ## build label nodes and animate the credit overlay
 func _show_credit(track: CDMusicTrack) -> void:
@@ -101,8 +94,6 @@ func _show_credit(track: CDMusicTrack) -> void:
 	_tween.tween_interval(display_time)
 	_tween.tween_property(_container, "modulate:a", 0.0, 1.0).set_ease(Tween.EASE_OUT)
 	_tween.tween_callback(_clear_credit)
-
-## --- cleanup ---
 
 ## kill active tween and free container nodes
 func _clear_credit() -> void:

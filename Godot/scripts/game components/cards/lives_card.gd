@@ -1,6 +1,6 @@
 ## LivesCard
-## Tracks player lives and displays the count
-## Emits zero-arg changed/depleted signals, publishes current_lives to game blackboard
+## Produces: current_lives on game.blackboard + changed/depleted game bus signals.
+## Consumes: game bus add_life/lose_life signals.
 
 class_name LivesCard extends CDCueCard
 

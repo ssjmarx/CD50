@@ -1,9 +1,8 @@
+## sprite_face.gd
+## Produces: texture rendering via a child Sprite2D with frame bindings.
+## Consumes: CDFaceBinding signals; default_frame export.
+
 @tool
-
-## SpriteFace
-## Draws a single Texture2D via a child Sprite2D node
-## Swaps texture based on signal-to-frame bindings via CDFaceBinding
-
 class_name SpriteFace extends CDEntityComponent
 
 ## --- export setters for editor live preview ---
@@ -62,7 +61,7 @@ func _on_binding_signal(binding: CDFaceBinding = null):
 func _on_restore() -> void:
 	_show_frame(default_frame)
 
-## on entity deactivating
+## Disconnect each binding signal on deactivation.
 func _on_entity_deactivating() -> void:
 	super._on_entity_deactivating()
 	for binding in bindings:

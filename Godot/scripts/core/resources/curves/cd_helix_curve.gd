@@ -1,7 +1,6 @@
-## CDHelixCurve
-## Helix / corkscrew curve oscillating around the base path
-## Combines forward travel with perpendicular rotation
-
+## cd_helix_curve.gd
+## Produces: a corkscrew/helix curve oscillating around the base path.
+## Consumes: nothing — pure data resource consumed by curve users (Legs).
 @tool
 class_name CDHelixCurve extends CDCurve
 

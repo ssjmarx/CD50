@@ -1,7 +1,6 @@
 ## CDGameControl
-## Base class for V2 game-attached Control-rooted nodes
-## Mirrors the CDGameComponent contract: cached game ref, two-phase lifecycle, bus tracking
-## Use for UI overlays/projections that must extend Control instead of Node2D
+## Produces: a Control-rooted game node contract (cached game ref, two-phase lifecycle, bus tracking).
+## Consumes: a CDGame root reference.
 
 class_name CDGameControl extends Control
 
@@ -9,7 +8,7 @@ class_name CDGameControl extends Control
 var game: CDGame
 
 ## tracked bus connections for auto-disconnect on _exit_tree
-var _bus_connections: Array[Dictionary] = []  # [{"signal_name": StringName, "callable": Callable}]
+var _bus_connections: Array[Dictionary] = []  ## [{"signal_name": StringName, "callable": Callable}]
 
 ## --- Two-Phase Lifecycle ---
 

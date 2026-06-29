@@ -1,7 +1,6 @@
 ## DirectMovementLeg
-## Hard-sets velocity from direction polled on the entity blackboard
-## Zeros velocity when no direction is found (no momentum drift)
-## Optionally caps movement distance per frame to prevent overshooting
+## Produces: a velocity-set request from polled direction.
+## Consumes: entity.blackboard["move_direction"], optionally ["move_distance"].
 
 class_name DirectMovementLeg extends CDEntityComponent
 
@@ -39,13 +38,13 @@ func _physics_process(_delta: float) -> void:
 	if direction != Vector2.ZERO:
 		var target_velocity: Vector2 = direction.normalized() * speed
 		
-		# Check if we need to cap distance to prevent overshooting
+		## cap frame distance so a fast mover can't overshoot a target
 		if distance_key != &"" and entity.blackboard.has(distance_key):
 			var max_distance: float = entity.blackboard[distance_key]
 			var frame_distance: float = speed * _delta
 			
 			if frame_distance > max_distance and frame_distance > 0.0:
-				# Scale velocity to travel exactly max_distance this frame
+				## scale velocity to cover exactly max_distance this frame
 				target_velocity = target_velocity * (max_distance / frame_distance)
 				
 		entity.request_velocity_set(target_velocity)

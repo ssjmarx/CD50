@@ -1,6 +1,6 @@
 ## TargetRotationLeg
-## Rotates entity to face the move_direction vector polled from the entity blackboard
-## Supports instant snap (rotation_speed <= 0) and smooth rotation with overshoot prevention
+## Produces: an angular velocity request that faces the move_direction vector.
+## Consumes: entity.blackboard["move_direction"].
 
 class_name TargetRotationLeg extends CDEntityComponent
 

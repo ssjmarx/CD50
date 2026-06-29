@@ -1,6 +1,6 @@
 ## StageDirector
-## Listens for game bus signals and performs entity swaps based on CDDirectorRule resources
-## Deactivates the original and spawns a replacement at the same position
+## Produces: entity swaps (deactivate + spawn replacement) driven by CDDirectorRule.
+## Consumes: game bus trigger signals + CDDirectorRule resources.
 
 class_name StageDirector extends CDGameComponent
 
@@ -14,8 +14,6 @@ class_name StageDirector extends CDGameComponent
 ## reverse lookup: signal name → array of matching rules
 var _signal_to_rules: Dictionary = {}
 
-## --- lifecycle ---
-
 ## ready
 func _ready() -> void:
 	component_category = CDEnums.ComponentCategory.RULES
@@ -27,8 +25,6 @@ func _on_initialize() -> void:
 	
 	for sig_name: StringName in _signal_to_rules:
 		bus_connect(sig_name, _on_trigger.bind(sig_name))
-
-## --- setup ---
 
 ## build reverse lookup from trigger signal → rules
 func _build_signal_map() -> void:
@@ -49,15 +45,11 @@ func _build_signal_map() -> void:
 				_signal_to_rules[sig_name] = []
 			_signal_to_rules[sig_name].append(rule)
 
-## --- signal handling ---
-
 ## dispatch triggered signal to all matching rules
 func _on_trigger(signal_name: StringName = &"") -> void:
 	var matched_rules: Array = _signal_to_rules.get(signal_name, [])
 	for rule: CDDirectorRule in matched_rules:
 		_process_rule(rule)
-
-## --- rule processing ---
 
 ## gather candidates, select via selector, swap each entity
 func _process_rule(rule: CDDirectorRule) -> void:

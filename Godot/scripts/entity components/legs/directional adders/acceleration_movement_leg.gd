@@ -1,6 +1,6 @@
 ## AccelerationMovementLeg
-## Adds directional force each frame from blackboard direction, building momentum over time
-## Pair with a friction leg for speed control and deceleration
+## Produces: a directional acceleration velocity request that builds momentum over time.
+## Consumes: entity.blackboard["move_direction"].
 
 class_name AccelerationLeg extends CDEntityComponent
 

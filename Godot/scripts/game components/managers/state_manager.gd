@@ -1,6 +1,6 @@
 ## StateManager
-## Transitions entities between groups (group-as-state) using CDTransition resources
-## Queues transitions via CDUpdater to avoid group mutation during iteration
+## Produces: group-as-state transitions on entities (queued via CDUpdater).
+## Consumes: CDTransition resources + game bus trigger signals.
 
 class_name StateManager extends CDGameComponent
 

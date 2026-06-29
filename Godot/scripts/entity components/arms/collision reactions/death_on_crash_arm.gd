@@ -1,7 +1,6 @@
-## DeathOnCrashArm
-## Instantly kills the entity itself when it collides with anything
-## Bypasses health pipeline — directly emits request_deactivate on self
-
+## death_on_crash_arm.gd
+## Produces: instant self-deactivation on collision (bypasses the health pipeline).
+## Consumes: collision signals; source_groups filter.
 class_name DeathOnCrashArm extends CDEntityComponent
 
 ## if non-empty, only react to colliders in these groups
@@ -10,7 +9,7 @@ class_name DeathOnCrashArm extends CDEntityComponent
 @export_group("Listen Signals")
 @export var collision_signals: Array[StringName] = [&"collision"]
 
-## ready
+## Set the interaction category before the base _ready arms lifecycle hooks.
 func _ready() -> void:
 	component_category = CDEnums.ComponentCategory.INTERACTION
 	super._ready()

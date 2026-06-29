@@ -1,7 +1,6 @@
-## CDCircleCurve
-## Circle / ellipse curve centered on the end point
-## Start point determines the initial angle; loops control full rotations
-
+## cd_circle_curve.gd
+## Produces: a circle/ellipse curve centered on end (start sets initial angle).
+## Consumes: nothing — pure data resource consumed by curve users (Legs).
 @tool
 class_name CDCircleCurve extends CDCurve
 

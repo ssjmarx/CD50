@@ -1,6 +1,6 @@
-## PieceSplitterArm
-## Splits a Block Drop piece into individual SettledCell entities when locked
-## Emits piece_settled on the game bus, then deactivates the parent entity
+## piece_splitter_arm.gd
+## Produces: individual SettledCell entities split from a locked Block Drop piece; piece_settled signal on the game bus.
+## Consumes: lock signals (piece_locked); cell_positions array payload.
 
 class_name PieceSplitterArm extends CDEntityComponent
 
@@ -19,12 +19,12 @@ class_name PieceSplitterArm extends CDEntityComponent
 @export_group("Emit Signals")
 @export var on_piece_settled: Array[StringName] = [&"piece_settled"]
 
-## ready
+## Set the interaction category before the base _ready arms lifecycle hooks.
 func _ready() -> void:
 	component_category = CDEnums.ComponentCategory.INTERACTION
 	super._ready()
 
-## connect lock signals
+## Connect each lock signal to the piece-locked handler during initialization.
 func _on_initialize() -> void:
 	for sig in lock_signals:
 		entity.connect(sig, _on_piece_locked)

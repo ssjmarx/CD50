@@ -1,7 +1,6 @@
-## CDSelectSignalEmitter
-## Filters candidates to only those who emitted a specific signal this frame
-## Cross-references the emitter registry on game or entity bus
-
+## cd_select_signal_emitter.gd
+## Produces: candidates filtered to those who emitted a specific signal this frame.
+## Consumes: game._signal_emitters or entity._signal_emitters; candidate entities.
 class_name CDSelectSignalEmitter extends CDSelector
 
 ## signal name to check in the emitter registry

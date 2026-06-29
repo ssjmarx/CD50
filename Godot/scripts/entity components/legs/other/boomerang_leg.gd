@@ -1,6 +1,6 @@
 ## BoomerangLeg
-## Applies a constant return force toward the entity's spawn position
-## Creates a gentle homing-back effect with no signal input needed
+## Produces: a constant return-force velocity request toward the entity's spawn position.
+## Consumes: nothing (autonomous).
 
 class_name BoomerangLeg extends CDEntityComponent
 
@@ -9,14 +9,10 @@ class_name BoomerangLeg extends CDEntityComponent
 ## force pulling toward spawn each second
 @export var return_force: float = 5.0
 
-## --- lifecycle ---
-
 ## set component category
 func _ready() -> void:
 	component_category = CDEnums.ComponentCategory.STEERING
 	super._ready()
-
-## --- processing ---
 
 ## add force toward spawn position each frame
 func _physics_process(delta: float) -> void:

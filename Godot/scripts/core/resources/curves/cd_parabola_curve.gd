@@ -1,7 +1,6 @@
-## CDParabolaCurve
-## Parabolic arc curve with configurable curvature power
-## Useful for projectile trajectories and bounce paths
-
+## cd_parabola_curve.gd
+## Produces: a parabolic arc curve with configurable curvature power.
+## Consumes: nothing — pure data resource consumed by curve users (Legs).
 @tool
 class_name CDParabolaCurve extends CDCurve
 

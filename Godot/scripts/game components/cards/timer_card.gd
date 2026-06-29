@@ -1,6 +1,6 @@
 ## TimerCard
-## Tracks time in countdown or count-up mode with configurable tick interval
-## Auto-stops on expiry in COUNT_DOWN mode, supports pause/resume/reset
+## Produces: current_time on game.blackboard + tick/expired game bus signals.
+## Consumes: game bus start/pause/resume/reset timer signals.
 
 class_name TimerCard extends CDCueCard
 

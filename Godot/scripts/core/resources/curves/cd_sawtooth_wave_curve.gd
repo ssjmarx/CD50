@@ -1,7 +1,6 @@
-## CDSawtoothWaveCurve
-## Sawtooth wave — sharp alternating peaks along the travel path
-## Returns to start point (closed loop)
-
+## cd_sawtooth_wave_curve.gd
+## Produces: a closed sawtooth wave curve (sharp alternating peaks).
+## Consumes: nothing — pure data resource consumed by curve users (Legs).
 @tool
 class_name CDSawtoothWaveCurve extends CDCurve
 
@@ -17,7 +16,7 @@ class_name CDSawtoothWaveCurve extends CDCurve
 		teeth = v
 		emit_changed()
 
-## generate alternating sharp peaks from start back to start
+## Generate alternating sharp peaks from start back to start.
 func generate_curve(start: Vector2, end: Vector2) -> Curve2D:
 	var curve := Curve2D.new()
 

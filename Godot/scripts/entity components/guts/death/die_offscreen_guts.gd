@@ -1,6 +1,6 @@
-## DieOffscreenGuts
-## Destroys entity when it leaves all camera views
-## Uses VisibleOnScreenNotifier2D with an activation delay to prevent spawn deaths
+## die_offscreen_guts.gd
+## Produces: a death request when the entity leaves all camera views.
+## Consumes: a child VisibleOnScreenNotifier2D's screen_exited signal.
 
 class_name DieOffscreenGuts extends CDEntityComponent
 
@@ -22,7 +22,7 @@ var _monitoring: bool = false
 
 ## --- lifecycle ---
 
-## set component category
+## Set the state component category before the base _ready lifecycle.
 func _ready() -> void:
 	component_category = CDEnums.ComponentCategory.STATE
 	super._ready()

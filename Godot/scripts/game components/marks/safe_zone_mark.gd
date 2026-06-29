@@ -1,11 +1,6 @@
 ## SafeZoneMark
-## Monitors whether the zone is clear of unsafe bodies for trapdoor spawning
-## Transitions between safe/unsafe states and emits on each transition
-##
-## Emit behavior: REPLACES base enter/exit. The base on_entered / on_exited game-bus
-## signals and the entered_body_key / exited_body_key blackboard writes DO NOT fire —
-## the overrides below do not call super and do not use _emit_enter/_emit_exit. Only this
-## mark's own on_zone_unsafe / on_zone_safe signals fire (on state transitions).
+## Produces: zone_safe/zone_unsafe game bus signals on safety state transitions.
+## Consumes: bodies entering/exiting the zone Area2D.
 
 class_name SafeZoneMark extends CDMark
 
@@ -23,8 +18,6 @@ class_name SafeZoneMark extends CDMark
 
 ## count of unsafe bodies currently inside the zone
 var _unsafe_count: int = 0
-
-## --- body detection ---
 
 ## increment unsafe count and emit unsafe on first entry (replaces base enter)
 func _handle_body_entered(body: Node2D) -> void:

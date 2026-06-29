@@ -1,7 +1,6 @@
-## AISwoopBrain
-## Entity-level brain that follows a CDCurve path via checkpoints
-## Triggered on by entity bus signal, one-shot path, emits complete when done
-
+## ai_swoop_brain.gd
+## Produces: move direction and distance along a CDCurve-generated checkpoint path (written to blackboard), started/stopped/reset by entity-bus signals and emitting complete signals when done.
+## Consumes: curve resource; start_signals/stop_signals/reset_signals on entity bus; move_key/distance_key blackboard keys; complete_signals emitted on entity bus.
 @tool
 class_name AISwoopBrain extends CDEntityComponent
 
@@ -77,38 +76,36 @@ var _is_swooping: bool = false
 
 ## --- lifecycle ---
 
-## ready
+## Set the intent category, run the base _ready, and connect the curve resource.
 func _ready() -> void:
 	component_category = CDEnums.ComponentCategory.INTENT
 	super._ready()
 	_connect_curve()
 
-## enter tree
+## Connect the curve resource when entering the tree.
 func _enter_tree() -> void:
 	_connect_curve()
 
-## exit tree
+## Disconnect the curve resource when leaving the tree.
 func _exit_tree() -> void:
 	_disconnect_curve()
 
 ## --- curve resource management ---
 
-## disconnect curve
+## Disconnect the curve's changed signal from the redraw callback.
 func _disconnect_curve() -> void:
 	if curve and curve.changed.is_connected(_request_redraw):
 		curve.changed.disconnect(_request_redraw)
 
-## connect curve
+## Connect the curve's changed signal to the redraw callback.
 func _connect_curve() -> void:
 	if curve and not curve.changed.is_connected(_request_redraw):
 		curve.changed.connect(_request_redraw)
 
-## request redraw
+## Queue a redraw when the curve resource changes.
 func _request_redraw() -> void:
 	if is_inside_tree():
 		queue_redraw()
-
-## --- editor preview ---
 
 ## draw the curve as a polyline in the editor
 func _draw() -> void:
@@ -129,7 +126,7 @@ func _process(_delta: float) -> void:
 	if not Engine.is_editor_hint():
 		return
 
-## connect start/stop triggers
+## Connect start/stop/reset trigger signals during initialization.
 func _on_initialize() -> void:
 	for sig in start_signals:
 		self.bus_connect(sig, _on_start_swoop)
@@ -175,8 +172,6 @@ func _on_reset_swoop() -> void:
 	_cleanup_swoop()
 	_on_start_swoop()
 
-## --- checkpoint generation ---
-
 ## generate evenly-spaced checkpoints along the baked curve
 func _generate_checkpoints() -> PackedVector2Array:
 	var points: PackedVector2Array = []
@@ -190,8 +185,6 @@ func _generate_checkpoints() -> PackedVector2Array:
 	if points.size() == 0 or points[points.size() - 1].distance_to(last) > 1.0:
 		points.append(last)
 	return points
-
-## --- processing ---
 
 ## advance along checkpoint path each frame
 func _physics_process(_delta: float) -> void:
@@ -245,8 +238,6 @@ func _end_swoop() -> void:
 
 	for sig in complete_signals:
 		entity.bus_emit(sig)
-
-## --- cleanup ---
 
 ## clean up swoop state on entity deactivation
 func _on_entity_deactivating() -> void:

@@ -1,7 +1,6 @@
-## CDObjectPool
-## Per-type entity pool — pre-warms instances to avoid runtime allocation
-## Entities are created invisible with physics disabled, activated on acquire
-
+## cd_object_pool.gd
+## Produces: pooled CDEntity instances (acquired/released) of one scene type.
+## Consumes: a PackedScene; CDEntity.deactivate() release calls.
 class_name CDObjectPool extends Node
 
 ## the scene to instantiate for this pool
@@ -16,17 +15,13 @@ class_name CDObjectPool extends Node
 var _available: Array[CDEntity] = []
 var _active: Array[CDEntity] = []
 
-## --- Setup ---
-
-## pre-warm the pool with initial_size entities
+## Pre-warm the pool with initial_size entities.
 func _ready() -> void:
 	for i in initial_size:
 		var entity = _create_entity()
 		_available.append(entity)
 
-## --- Acquire / Release ---
-
-## get an entity from the pool, growing if needed
+## Get an entity from the pool, growing if needed.
 func acquire() -> CDEntity:
 	## grow the pool if empty
 	if _available.is_empty():
@@ -43,28 +38,26 @@ func acquire() -> CDEntity:
 	_active.append(entity)
 	return entity
 
-## return an entity to the pool (called by CDEntity.deactivate)
+## Return an entity to the pool (called by CDEntity.deactivate).
 func release(entity: CDEntity) -> void:
 	_active.erase(entity)
 	_available.append(entity)
 
 ## --- Query Methods ---
 
-## get active count
+## Get active count.
 func get_active_count() -> int:
 	return _active.size()
 
-## get available count
+## Get available count.
 func get_available_count() -> int:
 	return _available.size()
 
-## get total count
+## Get total count.
 func get_total_count() -> int:
 	return _active.size() + _available.size()
 
-## --- Cleanup ---
-
-## free all entities when the pool is removed from the tree
+## Free all entities when the pool is removed from the tree.
 func _exit_tree() -> void:
 	for entity in _active:
 		entity.queue_free()
@@ -73,9 +66,7 @@ func _exit_tree() -> void:
 	_active.clear()
 	_available.clear()
 
-## --- Internal ---
-
-## instantiate a new entity, set its pool ref, disable it
+## Instantiate a new entity, set its pool ref, and disable it.
 func _create_entity() -> CDEntity:
 	var entity: CDEntity = scene.instantiate()
 	entity.pool = self
@@ -87,7 +78,7 @@ func _create_entity() -> CDEntity:
 	_disable_collision_shapes(entity)
 	return entity
 
-## disable all collision shapes on an entity
+## Disable all collision shapes on an entity.
 func _disable_collision_shapes(entity: CDEntity) -> void:
 	for child in entity.get_children():
 		if child is CollisionShape2D:

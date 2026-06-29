@@ -1,6 +1,6 @@
 ## AimingDirector
-## Per-entity nearest-target aiming across groups
-## Each shooter independently finds its closest threat — a large formation can aim in multiple directions Writes aim_direction to entity blackboard (distinct from move_direction)
+## Produces: per-shooter "aim_direction" blackboard key pointing at its nearest target.
+## Consumes: target_groups via game.group_registry; optional angle-limit config.
 
 @tool
 class_name AimingDirector extends CDGameComponent
@@ -42,14 +42,10 @@ var _update_timer: float = 0.0
 ## cached direction per entity (for throttled frames)
 var _cached_directions: Dictionary = {}
 
-## --- lifecycle ---
-
 ## ready
 func _ready() -> void:
 	component_category = CDEnums.ComponentCategory.RULES
 	super._ready()
-
-## --- processing ---
 
 ## physics process
 func _physics_process(delta: float) -> void:
@@ -104,13 +100,13 @@ func _calculate_aim(shooter: CDEntity) -> Vector2:
 ## Clamps a direction vector to within [min_angle_offset, max_angle_offset] in absolute world space.
 ## Godot angles: 0 is East, positive is Clockwise (Down), negative is Counter-Clockwise (Up).
 func _clamp_angle_absolute(direction: Vector2) -> Vector2:
-	# 1. Get the angle of the desired direction in degrees
+	## 1. read the desired heading in degrees (0 = East)
 	var angle_deg := rad_to_deg(direction.angle())
 	
-	# 2. Clamp the angle to the absolute limits
+	## 2. clamp to the configured absolute limits
 	var clamped_deg := clampf(angle_deg, min_angle_offset, max_angle_offset)
 	
-	# 3. Return the new direction vector
+	## 3. rebuild a unit vector from the clamped heading
 	return Vector2.from_angle(deg_to_rad(clamped_deg))
 
 ## add random offset to target position if noise is configured
@@ -131,8 +127,6 @@ func _write_cached(shooters: Array[CDEntity]) -> void:
 ## gather entities from all shooter groups (deduplicated, valid, active)
 func _gather_shooters() -> Array[CDEntity]:
 	return game.group_registry.get_groups_union(shooter_groups, true)
-
-## --- reset ---
 
 ## reset
 func reset() -> void:

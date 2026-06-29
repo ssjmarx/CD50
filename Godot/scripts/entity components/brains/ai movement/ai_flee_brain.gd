@@ -1,7 +1,6 @@
-## AIFleeBrain
-## Emits move direction away from the nearest entity in target groups
-## Stops fleeing when beyond flee_distance from all threats
-
+## ai_flee_brain.gd
+## Produces: move direction away from the nearest threat in threat_groups (written to blackboard), stopping beyond flee_distance.
+## Consumes: threat_groups via game.group_registry; move_key blackboard key.
 class_name AIFleeBrain extends CDEntityComponent
 
 ## groups to search for threats
@@ -24,7 +23,7 @@ var _update_timer: float = 0.0
 ## cached direction for throttled frames
 var _last_direction: Vector2 = Vector2.ZERO
 
-## ready
+## Set the intent category before the base _ready lifecycle hooks.
 func _ready() -> void:
 	component_category = CDEnums.ComponentCategory.INTENT
 	super._ready()
@@ -75,7 +74,7 @@ func _apply_noise(pos: Vector2) -> Vector2:
 		randf_range(-targeting_noise, targeting_noise)
 	)
 
-## on entity deactivating
+## Reset the throttle timer and cached direction on deactivation.
 func _on_entity_deactivating() -> void:
 	super._on_entity_deactivating()
 	_update_timer = 0.0

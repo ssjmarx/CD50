@@ -1,7 +1,6 @@
-## CDGridEquation
-## Math-driven grid definition with random skip support
-## Used for uniform grids with optional holes (Breakout, Space Invaders)
-
+## cd_grid_equation.gd
+## Produces: a uniform grid definition with probabilistic skips (columns/rows/holes).
+## Consumes: nothing — pure data read by grid_trapdoor Mode B.
 class_name CDGridEquation extends Resource
 
 ## number of columns in the grid

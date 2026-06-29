@@ -1,6 +1,6 @@
-## ResourcepoolGuts
-## Generic pool for any entity resource (fuel, energy, ammo, etc.)
-## Writes current value and delta to entity blackboard; emits zero-arg signals on events Supports spending with failure feedback and passive regeneration
+## resourcepool_guts.gd
+## Produces: resource_changed/depleted/spend_failed signals; writes value_key + delta_key.
+## Consumes: delta_key for spend amount; spend_resource signal.
 
 class_name ResourcepoolGuts extends CDEntityComponent
 
@@ -35,12 +35,12 @@ var _current_resource: float = 0.0
 
 ## --- lifecycle ---
 
-## ready
+## Set the state component category before the base _ready lifecycle.
 func _ready() -> void:
 	component_category = CDEnums.ComponentCategory.STATE
 	super._ready()
 
-## on initialize
+## Seed the resource to blackboard and connect the spend listener.
 func _on_initialize() -> void:
 	_current_resource = starting_resource if starting_resource >= 0.0 else max_resource
 	entity.blackboard[value_key] = _current_resource
@@ -75,7 +75,7 @@ func _on_spend_resource() -> void:
 
 ## --- processing ---
 
-## passively regenerate resource over time
+## Regenerate resource up to max each physics frame and emit resource_changed.
 func _physics_process(delta: float) -> void:
 	if _current_resource >= max_resource:
 		return
@@ -89,7 +89,7 @@ func _physics_process(delta: float) -> void:
 
 ## --- cleanup ---
 
-## on entity deactivating
+## Reset resource and disconnect the spend listener on deactivation.
 func _on_entity_deactivating() -> void:
 	super._on_entity_deactivating()
 	_current_resource = starting_resource if starting_resource >= 0.0 else max_resource
@@ -99,7 +99,7 @@ func _on_entity_deactivating() -> void:
 		self.bus_disconnect(sig, _on_spend_resource)
 	set_physics_process(false)
 
-## on entity activated
+## Reset resource and re-enable physics processing on activation.
 func _on_entity_activated() -> void:
 	super._on_entity_activated()
 	_current_resource = starting_resource if starting_resource >= 0.0 else max_resource

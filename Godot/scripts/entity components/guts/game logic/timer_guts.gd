@@ -1,6 +1,6 @@
-## TimerGuts
-## Count-down or count-up timer that emits tick and expired signals
-## Writes current time to entity blackboard; emits zero-arg signals on events Supports pause, resume, and reset via entity signals
+## timer_guts.gd
+## Produces: tick and expired signals; writes current time to value_key on the entity blackboard.
+## Consumes: timer_pause/resume/reset signals.
 
 class_name TimerGuts extends CDEntityComponent
 
@@ -33,14 +33,12 @@ var current_time: float
 var _tick_accumulator: float = 0.0
 var _is_running: bool = false
 
-## --- lifecycle ---
-
-## ready
+## Set the state component category before the base _ready lifecycle.
 func _ready() -> void:
 	component_category = CDEnums.ComponentCategory.STATE
 	super._ready()
 
-## on initialize
+## Connect pause/resume/reset listeners and seed the starting time.
 func _on_initialize() -> void:
 	for sig in pause_signals:
 		self.bus_connect(sig, _on_paused)
@@ -53,9 +51,7 @@ func _on_initialize() -> void:
 	entity.blackboard[value_key] = current_time
 	_is_running = auto_start
 
-## --- processing ---
-
-## physics process
+## Advance the timer and emit tick/expired signals as configured.
 func _physics_process(delta: float) -> void:
 	if not _is_running:
 		return
@@ -83,24 +79,22 @@ func _physics_process(delta: float) -> void:
 
 ## --- control signal handlers ---
 
-## on paused
+## Stop the timer on the pause signal.
 func _on_paused() -> void:
 	_is_running = false
 
-## on resumed
+## Resume the timer on the resume signal.
 func _on_resumed() -> void:
 	_is_running = true
 
-## on reset
+## Restore the starting time and resume on the reset signal.
 func _on_reset() -> void:
 	current_time = starting_time
 	_tick_accumulator = 0.0
 	_is_running = true
 	entity.blackboard[value_key] = current_time
 
-## --- cleanup ---
-
-## on entity deactivating
+## Stop the timer, clear the blackboard value, and disconnect listeners on deactivation.
 func _on_entity_deactivating() -> void:
 	super._on_entity_deactivating()
 	_is_running = false

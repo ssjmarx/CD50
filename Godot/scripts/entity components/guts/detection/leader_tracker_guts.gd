@@ -1,7 +1,6 @@
-## LeaderTrackerGuts
-## State tracker that connects to an entity reference (from blackboard) 
-## and emits a signal when that entity dies (deactivates).
-## Used to transition the player from CapturedBody to RescuedBody.
+## leader_tracker_guts.gd
+## Produces: leader_destroyed signal when the tracked leader entity deactivates.
+## Consumes: target_entity_key (entity or game blackboard); leader's entity_deactivating signal.
 
 class_name LeaderTrackerGuts extends CDEntityComponent
 
@@ -21,12 +20,12 @@ enum BlackboardSource {
 
 var _current_leader: CDEntity
 
-## ready
+## Set the state component category before the base _ready lifecycle.
 func _ready() -> void:
 	component_category = CDEnums.ComponentCategory.STATE
 	super._ready()
 
-## physics process: poll blackboard for changes to target reference
+## Poll the blackboard each physics frame for changes to the target reference.
 func _physics_process(_delta: float) -> void:
 	_check_for_leader()
 

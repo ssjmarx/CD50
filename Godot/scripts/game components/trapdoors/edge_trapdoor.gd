@@ -1,7 +1,6 @@
 ## EdgeTrapdoor
-## Spawns entities evenly distributed along selected edges of the game bounds
-## Supports jitter for randomizing positions along the perimeter
-
+## Produces: spawns entities evenly distributed along selected edges of the game bounds.
+## Consumes: a spawn scene + jitter range.
 class_name EdgeTrapdoor extends CDStageTrapdoor
 
 ## --- exports ---

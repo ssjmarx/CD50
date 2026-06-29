@@ -1,6 +1,6 @@
 ## ContinuousVoice
-## Plays an ongoing procedural oscillator tone via CDSoundBank
-## Multiple entities sharing the same signature blend into one audio stream
+## Produces: a sustained procedural oscillator tone via CDSoundBank.
+## Consumes: entity bus start/stop signals; CDSoundBank voice signature.
 
 @tool
 class_name ContinuousVoice extends CDEntityComponent
@@ -57,8 +57,6 @@ var _is_registered: bool = false
 ## editor-only audio player for preview
 var _preview_player: AudioStreamPlayer
 
-## --- lifecycle ---
-
 ## use the game-level sound_bank ref (resolved by CDGame), connect signals, auto-start
 func _on_initialize() -> void:
 	_bank = game.sound_bank
@@ -77,13 +75,9 @@ func _on_initialize() -> void:
 	
 	set_physics_process(true)
 
-## --- helpers ---
-
 ## build a signature string identifying this sound combo
 func _build_signature() -> String:
 	return "%d_%d_%d" % [wave_shape, effect, note]
-
-## --- signal handlers ---
 
 ## start playback
 func _on_start() -> void:
@@ -92,8 +86,6 @@ func _on_start() -> void:
 ## stop playback
 func _on_stop() -> void:
 	_deregister()
-
-## --- processing ---
 
 ## update positional audio and respect gameplay-only pause
 func _physics_process(_delta: float) -> void:
@@ -111,8 +103,6 @@ func _physics_process(_delta: float) -> void:
 	if positional:
 		_bank.update_continuous_position(_signature, entity.get_instance_id(), entity.global_position)
 
-## --- bank registration ---
-
 ## register this voice with the sound bank for playback
 func _register() -> void:
 	if _bank == null or _is_registered:
@@ -128,8 +118,6 @@ func _deregister() -> void:
 	_bank.stop_continuous(_signature, entity.get_instance_id())
 	_is_registered = false
 
-## --- cleanup ---
-
 ## deregister on entity deactivation
 func _on_entity_deactivating() -> void:
 	super._on_entity_deactivating()
@@ -139,8 +127,6 @@ func _on_entity_deactivating() -> void:
 ## always deregister when removed from tree
 func _exit_tree() -> void:
 	_deregister()
-
-## --- preview ---
 
 ## start editor preview playback
 func _preview_play() -> void:

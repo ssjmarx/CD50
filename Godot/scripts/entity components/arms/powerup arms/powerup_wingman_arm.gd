@@ -1,7 +1,6 @@
-## PowerupWingmanArm
-## Spawns a companion entity at the player's position when a matching powerup is received
-## Checks powerup_id before spawning, supports object pooling and spawn offset
-
+## powerup_wingman_arm.gd
+## Produces: a spawned companion entity at the player's position when a matching powerup is received (scene-or-pool).
+## Consumes: receive_powerup signals; powerup_id; companion_scene/spawn_context/spawn_offset.
 class_name PowerupWingmanArm extends CDEntityComponent
 
 ## powerup identifier to match against
@@ -25,12 +24,12 @@ class_name PowerupWingmanArm extends CDEntityComponent
 @export_group("Listen Signals")
 @export var activate_signals: Array[StringName] = [&"receive_powerup"]
 
-## ready
+## Set the interaction category before the base _ready arms lifecycle hooks.
 func _ready() -> void:
 	component_category = CDEnums.ComponentCategory.INTERACTION
 	super._ready()
 
-## connect activate signals
+## Connect each activate signal to the wingman-spawn handler during initialization.
 func _on_initialize() -> void:
 	for sig in activate_signals:
 		entity.ensure_signal(sig)

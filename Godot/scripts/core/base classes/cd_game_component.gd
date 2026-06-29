@@ -1,7 +1,6 @@
-## CDGameComponent
-## Base class for all V2 game-attached components
-## Provides two-phase lifecycle, cached game ref, and bus tracking
-
+## cd_game_component.gd
+## Produces: a resolved game ref and tracked bus connections for a game component.
+## Consumes: the game tree (CDGame ancestor); bus signals.
 class_name CDGameComponent extends Node2D
 
 @export var component_category: CDEnums.ComponentCategory
@@ -10,16 +9,13 @@ class_name CDGameComponent extends Node2D
 var game: CDGame
 
 ## tracked bus connections for CDStage sleep/wake support
-var _bus_connections: Array[Dictionary] = []  # [{"signal_name": StringName, "callable": Callable}]
+var _bus_connections: Array[Dictionary] = []
 
-## --- Two-Phase Lifecycle ---
-
-## Phase 1: resolve game ref, defer phase 2 (priority set in _initialize after subclass _ready)
+## Resolve game ref and defer phase 2 initialization.
 func _ready() -> void:
 	if Engine.is_editor_hint():
 		return
 
-	## walk tree to find ancestor game
 	game = CDGame.find_ancestor(self)
 	if game == null:
 		push_error("CDGameComponent '%s': no CDGame ancestor found." % name)
@@ -27,20 +23,18 @@ func _ready() -> void:
 
 	call_deferred("_initialize")
 
-## Phase 2: set priority from category (subclass _ready has already run), call virtual init
+## Set priority from category (subclass _ready has already run), then call the virtual init hook.
 func _initialize() -> void:
 	process_physics_priority = CDEnums.category_to_priority(component_category)
 	_on_initialize()
 
-## --- Virtual Methods ---
-
-## Override to connect game bus signals and set up game-level logic
+## Override to connect game bus signals and set up game-level logic.
 func _on_initialize() -> void:
 	pass
 
-## --- Bus Connection Tracking (for CDStage sleep/wake) ---
+## --- Bus Connection Tracking ---
 
-## Connect to game bus and track the connection for CDStage sleep/wake
+## Connect to game bus and track the connection for CDStage sleep/wake.
 func bus_connect(signal_name: StringName, callable: Callable) -> void:
 	if not game.has_signal(signal_name):
 		game.add_user_signal(signal_name)
@@ -72,12 +66,10 @@ func _exit_tree() -> void:
 		for entry in _bus_connections.duplicate():
 			game.bus_disconnect(entry["signal_name"], entry["callable"])
 
-## --- Sleep/Wake Virtual Methods (called by CDStage) ---
-
-## Override to customize sleep behavior (clear timers, reset state, etc.)
+## Override to customize sleep behavior (clear timers, reset state, etc.).
 func _on_sleep() -> void:
 	set_physics_process(false)
 
-## Override to customize wake behavior (restart timers, re-query state, etc.)
+## Override to customize wake behavior (restart timers, re-query state, etc.).
 func _on_wake() -> void:
 	set_physics_process(true)

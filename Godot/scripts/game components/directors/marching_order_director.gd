@@ -1,11 +1,9 @@
+## MarchingOrderDirector
+## Produces: continuous move direction + distance intent written to entity blackboards.
+## Consumes: CDMarchingOrder resources; CDScaler; game.group_registry target groups.
+
 @tool
 class_name MarchingOrderDirector extends CDGameComponent
-
-## MarchingOrderDirector
-## A blind conductor that translates continuous CDMarchingOrder resources
-## into a continuous movement intent for target entities.
-## It evaluates the path delta every frame and writes the direction/velocity 
-## to entity blackboards, leaving discrete stepping logic to the Legs.
 
 ## --- exports ---
 
@@ -41,8 +39,6 @@ var _scaled_marching_timer: float = 0.0
 var _accumulated_offset: Vector2 = Vector2.ZERO
 var _total_marching_offset: Vector2 = Vector2.ZERO
 
-## --- lifecycle ---
-
 func _ready() -> void:
 	component_category = CDEnums.ComponentCategory.RULES
 	super._ready()
@@ -53,26 +49,21 @@ func _on_initialize() -> void:
 	if not marching_orders.is_empty():
 		_reset_marching_state()
 		
-	# Connect listen signals
 	if reset_signal != &"":
 		game.bus_connect(reset_signal, _on_reset_orders)
-
-## --- processing ---
 
 ## advance marching orders and write continuous move data to entities
 func _physics_process(delta: float) -> void:
 	if Engine.is_editor_hint(): return
 	if marching_orders.is_empty(): return
 
-	# 1. Evaluate continuous offset for this frame
+	## 1. evaluate this frame's continuous offset delta
 	var prev_offset := _total_marching_offset
 	_advance_marching(delta)
 	var delta_offset := _total_marching_offset - prev_offset
 
-	# 2. Write the continuous intent to all target entities
+	## 2. fan the intent out to every target entity
 	_write_move_data(delta_offset)
-
-## --- marching orders logic (mirrors FormationDirector) ---
 
 ## reset state machine for marching
 func _reset_marching_state() -> void:
@@ -123,13 +114,9 @@ func _advance_marching(delta: float) -> void:
 			_marching_index = 0  ## loop marching orders
 			_accumulated_offset = Vector2.ZERO 
 
-## --- signal handlers ---
-
 ## resets the marching sequence back to the first order
 func _on_reset_orders() -> void:
 	_reset_marching_state()
-
-## --- reset ---
 
 ## reset marching accumulators and scaler for game restart, mirroring
 ## FormationDirector.reset (the standard channel other directors use)
@@ -138,8 +125,6 @@ func reset() -> void:
 		speed_scaler.reset()
 	_reset_marching_state()
 
-## --- command execution ---
-
 ## translate the delta vector into a continuous blackboard write
 func _write_move_data(delta_offset: Vector2) -> void:
 	var entities := _gather_target_entities()
@@ -147,7 +132,7 @@ func _write_move_data(delta_offset: Vector2) -> void:
 	var dir: Vector2 = delta_offset.normalized()
 	var dist: float = delta_offset.length()
 	
-	# Snap to zero to avoid floating point noise on stops
+	## snap to zero so near-stops don't leave floating-point noise in the direction
 	if dist < 0.001:
 		dir = Vector2.ZERO
 		dist = 0.0
@@ -156,15 +141,10 @@ func _write_move_data(delta_offset: Vector2) -> void:
 		if not is_instance_valid(entity): continue
 		if entity.state != CDEnums.EntityState.ACTIVE: continue
 		
-		# Write the continuous packet to the blackboard
 		entity.blackboard[direction_key] = dir
 		entity.blackboard[distance_key] = dist
 
-## --- helpers ---
-
-## gather entities from all target groups (deduplicated; active filtering
-## happens later in _write_move_data). guards against missing game/group_registry
-## so this stays safe in the @tool editor path.
+## gather entities from all target groups (deduplicated; active filtering in _write_move_data)
 func _gather_target_entities() -> Array[CDEntity]:
 	if not is_instance_valid(game) or not is_instance_valid(game.group_registry):
 		return []

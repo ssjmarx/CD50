@@ -1,6 +1,6 @@
-## PointsGuts
-## Data holder for an entity's point value
-## Writes current value and delta to the entity blackboard for other components to read
+## points_guts.gd
+## Produces: value_key + delta_key entries on the entity blackboard.
+## Consumes: nothing (pure data holder seeded from @export points).
 
 class_name PointsGuts extends CDEntityComponent
 
@@ -15,17 +15,17 @@ class_name PointsGuts extends CDEntityComponent
 
 ## --- lifecycle ---
 
-## set component category
+## Set the state component category before the base _ready lifecycle.
 func _ready() -> void:
 	component_category = CDEnums.ComponentCategory.STATE
 	super._ready()
 
-## write initial value to blackboard
+## Seed the blackboard with the configured point value and a zero delta.
 func _on_initialize() -> void:
 	entity.blackboard[value_key] = points
 	entity.blackboard[delta_key] = 0
 
-## clear blackboard entries on deactivate
+## Erase the value/delta blackboard entries on deactivation.
 func _on_entity_deactivating() -> void:
 	super._on_entity_deactivating()
 	entity.blackboard.erase(value_key)

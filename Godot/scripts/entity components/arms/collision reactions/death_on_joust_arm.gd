@@ -1,7 +1,6 @@
-## DeathOnJoustArm
-## Instantly kills the collider based on a comparative property check
-## Bypasses health pipeline — directly emits request_deactivate on collider
-
+## death_on_joust_arm.gd
+## Produces: instant kill of a collider when this entity wins a comparative joust check (velocity/Y/custom).
+## Consumes: collision signals; entity comparison properties; target_groups filter.
 class_name DeathOnJoustArm extends CDEntityComponent
 
 ## which property to compare between self and collider
@@ -25,7 +24,7 @@ class_name DeathOnJoustArm extends CDEntityComponent
 @export_group("Listen Signals")
 @export var collision_signals: Array[StringName] = [&"collision"]
 
-## ready
+## Set the interaction category before the base _ready arms lifecycle hooks.
 func _ready() -> void:
 	component_category = CDEnums.ComponentCategory.INTERACTION
 	super._ready()

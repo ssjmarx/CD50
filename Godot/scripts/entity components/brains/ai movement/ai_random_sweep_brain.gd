@@ -1,7 +1,6 @@
-## AIRandomSweepBrain
-## Generates a multi-waypoint sweep path across the play area
-## Random center waypoints + an exit edge point, supports patrol modes
-
+## ai_random_sweep_brain.gd
+## Produces: move direction toward a generated multi-waypoint sweep (random center points plus an exit edge point, written to blackboard), advancing on arrival and honoring LOOP/RETRACE/ONCE patrol modes.
+## Consumes: game.game_bounds for waypoint generation; move_key blackboard key.
 class_name AIRandomSweepBrain extends CDEntityComponent
 
 ## number of random waypoints near the screen center
@@ -36,7 +35,7 @@ var _current_waypoint: int = 0
 ## traversal direction (1.0 forward, -1.0 reverse for RETRACE)
 var _direction: float = 1.0
 
-## ready
+## Set the intent category before the base _ready lifecycle hooks.
 func _ready() -> void:
 	component_category = CDEnums.ComponentCategory.INTENT
 	super._ready()
@@ -132,7 +131,7 @@ func _advance_waypoint() -> void:
 				CDEnums.PatrolMode.ONCE:
 					set_physics_process(false)
 
-## on entity deactivating
+## Clear generated waypoints and reset traversal state on deactivation.
 func _on_entity_deactivating() -> void:
 	super._on_entity_deactivating()
 	_waypoints.clear()

@@ -1,11 +1,8 @@
-## CDFormation
-## Defines a sub-formation grid: dimensions, cell layout, preferred group, and offset
-## Used by FormationDirector to manage multiple tiered formations in one scene
-
+## cd_formation.gd
+## Produces: a static tiered formation grid layout (dimensions, slots, offset).
+## Consumes: nothing — pure data resource consumed by FormationDirector.
 @tool
 class_name CDFormation extends Resource
-
-## --- exports ---
 
 ## group name for entities that should be assigned to this formation's slots
 ## empty = any unassigned entity can fill these slots
@@ -27,31 +24,27 @@ class_name CDFormation extends Resource
 ## fill direction for slot assignment priority
 @export var fill_direction: Vector2 = Vector2.ZERO
 
-## --- runtime state ---
-
 ## flat array of slot contents (null = empty, CDEntity = occupied)
 var slots: Array = []
 
-## --- lifecycle ---
-
-## initialize the slot array
+## Initialize the slot array.
 func init_slots() -> void:
 	slots.clear()
 	slots.resize(columns * rows)
 	for i in slots.size():
 		slots[i] = null
 
-## --- slot queries ---
+## --- Slot Queries ---
 
-## calculate world position for a slot index (relative to formation center + offset)
+## Calculate world position for a slot index (relative to formation center + offset).
 func get_slot_position(slot_index: int, center: Vector2, breathing_scale: float = 1.0) -> Vector2:
 	return center + offset + _calculate_local_position(slot_index, breathing_scale)
 
-## calculate local position for a slot index (used for editor preview)
+## Calculate local position for a slot index (used for editor preview).
 func get_slot_position_local(slot_index: int, breathing_scale: float = 1.0) -> Vector2:
 	return offset + _calculate_local_position(slot_index, breathing_scale)
 
-## find the best empty slot based on fill_direction priority
+## Find the best empty slot based on fill_direction priority.
 func find_empty_slot() -> int:
 	var best_index := -1
 	var best_score := INF
@@ -71,9 +64,7 @@ func find_empty_slot() -> int:
 
 	return best_index
 
-## --- internal ---
-
-## calculate position within the grid (no offset, no center)
+## Calculate position within the grid (no offset, no center).
 func _calculate_local_position(slot_index: int, breathing_scale: float) -> Vector2:
 	@warning_ignore("integer_division")
 	var col := slot_index % columns

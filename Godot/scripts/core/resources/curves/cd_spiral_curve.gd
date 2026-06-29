@@ -1,7 +1,6 @@
-## CDSpiralCurve
-## Spiral curve — radius modulated by sin depth along the base path
-## Inward spirals tighten, outward spirals expand
-
+## cd_spiral_curve.gd
+## Produces: a spiral curve with depth-modulated radius along the base path.
+## Consumes: nothing — pure data resource consumed by curve users (Legs).
 @tool
 class_name CDSpiralCurve extends CDCurve
 

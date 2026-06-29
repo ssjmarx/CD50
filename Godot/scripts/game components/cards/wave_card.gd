@@ -1,6 +1,6 @@
 ## WaveCard
-## Tracks current wave number and relays start/changed signals to spawners
-## Emits zero-arg signals, publishes current_wave to game blackboard
+## Produces: current_wave on game.blackboard + wave_started/wave_changed game bus signals.
+## Consumes: game bus next_wave/advance_wave signals.
 
 class_name WaveCard extends CDCueCard
 

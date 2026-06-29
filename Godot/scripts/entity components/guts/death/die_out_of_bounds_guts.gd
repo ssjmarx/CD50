@@ -1,6 +1,6 @@
-## DieOutOfBoundsGuts
-## Destroys entity if it leaves the game bounds
-## Uses game.game_bounds with configurable margin and activation delay
+## die_out_of_bounds_guts.gd
+## Produces: a death request when the entity leaves game.game_bounds (plus margin).
+## Consumes: game.game_bounds; a configurable activation delay.
 
 class_name DieOutOfBoundsGuts extends CDEntityComponent
 
@@ -20,7 +20,7 @@ var _active: bool = false
 
 ## --- lifecycle ---
 
-## set component category
+## Set the state component category before the base _ready lifecycle.
 func _ready() -> void:
 	component_category = CDEnums.ComponentCategory.STATE
 	super._ready()

@@ -1,26 +1,23 @@
-## CDEnums
-## Shared enumerations for the entire V2 codebase
-## All component priorities, lifecycle states, and comparison types live here
-
+## cd_enums.gd
+## Produces: shared enums for component priority, lifecycle, collision, comparison, and audio.
+## Consumes: nothing — pure enum namespace plus two static helpers.
 class_name CDEnums
-
-## --- Component Processing Priority ---
 
 ## CDComponent2D and CDStageComponent2D priority categories
 enum ComponentCategory {
-	REGISTRATION,   # 5  — group cache flush
-	INPUT,          # 8  — input routing
-	INTENT,         # 10 — brains/controllers
-	STEERING,       # 20 — legs
-	ENTITY,         # 30 — CDEntity
-	COLLISION,      # 35 — collision buffer flush
-	INTERACTION,    # 40 — arms
-	STATE,          # 50 — guts (internal entity state)
-	VISUAL,         # 60 — faces/projectors
-	AUDIO,          # 65 — voices/speakers
-	RULES,          # 70 — directors, goals, cards, trapdoors
-	MANAGER,        # 75 — state, signal, and stage managers
-	UPDATE,         # 90 — state mutation flush, component lifecycle
+	REGISTRATION,   ## 5  — group cache flush
+	INPUT,          ## 8  — input routing
+	INTENT,         ## 10 — brains/controllers
+	STEERING,       ## 20 — legs
+	ENTITY,         ## 30 — CDEntity
+	COLLISION,      ## 35 — collision buffer flush
+	INTERACTION,    ## 40 — arms
+	STATE,          ## 50 — guts (internal entity state)
+	VISUAL,         ## 60 — faces/projectors
+	AUDIO,          ## 65 — voices/speakers
+	RULES,          ## 70 — directors, goals, cards, trapdoors
+	MANAGER,        ## 75 — state, signal, and stage managers
+	UPDATE,         ## 90 — state mutation flush, component lifecycle
 }
 
 ## convert a category enum to its numeric priority value
@@ -40,8 +37,6 @@ static func category_to_priority(category: ComponentCategory) -> int:
 		ComponentCategory.MANAGER:      return 75
 		ComponentCategory.UPDATE:		return 90
 		_: return 95
-
-## --- Entity & Game Lifecycle ---
 
 ## CDEntity lifecycle states
 enum EntityState {
@@ -65,8 +60,6 @@ enum GameResult {
 	DRAW,
 }
 
-## --- Physics & Collision ---
-
 ## CDEntity physics processing type
 enum CollisionResponse {
 	STOP,
@@ -82,8 +75,6 @@ enum Edge {
 	RIGHT,
 }
 
-## --- Logic & Comparison ---
-
 ## comparison operators, used by goals (e.g. GroupCountGoal, ScoreThresholdGoal)
 enum CountComparison {
 	LESS_THAN,
@@ -93,9 +84,7 @@ enum CountComparison {
 	GREATER_OR_EQUAL,
 }
 
-## evaluate an observed value against a target using a CountComparison operator.
-## shared by all goals/components that need threshold comparison, so the match
-## logic is defined once instead of duplicated per goal.
+## Evaluate an observed value against a target using a CountComparison operator.
 static func compare(observed: float, target: float, op: CountComparison) -> bool:
 	match op:
 		CountComparison.LESS_THAN: return observed < target
@@ -124,7 +113,7 @@ enum PatrolMode {
 enum EntityCompare {
 	VELOCITY,
 	Y_POSITION,
-	CUSTOM, # define any attribute located on a component
+	CUSTOM, ## define any attribute located on a component
 }
 
 ## tiebreaker behavior for entity comparisons
@@ -138,8 +127,6 @@ enum EntityCompareInvalidAction {
 	DONT_FIRE,
 	FIRE,
 }
-
-## --- Audio / Sound ---
 
 ## CDSoundDef wave shapes
 enum WaveShape {

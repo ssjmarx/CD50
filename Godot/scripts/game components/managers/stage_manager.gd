@@ -1,6 +1,6 @@
 ## StageManager
-## Evaluates CDStageRule triggers each frame and sleeps/wakes named CDStages
-## Replaces the sleep_on/wake_on arrays that were embedded in CDStage
+## Produces: sleep/wake state transitions on named CDStages.
+## Consumes: CDStageRule triggers evaluated each frame.
 
 class_name StageManager extends CDGameComponent
 
@@ -14,8 +14,6 @@ class_name StageManager extends CDGameComponent
 ## cached lookup: stage node name → CDStage reference
 var _stage_map: Dictionary = {}
 
-## --- Lifecycle ---
-
 func _ready() -> void:
 	component_category = CDEnums.ComponentCategory.MANAGER
 	super._ready()
@@ -28,8 +26,6 @@ func _on_initialize() -> void:
 		else:
 			push_warning("StageManager '%s': skipping invalid rule." % name)
 
-## --- Setup ---
-
 ## find all sibling CDStages and build name → reference map
 func _build_stage_map() -> void:
 	_stage_map.clear()
@@ -38,8 +34,6 @@ func _build_stage_map() -> void:
 		if node is CDStage:
 			_stage_map[node.name] = node
 
-## --- Processing ---
-
 ## evaluate all rule triggers each frame
 func _physics_process(delta: float) -> void:
 	for rule in rules:
@@ -47,8 +41,6 @@ func _physics_process(delta: float) -> void:
 			continue
 		if rule.trigger and rule.trigger.evaluate(delta):
 			_execute_rule(rule)
-
-## --- Execution ---
 
 ## sleep/wake stages and emit signals for a matching rule
 func _execute_rule(rule: CDStageRule) -> void:
@@ -65,8 +57,6 @@ func _execute_rule(rule: CDStageRule) -> void:
 	for sig in rule.game_signals:
 		if sig != &"":
 			game.bus_emit(sig)
-
-## --- Reset ---
 
 ## reset all rules for game restart
 func reset() -> void:

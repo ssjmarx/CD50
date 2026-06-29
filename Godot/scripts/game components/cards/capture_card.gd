@@ -1,7 +1,6 @@
 ## CaptureCard
-## Tracks currently captured entities on a global level.
-## Listens for a capture signal on the Game Bus and maintains a count in the Game Blackboard.
-## Connects to tracked entities to automatically clean up the count if they die or are rescued.
+## Produces: a game-blackboard count of currently captured entities.
+## Consumes: game.blackboard["captured_entity"] + capture/rescue game bus signals.
 
 class_name CaptureCard extends CDCueCard
 
@@ -30,32 +29,26 @@ func _ready() -> void:
 func _on_initialize() -> void:
 	super._on_initialize()
 	
-	# Initialize the blackboard count
 	_publish_tracked(count_key, 0)
 	
-	# Connect to the game bus to listen for capture events (tracked for auto-disconnect)
 	bus_connect(listen_signal, _on_capture_event)
 	
-	# Connect to the game bus to listen for rescue events
 	if not rescue_signal.is_empty():
 		bus_connect(rescue_signal, _on_rescue_event)
 
 ## handle a capture event from the game bus
 func _on_capture_event() -> void:
-	# Read the captured entity directly from the blackboard (written by CaptureOnHitArm)
 	var captured_entity: CDEntity = game.blackboard.get(blackboard_source_key)
 	
 	if not is_instance_valid(captured_entity):
 		return
 		
-	# Prevent duplicate tracking
 	if captured_entity in _captured_entities:
 		return
 		
-	# Add to tracking and connect for cleanup
 	_captured_entities.append(captured_entity)
 	
-	# Use string-based connection to safely handle both native and dynamic signals
+	## bind the entity so the deactivating callback knows which one to forget
 	if captured_entity.has_signal("entity_deactivating"):
 		captured_entity.connect("entity_deactivating", _on_captured_entity_deactivating.bind(captured_entity))
 	
@@ -63,14 +56,11 @@ func _on_capture_event() -> void:
 
 ## handle a rescue event from the game bus
 func _on_rescue_event() -> void:
-	# Read the rescued entity from the signal emitters (set by AnnouncerGuts via bus_emit_from)
 	var rescued_entity: CDEntity = game._signal_emitters.get(rescue_signal)
 	
 	if is_instance_valid(rescued_entity) and rescued_entity in _captured_entities:
-		# Remove from tracking
 		_captured_entities.erase(rescued_entity)
 		
-		# Disconnect the death handler since the entity is rescued, not dead
 		if rescued_entity.is_connected("entity_deactivating", _on_captured_entity_deactivating.bind(rescued_entity)):
 			rescued_entity.disconnect("entity_deactivating", _on_captured_entity_deactivating.bind(rescued_entity))
 	
@@ -88,5 +78,4 @@ func _update_count() -> void:
 	var count: int = _captured_entities.size()
 	game.blackboard[count_key] = count
 	
-	# Use the inherited _update_label which checks the internal _label created by CDCueCard
 	_update_label("CAPTURE: %d" % count)

@@ -1,6 +1,6 @@
 ## ScreenWrapLeg
-## Wraps entity to opposite side of game bounds when it leaves the screen
-## Checks at configurable intervals to reduce overhead
+## Produces: a wrapped position request when the entity leaves game bounds.
+## Consumes: entity global position; game.game_bounds rect.
 
 class_name ScreenWrapLeg extends CDEntityComponent
 
@@ -19,14 +19,10 @@ class_name ScreenWrapLeg extends CDEntityComponent
 
 var _check_timer: float = 0.0
 
-## --- lifecycle ---
-
 ## set component category
 func _ready() -> void:
 	component_category = CDEnums.ComponentCategory.STEERING
 	super._ready()
-
-## --- processing ---
 
 ## check bounds at intervals and wrap to opposite side if needed
 func _physics_process(delta: float) -> void:
@@ -67,16 +63,12 @@ func _physics_process(delta: float) -> void:
 		if not wrapped_signals.is_empty():
 			_emit_wrapped_signals.call_deferred()
 
-## --- internal ---
-
 ## emit signals after the position update has processed
 func _emit_wrapped_signals() -> void:
 	if not entity or not is_instance_valid(entity):
 		return
 	for sig in wrapped_signals:
 		entity.bus_emit(sig)
-
-## --- cleanup ---
 
 ## reset timer for pool reuse
 func _on_entity_deactivating() -> void:

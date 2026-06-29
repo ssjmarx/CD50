@@ -1,6 +1,6 @@
 ## GridDropLeg
-## Drops entity by N grid cells via edge detection on the entity blackboard
-## Used for line clear settling — game component writes drop_count, leg applies it once
+## Produces: a downward position request by N grid cells.
+## Consumes: entity.blackboard["drop_count"] (edge-detected).
 
 class_name GridDropLeg extends CDEntityComponent
 
@@ -18,8 +18,6 @@ class_name GridDropLeg extends CDEntityComponent
 ## previous frame's drop count for edge detection
 var _prev_drop_count: int = 0
 
-## --- lifecycle ---
-
 ## ready
 func _ready() -> void:
 	component_category = CDEnums.ComponentCategory.STEERING
@@ -28,8 +26,6 @@ func _ready() -> void:
 ## on initialize
 func _on_initialize() -> void:
 	pass
-
-## --- processing ---
 
 ## edge-detect drop_count changes, apply instant vertical drop
 func _physics_process(_delta: float) -> void:
@@ -45,8 +41,6 @@ func _physics_process(_delta: float) -> void:
 		_prev_drop_count = 0
 	else:
 		_prev_drop_count = drop_count
-
-## --- cleanup ---
 
 ## on entity deactivating
 func _on_entity_deactivating() -> void:

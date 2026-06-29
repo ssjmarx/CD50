@@ -1,7 +1,6 @@
-## ScoreOnCollisionArm
-## Emits score_gained to the game bus on collision with a valid target
-## Reads point value from a sibling PointsGuts component
-
+## score_on_collision_arm.gd
+## Produces: a score_gained event on the game bus when a valid collider is hit.
+## Consumes: collision signals; entity.blackboard[points]; target_groups filter.
 class_name ScoreOnCollisionArm extends CDEntityComponent
 
 ## if non-empty, only score on collision with these groups
@@ -16,7 +15,7 @@ class_name ScoreOnCollisionArm extends CDEntityComponent
 @export_group("Emit Signals")
 @export var score_signals: Array[StringName] = [&"score_gained"]
 
-## ready
+## Set the interaction category before the base _ready arms lifecycle hooks.
 func _ready() -> void:
 	component_category = CDEnums.ComponentCategory.INTERACTION
 	super._ready()

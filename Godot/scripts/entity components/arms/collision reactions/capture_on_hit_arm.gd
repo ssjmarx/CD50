@@ -1,8 +1,6 @@
-## CaptureOnHitArm
-## Delivers the lasso payload on collision.
-## Writes capture data to game blackboard, target blackboard, and emits the standard capture signals.
-## Cleans up the bullet on successful hit and notifies the captor that the phase is complete.
-
+## capture_on_hit_arm.gd
+## Produces: a lasso-capture payload on collision (writes capture data, emits capture/success/complete signals, cleans up the bullet).
+## Consumes: entity.blackboard[captor_key]; collision signals; target_groups filter.
 class_name CaptureOnHitArm extends CDEntityComponent
 
 @export var target_groups: Array[StringName] = [&"player"]
@@ -23,17 +21,17 @@ class_name CaptureOnHitArm extends CDEntityComponent
 @export var captor_success_signals: Array[StringName] = [&"capture_succeeded"]
 @export var captor_complete_signals: Array[StringName] = [&"tractor_beam_complete"]
 
-## ready
+## Set the interaction category before the base _ready arms lifecycle hooks.
 func _ready() -> void:
 	component_category = CDEnums.ComponentCategory.INTERACTION
 	super._ready()
 
-## connect collision signals
+## Connect each collision signal to the handler during initialization.
 func _on_initialize() -> void:
 	for sig in collision_signals:
 		entity.connect(sig, _on_collision)
 
-## apply capture to the collider if it's a valid target
+## Apply the capture payload to a valid target: write blackboards, emit on target/captor buses, then deactivate the bullet.
 func _on_collision(collider: CDEntity, _normal: Vector2) -> void:
 	if not is_instance_valid(collider) or not _is_valid_target(collider):
 		return
@@ -42,29 +40,29 @@ func _on_collision(collider: CDEntity, _normal: Vector2) -> void:
 	if not is_instance_valid(captor):
 		return
 
-	# Write capture data to game and target blackboards
+	## write capture data to game and target blackboards
 	game.blackboard[target_blackboard_key] = collider
 	collider.blackboard[captor_blackboard_key] = captor
 
-	# Emit capture signal on target's bus
+	## emit capture signal on target's bus
 	for sig in capture_signals:
 		collider.bus_emit(sig)
 
-	# Emit success signal on captor's bus (for limit tracking in LassoBrain)
+	## emit success signal on captor's bus (for limit tracking in LassoBrain)
 	for sig in captor_success_signals:
 		captor.bus_emit(sig)
 
-	# Emit complete signal on captor's bus so it knows to end capture phase
+	## emit complete signal on captor's bus so it knows to end capture phase
 	for sig in captor_complete_signals:
 		captor.bus_emit(sig)
 
-	# Flag bullet as successful capture so it emits correct signals on cleanup
+	## flag bullet as successful capture so it emits correct signals on cleanup
 	entity.blackboard[success_key] = true
 
-	# Clean up bullet
+	## clean up bullet
 	entity.deactivate()
 
-## return true if target_groups is empty or collider is in one of them
+## Return true if target_groups is empty or collider is in one of them.
 func _is_valid_target(collider: CDEntity) -> bool:
 	if target_groups.is_empty():
 		return true
@@ -73,7 +71,7 @@ func _is_valid_target(collider: CDEntity) -> bool:
 			return true
 	return false
 
-## disconnect all collision signals on deactivation
+## Disconnect all collision signals on deactivation.
 func _on_entity_deactivating() -> void:
 	super._on_entity_deactivating()
 	for sig in collision_signals:

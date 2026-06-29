@@ -1,9 +1,8 @@
+## vector_thruster_face.gd
+## Produces: four diagonal thruster flames activated by move direction (push-style).
+## Consumes: move_key blackboard direction (entity-blackboard-driven).
+
 @tool
-
-## VectorThrusterFace
-## Draws four diagonal thruster flames in an X pattern
-## Activates individual flames based on move signal direction
-
 class_name VectorThrusterFace extends CDEntityComponent
 
 ## distance each flame extends from center
@@ -69,7 +68,7 @@ var _any_active: bool = false
 
 ## --- processing ---
 
-## on initialize
+## Enable per-frame processing so blackboard direction can drive the flames.
 func _on_initialize() -> void:
 	set_process(true)
 
@@ -86,19 +85,19 @@ func _process(delta: float) -> void:
 		
 		## horizontal movement activates opposite-side thrusters (to push)
 		if local_dir.x > 0.1:
-			_active[0] = true  # UL fires for rightward push
-			_active[2] = true  # LL fires for rightward push
+			_active[0] = true  ## UL fires for rightward push
+			_active[2] = true  ## LL fires for rightward push
 		elif local_dir.x < -0.1:
-			_active[1] = true  # UR fires for leftward push
-			_active[3] = true  # LR fires for leftward push
-		
+			_active[1] = true  ## UR fires for leftward push
+			_active[3] = true  ## LR fires for leftward push
+
 		## vertical movement activates opposite-side thrusters
 		if local_dir.y > 0.1:
-			_active[0] = true  # UL fires for downward push
-			_active[1] = true  # UR fires for downward push
+			_active[0] = true  ## UL fires for downward push
+			_active[1] = true  ## UR fires for downward push
 		elif local_dir.y < -0.1:
-			_active[2] = true  # LL fires for upward push
-			_active[3] = true  # LR fires for upward push
+			_active[2] = true  ## LL fires for upward push
+			_active[3] = true  ## LR fires for upward push
 		
 		_any_active = _active[0] or _active[1] or _active[2] or _active[3]
 		

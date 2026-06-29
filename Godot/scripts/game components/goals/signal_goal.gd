@@ -1,6 +1,6 @@
 ## SignalGoal
-## Ends the game or triggers a state change in direct response to game bus signals.
-## Use case: Invaders reach the bottom of the screen -> Mark emits "end_game" -> Goal writes DEFEAT and emits "game_over"
+## Produces: a game_result on game.blackboard + end-game game bus signals.
+## Consumes: game bus trigger signals.
 
 class_name SignalGoal extends CDGameComponent
 

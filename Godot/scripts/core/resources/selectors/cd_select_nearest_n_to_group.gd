@@ -1,7 +1,6 @@
-## CDSelectNearestNToGroup
-## Selects N candidates nearest to the closest entity in a target group
-## Sorts by distance to reference entity, falls back to first-N if no reference
-
+## cd_select_nearest_n_to_group.gd
+## Produces: the N candidates nearest to the closest entity in a target group.
+## Consumes: game.group_registry; candidate entities.
 class_name CDSelectNearestNToGroup extends CDSelector
 
 ## maximum number of entities to select
@@ -10,7 +9,7 @@ class_name CDSelectNearestNToGroup extends CDSelector
 ## group to find the reference point from (nearest entity to first candidate)
 @export var target_group: StringName = &"players"
 
-## sort candidates by distance to reference entity from target group, return nearest N
+## Sort candidates by distance to the nearest entity in target_group, return nearest N.
 func select(candidates: Array[CDEntity], _source_position: Vector2 = Vector2.ZERO) -> Array[CDEntity]:
 	if candidates.is_empty():
 		return []

@@ -1,6 +1,6 @@
-## DieOnTimerGuts
-## Destroys the entity after a set lifespan expires
-## Emits timer_expired before deactivating, useful for bullet/projectile lifetimes
+## die_on_timer_guts.gd
+## Produces: a timed death (lifespan expiry) emitting timer_expired then deactivating.
+## Consumes: nothing (self-driven lifespan counter).
 
 class_name DieOnTimerGuts extends CDEntityComponent
 
@@ -21,18 +21,18 @@ var _time_remaining: float = 0.0
 
 ## --- lifecycle ---
 
-## ready
+## Set the state component category before the base _ready lifecycle.
 func _ready() -> void:
 	component_category = CDEnums.ComponentCategory.STATE
 	super._ready()
 
-## on initialize
+## Reset the lifespan countdown at initialization.
 func _on_initialize() -> void:
 	_time_remaining = lifespan
 
 ## --- processing ---
 
-## physics process
+## Count down lifespan; on expiry emit timer signals and deactivate.
 func _physics_process(delta: float) -> void:
 	_time_remaining -= delta
 	if _time_remaining <= 0.0:
@@ -43,13 +43,13 @@ func _physics_process(delta: float) -> void:
 
 ## --- cleanup ---
 
-## on entity deactivating
+## Reset countdown and stop processing for pool reuse.
 func _on_entity_deactivating() -> void:
 	super._on_entity_deactivating()
 	_time_remaining = lifespan
 	set_physics_process(false)
 
-## on entity activated
+## Restart the lifespan countdown on reactivation.
 func _on_entity_activated() -> void:
 	super._on_entity_activated()
 	_time_remaining = lifespan

@@ -1,9 +1,8 @@
+## polygon_face.gd
+## Produces: filled-polygon rendering from CDShape resources with frame bindings.
+## Consumes: CDFaceBinding signals; optional shape_points blackboard override.
+
 @tool
-
-## PolygonFace
-## Draws filled polygons from CDShape resources
-## Supports signal-to-frame bindings via CDFaceBinding and timed restore
-
 class_name PolygonFace extends CDEntityComponent
 
 ## --- export setters for editor live preview ---
@@ -39,8 +38,6 @@ var _current_points: PackedVector2Array = PackedVector2Array()
 ## timer for auto-restore after binding trigger
 var _restore_timer: SceneTreeTimer
 
-## --- lifecycle ---
-
 ## connect bindings and set default frame
 func _on_initialize() -> void:
 	for binding in bindings:
@@ -58,8 +55,6 @@ func _process(_delta: float) -> void:
 		if points and points != _current_points:
 			_current_points = points
 			queue_redraw()
-
-## --- signal handlers ---
 
 ## switch to binding's frame, optionally schedule restore
 func _on_binding_signal(binding: CDFaceBinding = null) -> void:
@@ -82,17 +77,13 @@ func _on_restore() -> void:
 		_current_points = shapes[default_frame].points
 	queue_redraw()
 
-## --- drawing ---
-
 ## draw the current polygon filled with color
 func _draw() -> void:
 	if _current_points.size() < 3:
 		return
 	draw_colored_polygon(_current_points, color)
 
-## --- helpers ---
-
-## on entity deactivating
+## Disconnect each binding signal on deactivation.
 func _on_entity_deactivating() -> void:
 	super._on_entity_deactivating()
 	for binding in bindings:

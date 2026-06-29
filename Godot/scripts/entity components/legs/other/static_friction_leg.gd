@@ -1,6 +1,6 @@
 ## StaticFrictionLeg
-## Constant deceleration that brings velocity to zero
-## Applies uniform braking force regardless of speed, snaps to zero to prevent jitter
+## Produces: a constant deceleration velocity request (uniform braking force).
+## Consumes: entity current linear velocity.
 
 class_name FrictionStatic extends CDEntityComponent
 
@@ -9,14 +9,10 @@ class_name FrictionStatic extends CDEntityComponent
 ## deceleration in pixels per second squared
 @export var deceleration: float = 100.0
 
-## --- lifecycle ---
-
 ## set component category
 func _ready() -> void:
 	component_category = CDEnums.ComponentCategory.STEERING
 	super._ready()
-
-## --- processing ---
 
 ## apply constant braking force, snap to zero if braking would overshoot
 func _physics_process(delta: float) -> void:

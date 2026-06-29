@@ -1,7 +1,6 @@
-## CDTriangleCurve
-## Triangle shape — closed 3-vertex polygon
-## Apex angle derived from base_angle; seed phase rotates the shape
-
+## cd_triangle_curve.gd
+## Produces: a closed triangle curve (apex angle derived from base_angle).
+## Consumes: nothing — pure data resource consumed by curve users (Legs).
 @tool
 class_name CDTriangleCurve extends CDCurve
 

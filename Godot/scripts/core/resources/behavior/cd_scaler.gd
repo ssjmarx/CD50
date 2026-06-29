@@ -1,10 +1,7 @@
-## CDScaler
-## Abstract base class for float value scaling resources
-## Provides base value, clamping, and a game-aware lifecycle
-
+## cd_scaler.gd
+## Produces: an abstract float-scaling resource contract (base, min, max, lifecycle).
+## Consumes: nothing — base class; subclasses consume CDGame state in evaluate().
 class_name CDScaler extends Resource
-
-## --- exports ---
 
 ## the baseline value before scaling
 @export var base: float = 1.0
@@ -15,21 +12,19 @@ class_name CDScaler extends Resource
 ## maximum clamped value
 @export var maximum: float = 10.0
 
-## --- state ---
-
 ## cached game reference for group registry / bus access
 var _game: CDGame
 
-## --- lifecycle ---
+## --- Lifecycle ---
 
-## store game reference — override to connect signals
+## Store game reference — override to connect signals.
 func initialize(game: CDGame) -> void:
 	_game = game
 
-## return the scaled value for the current game state
+## Return the scaled value for the current game state.
 func evaluate() -> float:
 	return base
 
-## reset internal state for game restart
+## Reset internal state for game restart.
 func reset() -> void:
 	pass

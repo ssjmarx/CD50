@@ -1,18 +1,16 @@
-## CDSelectNearestN
-## Selects N candidates nearest to the caller's (e.g. StateManager's) position
-## Sorts by distance to source_position, returns the closest N
-
+## cd_select_nearest_n.gd
+## Produces: the N candidates nearest to the caller's source_position.
+## Consumes: candidate entities; source_position (e.g. director's global_position).
 class_name CDSelectNearestN extends CDSelector
 
 ## maximum number of entities to select
 @export var count: int = 1
 
-## sort candidates by distance to source_position, return nearest N
+## Sort candidates by distance to source_position and return the nearest N.
 func select(candidates: Array[CDEntity], source_position: Vector2 = Vector2.ZERO) -> Array[CDEntity]:
 	if candidates.is_empty():
 		return []
 
-	## sort candidates by distance to the director's position
 	var sorted: Array[CDEntity] = []
 	sorted.assign(candidates)
 	sorted.sort_custom(func(a: CDEntity, b: CDEntity) -> bool:

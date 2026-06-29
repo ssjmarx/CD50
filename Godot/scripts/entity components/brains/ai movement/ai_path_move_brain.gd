@@ -1,7 +1,6 @@
-## AIPathMoveBrain
-## Follows a pre-defined Curve2D resource, emitting positional targets as waypoints
-## Supports patrol modes: LOOP, RETRACE, and ONCE
-
+## ai_path_move_brain.gd
+## Produces: move direction and distance along a baked Curve2D path (written to blackboard), advancing waypoints on arrival and honoring LOOP/RETRACE/ONCE patrol modes.
+## Consumes: path_curve resource; move_key/distance_key blackboard keys; emits complete_signals on entity bus when ONCE finishes.
 class_name AIPathMoveBrain extends CDEntityComponent
 
 ## the curve resource to follow
@@ -35,7 +34,7 @@ var _current_index: int = 0
 ## traversal direction (+1 forward, -1 reverse for RETRACE)
 var _direction: int = 1
 
-## ready
+## Set the intent category before the base _ready lifecycle hooks.
 func _ready() -> void:
 	component_category = CDEnums.ComponentCategory.INTENT
 	super._ready()
@@ -102,7 +101,7 @@ func _advance_waypoint() -> void:
 						entity.bus_emit(sig)
 					set_physics_process(false)
 
-## on entity deactivating
+## Reset the waypoint index and traversal direction on deactivation.
 func _on_entity_deactivating() -> void:
 	super._on_entity_deactivating()
 	_current_index = 0

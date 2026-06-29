@@ -1,6 +1,6 @@
 ## DirectRotationLeg
-## Tank-style continuous rotation from move_direction.x polled on the entity blackboard
-## Positive x = rotate clockwise, negative x = rotate counter-clockwise
+## Produces: a direct angular velocity request from polled move_direction.x.
+## Consumes: entity.blackboard["move_direction"].
 
 class_name DirectRotationLeg extends CDEntityComponent
 

@@ -1,7 +1,6 @@
 ## MusicSpeaker
-## Dual-player playlist crossfade system with shuffled tracks and loop-point support
-## Emits track_changed on the game bus for credit overlay integration
-
+## Produces: shuffled playlist crossfade playback + a track_changed game bus signal.
+## Consumes: configured audio stream tracks.
 class_name MusicSpeaker extends CDGameComponent
 
 ## --- exports ---
@@ -58,8 +57,6 @@ var pitch_scale: float:
 		if _player_b:
 			_player_b.pitch_scale = v
 
-## --- lifecycle ---
-
 ## create dual players and connect game state signals
 func _on_initialize() -> void:
 	_player_a = AudioStreamPlayer.new()
@@ -74,8 +71,6 @@ func _on_initialize() -> void:
 	
 	bus_connect(start_signal, _on_game_play)
 	bus_connect(stop_signal, _on_game_over)
-
-## --- signal handlers ---
 
 ## start the playlist when the game begins
 func _on_game_play() -> void:
@@ -135,8 +130,6 @@ func _play_next() -> void:
 	else:
 		_schedule_next_on_finish()
 
-## --- track scheduling ---
-
 ## loop back to loop_start at loop_end with recursive rescheduling
 func _schedule_loop_crossfade(track: CDMusicTrack) -> void:
 	var wait_time: float = track.loop_end - track.loopfade_duration
@@ -158,8 +151,6 @@ func _get_stream_duration() -> float:
 	if _active_player and _active_player.stream:
 		return _active_player.stream.get_length()
 	return 0.0
-
-## --- fade out ---
 
 ## tween active player to silent then stop
 func _fade_out_and_stop() -> void:

@@ -1,6 +1,6 @@
-## ShieldpoolGuts
-## Rechargeable health buffer that absorbs damage before overflowing to health
-## Writes current value and delta to entity blackboard; emits zero-arg signals on events Uses "catch and release" pattern: absorbs what it can, forwards the rest
+## shieldpool_guts.gd
+## Produces: shield_hit/broken/recharged/overflow signals; writes value_key + delta_key.
+## Consumes: damage_key for amount; take_damage signal.
 
 class_name ShieldpoolGuts extends CDEntityComponent
 
@@ -38,14 +38,12 @@ class_name ShieldpoolGuts extends CDEntityComponent
 var _current_shield: float = 0.0
 var _recharge_timer: float = 0.0
 
-## --- lifecycle ---
-
-## ready
+## Set the state component category before the base _ready lifecycle.
 func _ready() -> void:
 	component_category = CDEnums.ComponentCategory.STATE
 	super._ready()
 
-## on initialize
+## Seed the shield to blackboard and connect the damage listener.
 func _on_initialize() -> void:
 	_current_shield = max_shield
 	entity.blackboard[value_key] = _current_shield
@@ -53,8 +51,6 @@ func _on_initialize() -> void:
 	
 	for sig in damage_signals:
 		self.bus_connect(sig, _on_take_damage)
-
-## --- signal handlers ---
 
 ## absorb damage into shield, overflow excess to health damage signals
 func _on_take_damage() -> void:
@@ -89,9 +85,7 @@ func _on_take_damage() -> void:
 		for sig in overflow_signals:
 			entity.bus_emit(sig)
 
-## --- processing ---
-
-## recharge shield after delay, emit recharged signal when full
+## Recharge the shield after its delay and emit shield_recharged when full.
 func _physics_process(delta: float) -> void:
 	if _current_shield >= max_shield:
 		return
@@ -106,9 +100,7 @@ func _physics_process(delta: float) -> void:
 			for sig in shield_recharged_signals:
 				entity.bus_emit(sig)
 
-## --- cleanup ---
-
-## on entity deactivating
+## Reset shield and disconnect the damage listener on deactivation.
 func _on_entity_deactivating() -> void:
 	super._on_entity_deactivating()
 	_current_shield = max_shield
@@ -119,7 +111,7 @@ func _on_entity_deactivating() -> void:
 		self.bus_disconnect(sig, _on_take_damage)
 	set_physics_process(false)
 
-## on entity activated
+## Reset shield and re-enable physics processing on activation.
 func _on_entity_activated() -> void:
 	super._on_entity_activated()
 	_current_shield = max_shield

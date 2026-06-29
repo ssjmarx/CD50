@@ -1,8 +1,6 @@
 ## CDMark
-## Base Area2D mark that detects body enter/exit and emits zero-arg signals
-## Emits on both the game bus and the entering/exiting entity's bus.
-## Provides group filtering and auto-created collision shapes for subclasses.
-## Writes detected body to game blackboard before emitting.
+## Produces: zero-arg game-bus + entity-bus signals on body enter/exit, with blackboard payload.
+## Consumes: Area2D body detection; game.blackboard; filter_groups membership.
 
 class_name CDMark extends Area2D
 
@@ -64,8 +62,6 @@ func _on_initialize() -> void:
 	for sig in on_set_shape:
 		game.bus_connect(sig, _on_change_shape)
 
-## --- collision shape ---
-
 ## attach a CollisionShape2D child or default to a circle
 func _ensure_collision_shape() -> void:
 	for child in get_children():
@@ -111,7 +107,7 @@ func _handle_body_exited(body: Node2D) -> void:
 func _emit_enter(body: Node2D) -> void:
 	for sig in on_entered:
 		game.bus_emit(sig)
-	# Emit on the entering entity's bus if it is a CDEntity
+	## forward onto the touching entity's own bus when it's a CDEntity
 	if body is CDEntity:
 		for sig in on_entered_entity:
 			body.bus_emit(sig)
@@ -120,12 +116,10 @@ func _emit_enter(body: Node2D) -> void:
 func _emit_exit(body: Node2D) -> void:
 	for sig in on_exited:
 		game.bus_emit(sig)
-	# Emit on the exiting entity's bus if it is a CDEntity
+	## forward onto the leaving entity's own bus when it's a CDEntity
 	if body is CDEntity:
 		for sig in on_exited_entity:
 			body.bus_emit(sig)
-
-## --- runtime shape swap ---
 
 ## read new shape from game blackboard and apply
 func _on_change_shape() -> void:
@@ -133,8 +127,6 @@ func _on_change_shape() -> void:
 		var new_shape: Shape2D = game.blackboard.get(shape_key, null)
 		if new_shape:
 			_auto_shape.shape = new_shape
-
-## --- filtering ---
 
 ## return true if body matches any filter group (or all if no filter)
 func _passes_filter(body: Node2D) -> bool:

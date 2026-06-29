@@ -1,6 +1,6 @@
 ## ScoreCard
-## Tracks score with optional multiplier applied on add (not on set)
-## Other components write pending deltas to game blackboard, then emit trigger signal
+## Produces: current_score on game.blackboard + changed game bus signals.
+## Consumes: game bus add_score/set_score signals.
 
 class_name ScoreCard extends CDCueCard
 

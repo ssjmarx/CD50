@@ -1,6 +1,6 @@
 ## ShootingDirector
-## Data-driven shooting: uses CDTrigger to decide WHEN and CDSelector to decide WHO
-## Gathers candidates from target groups, filters to valid/active, selects, emits shoot signal
+## Produces: a game bus shoot signal directed at a selected entity.
+## Consumes: CDTrigger resources (when) + CDSelector resources (who).
 
 @tool
 class_name ShootingDirector extends CDGameComponent

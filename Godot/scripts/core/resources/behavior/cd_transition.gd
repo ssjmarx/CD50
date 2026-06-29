@@ -1,10 +1,7 @@
-## CDTransition
-## Defines when and how entities move between groups
-## Used by Directors to orchestrate entity state changes via trigger → selector → group swap
-
+## cd_transition.gd
+## Produces: a group-swap transition rule (trigger → selector → group add/remove).
+## Consumes: nothing — pure data resource consumed by Directors/StateManager.
 class_name CDTransition extends Resource
-
-## --- Exports ---
 
 ## groups to remove entities from
 @export var remove_groups: Array[StringName] = []
@@ -31,14 +28,10 @@ class_name CDTransition extends Resource
 @export var entity_signals: Array[StringName] = []
 @export var game_signals: Array[StringName] = []
 
-## --- Internal State ---
-
 ## tracks cooldown progress
 var _cooldown_timer: float = 0.0
 
-## --- Lifecycle ---
-
-## reset timer and initialize trigger + selector with game refs
+## Reset timer and initialize trigger + selector with game refs.
 func initialize(game: CDGame) -> void:
 	_cooldown_timer = 0.0
 	if wave_scaler:
@@ -50,7 +43,7 @@ func initialize(game: CDGame) -> void:
 	else:
 		push_warning("CDTransition: no selector assigned.")
 
-## full reset for game restart
+## Full reset for game restart.
 func reset() -> void:
 	_cooldown_timer = 0.0
 	if wave_scaler:
@@ -62,16 +55,16 @@ func reset() -> void:
 
 ## --- Cooldown ---
 
-## tick down the cooldown timer each frame
+## Tick down the cooldown timer each frame.
 func advance_cooldown(delta: float) -> void:
 	if _cooldown_timer > 0.0:
 		_cooldown_timer = maxf(0.0, _cooldown_timer - delta)
 
-## check if this transition is currently locked
+## Check if this transition is currently locked.
 func is_on_cooldown() -> bool:
 	return _cooldown_timer > 0.0
 
-## begin cooldown after a successful activation
+## Begin cooldown after a successful activation.
 func start_cooldown() -> void:
 	var effective_cooldown := cooldown
 	if wave_scaler:
@@ -79,8 +72,6 @@ func start_cooldown() -> void:
 	if effective_cooldown > 0.0:
 		_cooldown_timer = effective_cooldown
 
-## --- Validation ---
-
-## at least one remove or add group must be set
+## At least one remove or add group must be set.
 func is_valid() -> bool:
 	return not remove_groups.is_empty() or not add_groups.is_empty()

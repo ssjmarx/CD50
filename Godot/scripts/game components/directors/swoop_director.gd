@@ -1,6 +1,6 @@
 ## SwoopDirector
-## Moves entities along a curve using virtual "ghost" target points for deterministic spacing
-## Emits swoop_complete on game bus when each entity finishes
+## Produces: per-entity swoop motion along a curve + a swoop_complete game bus signal.
+## Consumes: target group entities + a CDSwoopCurve resource.
 
 @tool
 class_name SwoopDirector extends CDGameComponent
@@ -67,9 +67,9 @@ class_name SwoopDirector extends CDGameComponent
 
 var _curve: Curve2D
 var _curve_length: float = 0.0
-var _ghost_offsets: Dictionary = {} # {CDEntity: float} — offset along curve in pixels
-var _entity_lanes: Dictionary = {}  # {CDEntity: float} — lane index (-0.5, +0.5, etc.)
-var _lane_axis: Vector2 = Vector2.RIGHT # fixed perpendicular axis for lane offsets
+var _ghost_offsets: Dictionary = {} ## {CDEntity: float} — offset along curve in pixels
+var _entity_lanes: Dictionary = {}  ## {CDEntity: float} — lane index (-0.5, +0.5, etc.)
+var _lane_axis: Vector2 = Vector2.RIGHT ## fixed perpendicular axis for lane offsets
 var _slots: Array[CDEntity] = []
 var _pending: Array[CDEntity] = []
 var _pixels_per_frame: float = 0.0
@@ -110,13 +110,9 @@ func _request_redraw() -> void:
 	if is_inside_tree():
 		queue_redraw()
 
-## --- initialization ---
-
 ## on initialize
 func _on_initialize() -> void:
 	connect_all(trigger_signals, _on_trigger)
-
-## --- editor preview ---
 
 ## draw
 func _draw() -> void:
@@ -210,8 +206,6 @@ func _release_entity(entity: CDEntity) -> void:
 func _apply_lane_offset(offset: float, lane: float) -> Vector2:
 	return _curve.sample_baked(offset) + _lane_axis * lane * lane_spacing
 
-## --- entity gathering ---
-
 ## gather entities
 ## (require_all mode intersects groups manually; the ANY branch delegates to
 ## the registry's dedup helper. active filtering happens later in _on_trigger.)
@@ -231,8 +225,6 @@ func _gather_entities() -> Array[CDEntity]:
 				entities.append(entity)
 		return entities
 	return game.group_registry.get_groups_union(swooping_groups, false)
-
-## --- processing ---
 
 ## advance ghost offsets, release pending entities, write targets to entity blackboards
 func _physics_process(_delta: float) -> void:
@@ -291,8 +283,6 @@ func _physics_process(_delta: float) -> void:
 	
 	if _slots.is_empty() and _pending.is_empty():
 		set_physics_process(false)
-
-## --- reset ---
 
 ## reset
 func reset() -> void:

@@ -1,7 +1,6 @@
 ## FormationDirector
-## Manages multiple sub-formation grids (CDFormation) for tiered enemy placement
-## Auto-assigns group members to slots, animates breathing, writes move data to entity blackboards
-## Supports data-driven marching orders (Step, Pause, Breathe) with editor preview
+## Produces: per-entity move direction + distance from animated formation slot targets.
+## Consumes: CDFormation grids, CDMarchingOrder resources, group membership.
 
 @tool
 class_name FormationDirector extends CDGameComponent
@@ -70,14 +69,10 @@ var _accumulated_offset: Vector2 = Vector2.ZERO
 ## total current offset (accumulated + active order progress) applied to formation
 var _total_marching_offset: Vector2 = Vector2.ZERO
 
-## --- lifecycle ---
-
 func _ready() -> void:
 	component_category = CDEnums.ComponentCategory.RULES
 	super._ready()
 	_init_all_slots()
-
-## --- editor preview ---
 
 ## animate marching orders in editor for preview
 func _process(delta: float) -> void:
@@ -108,11 +103,8 @@ func _draw() -> void:
 			var origin_local: Vector2 = base_origin_local + formation_center_offset
 			
 			var pos: Vector2 = formation.get_slot_position_local(i, breathing_scale)
-			## Apply the origin to the slot position
 			pos += origin_local
 			draw_circle(pos, preview_radius, preview_color)
-
-## --- processing ---
 
 ## advance marching orders, clean stale slots, write move data
 func _physics_process(delta: float) -> void:
@@ -184,14 +176,8 @@ func _advance_marching(delta: float) -> void:
 		
 		_marching_index += 1
 		if _marching_index >= marching_orders.size():
-			_marching_index = 0  ## loop marching orders
-			_accumulated_offset = Vector2.ZERO ## reset loop to keep positions bounded or keep accumulating? 
-			## For looping patterns like Galaga, we usually want to return to start or repeat from current. 
-			## Resetting accumulator forces the pattern to snap back to start. 
-			## Comment out the line below to allow endless drifting.
-			_accumulated_offset = Vector2.ZERO 
-
-## --- breathing helpers ---
+			_marching_index = 0
+			_accumulated_offset = Vector2.ZERO
 
 ## fetch breathing data from the current marching order, if supported
 func _get_current_breathing_data() -> Dictionary:
@@ -200,7 +186,6 @@ func _get_current_breathing_data() -> Dictionary:
 		## Use scaled timer so breathing matches the scaled movement speed
 		return order.get_breathing_values(_scaled_marching_timer)
 	
-	## default to no breathing
 	return { "spacing_scale": 1.0, "offset_scale": 1.0 }
 
 ## --- slot management ---
@@ -221,7 +206,7 @@ func _auto_assign_slots() -> void:
 		if _is_entity_in_any_slot(entity):
 			continue
 		
-		# first try preferred group formations
+		## tier 1: prefer formations whose preferred_group matches this entity
 		var assigned := false
 		for formation in formations:
 			if formation.preferred_group != &"" and entity.is_in_group(formation.preferred_group):
@@ -235,7 +220,7 @@ func _auto_assign_slots() -> void:
 		if assigned:
 			continue
 		
-		# fallback: any formation with empty slots (prefer formations without preferred_group)
+		## tier 2: fill unaffiliated formations (no preferred_group) before stealing
 		for formation in formations:
 			if formation.preferred_group == &"":
 				var slot_index := formation.find_empty_slot()
@@ -248,7 +233,7 @@ func _auto_assign_slots() -> void:
 		if assigned:
 			continue
 		
-		# last resort: preferred group formations that are full but have empty slots from other groups
+		## tier 3: last resort — spill into a full-but-thinned preferred formation's freed slots
 		for formation in formations:
 			var slot_index := formation.find_empty_slot()
 			if slot_index != -1:
@@ -305,8 +290,7 @@ func _is_entity_in_any_slot(entity: CDEntity) -> bool:
 			return true
 	return false
 
-## gather entities from all formation groups (deduplicated; active filtering
-## happens later in _auto_assign_slots)
+## gather entities from all formation groups (deduplicated; active filtering in _auto_assign_slots)
 func _gather_formation_entities() -> Array[CDEntity]:
 	return game.group_registry.get_groups_union(formation_groups, false)
 
@@ -325,8 +309,6 @@ func _is_in_formation_groups(entity: CDEntity) -> bool:
 			if entity.is_in_group(group_name):
 				return true
 		return false
-
-## --- reset ---
 
 ## clear all slots and animation state for game restart
 func reset() -> void:

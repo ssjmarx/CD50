@@ -1,7 +1,6 @@
-## CDSpawnContext
-## Configuration for spawned entities when they enter the tree
-## Applied by CDUtilities.apply_spawn_context() before entity enters tree
-
+## cd_spawn_context.gd
+## Produces: initial spawn state (velocity, rotation, randomization, extra groups).
+## Consumes: nothing — pure data applied by CDUtilities.apply_spawn_context().
 class_name CDSpawnContext extends Resource
 
 ## initial velocity (direction + speed)

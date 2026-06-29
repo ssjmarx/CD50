@@ -1,7 +1,6 @@
-## DamageOnCrashArm
-## Deals damage to the entity itself when it collides with anything
-## Emits take_damage on self, filtered by optional source_groups
-
+## damage_on_crash_arm.gd
+## Produces: self-damage on collision (writes damage/source keys, emits take_damage on self).
+## Consumes: collision signals; entity.blackboard; source_groups filter.
 class_name DamageOnCrashArm extends CDEntityComponent
 
 ## amount of damage to deal to self
@@ -20,7 +19,7 @@ class_name DamageOnCrashArm extends CDEntityComponent
 @export_group("Emit Signals")
 @export var damage_signals: Array[StringName] = [&"take_damage"]
 
-## ready
+## Set the interaction category before the base _ready arms lifecycle hooks.
 func _ready() -> void:
 	component_category = CDEnums.ComponentCategory.INTERACTION
 	super._ready()

@@ -1,9 +1,8 @@
+## vector_engine_face.gd
+## Produces: a single flickering exhaust flame rendered while thrusting.
+## Consumes: thrust_signal/thrust_signal_end entity bus signals.
+
 @tool
-
-## VectorEngineFace
-## Draws a single exhaust flame behind the entity when thrusting
-## Listens for thrust/end_thrust signals; flickers the flame tip on a timer
-
 class_name VectorEngineFace extends CDEntityComponent
 
 ## distance the flame extends from the entity center
@@ -55,15 +54,11 @@ var _timer: float = 0.0
 ## current random tip offset
 var _tip_flicker: float = 0.0
 
-## --- lifecycle ---
-
 ## connect thrust signals and disable processing until active
 func _on_initialize() -> void:
 	self.bus_connect(thrust_signal, _on_thrust)
 	self.bus_connect(end_thrust_signal, _on_end_thrust)
 	set_process(false)
-
-## --- signal handlers ---
 
 ## enable thrusting and start physics processing
 func _on_thrust() -> void:
@@ -76,8 +71,6 @@ func _on_end_thrust() -> void:
 	set_process(false)
 	queue_redraw()
 
-## --- processing ---
-
 ## redraw each frame in editor for live preview
 func _process(delta: float) -> void:
 	if Engine.is_editor_hint():
@@ -89,9 +82,7 @@ func _process(delta: float) -> void:
 			_timer = 0.0
 		queue_redraw()
 
-## --- drawing ---
-
-## on entity deactivating
+## Disconnect thrust signals and stop processing on deactivation.
 func _on_entity_deactivating() -> void:
 	super._on_entity_deactivating()
 	self.bus_disconnect(thrust_signal, _on_thrust)

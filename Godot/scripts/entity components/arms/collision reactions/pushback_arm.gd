@@ -1,7 +1,6 @@
-## PushbackArm
-## Applies a physical impulse to the collider on collision
-## Emits external_impulse on the collider, using collision normal or direction vector
-
+## pushback_arm.gd
+## Produces: a pushback impulse on collision (writes impulse key, emits external_impulse on the collider).
+## Consumes: collision signals + normal; target_groups filter.
 class_name PushbackArm extends CDEntityComponent
 
 ## magnitude of the pushback impulse
@@ -23,7 +22,7 @@ class_name PushbackArm extends CDEntityComponent
 @export_group("Emit Signals")
 @export var impulse_signals: Array[StringName] = [&"external_impulse"]
 
-## ready
+## Set the interaction category before the base _ready arms lifecycle hooks.
 func _ready() -> void:
 	component_category = CDEnums.ComponentCategory.INTERACTION
 	super._ready()

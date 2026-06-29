@@ -1,7 +1,6 @@
-## CDEntityComponent
-## Base class for all V2 entity-attached components
-## Provides two-phase lifecycle, cached entity/game refs, pool hooks, and bus tracking
-
+## cd_entity_component.gd
+## Produces: a resolved entity/game ref and tracked bus connections for a component.
+## Consumes: the entity tree (CDEntity/CDGame ancestors); bus signals.
 class_name CDEntityComponent extends Node2D
 
 @export var component_category: CDEnums.ComponentCategory
@@ -11,24 +10,20 @@ var entity: CDEntity
 var game: CDGame
 
 ## tracked bus connections for CDBody sleep/wake support
-var _bus_connections: Array[Dictionary] = []  # [{"signal_name": StringName, "callable": Callable}]
+var _bus_connections: Array[Dictionary] = []
 
-## --- Two-Phase Lifecycle ---
-
-## Phase 1: resolve refs, set priority, defer phase 2
+## Resolve refs, set priority, and defer phase 2 initialization.
 func _ready() -> void:
 	if Engine.is_editor_hint():
 		return
 
 	process_physics_priority = CDEnums.category_to_priority(component_category)
 
-	## walk tree to find parent entity
 	entity = CDEntity.find_ancestor(self)
 	if entity == null:
 		push_error("CDComponent2D '%s': no CDEntity ancestor found." % name)
 		return
 
-	## walk tree to find ancestor game
 	game = CDGame.find_ancestor(self)
 	if game == null:
 		push_error("CDComponent2D '%s': no CDGame ancestor found." % name)
@@ -36,7 +31,7 @@ func _ready() -> void:
 
 	call_deferred("_initialize")
 
-## Phase 2: connect lifecycle signals, then call virtual init
+## Connect lifecycle signals, then call the virtual init hook.
 func _initialize() -> void:
 	entity.connect("entity_deactivating", _on_entity_deactivating)
 	entity.connect("entity_activated", _on_entity_activated)
@@ -44,21 +39,21 @@ func _initialize() -> void:
 
 ## --- Virtual Methods ---
 
-## Override to connect entity/game bus signals and read sibling state
+## Override to connect entity/game bus signals and read sibling state.
 func _on_initialize() -> void:
 	pass
 
-## Override to reset internal state before pool return or deletion
+## Override to reset internal state before pool return or deletion.
 func _on_entity_deactivating() -> void:
 	set_physics_process(false)
 
-## Override to re-enable processing when recycled from pool
+## Override to re-enable processing when recycled from pool.
 func _on_entity_activated() -> void:
 	set_physics_process(true)
 
-## --- Bus Connection Tracking (for CDBody sleep/wake) ---
+## --- Bus Connection Tracking ---
 
-## Connect to entity bus and track the connection for CDBody sleep/wake
+## Connect to entity bus and track the connection for CDBody sleep/wake.
 func bus_connect(signal_name: StringName, callable: Callable) -> void:
 	if not entity.has_signal(signal_name):
 		entity.add_user_signal(signal_name)
@@ -90,12 +85,10 @@ func _exit_tree() -> void:
 		for entry in _bus_connections.duplicate():
 			entity.bus_disconnect(entry["signal_name"], entry["callable"])
 
-## --- Sleep/Wake Virtual Methods (called by CDBody) ---
-
-## Override to customize sleep behavior (clear timers, reset state, etc.)
+## Override to customize sleep behavior (clear timers, reset state, etc.).
 func _on_sleep() -> void:
 	set_physics_process(false)
 
-## Override to customize wake behavior (restart timers, re-query state, etc.)
+## Override to customize wake behavior (restart timers, re-query state, etc.).
 func _on_wake() -> void:
 	set_physics_process(true)

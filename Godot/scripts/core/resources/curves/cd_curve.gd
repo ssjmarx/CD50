@@ -1,7 +1,6 @@
-## CDCurve
-## Abstract base class for all path curve resources
-## Provides shared exports (resolution, seed, offset, reverse) and utility methods
-
+## cd_curve.gd
+## Produces: an abstract base contract for procedural path curves (Curve2D).
+## Consumes: nothing — base class; subclasses consume start/end points.
 @tool
 class_name CDCurve extends Resource
 
@@ -29,16 +28,14 @@ class_name CDCurve extends Resource
 		reverse = v
 		emit_changed()
 
-## --- Abstract Interface ---
-
-## override in subclasses to generate a specific curve shape
+## Override in subclasses to generate a specific curve shape.
 func generate_curve(_start: Vector2, _end: Vector2) -> Curve2D:
 	push_error("CDCurve.generate_curve() is abstract — override in %s" % get_class())
 	return null
 
 ## --- Post-Processing ---
 
-## shift all curve points by the offset export
+## Shift all curve points by the offset export.
 func _apply_offset(curve: Curve2D) -> Curve2D:
 	if offset == Vector2.ZERO:
 		return curve
@@ -51,7 +48,7 @@ func _apply_offset(curve: Curve2D) -> Curve2D:
 		curve.add_point(p + offset)
 	return curve
 
-## reverse point order if the reverse export is set
+## Reverse point order if the reverse export is set.
 func _reverse_curve(curve: Curve2D) -> Curve2D:
 	if not reverse:
 		return curve
@@ -64,23 +61,19 @@ func _reverse_curve(curve: Curve2D) -> Curve2D:
 		curve.add_point(p)
 	return curve
 
-## apply offset then reverse — call at end of generate_curve
+## Apply offset then reverse — call at end of generate_curve.
 func _finalize(curve: Curve2D) -> Curve2D:
 	return _reverse_curve(_apply_offset(curve))
 
-## --- Reset ---
-
-## override in subclasses that hold mutable state (e.g. CDSequenceCurve)
+## Override in subclasses that hold mutable state (e.g. CDSequenceCurve).
 func reset() -> void:
 	pass
 
-## --- Utility ---
-
-## golden-ratio-based phase offset for per-instance variation
+## Golden-ratio-based phase offset for per-instance variation.
 func _get_phase() -> float:
 	return float(curve_seed) * 0.618 * TAU if curve_seed != 0 else 0.0
 
-## interpolated position along start→end with sin-based depth
+## Interpolated position along start→end with sin-based depth.
 func _base_position(start: Vector2, end: Vector2, t: float) -> Vector2:
 	var depth := sin(PI * t)
 	return Vector2(

@@ -1,6 +1,6 @@
 ## SignalManager
-## Data-driven signal macro — turns one trigger into a timed sequence of game bus signals
-## Each step fires its signals, waits a delay, optionally waits for a sync signal, then advances
+## Produces: a timed sequence of game bus signals from one trigger signal.
+## Consumes: game bus trigger signal + CDManagerStep resources.
 
 class_name SignalManager extends CDGameComponent
 
@@ -35,8 +35,6 @@ var _signal_fire_count: int = 0
 ## is the sequence actively running?
 var _running: bool = false
 
-## --- lifecycle ---
-
 func _ready() -> void:
 	component_category = CDEnums.ComponentCategory.MANAGER
 	super._ready()
@@ -50,23 +48,21 @@ func _on_initialize() -> void:
 
 ## poll trigger each frame, tick the delay/wait timer when running
 func _physics_process(delta: float) -> void:
-	# poll trigger to start sequence
+	## idle: poll the trigger to (re)start the sequence
 	if not _running:
 		if trigger and trigger.evaluate(delta):
 			_start_sequence()
 		return
 
-	# if waiting for sync signal, don't tick delay
+	## waiting on a sync signal: hold the delay countdown
 	if _waiting_for_signal:
 		return
 
-	# count down delay
+	## count down the delay to the next step
 	_delay_remaining -= delta
 	if _delay_remaining <= 0.0:
 		_delay_remaining = 0.0
 		_advance()
-
-## --- sequence control ---
 
 ## start the sequence
 func _start_sequence() -> void:
@@ -82,15 +78,15 @@ func _start_sequence() -> void:
 func _execute_step() -> void:
 	var step: CDSequenceStep = steps[_current_step]
 
-	# fire all signals for this step
+	## emit every signal declared on this step
 	for sig in step.signals:
 		if sig != &"":
 			game.bus_emit(sig)
 
-	# set delay timer
+	## arm the delay timer for this step
 	_delay_remaining = step.delay_after
 
-	# if step has a sync signal, set up wait
+	## if a sync gate is configured, subscribe and wait for it
 	if step.wait_for_signal != &"" and step.wait_count > 0:
 		_signal_fire_count = 0
 		_waiting_for_signal = true
@@ -98,7 +94,7 @@ func _execute_step() -> void:
 	else:
 		_waiting_for_signal = false
 
-	# if no delay and no wait, advance immediately
+	## neither delay nor gate: advance at once
 	if _delay_remaining <= 0.0 and not _waiting_for_signal:
 		_advance()
 	else:
@@ -107,7 +103,7 @@ func _execute_step() -> void:
 ## called when delay expires — either advances or waits for sync
 func _advance() -> void:
 	if _waiting_for_signal:
-		return  # will advance when sync signal fires
+		return  ## will advance when sync signal fires
 	_next_step()
 
 ## move to the next step or complete the sequence
@@ -124,15 +120,13 @@ func _next_step() -> void:
 func _on_sync_signal() -> void:
 	_signal_fire_count += 1
 	if _signal_fire_count >= steps[_current_step].wait_count:
-		# disconnect sync listener
+		## tear down the sync subscription now that the gate is satisfied
 		var sync_sig: StringName = steps[_current_step].wait_for_signal
 		game.bus_disconnect(sync_sig, _on_sync_signal)
 		_waiting_for_signal = false
-		# if delay also expired, advance; otherwise wait for delay
+		## if the delay already elapsed, advance; else wait it out
 		if _delay_remaining <= 0.0:
 			_next_step()
-
-## --- sync signal handling helpers ---
 
 ## disconnect the current step's sync listener if still connected (defensive cleanup)
 func _disconnect_sync_listener() -> void:
@@ -141,8 +135,6 @@ func _disconnect_sync_listener() -> void:
 		if sync_sig != &"" and game.has_signal(sync_sig) and game.is_connected(sync_sig, _on_sync_signal):
 			game.bus_disconnect(sync_sig, _on_sync_signal)
 	_waiting_for_signal = false
-
-## --- completion ---
 
 ## defensively disconnect any lingering sync listener, emit completion signals, stop processing
 func _complete() -> void:
@@ -153,8 +145,6 @@ func _complete() -> void:
 	for sig in on_sequence_complete:
 		if sig != &"":
 			game.bus_emit(sig)
-
-## --- reset ---
 
 ## reset sequence state for game restart
 func reset() -> void:

@@ -1,6 +1,6 @@
-## DieAtZeroHealthGuts
-## Kills the entity when health reaches zero
-## Bridges HealthpoolGuts' zero_health signal to entity deactivation
+## die_at_zero_health_guts.gd
+## Produces: a death request when health hits zero.
+## Consumes: zero_health_signals (entity bus).
 
 class_name DieAtZeroHealthGuts extends CDEntityComponent
 
@@ -16,26 +16,26 @@ class_name DieAtZeroHealthGuts extends CDEntityComponent
 
 ## --- lifecycle ---
 
-## ready
+## Set the state component category before the base _ready lifecycle.
 func _ready() -> void:
 	component_category = CDEnums.ComponentCategory.STATE
 	super._ready()
 
-## on initialize
+## Connect each zero-health signal to the death handler.
 func _on_initialize() -> void:
 	for sig in zero_health_signals:
 		self.bus_connect(sig, _on_zero_health)
 
 ## --- signal handlers ---
 
-## on zero health
+## Emit each configured death signal to request entity deactivation.
 func _on_zero_health() -> void:
 	for sig in death_signals:
 		entity.bus_emit(sig)
 
 ## --- cleanup ---
 
-## on entity deactivating
+## Disconnect zero-health signal handlers on deactivation.
 func _on_entity_deactivating() -> void:
 	super._on_entity_deactivating()
 	for sig in zero_health_signals:

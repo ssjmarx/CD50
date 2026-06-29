@@ -1,6 +1,6 @@
-## LockDetectorGuts
-## Detects when a grid entity can't fall further and manages lock delay
-## Implements SRS-style lock delay with move/rotate reset limits (Tetris) Reads step direction from entity blackboard
+## lock_detector_guts.gd
+## Produces: piece_locked signal after SRS-style lock delay, with move/rotate reset limits.
+## Consumes: direction_key (entity blackboard); step_blocked, moved, rotated signals.
 
 class_name LockDetectorGuts extends CDEntityComponent
 
@@ -37,12 +37,12 @@ var _reset_count: int = 0
 
 ## --- lifecycle ---
 
-## ready
+## Set the state component category before the base _ready lifecycle.
 func _ready() -> void:
 	component_category = CDEnums.ComponentCategory.STATE
 	super._ready()
 
-## on initialize
+## Connect step_blocked, moved, and rotated listeners during initialization.
 func _on_initialize() -> void:
 	for sig in step_blocked_signals:
 		self.bus_connect(sig, _on_step_blocked)
@@ -75,7 +75,7 @@ func _on_rotated() -> void:
 
 ## --- processing ---
 
-## physics process
+## Tick the lock timer; emit piece_locked when it expires.
 func _physics_process(delta: float) -> void:
 	if not _is_locking:
 		return
@@ -86,7 +86,7 @@ func _physics_process(delta: float) -> void:
 
 ## --- helpers ---
 
-## try reset timer
+## Reset the lock timer on a move/rotate if still under the reset limit.
 func _try_reset_timer() -> void:
 	if not _is_locking:
 		return
@@ -96,7 +96,7 @@ func _try_reset_timer() -> void:
 	_reset_count += 1
 	_lock_timer = lock_delay
 
-## lock
+## Stop locking and emit piece_locked.
 func _lock() -> void:
 	_is_locking = false
 	_lock_timer = 0.0
@@ -107,7 +107,7 @@ func _lock() -> void:
 
 ## --- cleanup ---
 
-## on entity deactivating
+## Disconnect listeners and reset lock state on deactivation.
 func _on_entity_deactivating() -> void:
 	super._on_entity_deactivating()
 	_is_locking = false
@@ -121,7 +121,7 @@ func _on_entity_deactivating() -> void:
 		self.bus_disconnect(sig, _on_rotated)
 	set_physics_process(false)
 
-## on entity activated
+## Reset lock state and re-enable physics processing on activation.
 func _on_entity_activated() -> void:
 	super._on_entity_activated()
 	_is_locking = false

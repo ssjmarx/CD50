@@ -1,7 +1,6 @@
-## CDArcCurve
-## Arc / semicircle curve between two points
-## Bulges perpendicular to the travel direction with configurable height
-
+## cd_arc_curve.gd
+## Produces: a semicircular arc curve between two points (configurable height).
+## Consumes: nothing — pure data resource consumed by curve users (Legs).
 @tool
 class_name CDArcCurve extends CDCurve
 

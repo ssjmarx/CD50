@@ -1,7 +1,6 @@
-## CDSquareWaveCurve
-## Square wave curve — sharp 90° transitions between high and low
-## Returns to start point (closed loop)
-
+## cd_square_wave_curve.gd
+## Produces: a closed square wave curve (sharp high/low transitions).
+## Consumes: nothing — pure data resource consumed by curve users (Legs).
 @tool
 class_name CDSquareWaveCurve extends CDCurve
 

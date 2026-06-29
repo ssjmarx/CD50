@@ -1,6 +1,6 @@
 ## SoundVoice
-## Plays a one-shot procedural sound or jingle via CDSoundBank
-## Triggered by entity bus signal, supports exclusive playback
+## Produces: a one-shot procedural sound or jingle via CDSoundBank.
+## Consumes: entity bus trigger signal; CDSoundBank sound signature.
 
 @tool
 class_name SoundVoice extends CDEntityComponent
@@ -19,8 +19,6 @@ class_name SoundVoice extends CDEntityComponent
 @export var exclusive: bool = false
 ## suppress playback when game state is not PLAYING
 @export var gameplay_only: bool = false
-
-## --- preview ---
 
 @export_group("Preview")
 enum PreviewAction { NONE, PLAY, STOP }
@@ -42,8 +40,6 @@ var _bank: CDSoundBank
 ## editor-only audio player for preview
 var _preview_player: AudioStreamPlayer
 
-## --- lifecycle ---
-
 ## use the game-level sound_bank ref (resolved by CDGame), connect trigger signal, auto-play
 func _on_initialize() -> void:
 	_bank = game.sound_bank
@@ -54,17 +50,12 @@ func _on_initialize() -> void:
 	if play_on_spawn:
 		_try_play()
 
-## --- signal handlers ---
-
 ## play sound when triggered
 func _on_trigger() -> void:
 	_try_play()
 
-## --- playback ---
-
 ## attempt to play the sound through the bank
 func _try_play() -> void:
-	#print("[SoundVoice] bank=", _bank, " sound=", sound, " gameplay_only=", gameplay_only, " state=", game.current_state if game else "no game")
 	if sound == null or _bank == null:
 		return
 	if gameplay_only and game.current_state != CDEnums.GameState.PLAYING:
@@ -72,15 +63,11 @@ func _try_play() -> void:
 	_bank.play_one_shot(sound, entity.global_position, positional,
 		exclusive, get_instance_id())
 
-## --- cleanup ---
-
 ## disconnect trigger signal on entity deactivation
 func _on_entity_deactivating() -> void:
 	super._on_entity_deactivating()
 	if trigger_signal != &"" and entity.has_signal(trigger_signal):
 		entity.disconnect(trigger_signal, _on_trigger)
-
-## --- preview ---
 
 ## start editor preview playback
 func _preview_play() -> void:

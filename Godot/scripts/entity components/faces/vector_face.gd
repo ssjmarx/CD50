@@ -1,9 +1,8 @@
+## vector_face.gd
+## Produces: polyline rendering from CDShape resources with open/closed frame bindings.
+## Consumes: CDFaceBinding signals; optional shape_points blackboard override.
+
 @tool
-
-## VectorFace
-## Draws polylines from CDShape resources with open/closed support
-## Base class for MenacingVectorFace; supports signal-to-frame bindings via CDFaceBinding
-
 class_name VectorFace extends CDEntityComponent
 
 ## --- export setters for editor live preview ---
@@ -48,8 +47,6 @@ var _current_closed: bool = true
 ## timer for auto-restore after binding trigger
 var _restore_timer: SceneTreeTimer
 
-## --- lifecycle ---
-
 ## connect bindings and set default frame
 func _on_initialize() -> void:
 	for binding in bindings:
@@ -68,8 +65,6 @@ func _process(_delta: float) -> void:
 			_current_points = points
 			_current_closed = true
 			queue_redraw()
-
-## --- signal handlers ---
 
 ## switch to binding's frame, optionally schedule restore
 func _on_binding_signal(binding: CDFaceBinding = null) -> void:
@@ -94,8 +89,6 @@ func _on_restore() -> void:
 		_current_closed = shapes[default_frame].closed
 	queue_redraw()
 
-## --- drawing ---
-
 ## draw the current polyline, closing the loop if _current_closed
 func _draw() -> void:
 	if _current_points.size() < 2:
@@ -109,9 +102,7 @@ func _draw() -> void:
 	else:
 		draw_polyline(_current_points, color, width, true)
 
-## --- helpers ---
-
-## on entity deactivating
+## Disconnect each binding signal on deactivation.
 func _on_entity_deactivating() -> void:
 	super._on_entity_deactivating()
 	for binding in bindings:

@@ -1,7 +1,6 @@
-## CDTrigger
-## Abstract base class for all state machine transition triggers
-## Two flavors: evaluative (continuous condition) and event (moment-based)
-
+## cd_trigger.gd
+## Produces: an abstract trigger contract (event vs evaluative) for state transitions.
+## Consumes: an injected CDGame ref (cached via initialize).
 class_name CDTrigger extends Resource
 
 ## true = continuous condition check, false = moment-based event

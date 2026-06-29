@@ -1,7 +1,6 @@
-## CDDirectorRule
-## One entity swap rule for StageDirector
-## When trigger signals fire, selected entities are swapped to a new scene
-
+## cd_director_rule.gd
+## Produces: an entity swap rule (scene replacement for selected entities).
+## Consumes: nothing — pure data resource consumed by StageDirector.
 class_name CDDirectorRule extends Resource
 
 ## game bus signals that activate this rule

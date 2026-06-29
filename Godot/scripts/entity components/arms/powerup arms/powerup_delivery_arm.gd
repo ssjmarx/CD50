@@ -1,7 +1,6 @@
-## PowerUpDeliveryArm
-## Delivers a powerup to whatever the entity collides with
-## Emits receive_powerup(powerup_id, entity) on the collider
-
+## powerup_delivery_arm.gd
+## Produces: a powerup delivery payload on collision (writes powerup_id + source to collider blackboard, emits receive_powerup).
+## Consumes: collision signals; powerup_id; target_groups filter.
 class_name PowerUpDeliveryArm extends CDEntityComponent
 
 ## identifier for the powerup being delivered
@@ -20,12 +19,12 @@ class_name PowerUpDeliveryArm extends CDEntityComponent
 @export_group("Emit Signals")
 @export var deliver_signals: Array[StringName] = [&"receive_powerup"]
 
-## ready
+## Set the interaction category before the base _ready arms lifecycle hooks.
 func _ready() -> void:
 	component_category = CDEnums.ComponentCategory.INTERACTION
 	super._ready()
 
-## connect collision signals
+## Connect each collision signal to the delivery handler during initialization.
 func _on_initialize() -> void:
 	for sig in collision_signals:
 		entity.connect(sig, _on_collision)
