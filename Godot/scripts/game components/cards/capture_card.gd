@@ -1,6 +1,7 @@
 ## CaptureCard
 ## Produces: a game-blackboard count of currently captured entities.
 ## Consumes: game.blackboard["captured_entity"] + capture/rescue game bus signals.
+@tool
 
 class_name CaptureCard extends CDCueCard
 

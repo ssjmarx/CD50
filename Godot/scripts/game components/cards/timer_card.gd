@@ -1,6 +1,7 @@
 ## TimerCard
 ## Produces: current_time on game.blackboard + tick/expired game bus signals.
 ## Consumes: game bus start/pause/resume/reset timer signals.
+@tool
 
 class_name TimerCard extends CDCueCard
 

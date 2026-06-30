@@ -1,6 +1,7 @@
 ## LivesCard
 ## Produces: current_lives on game.blackboard + changed/depleted game bus signals.
 ## Consumes: game bus add_life/lose_life signals.
+@tool
 
 class_name LivesCard extends CDCueCard
 

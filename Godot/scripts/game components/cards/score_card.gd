@@ -1,6 +1,7 @@
 ## ScoreCard
 ## Produces: current_score on game.blackboard + changed game bus signals.
 ## Consumes: game bus add_score/set_score signals.
+@tool
 
 class_name ScoreCard extends CDCueCard
 
@@ -69,7 +70,7 @@ func _on_initialize() -> void:
 
 ## read pending add delta from blackboard, apply multiplier, publish new score
 func _on_add_score() -> void:
-	var delta: int = _consume_pending(pending_add_key, 0)
+	var delta: int = _consume_pending(pending_add_key, 1)
 	if delta == 0:
 		return
 	current_score += int(delta * current_multiplier)
@@ -91,7 +92,7 @@ func _on_set_score() -> void:
 
 ## read pending multiplier add delta from blackboard
 func _on_add_multiplier() -> void:
-	var delta: float = _consume_pending(pending_mult_add_key, 0.0)
+	var delta: float = _consume_pending(pending_mult_add_key, 1.0)
 	if delta == 0.0:
 		return
 	current_multiplier += delta

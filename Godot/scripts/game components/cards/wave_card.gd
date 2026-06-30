@@ -1,6 +1,7 @@
 ## WaveCard
 ## Produces: current_wave on game.blackboard + wave_started/wave_changed game bus signals.
 ## Consumes: game bus next_wave/advance_wave signals.
+@tool
 
 class_name WaveCard extends CDCueCard
 
