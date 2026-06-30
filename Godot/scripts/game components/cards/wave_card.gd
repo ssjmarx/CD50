@@ -38,9 +38,11 @@ var current_wave: int
 ## initialize wave count and display
 func _ready() -> void:
 	super._ready()
+	if label_prefix.is_empty():
+		label_prefix = "Wave "
 	current_wave = starting_wave
 	_update_preview()
-	_update_label("Wave %d" % current_wave)
+	_update_label(str(current_wave))
 
 ## connect advance and reset signals to the game bus
 func _on_initialize() -> void:
@@ -53,7 +55,7 @@ func _on_initialize() -> void:
 
 ## emit current wave, then increment for next call
 func _advance_wave() -> void:
-	_update_label("Wave %d" % current_wave)
+	_update_label(str(current_wave))
 	_publish_tracked(wave_key, current_wave)
 	## emit before incrementing so listeners get the correct wave
 	for sig in on_wave_start:
@@ -65,12 +67,12 @@ func _advance_wave() -> void:
 ## reset wave to starting value
 func _reset_wave() -> void:
 	current_wave = starting_wave
-	_update_label("Wave %d" % current_wave)
+	_update_label(str(current_wave))
 	_publish_tracked(wave_key, current_wave)
 	for sig in on_wave_changed:
 		game.bus_emit(sig)
 
 ## updates the editor preview text based on starting wave
 func _update_preview() -> void:
-	_preview_value = "Wave %d" % starting_wave
+	_preview_value = str(starting_wave)
 	_update_interface()

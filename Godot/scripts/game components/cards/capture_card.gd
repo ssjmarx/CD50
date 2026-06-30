@@ -25,7 +25,9 @@ var _captured_entities: Array[CDEntity] = []
 ## initialize preview text
 func _ready() -> void:
 	super._ready()
-	_preview_value = "CAPTURE: 0"
+	if label_prefix.is_empty():
+		label_prefix = "CAPTURE: "
+	_preview_value = "0"
 	_update_interface()
 
 ## on initialize
@@ -81,4 +83,4 @@ func _update_count() -> void:
 	var count: int = _captured_entities.size()
 	game.blackboard[count_key] = count
 	
-	_update_label("CAPTURE: %d" % count)
+	_update_label(str(count))
