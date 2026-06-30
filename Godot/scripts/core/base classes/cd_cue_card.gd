@@ -1,7 +1,8 @@
-@tool
 ## cd_cue_card.gd
 ## Produces: UI label text and tracked blackboard values for display components.
 ## Consumes: game.blackboard pending keys; subclass display state.
+@tool
+
 class_name CDCueCard extends CDGameControl
 
 ## when true, auto-create a child Label for text display
