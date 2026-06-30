@@ -64,6 +64,9 @@ func _on_initialize() -> void:
 
 ## advance or decrement time each physics frame
 func _physics_process(delta: float) -> void:
+	if Engine.is_editor_hint():
+		return
+		
 	if not _is_running:
 		return
 
