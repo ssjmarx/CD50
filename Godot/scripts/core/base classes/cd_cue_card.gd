@@ -32,6 +32,9 @@ class_name CDCueCard extends CDGameControl
 ## programmatically created label (only active during runtime)
 var _label: Label
 
+## virtual property overridden by subclasses for editor preview text
+var _preview_value: String = "Preview"
+
 ## Run base lifecycle, then sync the auto-label if enabled.
 func _ready() -> void:
 	super._ready()
@@ -42,7 +45,7 @@ func _draw() -> void:
 	if Engine.is_editor_hint() and is_interface:
 		var font := get_theme_default_font()
 		if font:
-			var text := label_prefix + "Preview" + label_suffix
+			var text := label_prefix + _preview_value + label_suffix
 			var pos := Vector2(0, font.get_ascent(font_size))
 			draw_string(font, pos, text, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, Color.WHITE)
 
@@ -52,10 +55,10 @@ func _update_interface() -> void:
 		return
 		
 	if Engine.is_editor_hint():
-		# Force the editor viewport to refresh the _draw() preview
+		## Force the editor viewport to refresh the _draw() preview
 		queue_redraw()
 	else:
-		# Runtime behavior: create the actual Label node
+		## Runtime behavior: create the actual Label node
 		if is_interface:
 			if not _label:
 				_label = Label.new()

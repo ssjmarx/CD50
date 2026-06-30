@@ -22,9 +22,11 @@ class_name CaptureCard extends CDCueCard
 
 var _captured_entities: Array[CDEntity] = []
 
-## ready
+## initialize preview text
 func _ready() -> void:
 	super._ready()
+	_preview_value = "CAPTURE: 0"
+	_update_interface()
 
 ## on initialize
 func _on_initialize() -> void:

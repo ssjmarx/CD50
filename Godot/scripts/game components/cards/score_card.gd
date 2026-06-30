@@ -8,7 +8,10 @@ class_name ScoreCard extends CDCueCard
 ## --- exports ---
 
 ## score at game start
-@export var starting_score: int = 0
+@export var starting_score: int = 0:
+	set(value):
+		starting_score = value
+		_update_preview()
 ## multiplier at game start
 @export var starting_multiplier: float = 1.0
 
@@ -53,6 +56,7 @@ func _ready() -> void:
 	super._ready()
 	current_score = starting_score
 	current_multiplier = starting_multiplier
+	_update_preview()
 	_update_label(str(current_score))
 
 ## connect all listen signals to the game bus
@@ -107,3 +111,8 @@ func _on_set_multiplier() -> void:
 	_publish_tracked(multiplier_key, current_multiplier)
 	for sig in on_multiplier_changed:
 		game.bus_emit(sig)
+
+## updates the editor preview text based on starting score
+func _update_preview() -> void:
+	_preview_value = str(starting_score)
+	_update_interface()

@@ -12,7 +12,10 @@ enum TimerMode { COUNT_UP, COUNT_DOWN }
 ## direction of time tracking
 @export var mode: TimerMode = TimerMode.COUNT_DOWN
 ## starting time in seconds
-@export var starting_time: float = 60.0
+@export var starting_time: float = 60.0:
+	set(value):
+		starting_time = value
+		_update_preview()
 ## seconds between label updates and tick signals
 @export var tick_interval: float = 1.0
 
@@ -46,6 +49,7 @@ var _is_running: bool = true
 func _ready() -> void:
 	super._ready()
 	current_time = starting_time
+	_update_preview()
 	_update_label(_format_time(current_time))
 
 ## connect control signals to the game bus
@@ -113,3 +117,8 @@ func _format_time(time: float) -> String:
 	var minutes = int(time) / 60
 	var seconds = int(time) % 60
 	return "%d:%02d" % [minutes, seconds]
+
+## updates the editor preview text based on starting time
+func _update_preview() -> void:
+	_preview_value = _format_time(starting_time)
+	_update_interface()

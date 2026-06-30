@@ -8,7 +8,10 @@ class_name LivesCard extends CDCueCard
 ## --- exports ---
 
 ## number of lives at game start
-@export var starting_lives: int = 3
+@export var starting_lives: int = 3:
+	set(value):
+		starting_lives = value
+		_update_preview()
 
 @export_group("Blackboard Keys")
 ## key for publishing current lives to game blackboard
@@ -36,6 +39,7 @@ var current_lives: int
 func _ready() -> void:
 	super._ready()
 	current_lives = starting_lives
+	_update_preview()
 	_update_label(str(current_lives))
 
 ## connect listen signals to the game bus
@@ -65,3 +69,8 @@ func _on_life_gained() -> void:
 	_publish_tracked(lives_key, current_lives)
 	for sig in on_lives_changed:
 		game.bus_emit(sig)
+
+## updates the editor preview text based on starting lives
+func _update_preview() -> void:
+	_preview_value = str(starting_lives)
+	_update_interface()
