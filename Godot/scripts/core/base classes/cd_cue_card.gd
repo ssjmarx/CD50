@@ -29,7 +29,7 @@ class_name CDCueCard extends CDGameControl
 		label_suffix = value
 		_update_interface()
 
-## programmatically created label (only if is_interface is true)
+## programmatically created label (only active during runtime)
 var _label: Label
 
 ## Run base lifecycle, then sync the auto-label if enabled.
@@ -37,22 +37,33 @@ func _ready() -> void:
 	super._ready()
 	_update_interface()
 
-## Create, destroy, or format the auto-label based on configuration.
+## Draws an editor-only preview without adding nodes to the scene tree.
+func _draw() -> void:
+	if Engine.is_editor_hint() and is_interface:
+		var font := get_theme_default_font()
+		if font:
+			var text := label_prefix + "Preview" + label_suffix
+			var pos := Vector2(0, font.get_ascent(font_size))
+			draw_string(font, pos, text, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, Color.WHITE)
+
+## Manage the runtime label or request an editor redraw.
 func _update_interface() -> void:
 	if not is_inside_tree():
 		return
-	if is_interface:
-		if not _label:
-			_label = Label.new()
-			add_child(_label)
-			if Engine.is_editor_hint():
-				_label.owner = get_tree().edited_scene_root
-		if Engine.is_editor_hint():
-			_label.text = label_prefix + "Preview" + label_suffix
-		_label.add_theme_font_size_override("font_size", font_size)
-	elif _label:
-		_label.queue_free()
-		_label = null
+		
+	if Engine.is_editor_hint():
+		# Force the editor viewport to refresh the _draw() preview
+		queue_redraw()
+	else:
+		# Runtime behavior: create the actual Label node
+		if is_interface:
+			if not _label:
+				_label = Label.new()
+				add_child(_label)
+			_label.add_theme_font_size_override("font_size", font_size)
+		elif _label:
+			_label.queue_free()
+			_label = null
 
 ## Set the auto-label's text; call from subclasses when displayed state changes.
 func _update_label(text: String) -> void:
