@@ -3,6 +3,9 @@
 ## Consumes: target_groups via game.group_registry; move_key/distance_key blackboard keys.
 class_name AIChaseBrain extends CDEntityComponent
 
+## locks movement and distance calculations to a specific axis
+enum AxisMode { NONE, X, Y }
+
 ## groups to search for chase targets
 @export var target_groups: Array[StringName] = [&"enemies"]
 
@@ -14,6 +17,9 @@ class_name AIChaseBrain extends CDEntityComponent
 
 ## random offset added to target position for imprecision
 @export var targeting_noise: float = 0.0
+
+## restricts movement intent to a single axis (useful for Pong paddles)
+@export var axis_mode: AxisMode = AxisMode.NONE
 
 @export var move_key: StringName = &"move_direction"
 @export var distance_key: StringName = &"move_distance"
@@ -52,7 +58,24 @@ func _physics_process(delta: float) -> void:
 		return
 
 	var target_pos := _apply_noise(target.global_position)
-	var distance := entity.global_position.distance_to(target_pos)
+	var distance := 0.0
+	var direction := Vector2.ZERO
+
+	## calculate distance and direction based on axis lock mode
+	match axis_mode:
+		AxisMode.X:
+			var delta_x := target_pos.x - entity.global_position.x
+			distance = abs(delta_x)
+			if distance > 0.0:
+				direction = Vector2(sign(delta_x), 0.0)
+		AxisMode.Y:
+			var delta_y := target_pos.y - entity.global_position.y
+			distance = abs(delta_y)
+			if distance > 0.0:
+				direction = Vector2(0.0, sign(delta_y))
+		AxisMode.NONE:
+			distance = entity.global_position.distance_to(target_pos)
+			direction = entity.global_position.direction_to(target_pos)
 
 	## stop if within range
 	if distance <= stop_distance:
@@ -63,7 +86,7 @@ func _physics_process(delta: float) -> void:
 		return
 
 	## emit direction toward target
-	_last_direction = entity.global_position.direction_to(target_pos)
+	_last_direction = direction
 	_last_distance = distance
 	entity.blackboard[move_key] = _last_direction
 	entity.blackboard[distance_key] = _last_distance
