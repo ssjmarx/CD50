@@ -1,0 +1,34 @@
+[gd_scene load_steps=6 format=3 uid="uid://dj4t11rb8gd7q"]
+
+[ext_resource type="PackedScene" uid="uid://cym7piqe1eqjf" path="res://entities/generic/ball_deflecting_x.tscn" id="1_rjrj3"]
+[ext_resource type="PackedScene" uid="uid://2ly0o8i8hpx4" path="res://scenes/entity components/legs/other/speed_cap_leg.tscn" id="2_x1fy7"]
+[ext_resource type="PackedScene" uid="uid://ruar6jbjbodk" path="res://scenes/entity components/guts/death/die_offscreen_guts.tscn" id="3_7qgey"]
+[ext_resource type="PackedScene" uid="uid://c4jinp88xtitl" path="res://scenes/entity components/voices/sound_voice.tscn" id="4_vhsp5"]
+[ext_resource type="PackedScene" uid="uid://sq4hhfy1jrt" path="res://scenes/entity components/arms/collision reactions/damage_on_crash_arm.tscn" id="5_n6hh7"]
+
+[node name="Ball" instance=ExtResource("1_rjrj3")]
+
+[node name="DeflectorBounceGuts" parent="." index="1"]
+restitution = 1.2
+
+[node name="SpeedCapLeg" parent="." index="2" instance=ExtResource("2_x1fy7")]
+max_speed = 850.0
+
+[node name="DieOffscreenGuts" parent="." index="3" instance=ExtResource("3_7qgey")]
+activation_delay = 1.0
+
+[node name="VisibleOnScreenNotifier2D" parent="DieOffscreenGuts" index="0"]
+rect = Rect2(-2, -2, 4, 4)
+show_rect = false
+
+[node name="SoundVoice" parent="." index="4" instance=ExtResource("4_vhsp5")]
+trigger_signal = &"bounce"
+exclusive = true
+
+[node name="DamageOnCrashArm" parent="." index="5" instance=ExtResource("5_n6hh7")]
+damage_amount = 0
+damage_keys = Array[StringName]([])
+source_keys = Array[StringName]([])
+damage_signals = Array[StringName]([&"bounce"])
+
+[editable path="DieOffscreenGuts"]

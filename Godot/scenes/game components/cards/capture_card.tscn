@@ -1,8 +1,9 @@
 [gd_scene load_steps=2 format=3 uid="uid://bxq8y6t7j8kmq"]
 
-[ext_resource type="Script" path="res://scripts/game components/cards/capture_card.gd" id="1_12345"]
+[ext_resource type="Script" uid="uid://sodi16t12vi7" path="res://scripts/game components/cards/capture_card.gd" id="1_12345"]
 
 [node name="CaptureCard" type="Control"]
 layout_mode = 3
 anchors_preset = 0
 script = ExtResource("1_12345")
+label_prefix = "CAPTURES: "

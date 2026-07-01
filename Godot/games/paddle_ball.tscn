@@ -1,4 +1,4 @@
-[gd_scene load_steps=25 format=3 uid="uid://b1p2wk4pepc53"]
+[gd_scene load_steps=28 format=3 uid="uid://b1p2wk4pepc53"]
 
 [ext_resource type="Script" uid="uid://dm0uehngpvbh7" path="res://scripts/core/infrastructure/cd_game.gd" id="1_g3say"]
 [ext_resource type="PackedScene" path="res://scenes/core/infrastructure/cd_stage.tscn" id="1_h58hb"]
@@ -13,10 +13,11 @@
 [ext_resource type="PackedScene" uid="uid://ows1gmiy0l6d" path="res://entities/player/paddle_player.tscn" id="10_pukhu"]
 [ext_resource type="PackedScene" uid="uid://bmy2rp5mjhdpa" path="res://entities/nonplayer/paddle_nonplayer.tscn" id="12_o2cdy"]
 [ext_resource type="PackedScene" uid="uid://b1e365cvr1e8p" path="res://scenes/game components/trapdoors/point_trapdoor.tscn" id="13_m4tg4"]
-[ext_resource type="PackedScene" uid="uid://cym7piqe1eqjf" path="res://entities/generic/ball_deflecting_x.tscn" id="14_1sbg1"]
 [ext_resource type="Script" uid="uid://dcu4ocnin0htu" path="res://scripts/core/resources/spawners/cd_spawn_context.gd" id="14_aydlw"]
+[ext_resource type="PackedScene" uid="uid://dj4t11rb8gd7q" path="res://entities/generic/paddle_ball_ball.tscn" id="16_40g2u"]
 [ext_resource type="PackedScene" uid="uid://d4b42pvesykqo" path="res://scenes/game components/marks/cd_mark.tscn" id="16_i1yaf"]
 [ext_resource type="PackedScene" uid="uid://c4upbp1v4vll8" path="res://scenes/game components/cards/score_card.tscn" id="17_04mnm"]
+[ext_resource type="PackedScene" uid="uid://dktl3ojawgcf7" path="res://scenes/effects/checkerboard_effect.tscn" id="18_40g2u"]
 
 [sub_resource type="Resource" id="Resource_i1yaf"]
 script = ExtResource("6_1sbg1")
@@ -31,13 +32,20 @@ metadata/_custom_type_script = "uid://b2ibop6r2cryj"
 [sub_resource type="Resource" id="Resource_40g2u"]
 script = ExtResource("6_1sbg1")
 group_name = &"goals"
+collides_with = Array[StringName]([&"balls"])
 metadata/_custom_type_script = "uid://b2ibop6r2cryj"
 
 [sub_resource type="Resource" id="Resource_pukhu"]
 script = ExtResource("6_1sbg1")
 group_name = &"balls"
-collides_with = Array[StringName]([&"paddles", &"walls", &"goals"])
+collides_with = Array[StringName]([&"paddles", &"walls"])
 metadata/_custom_type_script = "uid://b2ibop6r2cryj"
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_1sbg1"]
+size = Vector2(640, 10)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_04mnm"]
+size = Vector2(50, 380)
 
 [sub_resource type="Resource" id="Resource_1sbg1"]
 script = ExtResource("14_aydlw")
@@ -48,11 +56,21 @@ random_angle_max = -0.524
 random_flip_h = true
 metadata/_custom_type_script = "uid://dcu4ocnin0htu"
 
-[sub_resource type="RectangleShape2D" id="RectangleShape2D_1sbg1"]
-size = Vector2(640, 10)
+[sub_resource type="Resource" id="Resource_fxstc"]
+script = ExtResource("14_aydlw")
+velocity = Vector2(200, 0)
+use_random_angle = true
+random_angle_min = 2.618
+random_angle_max = 3.665
+metadata/_custom_type_script = "uid://dcu4ocnin0htu"
 
-[sub_resource type="RectangleShape2D" id="RectangleShape2D_04mnm"]
-size = Vector2(10, 380)
+[sub_resource type="Resource" id="Resource_r3756"]
+script = ExtResource("14_aydlw")
+velocity = Vector2(200, 0)
+use_random_angle = true
+random_angle_min = 0.524
+random_angle_max = -0.524
+metadata/_custom_type_script = "uid://dcu4ocnin0htu"
 
 [node name="PaddleBall" type="Node2D"]
 script = ExtResource("1_g3say")
@@ -77,90 +95,100 @@ tracked_actions = Array[StringName]([&"fire", &"move"])
 
 [node name="CDUpdater" parent="Infrastructure" instance=ExtResource("9_40g2u")]
 
-[node name="PlayerPaddle" parent="." instance=ExtResource("10_pukhu")]
+[node name="PaddlesStage" parent="." instance=ExtResource("1_h58hb")]
+
+[node name="PlayerPaddle" parent="PaddlesStage" instance=ExtResource("10_pukhu")]
 position = Vector2(20, 180)
 lock_x = true
 clamp_to_bounds = true
 bounds_margin = 16.0
 
-[node name="AIPaddle" parent="." instance=ExtResource("12_o2cdy")]
+[node name="AIPaddle" parent="PaddlesStage" instance=ExtResource("12_o2cdy")]
 position = Vector2(620, 180)
 lock_x = true
 clamp_to_bounds = true
 bounds_margin = 16.0
 
-[node name="PointTrapdoor" parent="." instance=ExtResource("13_m4tg4")]
+[node name="GameStage" parent="." instance=ExtResource("1_h58hb")]
+
+[node name="StaticBody2D" type="StaticBody2D" parent="GameStage" groups=["walls"]]
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="GameStage/StaticBody2D"]
+position = Vector2(320, -5)
+shape = SubResource("RectangleShape2D_1sbg1")
+
+[node name="CollisionShape2D2" type="CollisionShape2D" parent="GameStage/StaticBody2D"]
+position = Vector2(320, 365)
+shape = SubResource("RectangleShape2D_1sbg1")
+
+[node name="PlayerMark" parent="GameStage" instance=ExtResource("16_i1yaf")]
+groups = Array[StringName]([&"goals"])
+on_entered = Array[StringName]([&"ai_scored"])
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="GameStage/PlayerMark"]
+position = Vector2(-25, 180)
+shape = SubResource("RectangleShape2D_04mnm")
+
+[node name="AIMark" parent="GameStage" instance=ExtResource("16_i1yaf")]
+groups = Array[StringName]([&"goals"])
+on_entered = Array[StringName]([&"player_scored"])
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="GameStage/AIMark"]
+position = Vector2(665, 180)
+shape = SubResource("RectangleShape2D_04mnm")
+
+[node name="PlayerScoreCard" parent="GameStage" instance=ExtResource("17_04mnm")]
+offset_left = 280.0
+offset_top = 50.0
+offset_right = 280.0
+offset_bottom = 50.0
+score_key = &"player_current_score"
+on_add_score = Array[StringName]([&"player_scored"])
+is_interface = true
+label_prefix = ""
+
+[node name="AIScoreCard" parent="GameStage" instance=ExtResource("17_04mnm")]
+offset_left = 345.0
+offset_top = 50.0
+offset_right = 345.0
+offset_bottom = 50.0
+score_key = &"ai_current_score"
+on_add_score = Array[StringName]([&"ai_scored"])
+is_interface = true
+label_prefix = " "
+
+[node name="InitialServeTrapdoor" parent="GameStage" instance=ExtResource("13_m4tg4")]
 position = Vector2(320, 180)
-spawn_scene = ExtResource("14_1sbg1")
+spawn_scene = ExtResource("16_40g2u")
 spawn_count_equation = "1"
 offset_range = Vector2(0, 0)
 stagger_delay = 0.0
 spawn_context = SubResource("Resource_1sbg1")
 trigger_delay = 2.0
-trigger_signals = Array[StringName]([&"game_play"])
+trigger_signals = Array[StringName]([&"game_play", &"serve_ball"])
 
-[node name="StaticBody2D" type="StaticBody2D" parent="." groups=["walls"]]
+[node name="CheckerboardEffect" parent="GameStage" instance=ExtResource("18_40g2u")]
+position = Vector2(316, 0)
+cell_size = Vector2(4, 4)
+rows = 90
+columns = 2
 
-[node name="CollisionShape2D" type="CollisionShape2D" parent="StaticBody2D"]
-position = Vector2(320, -5)
-shape = SubResource("RectangleShape2D_1sbg1")
+[node name="PlayerServeTrapdoor" parent="GameStage" instance=ExtResource("13_m4tg4")]
+position = Vector2(320, 180)
+spawn_scene = ExtResource("16_40g2u")
+spawn_count_equation = "1"
+offset_range = Vector2(0, 0)
+stagger_delay = 0.0
+spawn_context = SubResource("Resource_fxstc")
+trigger_delay = 2.0
+trigger_signals = Array[StringName]([&"ai_scored"])
 
-[node name="CollisionShape2D2" type="CollisionShape2D" parent="StaticBody2D"]
-position = Vector2(320, 365)
-shape = SubResource("RectangleShape2D_1sbg1")
-
-[node name="PlayerMark" parent="." instance=ExtResource("16_i1yaf")]
-on_entered = Array[StringName]([&"ai_scored"])
-
-[node name="CollisionShape2D" type="CollisionShape2D" parent="PlayerMark"]
-position = Vector2(-5, 180)
-shape = SubResource("RectangleShape2D_04mnm")
-
-[node name="AIMark" parent="." instance=ExtResource("16_i1yaf")]
-on_entered = Array[StringName]([&"play_scored"])
-
-[node name="CollisionShape2D" type="CollisionShape2D" parent="AIMark"]
-position = Vector2(645, 180)
-shape = SubResource("RectangleShape2D_04mnm")
-
-[node name="PlayerScoreCard" parent="." instance=ExtResource("17_04mnm")]
-offset_left = 280.0
-offset_top = 50.0
-offset_right = 280.0
-offset_bottom = 50.0
-starting_score = null
-starting_multiplier = null
-pending_add_key = null
-pending_set_key = null
-score_key = null
-pending_mult_add_key = null
-pending_mult_set_key = null
-multiplier_key = null
-on_add_score = null
-on_set_score = null
-on_add_multiplier = null
-on_set_multiplier = null
-on_score_changed = null
-on_multiplier_changed = null
-is_interface = true
-
-[node name="AIScoreCard" parent="." instance=ExtResource("17_04mnm")]
-offset_left = 340.0
-offset_top = 50.0
-offset_right = 340.0
-offset_bottom = 50.0
-starting_score = null
-starting_multiplier = null
-pending_add_key = null
-pending_set_key = null
-score_key = null
-pending_mult_add_key = null
-pending_mult_set_key = null
-multiplier_key = null
-on_add_score = null
-on_set_score = null
-on_add_multiplier = null
-on_set_multiplier = null
-on_score_changed = null
-on_multiplier_changed = null
-is_interface = true
+[node name="AIServeTrapdoor" parent="GameStage" instance=ExtResource("13_m4tg4")]
+position = Vector2(320, 180)
+spawn_scene = ExtResource("16_40g2u")
+spawn_count_equation = "1"
+offset_range = Vector2(0, 0)
+stagger_delay = 0.0
+spawn_context = SubResource("Resource_r3756")
+trigger_delay = 2.0
+trigger_signals = Array[StringName]([&"player_scored"])

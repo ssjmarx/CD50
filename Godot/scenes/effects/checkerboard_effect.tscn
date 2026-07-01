@@ -1,0 +1,7 @@
+[gd_scene load_steps=2 format=3 uid="uid://dktl3ojawgcf7"]
+
+[ext_resource type="Script" uid="uid://c1qupc7eusi64" path="res://scripts/effects/checkerboard_effect.gd" id="1_2sq0w"]
+
+[node name="CheckerboardEffect" type="Node2D"]
+script = ExtResource("1_2sq0w")
+lifetime = 0.0

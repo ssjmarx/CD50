@@ -1,14 +1,12 @@
 [gd_scene load_steps=3 format=3 uid="uid://bmy2rp5mjhdpa"]
 
 [ext_resource type="PackedScene" uid="uid://chwl7osnlywyd" path="res://entities/generic/paddle.tscn" id="1_jv1se"]
-[ext_resource type="PackedScene" uid="uid://c0bdes7lqqmym" path="res://scenes/entity components/brains/ai_chase_brain.tscn" id="2_16oug"]
+[ext_resource type="PackedScene" uid="uid://c0bdes7lqqmym" path="res://scenes/entity components/brains/ai movement/ai_chase_brain.tscn" id="2_16oug"]
 
 [node name="Paddle" instance=ExtResource("1_jv1se")]
 groups = Array[StringName]([&"paddles", &"enemies"])
 
-[node name="DirectMovementLeg" parent="." index="1"]
-distance_key = &""
-
 [node name="AIChaseBrain" parent="." index="3" instance=ExtResource("2_16oug")]
 target_groups = Array[StringName]([&"balls"])
 stop_distance = 0.0
+axis_mode = 2
