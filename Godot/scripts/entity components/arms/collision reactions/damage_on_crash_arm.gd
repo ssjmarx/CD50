@@ -24,12 +24,10 @@ func _ready() -> void:
 	component_category = CDEnums.ComponentCategory.INTERACTION
 	super._ready()
 
-## connect collision signals and ensure damage signals exist
+## connect collision signals using the tracked entity bus API
 func _on_initialize() -> void:
 	for sig in collision_signals:
-		entity.connect(sig, _on_collision)
-	for sig in damage_signals:
-		entity.ensure_signal(sig)
+		entity.bus_connect(sig, _on_collision)
 
 ## damage self if the collider is a valid source
 func _on_collision(collider: CDEntity, _normal: Vector2) -> void:
@@ -57,5 +55,4 @@ func _is_valid_source(collider: CDEntity) -> bool:
 func _on_entity_deactivating() -> void:
 	super._on_entity_deactivating()
 	for sig in collision_signals:
-		if entity.is_connected(sig, _on_collision):
-			entity.disconnect(sig, _on_collision)
+		entity.bus_disconnect(sig, _on_collision)
