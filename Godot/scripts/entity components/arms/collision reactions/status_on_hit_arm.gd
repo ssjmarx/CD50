@@ -33,7 +33,7 @@ func _on_initialize() -> void:
 		entity.connect(sig, _on_collision)
 
 ## apply status effect to the collider if it's a valid target
-func _on_collision(collider: CDEntity, _normal: Vector2) -> void:
+func _on_collision(collider: Node, _normal: Vector2) -> void:
 	if not is_instance_valid(collider):
 		return
 	if not _is_valid_target(collider):
@@ -46,7 +46,9 @@ func _on_collision(collider: CDEntity, _normal: Vector2) -> void:
 		collider.bus_emit(sig)
 
 ## return true if target_groups is empty or collider is in one of them
-func _is_valid_target(collider: CDEntity) -> bool:
+func _is_valid_target(collider: Node) -> bool:
+	if not collider is CDEntity:
+		return false
 	if target_groups.is_empty():
 		return true
 	for group in target_groups:

@@ -30,7 +30,7 @@ func _on_initialize() -> void:
 		entity.bus_connect(sig, _on_collision)
 
 ## damage self if the collider is a valid source
-func _on_collision(collider: CDEntity, _normal: Vector2) -> void:
+func _on_collision(collider: Node, _normal: Vector2) -> void:
 	if not _is_valid_source(collider):
 		return
 	for key in damage_keys:
@@ -41,7 +41,7 @@ func _on_collision(collider: CDEntity, _normal: Vector2) -> void:
 		entity.bus_emit(sig)
 
 ## return true if source_groups is empty or collider is in one of them
-func _is_valid_source(collider: CDEntity) -> bool:
+func _is_valid_source(collider: Node) -> bool:
 	if source_groups.is_empty():
 		return true
 	if not is_instance_valid(collider):

@@ -35,7 +35,7 @@ func _on_initialize() -> void:
 		entity.connect(sig, _on_collision)
 
 ## compare self vs collider and kill collider if self wins
-func _on_collision(collider: CDEntity, _normal: Vector2) -> void:
+func _on_collision(collider: Node, _normal: Vector2) -> void:
 	if not is_instance_valid(collider):
 		return
 	if not _is_valid_target(collider):
@@ -90,7 +90,9 @@ func _read_custom_property(ent: CDEntity) -> Variant:
 	return null
 
 ## return true if target_groups is empty or collider is in one of them
-func _is_valid_target(collider: CDEntity) -> bool:
+func _is_valid_target(collider: Node) -> bool:
+	if not collider is CDEntity:
+		return false
 	if target_groups.is_empty():
 		return true
 	for group in target_groups:

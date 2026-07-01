@@ -32,7 +32,7 @@ func _on_initialize() -> void:
 		entity.connect(sig, _on_collision)
 
 ## Apply the capture payload to a valid target: write blackboards, emit on target/captor buses, then deactivate the bullet.
-func _on_collision(collider: CDEntity, _normal: Vector2) -> void:
+func _on_collision(collider: Node, _normal: Vector2) -> void:
 	if not is_instance_valid(collider) or not _is_valid_target(collider):
 		return
 
@@ -63,7 +63,9 @@ func _on_collision(collider: CDEntity, _normal: Vector2) -> void:
 	entity.deactivate()
 
 ## Return true if target_groups is empty or collider is in one of them.
-func _is_valid_target(collider: CDEntity) -> bool:
+func _is_valid_target(collider: Node) -> bool:
+	if not collider is CDEntity:
+		return false
 	if target_groups.is_empty():
 		return true
 	for group in target_groups:

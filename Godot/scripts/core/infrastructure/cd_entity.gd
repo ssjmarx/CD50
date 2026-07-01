@@ -135,7 +135,7 @@ func _physics_process(delta: float) -> void:
 			break
 
 		var collider = collision.get_collider()
-		if collider is CDEntity:
+		if collider != null:
 			_pending_collisions.append({"collider": collider, "normal": collision.get_normal()})
 
 		## check for registered collision handler, fall back to default
@@ -399,7 +399,9 @@ func _find_collision_handler(collider) -> Callable:
 	if collider == null or not is_instance_valid(collider):
 		return Callable()
 
-	var collider_layers: int = collider.collision_layer
+	var collider_layers: int = 0
+	if collider is CollisionObject2D:
+		collider_layers = collider.collision_layer
 
 	## first pass: specific handlers (layers != 0)
 	for entry in _collision_handlers:
