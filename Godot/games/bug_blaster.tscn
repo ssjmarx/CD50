@@ -157,7 +157,7 @@ metadata/_custom_type_script = "uid://pfjv46gi1ii"
 [sub_resource type="Resource" id="Resource_rwe8y"]
 script = ExtResource("24_exd75")
 per_wave = -1.0
-minimum = 1.0
+base = 6.0
 maximum = 6.0
 metadata/_custom_type_script = "uid://bd5apwoshu3n6"
 
@@ -165,7 +165,7 @@ metadata/_custom_type_script = "uid://bd5apwoshu3n6"
 script = ExtResource("23_0luh7")
 interval = 6.0
 scaler = SubResource("Resource_rwe8y")
-random_variance = 1.0
+random_variance = 0.5
 metadata/_custom_type_script = "uid://dm2djsydyr0u1"
 
 [sub_resource type="Resource" id="Resource_kcgbt"]

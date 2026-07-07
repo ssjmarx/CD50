@@ -1,10 +1,10 @@
 [gd_scene load_steps=7 format=3 uid="uid://bc2u6bby28yx7"]
 
 [ext_resource type="PackedScene" uid="uid://btakyw0x48rht" path="res://entities/generic/ufo_ship_small.tscn" id="1_3vf2m"]
-[ext_resource type="PackedScene" uid="uid://ctn77lu47nqk0" path="res://scenes/entity components/brains/ai_path_move_brain.tscn" id="2_m7sfc"]
-[ext_resource type="PackedScene" uid="uid://ruar6jbjbodk" path="res://scenes/entity components/guts/die_offscreen_guts.tscn" id="3_ropdq"]
-[ext_resource type="PackedScene" uid="uid://cj3hnjl0sj608" path="res://scenes/entity components/guts/points_guts.tscn" id="4_da3ef"]
-[ext_resource type="PackedScene" uid="uid://domsc1hbv4rsy" path="res://scenes/entity components/arms/score_on_death_arm.tscn" id="5_eycto"]
+[ext_resource type="PackedScene" uid="uid://ctn77lu47nqk0" path="res://scenes/entity components/brains/ai movement/ai_path_move_brain.tscn" id="2_m7sfc"]
+[ext_resource type="PackedScene" uid="uid://ruar6jbjbodk" path="res://scenes/entity components/guts/death/die_offscreen_guts.tscn" id="3_ropdq"]
+[ext_resource type="PackedScene" uid="uid://cj3hnjl0sj608" path="res://scenes/entity components/guts/game logic/points_guts.tscn" id="4_da3ef"]
+[ext_resource type="PackedScene" uid="uid://domsc1hbv4rsy" path="res://scenes/entity components/arms/death reactions/score_on_death_arm.tscn" id="5_eycto"]
 
 [sub_resource type="Curve2D" id="Curve2D_ropdq"]
 _data = {
@@ -23,9 +23,6 @@ color = Color(1, 0, 0, 1)
 
 [node name="VectorFace3" parent="." index="2"]
 color = Color(1, 0, 0, 1)
-
-[node name="DirectMovementLeg" parent="." index="3"]
-speed = 150.0
 
 [node name="AIPathMoveBrain" parent="." index="7" instance=ExtResource("2_m7sfc")]
 path_curve = SubResource("Curve2D_ropdq")

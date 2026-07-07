@@ -126,7 +126,7 @@ groups = Array[StringName]([&"goals"])
 on_entered = Array[StringName]([&"ai_scored"])
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="GameStage/PlayerMark"]
-position = Vector2(-25, 180)
+position = Vector2(-11, 180)
 shape = SubResource("RectangleShape2D_04mnm")
 
 [node name="AIMark" parent="GameStage" instance=ExtResource("16_i1yaf")]
@@ -134,7 +134,7 @@ groups = Array[StringName]([&"goals"])
 on_entered = Array[StringName]([&"player_scored"])
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="GameStage/AIMark"]
-position = Vector2(665, 180)
+position = Vector2(651, 180)
 shape = SubResource("RectangleShape2D_04mnm")
 
 [node name="PlayerScoreCard" parent="GameStage" instance=ExtResource("17_04mnm")]

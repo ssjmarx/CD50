@@ -1,10 +1,11 @@
-[gd_scene load_steps=7 format=3 uid="uid://cyds33bk5uahl"]
+[gd_scene load_steps=8 format=3 uid="uid://cyds33bk5uahl"]
 
 [ext_resource type="PackedScene" uid="uid://dbqhc5tlm4x6o" path="res://entities/generic/nautilus_ship_grid.tscn" id="1_7og0t"]
 [ext_resource type="PackedScene" uid="uid://by11ic4lo4df8" path="res://entities/nonplayer/onscreen_bullet_nonplayer.tscn" id="2_7v3uo"]
 [ext_resource type="Script" uid="uid://dcu4ocnin0htu" path="res://scripts/core/resources/spawners/cd_spawn_context.gd" id="3_2ql4w"]
-[ext_resource type="PackedScene" uid="uid://cj3hnjl0sj608" path="res://scenes/entity components/guts/points_guts.tscn" id="4_syf8l"]
-[ext_resource type="PackedScene" uid="uid://domsc1hbv4rsy" path="res://scenes/entity components/arms/score_on_death_arm.tscn" id="5_oaxvw"]
+[ext_resource type="PackedScene" uid="uid://cj3hnjl0sj608" path="res://scenes/entity components/guts/game logic/points_guts.tscn" id="4_syf8l"]
+[ext_resource type="PackedScene" uid="uid://domsc1hbv4rsy" path="res://scenes/entity components/arms/death reactions/score_on_death_arm.tscn" id="5_oaxvw"]
+[ext_resource type="PackedScene" uid="uid://c4jinp88xtitl" path="res://scenes/entity components/voices/sound_voice.tscn" id="6_oaxvw"]
 
 [sub_resource type="Resource" id="Resource_a4iey"]
 script = ExtResource("3_2ql4w")
@@ -24,3 +25,8 @@ inherit_rotation = false
 points = 2
 
 [node name="ScoreOnDeathArm" parent="." index="9" instance=ExtResource("5_oaxvw")]
+
+[node name="SoundVoice2" parent="." index="10" instance=ExtResource("6_oaxvw")]
+trigger_signal = &"step_taken"
+exclusive = true
+gameplay_only = true

@@ -1,0 +1,88 @@
+[gd_scene load_steps=20 format=3 uid="uid://bi7w61fxwcf6u"]
+
+[ext_resource type="Script" uid="uid://dm0uehngpvbh7" path="res://scripts/core/infrastructure/cd_game.gd" id="1_8t45b"]
+[ext_resource type="PackedScene" path="res://scenes/core/infrastructure/cd_stage.tscn" id="2_4orjq"]
+[ext_resource type="PackedScene" uid="uid://c160d1kuwsrav" path="res://scenes/game components/projectors/crt_projector.tscn" id="3_6kj20"]
+[ext_resource type="PackedScene" uid="uid://dp5wrnwomehwo" path="res://scenes/core/infrastructure/cd_sound_bank.tscn" id="4_xk4g3"]
+[ext_resource type="PackedScene" uid="uid://cmbx6xnct372t" path="res://scenes/core/infrastructure/cd_collision_buffer.tscn" id="5_wcqc7"]
+[ext_resource type="PackedScene" uid="uid://bcwv07gabsxif" path="res://scenes/core/infrastructure/cd_collision_matrix.tscn" id="6_t2yqx"]
+[ext_resource type="Script" uid="uid://b2ibop6r2cryj" path="res://scripts/core/resources/infrastructure/cd_collision_group.gd" id="7_wruel"]
+[ext_resource type="PackedScene" uid="uid://25g1ygl8nuv6" path="res://scenes/core/infrastructure/cd_group_registry.tscn" id="8_lb6cf"]
+[ext_resource type="PackedScene" uid="uid://c6mp0pt27mfal" path="res://scenes/core/infrastructure/cd_input_router.tscn" id="9_mlavb"]
+[ext_resource type="PackedScene" uid="uid://csgdjkq3gf26a" path="res://scenes/core/infrastructure/cd_updater.tscn" id="10_uspsh"]
+[ext_resource type="PackedScene" uid="uid://b1e365cvr1e8p" path="res://scenes/game components/trapdoors/point_trapdoor.tscn" id="11_wcqc7"]
+[ext_resource type="PackedScene" uid="uid://cytjg8wb58tpp" path="res://entities/player/bug_blaster_2_player.tscn" id="12_t2yqx"]
+[ext_resource type="Script" uid="uid://dcu4ocnin0htu" path="res://scripts/core/resources/spawners/cd_spawn_context.gd" id="13_wruel"]
+
+[sub_resource type="Resource" id="Resource_q4h5u"]
+script = ExtResource("7_wruel")
+group_name = &"players"
+
+[sub_resource type="Resource" id="Resource_qh32t"]
+script = ExtResource("7_wruel")
+group_name = &"enemies"
+
+[sub_resource type="Resource" id="Resource_dg5ky"]
+script = ExtResource("7_wruel")
+group_name = &"enemy_bullets"
+collides_with = Array[StringName]([&"players", &"blocks", &"asteroids"])
+
+[sub_resource type="Resource" id="Resource_7ar12"]
+script = ExtResource("7_wruel")
+group_name = &"player_bullets"
+collides_with = Array[StringName]([&"enemies", &"blocks", &"asteroids"])
+
+[sub_resource type="Resource" id="Resource_4orjq"]
+script = ExtResource("7_wruel")
+group_name = &"asteroids"
+collides_with = Array[StringName]([&"players", &"enemies"])
+metadata/_custom_type_script = "uid://b2ibop6r2cryj"
+
+[sub_resource type="Resource" id="Resource_lb6cf"]
+script = ExtResource("13_wruel")
+rotation = -1.571
+
+[node name="SpaceRocks" type="Node2D"]
+script = ExtResource("1_8t45b")
+game_bounds = Rect2(0, 0, 640, 360)
+
+[node name="Infrastructure" parent="." instance=ExtResource("2_4orjq")]
+
+[node name="CRTProjector" parent="Infrastructure" instance=ExtResource("3_6kj20")]
+
+[node name="CDSoundBank" parent="Infrastructure" instance=ExtResource("4_xk4g3")]
+max_channels = 4
+
+[node name="CDCollisionBuffer" parent="Infrastructure" instance=ExtResource("5_wcqc7")]
+
+[node name="CDCollisionMatrix" parent="Infrastructure" instance=ExtResource("6_t2yqx")]
+collision_groups = Array[ExtResource("7_wruel")]([SubResource("Resource_q4h5u"), SubResource("Resource_qh32t"), SubResource("Resource_dg5ky"), SubResource("Resource_7ar12"), SubResource("Resource_4orjq")])
+
+[node name="CDGroupRegistry" parent="Infrastructure" instance=ExtResource("8_lb6cf")]
+
+[node name="CDInputRouter" parent="Infrastructure" instance=ExtResource("9_mlavb")]
+
+[node name="CDUpdater" parent="Infrastructure" instance=ExtResource("10_uspsh")]
+
+[node name="Player Stuff" parent="." instance=ExtResource("2_4orjq")]
+
+[node name="PlayerSpawner" parent="Player Stuff" instance=ExtResource("11_wcqc7")]
+position = Vector2(320, 180)
+spawn_scene = ExtResource("12_t2yqx")
+spawn_count_equation = "1"
+offset_range = Vector2(0, 0)
+stagger_delay = 0.0
+spawn_context = SubResource("Resource_lb6cf")
+trigger_delay = 3.0
+trigger_signals = Array[StringName]([&"life_lost"])
+on_spawning_complete = Array[StringName]([])
+
+[node name="PlayerSpawnerGameStart" parent="Player Stuff" instance=ExtResource("11_wcqc7")]
+position = Vector2(320, 180)
+spawn_scene = ExtResource("12_t2yqx")
+spawn_count_equation = "1"
+offset_range = Vector2(0, 0)
+stagger_delay = 0.0
+spawn_context = SubResource("Resource_lb6cf")
+trigger_signals = Array[StringName]([&"game_play"])
+on_spawning_complete = Array[StringName]([])
