@@ -80,6 +80,10 @@ Godot/
 * **Audio:** 90% procedural synthesis at runtime, with .ogg files for background music. Sound effects are generated in real-time via `AudioStreamGenerator`.
 * **Visuals:** Custom CRT shader suite (barrel warp, chromatic aberration, bloom, vignette, hum bar) + vector monitor mode with phosphor persistence.
 * **Fonts:** [Kenney](https://kenney.nl) retro pixel fonts, used under the terms in `LICENSE.ASSETS`.
+* **AI Toolchain:** 
+    - **Nemotron 3** – used for architectural planning and design.
+    - **GLM 4.7 Flash** – used for code edits and incremental changes.
+    - **DeepSeek V4 Flash** – used for major implementation tasks and refactorings.
 
 ### Music
 * **El Manisero** — Moisés Simons (1928) · Public Domain
